@@ -1,0 +1,3 @@
+# Keep the internal spec out of git while the GitHub repository is public.
+*
+!.gitignore
