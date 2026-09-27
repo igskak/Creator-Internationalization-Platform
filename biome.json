@@ -49,6 +49,16 @@
       }
     },
     {
+      "includes": ["**/*.live.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["apps/web/src/components/ui/**"],
       "linter": {
         "rules": {

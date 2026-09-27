@@ -28,6 +28,7 @@ const production = {
   R2_ACCESS_KEY_ID: "access",
   R2_SECRET_ACCESS_KEY: "r2-secret-value",
   R2_BUCKET: "regchef-prod",
+  R2_JURISDICTION: "eu",
 };
 
 function problemsOf(source: Record<string, string | undefined>) {
@@ -68,7 +69,11 @@ describe("loadServerEnv: valid", () => {
     });
     expect(env.appEnv).toBe("production");
     expect(env.jobs).toEqual({ mode: "trigger", triggerSecretKey: "tr_prod_secret" });
-    expect(env.storage).toMatchObject({ provider: "r2", bucket: "regchef-prod" });
+    expect(env.storage).toMatchObject({
+      provider: "r2",
+      bucket: "regchef-prod",
+      jurisdiction: "eu",
+    });
     expect(env.instagram).toMatchObject({
       publishMode: "live",
       graphBaseUrl: "https://graph.instagram.com",
