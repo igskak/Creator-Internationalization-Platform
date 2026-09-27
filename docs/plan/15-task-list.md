@@ -92,7 +92,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests: round trip, tamper, wrong AAD, old-key decrypt, expired state, bad signature.
   - **Refs:** 12 §12.3.
 
-- [ ] **M0-08 · Next.js app and UI kit** · P0 · M · deps: M0-01 · ⚠ V-21
+- [x] **M0-08 · Next.js app and UI kit** · P0 · M · deps: M0-01 · ⚠ V-21
   - **Do:** create `apps/web` (Next.js current stable, App Router, TS), Tailwind, shadcn/ui with base components (button, input, textarea, select, dialog, sheet, dropdown, tabs, table, badge, card, skeleton, tooltip, popover, form, sonner). `next.config.ts`: `transpilePackages` (workspace packages), `serverExternalPackages` (`sharp`, `playwright-core`), security headers. `/api/health` (static ok). Enable the CI build job.
   - **Done when:** `pnpm --filter @rc/web build` passes locally and in CI.
   - **Refs:** 01 D-02, 12 §12.5.

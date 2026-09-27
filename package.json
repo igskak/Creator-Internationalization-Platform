@@ -7,6 +7,8 @@
     "node": ">=24"
   },
   "scripts": {
+    "dev": "pnpm --filter @rc/web dev",
+    "build": "pnpm --filter @rc/web build",
     "check": "biome check . && pnpm typecheck && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",

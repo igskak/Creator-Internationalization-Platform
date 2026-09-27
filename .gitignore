@@ -3,6 +3,7 @@
 # dependencies and build output
 node_modules/
 .next/
+next-env.d.ts
 coverage/
 *.tsbuildinfo
 
