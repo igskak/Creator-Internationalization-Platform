@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-09-27 · CI layout [M0-02]
+- Context: 13 §13.7 lists the CI stages; M0-02 asks for static checks and tests now, with stubs for the build, E2E and visual jobs.
+- Decision: `ci.yml` runs two blocking jobs, `static` (`biome ci`, typecheck) and `test`, on every PR and on pushes to `main`. The build (M0-08), E2E (M1-25) and dependency-rules (M0-20) stubs are commented out in `ci.yml`. Visual regression (M3-14) will be a separate `visual.yml` with a `templates/**` path filter and a nightly schedule, because a job-level path filter needs an extra action. Action versions: checkout v7, setup-node v7 (Node from `.nvmrc`, pnpm cache), pnpm/action-setup v6 (pnpm version from `packageManager`).
+- Evidence / links: latest release tags checked with `gh api` on 2026-09-27.
+- Impact on plan: none.
+
 ## 2026-09-27 · Toolchain versions and scaffold deviations [M0-01]
 - Context: M0-01 asks for current stable pnpm, TypeScript, Biome and Vitest, Node LTS, and a `vitest.workspace.ts`.
 - Decision:
