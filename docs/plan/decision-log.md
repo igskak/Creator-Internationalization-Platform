@@ -13,6 +13,20 @@ Template:
 
 ---
 
+## 2026-09-27 · Environment variables and flags [M0-04]
+- Context: 12 §12.2 lists the secrets and 15 M0-04 the flags. The plan does not define how "production" is detected, the flag values besides the ones named, or which variables each mode needs.
+- Decision:
+  - New `APP_ENV` = `development | test | staging | production` (default `development`). It decides production guards. `NODE_ENV` is not used for this because `next build` sets it to `production` on previews too.
+  - Flag values and defaults: `JOBS_MODE` `inline|trigger` (default `inline`), `AI_PROVIDER` `live|fake` (default `live`), `STORAGE_PROVIDER` `r2|memory` (default `r2`), `INSTAGRAM_PUBLISH_MODE` `off|dry_run_only|live` (default `off`).
+  - Production guards: besides `JOBS_MODE=trigger` and no `E2E_TEST_AUTH_SECRET` (plan), production also refuses `AI_PROVIDER=fake` and `STORAGE_PROVIDER=memory`.
+  - Mode-specific variables are required only in that mode: R2 for `r2`, both AI keys for `live`, `TRIGGER_SECRET_KEY` for `trigger`, the Instagram app variables for `dry_run_only`/`live`. M5-02 (OAuth) may need the Instagram app variables while publishing is `off`; revisit there.
+  - Always required: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `TOKEN_ENCRYPTION_KEYS` (validated key ring, 32-byte keys), `TOKEN_ENCRYPTION_ACTIVE_KEY` (must exist in the ring), `OAUTH_STATE_SECRET` (≥ 32 chars).
+  - New optional `LOG_LEVEL` (pino levels, default `info`) for M0-05.
+  - `TRIGGER_ACCESS_TOKEN` and `SENTRY_AUTH_TOKEN` are CI-only and not part of the runtime schema; `SEED_OWNER_EMAILS` is left to M0-11.
+  - `loadServerEnv()` reports all problems at once as names with a reason; values are never printed. Biome rule `style/noProcessEnv` enforces "no `process.env` outside `@rc/lib/env`".
+- Evidence / links: `lib/src/env/load.test.ts`.
+- Impact on plan: `.env.example` is the reference for variable names and defaults.
+
 ## 2026-09-27 · Cloud session hook [M0-03]
 - Context: M0-03 says to use the `session-start-hook` skill; that skill is not available in the local Claude Code session that did the task.
 - Decision: wrote `.claude/settings.json` (SessionStart, matcher `startup|resume`, 300 s timeout) and `scripts/claude/session-start.sh` by hand. The script exits at once unless `CLAUDE_CODE_REMOTE=true`, so local sessions are untouched. In the cloud it installs the pnpm version from `packageManager` if missing, runs `pnpm install --frozen-lockfile`, and sets `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` for the session through `CLAUDE_ENV_FILE`. It warns if Node is older than `.nvmrc`.

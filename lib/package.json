@@ -5,10 +5,14 @@
   "type": "module",
   "description": "Env, logging, errors, security and provider adapters",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./env": "./src/env/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
   }
 }
