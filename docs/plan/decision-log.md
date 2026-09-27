@@ -13,6 +13,16 @@ Template:
 
 ---
 
+## 2026-09-27 · Redaction by key rules instead of pino redact paths [M0-05]
+- Context: 12 §12.7 lists pino `redact` paths like `*.access_token`. pino wildcards match one level only, and pino does not run `formatters.bindings` for child loggers.
+- Decision:
+  - One `redact()` for logs and audit data. It walks the object at any depth: values under sensitive keys become `[REDACTED]`, every string passes through `scrubText()`, errors go through `serializeError()`, binary data becomes `[Binary N bytes]`, cycles and depth over 8 are cut. A key is sensitive if it is `code` or contains `token`, `secret`, `password`, `passwd`, `apikey`, `authorization`, `cookie`, `signedrequest`, `privatekey` or `credential` (compared lowercased, without `-`/`_`). Numbers and booleans under such keys are kept, so token counts (`inputTokens`) stay in logs.
+  - Because `code` is always redacted, log domain codes under another key (e.g. `errorCode`). `err.code` is kept, because `serializeError()` builds the error output itself.
+  - `scrubText()` / `scrubUrl()` remove query values of `access_token`, `refresh_token`, `id_token`, `token`, `client_secret`, `code`, `signed_request`, `api_key`, `password`, `sig`, `signature` and every `X-Amz-*`; passwords in `scheme://user:pass@`; Bearer/Basic credentials.
+  - pino setup: `formatters.log` = `redact`, `msg` serializer = `scrubText`, `err` serializer = `serializeError`. `child()` is wrapped on every instance so child bindings are redacted too. Default output is synchronous stdout (serverless-safe). Fields: `ts`, `level` (label), `service`, `env`, `release`, `msg`.
+- Evidence / links: `lib/src/logging/*.test.ts`; pino 10.3.1 source (`child()` resets the bindings formatter).
+- Impact on plan: none. M0-19 reuses `redact()` / `scrubText()` in Sentry `beforeSend`.
+
 ## 2026-09-27 · Environment variables and flags [M0-04]
 - Context: 12 §12.2 lists the secrets and 15 M0-04 the flags. The plan does not define how "production" is detected, the flag values besides the ones named, or which variables each mode needs.
 - Decision:

@@ -78,7 +78,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** unit tests for valid, invalid and production-guard cases.
   - **Refs:** 12 §12.2.
 
-- [ ] **M0-05 · Logging with redaction** · P0 · S · deps: M0-01
+- [x] **M0-05 · Logging with redaction** · P0 · S · deps: M0-01
   - **Do:** `lib/src/logging/`: pino factory (JSON), child loggers with context, redact paths, `scrubUrl()` (tokens, OAuth codes, `X-Amz-*`), error serializer, `redact()` for audit data.
   - **Done when:** tests prove tokens, codes, presigned signatures and cookies never reach output.
   - **Refs:** 12 §12.7.
