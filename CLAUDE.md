@@ -30,4 +30,14 @@ Internal tool that turns Reg.Chef's Russian-language culinary IP into original S
 - In cloud sessions use the pre-installed Chromium (`PLAYWRIGHT_BROWSERS_PATH`); never run `playwright install`.
 
 ## Commands
-To be filled by task M0-03 (install, dev, check, test, test:e2e, test:visual, db:generate, db:migrate, db:seed, jobs:dev, eval, rc).
+Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the SessionStart hook (`scripts/claude/session-start.sh`) installs dependencies; locally run `pnpm install`.
+
+| Command | What it does |
+|---|---|
+| `pnpm install` | Install (CI and cloud: `--frozen-lockfile`) |
+| `pnpm check` | Biome + typecheck + all tests. Run before every commit. |
+| `pnpm test` | Vitest, all packages (`pnpm --filter @rc/<pkg> test` for one) |
+| `pnpm typecheck` | `tsc` in every package |
+| `pnpm lint` / `pnpm format` | Biome lint / format with write |
+
+Added by later tasks (not available yet): `pnpm dev` (M0-08), `pnpm db:generate` · `db:migrate` (M0-09), `pnpm db:seed` (M0-11), `pnpm jobs:dev` (M0-14), `pnpm rc <command>` (M0-21), `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.

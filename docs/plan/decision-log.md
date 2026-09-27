@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-09-27 · Cloud session hook [M0-03]
+- Context: M0-03 says to use the `session-start-hook` skill; that skill is not available in the local Claude Code session that did the task.
+- Decision: wrote `.claude/settings.json` (SessionStart, matcher `startup|resume`, 300 s timeout) and `scripts/claude/session-start.sh` by hand. The script exits at once unless `CLAUDE_CODE_REMOTE=true`, so local sessions are untouched. In the cloud it installs the pnpm version from `packageManager` if missing, runs `pnpm install --frozen-lockfile`, and sets `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` for the session through `CLAUDE_ENV_FILE`. It warns if Node is older than `.nvmrc`.
+- Evidence / links: simulated a cloud start on a fresh clone (env vars set by hand): dependencies installed, then `pnpm check` passed; without `CLAUDE_CODE_REMOTE` the script is a no-op. Not yet run in a real cloud session.
+- Impact on plan: the "Done when" check (fresh cloud session runs `pnpm check` with no manual steps) is confirmed on the first real cloud session; record the result here.
+
 ## 2026-09-27 · CI layout [M0-02]
 - Context: 13 §13.7 lists the CI stages; M0-02 asks for static checks and tests now, with stubs for the build, E2E and visual jobs.
 - Decision: `ci.yml` runs two blocking jobs, `static` (`biome ci`, typecheck) and `test`, on every PR and on pushes to `main`. The build (M0-08), E2E (M1-25) and dependency-rules (M0-20) stubs are commented out in `ci.yml`. Visual regression (M3-14) will be a separate `visual.yml` with a `templates/**` path filter and a nightly schedule, because a job-level path filter needs an extra action. Action versions: checkout v7, setup-node v7 (Node from `.nvmrc`, pnpm cache), pnpm/action-setup v6 (pnpm version from `packageManager`).

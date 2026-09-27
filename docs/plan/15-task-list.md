@@ -69,7 +69,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** CI is green on a PR.
   - **Refs:** 13 §13.7.
 
-- [ ] **M0-03 · Claude Code on the web: session setup** · P0 · S · deps: M0-01
+- [x] **M0-03 · Claude Code on the web: session setup** · P0 · S · deps: M0-01
   - **Do:** use the `session-start-hook` skill. `.claude/settings.json` SessionStart hook → `scripts/claude/session-start.sh` (`pnpm install --frozen-lockfile`; never download browsers). Fill the "Commands" section of `CLAUDE.md`.
   - **Done when:** a fresh cloud session runs `pnpm check` without manual steps.
 
