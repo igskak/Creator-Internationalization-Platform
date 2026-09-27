@@ -1,0 +1,14 @@
+{
+  "name": "@rc/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Next.js admin app (placeholder until M0-08)",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  }
+}

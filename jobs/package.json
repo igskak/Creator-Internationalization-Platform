@@ -1,0 +1,14 @@
+{
+  "name": "@rc/jobs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Trigger.dev tasks (thin wrappers around @rc/modules services)",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  }
+}

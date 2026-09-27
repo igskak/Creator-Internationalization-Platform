@@ -1,0 +1,14 @@
+{
+  "name": "@rc/prompts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned prompt definitions and registry",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  }
+}
