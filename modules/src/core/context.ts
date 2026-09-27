@@ -1,6 +1,7 @@
 import type { AnyDatabase } from "@rc/db";
 import type { Logger } from "@rc/lib/logging";
 import { type Clock, systemClock } from "./clock";
+import { disabledJobRunner, type JobRunner } from "./job-runner";
 
 export type UserRole = "owner" | "editor" | "chef";
 
@@ -12,7 +13,7 @@ export type Actor =
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
- * Storage (M0-13), job runner (M0-14) and AI providers (M1-08) are added by their tasks.
+ * Storage and AI providers are added by the tasks that first use them.
  */
 export type ServiceContext = {
   db: AnyDatabase;
@@ -21,6 +22,8 @@ export type ServiceContext = {
   actor: Actor;
   /** Correlates web request → job → audit rows (plan 12 §12.9). */
   requestId: string | undefined;
+  /** Starts background jobs; use triggerJob() to pass the request id along. */
+  jobs: JobRunner;
 };
 
 export type CreateServiceContextInput = {
@@ -29,6 +32,8 @@ export type CreateServiceContextInput = {
   actor: Actor;
   requestId?: string;
   clock?: Clock;
+  /** Default: a runner that refuses to start jobs. */
+  jobs?: JobRunner;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -43,6 +48,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     clock: input.clock ?? systemClock,
     actor: input.actor,
     requestId: input.requestId,
+    jobs: input.jobs ?? disabledJobRunner,
   };
 }
 

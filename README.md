@@ -24,6 +24,8 @@ pnpm check
 | `pnpm db:generate` | Generate a migration from the Drizzle schema. |
 | `pnpm db:migrate` | Apply migrations (reads `.env`; see `docs/runbooks/supabase.md`). |
 | `pnpm db:seed` | Insert missing reference data; safe to re-run. |
+| `pnpm jobs:dev` | Run Trigger.dev tasks locally (see `docs/runbooks/trigger-dev.md`). |
+| `pnpm jobs:hello` | Trigger the `hello` smoke task. |
 
 Run one package: `pnpm --filter @rc/lib test`.
 
