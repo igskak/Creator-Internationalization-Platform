@@ -38,14 +38,18 @@ function jobRunner(): JobRunner {
   return jobs;
 }
 
+/** The `x-request-id` header (set by the proxy from M0-19 on), or a new id. */
+export async function currentRequestId(): Promise<string> {
+  return (await headers()).get("x-request-id") ?? randomUUID();
+}
+
 /** ServiceContext for one request (plan 03 §3.1 `src/server/context.ts`). */
-export async function requestContext(actor: Actor): Promise<ServiceContext> {
-  const requestId = (await headers()).get("x-request-id") ?? randomUUID();
+export async function requestContext(actor: Actor, requestId?: string): Promise<ServiceContext> {
   return createServiceContext({
     db: serverDb(),
     logger: serverLogger(),
     actor,
-    requestId,
+    requestId: requestId ?? (await currentRequestId()),
     jobs: jobRunner(),
   });
 }

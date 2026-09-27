@@ -134,7 +134,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** allowlisted email logs in; unknown email refused; unit tests for allowlist and guard.
   - **Refs:** 01 D-07, 12 §12.5.
 
-- [ ] **M0-16 · Server action framework** · P0 · S · deps: M0-12, M0-15
+- [x] **M0-16 · Server action framework** · P0 · S · deps: M0-12, M0-15
   - **Do:** `defineAction()` (Zod input, auth, roles, request id, ServiceContext, error → `ActionResult`), `useAction()` hook (pending state, toast with request id), `getStatuses` skeleton.
   - **Done when:** unit tests for error mapping and role refusal.
   - **Refs:** 05 §5.1.
