@@ -13,6 +13,19 @@ Template:
 
 ---
 
+## 2026-09-27 · Error model details [M0-06]
+- Context: M0-06 lists the error classes; 05 §5.1 defines `ErrorCode` for `ActionResult`; 06 §6.1 defines retry rules.
+- Decision:
+  - `ErrorCode` and `ERROR_CODES` live in `@rc/lib/errors`; M0-16 (`defineAction`) imports them instead of redefining them.
+  - Added `UnauthenticatedError` (code `UNAUTHENTICATED`, needed by M0-15/M0-16; not in the M0-06 list).
+  - Class → code: Validation `VALIDATION`, NotFound `NOT_FOUND`, Conflict `CONFLICT`, InvalidState `INVALID_STATE`, Forbidden `FORBIDDEN`, RightsBlocked `RIGHTS_BLOCKED`, Transient `EXTERNAL_ERROR` (or `RATE_LIMITED` with `rateLimited: true`, plus optional `retryAfterMs`), Permanent `EXTERNAL_ERROR`.
+  - `exposeMessage`: domain errors show their message to users. `TransientError`/`PermanentError` carry vendor text, so `toPublicError()` replaces it with a generic message. Unknown errors → `INTERNAL`. `details` never reach the UI.
+  - `isRetryable()`: `TransientError` → true; other AppErrors → false; unknown errors → true (06 §6.1: retry up to `maxAttempts`).
+  - `ValidationError.fromZod()` keys field errors by dotted path (`slides.2.headline`); issues without a path go under `_form`.
+  - `serializeError()` (M0-05) now also logs `details`, redacted.
+- Evidence / links: `lib/src/errors/errors.test.ts`.
+- Impact on plan: none.
+
 ## 2026-09-27 · Redaction by key rules instead of pino redact paths [M0-05]
 - Context: 12 §12.7 lists pino `redact` paths like `*.access_token`. pino wildcards match one level only, and pino does not run `formatters.bindings` for child loggers.
 - Decision:
