@@ -27,7 +27,9 @@ Template:
   - pnpm `allowBuilds: esbuild: false`: the binary comes from an optional dependency; tsx and drizzle-kit work without the postinstall.
   - Connection strings documented in `docs/runbooks/supabase.md`.
 - Evidence / links: https://supabase.com/docs/guides/database/connecting-to-postgres, https://supabase.com/docs/guides/database/extensions/pgvector. `db/src/test-db.test.ts` (PGlite: extension, HNSW index, cosine order). `migrate.ts` was also run over the wire against a PGlite socket server: first run applied 0000, second run was a no-op.
-- Impact on plan: the manual `pnpm db:migrate` run against dev Supabase is pending (owner); M0-09 is ticked after it.
+- Manual run (owner, 2026-09-27): `pnpm db:migrate` against dev Supabase through the session pooler → `done`. Read-only check: `vector` 0.8.2 in schema `extensions`, 1 migration recorded, Postgres 17.6.
+- Open point: the dev project is in **eu-west-2 (London)**, while 01 D-03 / the runbook say EU Central (Frankfurt) next to Vercel `fra1`. Fine for dev. For prod either create `regchef-prod` in Frankfurt (recommended) or move Vercel to `lhr1`; decide before M5 / G2.
+- Impact on plan: none.
 
 ## 2026-09-27 · V-21 verified; web app setup [M0-08]
 - Context: V-21 (Vercel limits, region, Node; Next.js major) must be checked before M0-08.
