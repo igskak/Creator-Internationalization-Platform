@@ -13,6 +13,16 @@ Template:
 
 ---
 
+## 2026-09-27 · Seed behaviour and default rights [M0-11]
+- Context: M0-11 asks for an idempotent seed; the plan does not give default rights values and does not say whether a re-run may overwrite rows.
+- Decision:
+  - `seedDatabase()` inserts only missing rows (`ON CONFLICT DO NOTHING`) in one transaction and never updates existing ones, so edits made in the app (voice guide, labels, roles, kill switch) survive a re-run. Changing seed data later needs a migration or an in-app edit, not a re-seed.
+  - `rights.defaults`: every permission `UNKNOWN` for all 9 source types. The rights gate then blocks AI processing until the owner confirms the matrix (Track B B-04). `RightsPolicy` / `RightsDefaults` Zod schemas and `SOURCE_TYPES` added to `@rc/db/json` now (the `source_type` enum arrives with 0002 and should reuse the list).
+  - Markets per A-06 (es-ES and en active, fr-FR inactive); `en` gets the tone note "US spelling, °F first with °C in brackets". Taxonomy per 04 §4.7 with labels derived from codes (e.g. "Myth vs fact"), to be refined with Sergey (B-08).
+  - Owners come from `SEED_OWNER_EMAILS` (validated, lower-cased) through `loadSeedEnv()` in `@rc/lib/env`.
+- Evidence / links: `db/src/seed/seed.test.ts` (two runs → identical rows; edits survive; A-06 values; rights parse).
+- Impact on plan: none. Run `pnpm db:seed` on dev Supabase after merge.
+
 ## 2026-09-27 · Core schema details [M0-10]
 - Context: 04 §4.3 (0001_core) and §4.4 define the tables and JSON shapes.
 - Decision:

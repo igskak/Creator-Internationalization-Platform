@@ -179,6 +179,21 @@ export const e2eSchema = z
   .object({ E2E_TEST_AUTH_SECRET: z.string().min(32).optional() })
   .transform((v) => ({ testAuthSecret: v.E2E_TEST_AUTH_SECRET }));
 
+/** Seed script only (M0-11): comma-separated owner emails, stored lower-case. */
+export const seedSchema = z
+  .object({
+    SEED_OWNER_EMAILS: z
+      .string()
+      .transform((raw) =>
+        raw
+          .split(",")
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.email()).min(1, "Expected at least one email")),
+  })
+  .transform((v) => ({ ownerEmails: v.SEED_OWNER_EMAILS }));
+
 /** Defaults for the mode flags; production guards reject the unsafe ones. */
 export const FLAG_DEFAULTS = {
   JOBS_MODE: "inline",

@@ -9,6 +9,7 @@ import {
   jobsSchema,
   observabilitySchema,
   securitySchema,
+  seedSchema,
   storageSchema,
   supabaseSchema,
 } from "./schemas";
@@ -79,6 +80,18 @@ export function loadDbEnv(source: Source = process.env): ServerEnv["db"] {
   const db = collect(dbSchema.safeParse(vars), vars, problems);
   if (problems.length > 0) throw new EnvValidationError(problems);
   return db as ServerEnv["db"];
+}
+
+export type SeedEnv = { db: ServerEnv["db"]; ownerEmails: string[] };
+
+/** Database variables plus SEED_OWNER_EMAILS, for `pnpm db:seed`. */
+export function loadSeedEnv(source: Source = process.env): SeedEnv {
+  const vars = cleanVars(source);
+  const problems: EnvProblem[] = [];
+  const db = collect(dbSchema.safeParse(vars), vars, problems);
+  const seed = collect(seedSchema.safeParse(vars), vars, problems);
+  if (problems.length > 0) throw new EnvValidationError(problems);
+  return { db: db as ServerEnv["db"], ...(seed as { ownerEmails: string[] }) };
 }
 
 // Empty values (`FOO=` in .env files) count as unset.

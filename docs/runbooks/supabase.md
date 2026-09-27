@@ -27,5 +27,12 @@ pnpm db:migrate
 Expected: `db:migrate: done (<host>)`. Running it again is a no-op. Check in the SQL editor:
 `select extname, extnamespace::regnamespace from pg_extension where extname = 'vector';` → `vector | extensions`.
 
+## Seed reference data
+Set `SEED_OWNER_EMAILS` in `.env`, then:
+```bash
+pnpm db:seed
+```
+It inserts only missing rows (brand, markets, taxonomy, owners, settings) and prints how many per table; a second run prints zeros. Existing rows, including edits made in the app, are never changed.
+
 ## Still to verify
 V-20 remainder (Auth email OTP + custom SMTP, PITR by plan) belongs to M0-15 and H-03.

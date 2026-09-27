@@ -107,7 +107,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** migration applies on PGlite; round-trip and JSON validation tests.
   - **Refs:** 04 §4.2, §4.3 (0001), §4.4.
 
-- [ ] **M0-11 · Seed script** · P0 · S · deps: M0-10
+- [x] **M0-11 · Seed script** · P0 · S · deps: M0-10
   - **Do:** idempotent `pnpm db:seed`: Reg.Chef brand (voice placeholder), markets es-ES (active), en (active), fr-FR (inactive) with A-06 defaults, taxonomy (04 §4.7), owners from `SEED_OWNER_EMAILS`, settings (`publishing.enabled=false`, `publishing.min_gap_minutes=180`, `analytics.min_sample=3`, `rights.defaults`).
   - **Done when:** running twice gives identical rows (test).
 
