@@ -16,6 +16,11 @@ pnpm jobs:hello Reg.Chef                    # in another terminal
 ```
 Expected: the run appears in the dashboard (dev environment) as `hello`, and `audit_events` gets a row with `action = 'job.hello'`, `actor_type = 'JOB'`, `job_run_id = <run id>`.
 
+- Tasks validate the full server environment, so `.env` needs every required variable (including the security block), not only the Trigger.dev ones. Otherwise runs fail with `EnvValidationError` and retry 3 times.
+- The worker reads `.env` once at start: restart `pnpm jobs:dev` after changing it.
+- `jobs:hello` needs `JOBS_MODE=trigger`; to keep `inline` in `.env`, run `JOBS_MODE=trigger pnpm jobs:hello`.
+- Run the commands from the repository root. The esbuild warning `Unrecognized target environment "ES2024"` from the CLI is harmless.
+
 Without Trigger.dev, `JOBS_MODE=inline` runs the same handlers in-process (`createInlineJobRunner`).
 
 ## How jobs are wired

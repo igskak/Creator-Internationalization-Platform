@@ -120,7 +120,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `lib/src/providers/storage/`: interface (`presignPut`, `presignGet`, `head`, `getStream`, `getBytes`, `put`, `delete`), R2 adapter (S3 client with R2 endpoint), in-memory fake, key helpers (08 §8.8). Runbook `docs/runbooks/r2-setup.md` (buckets per env, EU jurisdiction, CORS, scoped tokens).
   - **Done when:** contract tests on the fake; optional live test gated by env; runbook written.
 
-- [ ] **M0-14 · Job runner and Trigger.dev setup** · P0 · M · deps: M0-12 · ⚠ V-17
+- [x] **M0-14 · Job runner and Trigger.dev setup** · P0 · M · deps: M0-12 · ⚠ V-17
   - **Do:** `jobs/trigger.config.ts` (project, dirs, retry defaults, build extensions placeholder), `jobs/src/queues.ts` (06 §6.1). `modules/src/core/job-runner.ts`: `JobRunner`, `TriggerDevJobRunner` (global-scope idempotency keys), `InlineJobRunner`. `modules/src/job-handlers.ts` registry. `hello` job writing an audit event. Document alert channel setup.
   - **Done when:** inline test triggers `hello` and finds the audit row; in dev, `pnpm jobs:dev` runs it from a dev-only button.
   - **Refs:** 06 §6.1, §6.5.
