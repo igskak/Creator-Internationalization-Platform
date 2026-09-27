@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EnvValidationError, loadServerEnv } from "./load";
+import { EnvValidationError, loadDbEnv, loadServerEnv } from "./load";
 
 const key = (fill: number) => Buffer.alloc(32, fill).toString("base64");
 
@@ -185,5 +185,18 @@ describe("loadServerEnv: production guards", () => {
     expect(() =>
       loadServerEnv({ ...base, APP_ENV: "test", E2E_TEST_AUTH_SECRET: "e".repeat(32) }),
     ).not.toThrow();
+  });
+});
+
+describe("loadDbEnv", () => {
+  it("needs only the database variables", () => {
+    expect(loadDbEnv({ DATABASE_URL: base.DATABASE_URL })).toEqual({
+      url: base.DATABASE_URL,
+      directUrl: undefined,
+    });
+  });
+
+  it("reports a missing DATABASE_URL by name", () => {
+    expect(() => loadDbEnv({})).toThrow(/DATABASE_URL: missing/);
   });
 });

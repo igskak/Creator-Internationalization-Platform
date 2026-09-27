@@ -54,26 +54,14 @@ type Source = Record<string, string | undefined>;
  * EnvValidationError listing every problem at once. The only place that reads process.env.
  */
 export function loadServerEnv(source: Source = process.env): ServerEnv {
-  // Empty values (`FOO=` in .env files) count as unset.
-  const vars: Source = { ...FLAG_DEFAULTS };
-  for (const [name, value] of Object.entries(source)) {
-    if (value !== undefined && value.trim() !== "") vars[name] = value;
-  }
-
+  const vars = cleanVars(source);
   const problems: EnvProblem[] = [];
-  const collect = (result: z.ZodSafeParseResult<unknown>): unknown => {
-    if (result.success) return result.data;
-    for (const issue of result.error.issues) {
-      const name = String(issue.path[0] ?? "(environment)");
-      const kind = vars[name] === undefined ? "missing" : "invalid";
-      problems.push({ name, kind, reason: issue.message });
-    }
-    return undefined;
-  };
-
-  const appEnv = collect(appEnvSchema.safeParse(vars));
+  const appEnv = collect(appEnvSchema.safeParse(vars), vars, problems);
   const parsed = Object.fromEntries(
-    Object.entries(concerns).map(([key, schema]) => [key, collect(schema.safeParse(vars))]),
+    Object.entries(concerns).map(([key, schema]) => [
+      key,
+      collect(schema.safeParse(vars), vars, problems),
+    ]),
   );
 
   if (appEnv === "production") {
@@ -82,6 +70,38 @@ export function loadServerEnv(source: Source = process.env): ServerEnv {
   if (problems.length > 0) throw new EnvValidationError(problems);
 
   return { ...parsed, appEnv } as ServerEnv;
+}
+
+/** Only the database variables, for scripts such as migrations and seeds. */
+export function loadDbEnv(source: Source = process.env): ServerEnv["db"] {
+  const vars = cleanVars(source);
+  const problems: EnvProblem[] = [];
+  const db = collect(dbSchema.safeParse(vars), vars, problems);
+  if (problems.length > 0) throw new EnvValidationError(problems);
+  return db as ServerEnv["db"];
+}
+
+// Empty values (`FOO=` in .env files) count as unset.
+function cleanVars(source: Source): Source {
+  const vars: Source = { ...FLAG_DEFAULTS };
+  for (const [name, value] of Object.entries(source)) {
+    if (value !== undefined && value.trim() !== "") vars[name] = value;
+  }
+  return vars;
+}
+
+function collect(
+  result: z.ZodSafeParseResult<unknown>,
+  vars: Source,
+  problems: EnvProblem[],
+): unknown {
+  if (result.success) return result.data;
+  for (const issue of result.error.issues) {
+    const name = String(issue.path[0] ?? "(environment)");
+    const kind = vars[name] === undefined ? "missing" : "invalid";
+    problems.push({ name, kind, reason: issue.message });
+  }
+  return undefined;
 }
 
 function productionProblems(vars: Source): EnvProblem[] {

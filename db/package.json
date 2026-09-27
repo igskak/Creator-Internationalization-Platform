@@ -5,10 +5,23 @@
   "type": "module",
   "description": "Drizzle schema, migrations, client and test database",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./test-db": "./src/test-db.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx --env-file-if-exists=../.env src/migrate.ts"
+  },
+  "dependencies": {
+    "@rc/lib": "workspace:*",
+    "drizzle-orm": "0.45.3",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-pgvector": "0.0.9",
+    "drizzle-kit": "0.31.11"
   }
 }

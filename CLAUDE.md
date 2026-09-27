@@ -41,5 +41,7 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | `pnpm lint` / `pnpm format` | Biome lint / format with write |
 | `pnpm dev` | Next.js dev server (`apps/web`) on :3000 |
 | `pnpm build` | Production build of `apps/web` |
+| `pnpm db:generate` | Generate a migration from the Drizzle schema (`db/migrations`); review the SQL by hand |
+| `pnpm db:migrate` | Apply migrations to `DATABASE_URL_DIRECT` (or `DATABASE_URL`) from `.env` |
 
-Added by later tasks (not available yet): `pnpm db:generate` · `db:migrate` (M0-09), `pnpm db:seed` (M0-11), `pnpm jobs:dev` (M0-14), `pnpm rc <command>` (M0-21), `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.
+Added by later tasks (not available yet): `pnpm db:seed` (M0-11), `pnpm jobs:dev` (M0-14), `pnpm rc <command>` (M0-21), `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.

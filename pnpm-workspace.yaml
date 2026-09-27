@@ -7,3 +7,7 @@ packages:
   - prompts
   - templates
   - evals
+
+# esbuild (tsx, drizzle-kit) gets its binary from an optional dependency; its postinstall is not needed.
+allowBuilds:
+  esbuild: false

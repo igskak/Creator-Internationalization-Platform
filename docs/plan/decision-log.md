@@ -13,6 +13,22 @@ Template:
 
 ---
 
+## 2026-09-27 · V-20 (database part) verified; database package [M0-09]
+- Context: M0-09 needs V-20 for pgvector and the pooler; Auth/SMTP and PITR parts belong to M0-15 / H-03.
+- V-20 results (Supabase docs, 2026-09-27):
+  - Connection modes: direct `db.<ref>.supabase.co:5432` (IPv6 unless IPv4 add-on; prepared statements OK); shared pooler session mode `:5432` (IPv4, prepared statements OK); shared pooler transaction mode `:6543` (IPv4, for serverless, **no prepared statements → `prepare: false`**); dedicated pooler `:6543` (paid, transaction only).
+  - pgvector is enabled with `create extension vector with schema extensions`.
+- Decision:
+  - drizzle-orm 0.45.3 + drizzle-kit 0.31.11 (latest stable; 1.0 is still RC), postgres.js 3.4.9, PGlite 0.5.8. In PGlite 0.5 pgvector is a separate package, `@electric-sql/pglite-pgvector`.
+  - `createDb(url, { pooled, max })` sets `prepare: !pooled`; `isPoolerUrl()` detects port 6543. Casing `snake_case`.
+  - `createTestDb()` (subpath `@rc/db/test-db`, so production code never imports PGlite): in-memory PGlite + pgvector + all migrations.
+  - `0000_extensions.sql` uses a `DO` block: `vector` goes into the `extensions` schema when it exists (Supabase), else the default schema (PGlite).
+  - `pnpm db:migrate` (tsx, reads `../.env`) uses `DATABASE_URL_DIRECT`, falling back to `DATABASE_URL` with a warning if that is the transaction pooler. `loadDbEnv()` in `@rc/lib/env` validates only the database variables.
+  - pnpm `allowBuilds: esbuild: false`: the binary comes from an optional dependency; tsx and drizzle-kit work without the postinstall.
+  - Connection strings documented in `docs/runbooks/supabase.md`.
+- Evidence / links: https://supabase.com/docs/guides/database/connecting-to-postgres, https://supabase.com/docs/guides/database/extensions/pgvector. `db/src/test-db.test.ts` (PGlite: extension, HNSW index, cosine order). `migrate.ts` was also run over the wire against a PGlite socket server: first run applied 0000, second run was a no-op.
+- Impact on plan: the manual `pnpm db:migrate` run against dev Supabase is pending (owner); M0-09 is ticked after it.
+
 ## 2026-09-27 · V-21 verified; web app setup [M0-08]
 - Context: V-21 (Vercel limits, region, Node; Next.js major) must be checked before M0-08.
 - V-21 results (official docs, 2026-09-27):

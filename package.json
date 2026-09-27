@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "pnpm --filter @rc/web dev",
     "build": "pnpm --filter @rc/web build",
+    "db:generate": "pnpm --filter @rc/db generate",
+    "db:migrate": "pnpm --filter @rc/db migrate",
     "check": "biome check . && pnpm typecheck && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@types/node": "^24.0.0",
+    "tsx": "^4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.0.2"
   }
