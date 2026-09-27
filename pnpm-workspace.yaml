@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - modules
+  - lib
+  - db
+  - jobs
+  - prompts
+  - templates
+  - evals

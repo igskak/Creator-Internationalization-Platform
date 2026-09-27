@@ -59,8 +59,8 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M0 · Foundation
 
-- [ ] **M0-01 · Workspace scaffold and tooling** · P0 · M · deps: —
-  - **Do:** pnpm workspace with packages `apps/web` (placeholder until M0-08), `modules`, `lib`, `db`, `jobs`, `prompts`, `templates`, `evals`. Root `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), `biome.json`, `vitest.workspace.ts`, `.editorconfig`, `.nvmrc`, `.gitignore` (`.env*` except `.env.example`, `spikes/**/out`, `evals/results`, `node_modules`, `.next`). Each package: `package.json` exporting TS source (`exports` map, subpaths for `modules`), `tsconfig.json`, `src/index.ts`, one trivial test. Root scripts: `check`, `test`, `lint`, `format`, `typecheck`.
+- [x] **M0-01 · Workspace scaffold and tooling** · P0 · M · deps: —
+  - **Do:** pnpm workspace with packages `apps/web` (placeholder until M0-08), `modules`, `lib`, `db`, `jobs`, `prompts`, `templates`, `evals`. Root `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), `biome.json`, `vitest.config.ts` (`test.projects`; see decision log 2026-09-27), `.editorconfig`, `.nvmrc`, `.gitignore` (`.env*` except `.env.example`, `spikes/**/out`, `evals/results`, `node_modules`, `.next`). Each package: `package.json` exporting TS source (`exports` map, subpaths for `modules`), `tsconfig.json`, `src/index.ts`, one trivial test. Root scripts: `check`, `test`, `lint`, `format`, `typecheck`.
   - **Done when:** `pnpm install && pnpm check` passes; README "Getting started" lists the commands.
   - **Refs:** 03 §3.1–3.3.
 

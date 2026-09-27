@@ -1,1 +1,15 @@
 .DS_Store
+
+# dependencies and build output
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+
+# environment (only the example is committed)
+.env*
+!.env.example
+
+# outputs that may contain real Reg.Chef content
+spikes/**/out/
+evals/results/

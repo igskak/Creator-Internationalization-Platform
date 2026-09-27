@@ -12,7 +12,7 @@ Spec §23.1 item 3. The layout keeps the top-level folders suggested in [S§15] 
 ├─ pnpm-workspace.yaml           # apps/*, modules, lib, db, jobs, prompts, templates, evals
 ├─ tsconfig.base.json            # strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes
 ├─ biome.json
-├─ vitest.workspace.ts
+├─ vitest.config.ts            # test.projects = every workspace package
 ├─ .env.example                  # every variable, grouped, with comments (no values)
 ├─ .github/workflows/ci.yml
 ├─ .claude/settings.json         # SessionStart hook for Claude Code on the web (M0-03)

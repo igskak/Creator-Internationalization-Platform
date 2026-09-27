@@ -1,0 +1,14 @@
+{
+  "name": "@rc/lib",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Env, logging, errors, security and provider adapters",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  }
+}
