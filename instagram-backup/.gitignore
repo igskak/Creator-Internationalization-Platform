@@ -1,0 +1,7 @@
+# Backups contain personal data — never commit them.
+backup/
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

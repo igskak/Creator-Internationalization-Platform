@@ -1,0 +1,4 @@
+# Tested with instaloader 4.15.3 (September 2026). Newer 4.x releases often fix
+# breakage caused by Instagram changes, so upgrades within 4.x are allowed.
+instaloader>=4.15.3,<5
+requests>=2.25
