@@ -69,23 +69,33 @@ export type SerializedError = {
   code?: string | number;
   status?: number;
   stack?: string;
+  /** AppError details (plain object), redacted. */
+  details?: unknown;
   cause?: SerializedError | string;
 };
 
 /**
- * Keeps only name, message, code, HTTP status, stack and cause, all scrubbed. Everything else on
- * the error (SDK request configs, headers, response bodies) is dropped.
+ * Keeps only name, message, code, HTTP status, stack, details and cause, all scrubbed or redacted.
+ * Everything else on the error (SDK request configs, headers, response bodies) is dropped.
  */
 export function serializeError(error: unknown, depth = 0): SerializedError {
   if (!(error instanceof Error)) {
     return { name: "NonError", message: scrubText(safeString(error)) };
   }
-  const extra = error as Error & { code?: unknown; status?: unknown; statusCode?: unknown };
+  const extra = error as Error & {
+    code?: unknown;
+    status?: unknown;
+    statusCode?: unknown;
+    details?: unknown;
+  };
   const out: SerializedError = { name: error.name, message: scrubText(error.message) };
   if (typeof extra.code === "string" || typeof extra.code === "number") out.code = extra.code;
   const status = extra.status ?? extra.statusCode;
   if (typeof status === "number") out.status = status;
   if (error.stack) out.stack = scrubText(error.stack);
+  if (extra.details !== null && typeof extra.details === "object") {
+    out.details = redact(extra.details);
+  }
   if (error.cause !== undefined && depth < 3) {
     out.cause =
       error.cause instanceof Error

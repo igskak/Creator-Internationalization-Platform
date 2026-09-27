@@ -83,7 +83,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests prove tokens, codes, presigned signatures and cookies never reach output.
   - **Refs:** 12 §12.7.
 
-- [ ] **M0-06 · Error model** · P0 · S · deps: M0-01
+- [x] **M0-06 · Error model** · P0 · S · deps: M0-01
   - **Do:** `lib/src/errors/`: `AppError` (code, message, details, cause), `ValidationError`, `NotFoundError`, `ConflictError`, `InvalidStateError`, `ForbiddenError`, `RightsBlockedError`, `TransientError`, `PermanentError`; `isRetryable()`; `toPublicError()`.
   - **Done when:** unit tests.
 
