@@ -13,6 +13,17 @@ Template:
 
 ---
 
+## 2026-09-27 · Crypto utilities [M0-07]
+- Context: 12 §12.3 defines token encryption, OAuth state and Meta `signed_request` checks.
+- Decision:
+  - `encrypt`/`decrypt` (`@rc/lib/security`): AES-256-GCM, random 12-byte IV, 16-byte tag, AAD required (non-empty), format `enc:<keyId>:<iv>:<tag>:<ciphertext>` (base64url). `decrypt` uses the key id in the value, so old keys keep working after rotation. `encryptedKeyId()` lets the re-encryption script find old values. All failures throw `PermanentError` with only the key id in details.
+  - OAuth state: `signToken(data, { secret, expiresAt })` / `verifyToken(token, { secret, now })` → `<payload>.<hmac>` (HMAC-SHA256, base64url; payload signed, not encrypted). Verification returns `{ ok: false, reason: "malformed" | "bad_signature" | "expired" }` instead of throwing, so the callback can audit the reason. `createNonce()` gives 128-bit nonces.
+  - `parseSignedRequest()` checks HMAC-SHA256 over the encoded payload with the app secret and `algorithm = HMAC-SHA256`. It does not check `issued_at` freshness; V-13 (M5-00) re-checks the format against Meta docs.
+  - `safeEqual()` hashes both sides with SHA-256 before `timingSafeEqual`, so the time does not depend on length.
+  - `KeyRing` is `{ keys, activeKeyId }`; build it from `env.security.tokenEncryptionKeys` / `activeKeyId`.
+- Evidence / links: `lib/src/security/security.test.ts`.
+- Impact on plan: none.
+
 ## 2026-09-27 · Error model details [M0-06]
 - Context: M0-06 lists the error classes; 05 §5.1 defines `ErrorCode` for `ActionResult`; 06 §6.1 defines retry rules.
 - Decision:

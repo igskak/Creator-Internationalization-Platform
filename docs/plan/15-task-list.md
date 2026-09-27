@@ -87,7 +87,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `lib/src/errors/`: `AppError` (code, message, details, cause), `ValidationError`, `NotFoundError`, `ConflictError`, `InvalidStateError`, `ForbiddenError`, `RightsBlockedError`, `TransientError`, `PermanentError`; `isRetryable()`; `toPublicError()`.
   - **Done when:** unit tests.
 
-- [ ] **M0-07 · Crypto utilities** · P0 · S · deps: M0-04
+- [x] **M0-07 · Crypto utilities** · P0 · S · deps: M0-04
   - **Do:** `lib/src/security/`: AES-256-GCM `encrypt(plain, { aad })` / `decrypt` with key ring and active key id (`enc:v1:…`); HMAC sign/verify with expiry (OAuth state); constant-time compare; Meta `signed_request` parse + verify.
   - **Done when:** tests: round trip, tamper, wrong AAD, old-key decrypt, expired state, bad signature.
   - **Refs:** 12 §12.3.

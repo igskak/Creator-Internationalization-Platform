@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./env": "./src/env/index.ts",
     "./logging": "./src/logging/index.ts",
-    "./errors": "./src/errors/index.ts"
+    "./errors": "./src/errors/index.ts",
+    "./security": "./src/security/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
