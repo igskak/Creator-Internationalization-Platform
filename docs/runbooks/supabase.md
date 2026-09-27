@@ -3,7 +3,7 @@
 Plan: 01 D-03, 04 §4.1, §4.7. Verified against Supabase docs on 2026-09-27 (V-20, database part).
 
 ## Projects
-- `regchef-dev` and `regchef-prod`, region **EU Central (Frankfurt)**.
+- `regchef-dev` and `regchef-prod`, region **EU Central (Frankfurt)**. Exception: the existing dev project runs in `eu-west-2` (London), see decision-log 2026-09-27.
 - Database → Extensions: nothing to enable by hand. Migration `0000_extensions` creates `vector` in the `extensions` schema.
 - RLS is enabled on every table without policies (04 §4.1), so the Supabase REST API exposes nothing. The app connects as the database owner.
 

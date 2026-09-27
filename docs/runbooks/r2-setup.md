@@ -4,6 +4,7 @@ Plan: 01 D-06, 08 §8.8, 12 §12.4. Verified against Cloudflare docs on 2026-09-
 
 ## Buckets
 - One **private** bucket per environment: `regchef-dev`, `regchef-prod`. No public access, no `r2.dev` URL.
+  Actual names use the `chefskak` prefix instead of the product name: dev is `chefskak-dev` (created 2026-09-27, EU, token `chefskak-dev-app`).
 - Location → **Specify jurisdiction → EU**. The jurisdiction cannot be changed after creation.
 - EU buckets are reached only on the EU S3 endpoint `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`, so set `R2_JURISDICTION=eu`.
 - Key layout (08 §8.8): `sources/`, `assets/`, `library/`, `renders/`, `imports/`, `tmp/`. Helpers: `storageKeys` in `@rc/lib/providers/storage`.
