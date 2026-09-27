@@ -102,7 +102,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** a test boots PGlite and runs a cosine query; `pnpm db:migrate` works against dev Supabase (manual, noted in PR).
   - **Refs:** 04 §4.1, §4.7.
 
-- [ ] **M0-10 · Core schema (0001_core)** · P0 · M · deps: M0-09
+- [x] **M0-10 · Core schema (0001_core)** · P0 · M · deps: M0-09
   - **Do:** Drizzle schema + migration: enums of 0001, `app_users`, `brands`, `markets`, `taxonomy_terms`, `app_settings`, `audit_events`; `set_updated_at()` trigger; RLS enable statements; Zod JSON types (`VisualSystem`, `VocabularyEntry`, `ForbiddenPattern`, `VisualHypothesis`).
   - **Done when:** migration applies on PGlite; round-trip and JSON validation tests.
   - **Refs:** 04 §4.2, §4.3 (0001), §4.4.

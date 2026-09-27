@@ -1,7 +1,13 @@
+import { readFileSync } from "node:fs";
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isPoolerUrl } from "./client";
+import { MIGRATIONS_FOLDER } from "./paths";
 import { createTestDb, type TestDb } from "./test-db";
+
+const journal = JSON.parse(readFileSync(`${MIGRATIONS_FOLDER}/meta/_journal.json`, "utf8")) as {
+  entries: unknown[];
+};
 
 describe("createTestDb", () => {
   let testDb: TestDb;
@@ -22,7 +28,7 @@ describe("createTestDb", () => {
     const applied = await testDb.db.execute<{ hash: string }>(
       sql`select hash from drizzle.__drizzle_migrations`,
     );
-    expect(applied.rows).toHaveLength(1);
+    expect(applied.rows).toHaveLength(journal.entries.length);
   });
 
   it("runs a cosine similarity query with an HNSW index", async () => {

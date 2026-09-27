@@ -6,6 +6,7 @@
   "description": "Drizzle schema, migrations, client and test database",
   "exports": {
     ".": "./src/index.ts",
+    "./json": "./src/json/index.ts",
     "./test-db": "./src/test-db.ts"
   },
   "scripts": {
@@ -17,7 +18,8 @@
   "dependencies": {
     "@rc/lib": "workspace:*",
     "drizzle-orm": "0.45.3",
-    "postgres": "3.4.9"
+    "postgres": "3.4.9",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
