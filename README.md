@@ -19,6 +19,8 @@ pnpm check
 | `pnpm typecheck` | `tsc` in every workspace package. |
 | `pnpm lint` | Biome lint only. |
 | `pnpm format` | Biome format with write. |
+| `pnpm dev` | Next.js dev server on http://localhost:3000. |
+| `pnpm build` | Production build of the web app. |
 
 Run one package: `pnpm --filter @rc/lib test`.
 
@@ -26,7 +28,7 @@ Run one package: `pnpm --filter @rc/lib test`.
 
 | Package | Path | Purpose |
 |---|---|---|
-| `@rc/web` | `apps/web` | Next.js admin app (placeholder until M0-08) |
+| `@rc/web` | `apps/web` | Next.js admin app (App Router, Tailwind, shadcn/ui) |
 | `@rc/modules` | `modules` | Domain services, one subpath per module (`@rc/modules/knowledge`, …) |
 | `@rc/lib` | `lib` | Env, logging, errors, security, provider adapters |
 | `@rc/db` | `db` | Drizzle schema, migrations, client, test database |

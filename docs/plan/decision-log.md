@@ -13,6 +13,22 @@ Template:
 
 ---
 
+## 2026-09-27 · V-21 verified; web app setup [M0-08]
+- Context: V-21 (Vercel limits, region, Node; Next.js major) must be checked before M0-08.
+- V-21 results (official docs, 2026-09-27):
+  - Next.js current stable is 16.3.6. `middleware.ts` is deprecated and renamed to `proxy.ts` (export `proxy`), which runs on the Node.js runtime by default. Server functions are not covered by proxy matchers, so every action still checks auth itself (as 05 §5.1 already says).
+  - Vercel Functions (Fluid compute): request/response body 4.5 MB; max duration 300 s default, 300 s max on Hobby, 800 s on Pro; memory 2 GB default. Default region is `iad1`, so `fra1` is set explicitly in `apps/web/vercel.json`. Node.js 24.x is the Vercel default; `engines.node >=24` maps to 24.x.
+- Decision:
+  - Next.js 16.3.6 + React 19.3, Tailwind 4.3 (`@tailwindcss/postcss`), shadcn 4.21 with its default `base-nova` preset (Base UI primitives, `cn` package from shadcn). Components: button, input, textarea, select, dialog, sheet, dropdown-menu, tabs, table, badge, card, skeleton, tooltip, popover, sonner, plus `field` (with label, separator) instead of `form`: the `form` component is not in the base-nova registry.
+  - No `next/font/google`: it downloads fonts at build time and cloud sessions have restricted network. The admin UI uses a system font stack; brand fonts belong to `@rc/templates` (M3).
+  - `next.config.ts`: `transpilePackages` for all workspace packages, `serverExternalPackages` `sharp`/`playwright-core`, `poweredByHeader: false`, security headers from `src/server/security-headers.ts`. CSP hosts are wildcards (`*.supabase.co`, `*.r2.cloudflarestorage.com`) so the build needs no env. `script-src` has `'unsafe-inline'` because Next.js injects inline hydration scripts; a nonce-based CSP would force dynamic rendering (revisit in H-02).
+  - `/api/health` is static `{ status: "ok" }`; H-01 adds checks.
+  - `next-env.d.ts` is generated and git-ignored; `tsc` passes without it.
+  - Biome: CSS parser with Tailwind directives; for vendored `apps/web/src/components/ui/**` the rules `a11y/useSemanticElements`, `a11y/noLabelWithoutControl`, `suspicious/noArrayIndexKey` are off (shadcn design choices). One shadcn type error under `exactOptionalPropertyTypes` (sonner) was fixed in place; the strict flag stays on for the web app.
+  - CI `build` job enabled. Root scripts `pnpm dev` / `pnpm build`.
+- Evidence / links: https://nextjs.org/docs/app/api-reference/file-conventions/proxy, https://vercel.com/docs/functions/limitations, https://vercel.com/docs/functions/runtimes/node-js/node-js-versions, https://vercel.com/docs/regions. Local `next build` + `next start`: `/api/health` ok, headers present, page renders with no console (CSP) errors.
+- Impact on plan: 03 §3.1 tree shows `src/proxy.ts` instead of `middleware.ts`; M0-15 creates `proxy.ts`.
+
 ## 2026-09-27 · Crypto utilities [M0-07]
 - Context: 12 §12.3 defines token encryption, OAuth state and Meta `signed_request` checks.
 - Decision:

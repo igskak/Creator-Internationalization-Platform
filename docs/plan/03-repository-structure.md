@@ -25,7 +25,7 @@ Spec §23.1 item 3. The layout keeps the top-level folders suggested in [S§15] 
 ├─ apps/
 │  └─ web/                       # @rc/web
 │     ├─ next.config.ts          # transpilePackages, serverExternalPackages, security headers
-│     ├─ middleware.ts           # session check (named proxy.ts in newer Next.js ⚠ V-21)
+│     ├─ src/proxy.ts            # session check (Next.js 16 renamed middleware → proxy; V-21 done)
 │     ├─ src/app/(auth)/login/…
 │     ├─ src/app/(app)/layout.tsx                 # shell, nav, health banners
 │     ├─ src/app/(app)/dashboard/page.tsx

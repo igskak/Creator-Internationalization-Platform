@@ -48,20 +48,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
-  # Enable in M0-08: Next.js production build.
-  # build:
-  #   name: Build (web)
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   steps:
-  #     - uses: actions/checkout@v7
-  #     - uses: pnpm/action-setup@v6
-  #     - uses: actions/setup-node@v7
-  #       with:
-  #         node-version-file: .nvmrc
-  #         cache: pnpm
-  #     - run: pnpm install --frozen-lockfile
-  #     - run: pnpm --filter @rc/web build
+  build:
+    name: Build (web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @rc/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
 
   # Enable in M1-25 (E2E spec 1): Playwright smoke against fakes and the mock Graph API.
   # e2e:
