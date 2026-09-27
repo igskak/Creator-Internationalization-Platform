@@ -21,6 +21,8 @@ pnpm check
 | `pnpm format` | Biome format with write. |
 | `pnpm dev` | Next.js dev server on http://localhost:3000. |
 | `pnpm build` | Production build of the web app. |
+| `pnpm db:generate` | Generate a migration from the Drizzle schema. |
+| `pnpm db:migrate` | Apply migrations (reads `.env`; see `docs/runbooks/supabase.md`). |
 
 Run one package: `pnpm --filter @rc/lib test`.
 

@@ -97,7 +97,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** `pnpm --filter @rc/web build` passes locally and in CI.
   - **Refs:** 01 D-02, 12 §12.5.
 
-- [ ] **M0-09 · Database package** · P0 · M · deps: M0-01, M0-04 · ⚠ V-20
+- [x] **M0-09 · Database package** · P0 · M · deps: M0-01, M0-04 · ⚠ V-20
   - **Do:** `db/`: drizzle-orm, drizzle-kit, postgres.js. `createDb(url, { pooled })` (`prepare: false` for the pooler). `createTestDb()` = PGlite + vector extension + all migrations. `migrate.ts` (`pnpm db:migrate`). `0000_extensions.sql`. Document Supabase connection strings.
   - **Done when:** a test boots PGlite and runs a cosine query; `pnpm db:migrate` works against dev Supabase (manual, noted in PR).
   - **Refs:** 04 §4.1, §4.7.
