@@ -19,5 +19,9 @@
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@rc/db": "workspace:*",
+    "@rc/lib": "workspace:*"
   }
 }

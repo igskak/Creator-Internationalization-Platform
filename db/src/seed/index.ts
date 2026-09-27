@@ -1,12 +1,10 @@
 import { eq } from "drizzle-orm";
-import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import type { AnyDatabase } from "../client";
 import * as schema from "../schema";
 import { BRAND_SLUG, brand } from "./brand";
 import { marketSeeds } from "./markets";
 import { settingSeeds } from "./settings";
 import { taxonomySeeds } from "./taxonomy";
-
-type AnyDb = PgDatabase<PgQueryResultHKT, typeof schema>;
 
 export type SeedOptions = {
   /** Lower-case emails that get an active `owner` account. */
@@ -22,7 +20,10 @@ export type SeedResult = Record<
  * Idempotent seed (plan 04 §4.7 rule 5). Inserts only missing rows and never changes existing
  * ones, so edits made in the app survive a re-run. Returns the number of rows inserted per table.
  */
-export async function seedDatabase(db: AnyDb, { ownerEmails }: SeedOptions): Promise<SeedResult> {
+export async function seedDatabase(
+  db: AnyDatabase,
+  { ownerEmails }: SeedOptions,
+): Promise<SeedResult> {
   return db.transaction(async (tx) => {
     const insertedBrands = await tx
       .insert(schema.brands)

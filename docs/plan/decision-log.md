@@ -13,6 +13,17 @@ Template:
 
 ---
 
+## 2026-09-27 · Core module design [M0-12]
+- Context: 02 §2.2 lists the `ServiceContext` members; 04 §4.7 rule 6 defines the conditional status update.
+- Decision:
+  - `ServiceContext` = `{ db, logger, clock, actor, requestId }`. `db` is `AnyDatabase` (postgres.js, PGlite or a transaction). Storage (M0-13), job runner (M0-14) and AI providers (M1-08) are added by those tasks, not as placeholders now. `createServiceContext()` binds `requestId`, actor type and user/run id to the logger.
+  - `Actor` = `USER {userId, role}` | `SYSTEM` | `JOB {jobRunId}`; `audit()` maps it to `actor_type`, `actor_user_id`, `job_run_id`, takes `occurred_at` from the injected clock and redacts `data`.
+  - `transition()` runs in one transaction: `SELECT … FOR UPDATE` (to know the previous status for the error and the audit row), then `UPDATE … WHERE id = $id AND status = ANY($from) RETURNING *`, then an audit event (default action `<table>.status_changed`, data `{ from, to, … }`). Audit is always written, so DoD rule 4 cannot be skipped. Unknown id → `NotFoundError`; wrong status → `InvalidStateError` with `{ from, allowedFrom, to }`.
+  - `withTransaction(ctx, fn)` passes a context bound to the transaction; nested calls use savepoints.
+  - `@rc/db/orm` and `@rc/db/pg-core` re-export drizzle so every package uses the one drizzle-orm instance that @rc/db resolves with its peers (a second copy would break types and `instanceof`).
+- Evidence / links: `modules/src/core/core.test.ts` (PGlite: allowed / refused / not found / rollback / chained transitions, audit rows).
+- Impact on plan: none.
+
 ## 2026-09-27 · Seed behaviour and default rights [M0-11]
 - Context: M0-11 asks for an idempotent seed; the plan does not give default rights values and does not say whether a re-run may overwrite rows.
 - Decision:
