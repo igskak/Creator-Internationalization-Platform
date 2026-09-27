@@ -8,6 +8,7 @@ Requirements: Node.js 24 LTS (see `.nvmrc`) and pnpm 12 (`npm install -g pnpm@12
 
 ```bash
 pnpm install
+cp .env.example .env   # fill in; see comments in the file
 pnpm check
 ```
 

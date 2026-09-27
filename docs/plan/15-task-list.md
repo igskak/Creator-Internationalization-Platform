@@ -73,7 +73,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** use the `session-start-hook` skill. `.claude/settings.json` SessionStart hook → `scripts/claude/session-start.sh` (`pnpm install --frozen-lockfile`; never download browsers). Fill the "Commands" section of `CLAUDE.md`.
   - **Done when:** a fresh cloud session runs `pnpm check` without manual steps.
 
-- [ ] **M0-04 · Environment loading and validation** · P0 · S · deps: M0-01
+- [x] **M0-04 · Environment loading and validation** · P0 · S · deps: M0-01
   - **Do:** `lib/src/env/`: Zod schemas per concern (db, supabase, r2, ai, trigger, instagram, security, observability, flags `JOBS_MODE`, `AI_PROVIDER`, `STORAGE_PROVIDER`, `INSTAGRAM_PUBLISH_MODE`). `loadServerEnv()` lists missing/invalid variable *names* only. Production guards: `JOBS_MODE=trigger`, no `E2E_TEST_AUTH_SECRET`. Complete `.env.example` with comments.
   - **Done when:** unit tests for valid, invalid and production-guard cases.
   - **Refs:** 12 §12.2.
