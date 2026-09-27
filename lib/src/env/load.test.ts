@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EnvValidationError, loadDbEnv, loadServerEnv } from "./load";
+import { EnvValidationError, loadDbEnv, loadSeedEnv, loadServerEnv } from "./load";
 
 const key = (fill: number) => Buffer.alloc(32, fill).toString("base64");
 
@@ -198,5 +198,25 @@ describe("loadDbEnv", () => {
 
   it("reports a missing DATABASE_URL by name", () => {
     expect(() => loadDbEnv({})).toThrow(/DATABASE_URL: missing/);
+  });
+});
+
+describe("loadSeedEnv", () => {
+  it("parses owner emails, trimmed and lower-case", () => {
+    const env = loadSeedEnv({
+      DATABASE_URL: base.DATABASE_URL,
+      SEED_OWNER_EMAILS: " Ihor@Example.com, sergey@example.com ,",
+    });
+    expect(env.ownerEmails).toEqual(["ihor@example.com", "sergey@example.com"]);
+    expect(env.db.url).toBe(base.DATABASE_URL);
+  });
+
+  it("reports missing and invalid owner emails by name", () => {
+    expect(() => loadSeedEnv({ DATABASE_URL: base.DATABASE_URL })).toThrow(
+      /SEED_OWNER_EMAILS: missing/,
+    );
+    expect(() =>
+      loadSeedEnv({ DATABASE_URL: base.DATABASE_URL, SEED_OWNER_EMAILS: "not-an-email" }),
+    ).toThrow(/SEED_OWNER_EMAILS/);
   });
 });

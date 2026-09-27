@@ -23,6 +23,7 @@ pnpm check
 | `pnpm build` | Production build of the web app. |
 | `pnpm db:generate` | Generate a migration from the Drizzle schema. |
 | `pnpm db:migrate` | Apply migrations (reads `.env`; see `docs/runbooks/supabase.md`). |
+| `pnpm db:seed` | Insert missing reference data; safe to re-run. |
 
 Run one package: `pnpm --filter @rc/lib test`.
 
