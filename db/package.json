@@ -7,6 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./json": "./src/json/index.ts",
+    "./orm": "./src/orm.ts",
+    "./pg-core": "./src/pg-core.ts",
     "./test-db": "./src/test-db.ts"
   },
   "scripts": {

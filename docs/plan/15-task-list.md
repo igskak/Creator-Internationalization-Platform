@@ -111,7 +111,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** idempotent `pnpm db:seed`: Reg.Chef brand (voice placeholder), markets es-ES (active), en (active), fr-FR (inactive) with A-06 defaults, taxonomy (04 §4.7), owners from `SEED_OWNER_EMAILS`, settings (`publishing.enabled=false`, `publishing.min_gap_minutes=180`, `analytics.min_sample=3`, `rights.defaults`).
   - **Done when:** running twice gives identical rows (test).
 
-- [ ] **M0-12 · Core module: context, audit, transitions** · P0 · M · deps: M0-05, M0-06, M0-10
+- [x] **M0-12 · Core module: context, audit, transitions** · P0 · M · deps: M0-05, M0-06, M0-10
   - **Do:** `modules/src/core/`: `ServiceContext` type + factory, injectable `Clock`, `withTransaction`, `audit(ctx, event)` (redacted), `transition(ctx, { table, id, from[], to, set })` conditional update → `InvalidStateError`.
   - **Done when:** PGlite tests for allowed/refused transitions and audit rows.
   - **Refs:** 02 §2.2, 04 §4.7 rule 6.

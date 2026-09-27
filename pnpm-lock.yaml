@@ -287,7 +287,14 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
 
-  modules: {}
+  modules:
+    dependencies:
+      '@rc/db':
+        specifier: workspace:*
+        version: link:../db
+      '@rc/lib':
+        specifier: workspace:*
+        version: link:../lib
 
   prompts: {}
 

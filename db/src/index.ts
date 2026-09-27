@@ -1,4 +1,5 @@
 export {
+  type AnyDatabase,
   type CreateDbOptions,
   createDb,
   type Database,

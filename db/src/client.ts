@@ -1,9 +1,12 @@
+import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
 export type Schema = typeof schema;
 export type Database = PostgresJsDatabase<Schema>;
+/** Any Drizzle database or transaction over our schema: postgres.js, PGlite or a `tx`. */
+export type AnyDatabase = PgDatabase<PgQueryResultHKT, Schema>;
 
 export type CreateDbOptions = {
   /**
