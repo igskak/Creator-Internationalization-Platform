@@ -3,12 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Trigger.dev tasks (thin wrappers around @rc/modules services)",
-  "exports": {
-    ".": "./src/index.ts"
-  },
+  "description": "Trigger.dev tasks (thin wrappers around @rc/modules job handlers)",
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev": "trigger dev start --env-file ../.env",
+    "hello": "tsx --env-file-if-exists=../.env src/trigger-hello.ts"
+  },
+  "dependencies": {
+    "@rc/db": "workspace:*",
+    "@rc/lib": "workspace:*",
+    "@rc/modules": "workspace:*",
+    "@trigger.dev/sdk": "4.6.4",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "4.6.4",
+    "trigger.dev": "4.6.4"
   }
 }

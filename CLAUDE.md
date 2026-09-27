@@ -43,6 +43,8 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | `pnpm build` | Production build of `apps/web` |
 | `pnpm db:generate` | Generate a migration from the Drizzle schema (`db/migrations`); review the SQL by hand |
 | `pnpm db:migrate` | Apply migrations to `DATABASE_URL_DIRECT` (or `DATABASE_URL`) from `.env` |
+| `pnpm jobs:dev` | Trigger.dev dev worker for `jobs/` (needs `TRIGGER_PROJECT_REF`, login via `pnpm --filter @rc/jobs exec trigger login`) |
+| `pnpm jobs:hello` | Trigger the `hello` smoke task through Trigger.dev (`JOBS_MODE=trigger`) |
 | `pnpm db:seed` | Insert missing reference rows (brand, markets, taxonomy, owners from `SEED_OWNER_EMAILS`, settings); never overwrites |
 
-Added by later tasks (not available yet): `pnpm jobs:dev` (M0-14), `pnpm rc <command>` (M0-21), `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.
+Added by later tasks (not available yet): `pnpm rc <command>` (M0-21), `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.

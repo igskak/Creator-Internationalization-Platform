@@ -13,6 +13,20 @@ Template:
 
 ---
 
+## 2026-09-27 · V-17 verified; job runner and Trigger.dev setup [M0-14]
+- Context: M0-14 needs V-17 (Trigger.dev version, idempotency scopes and TTL, failed-run behaviour, machines).
+- V-17 results (Trigger.dev docs, 2026-09-27): SDK/CLI **4.6.4**; `runtime: "node-24"` available. `idempotencyKeys.create(key, { scope })` with `run` (default, also for raw strings since v4.3.1), `attempt`, `global`; TTL default 30 days (`idempotencyKeyTTL`). A **failed** run's key is cleared (re-trigger → new run); succeeded/canceled runs keep it. Outside a task all scopes act global. Machines: `small-1x` 0.5 vCPU/0.5 GB (default), `medium-1x` 1 vCPU/2 GB. `AbortTaskRunError` stops retries. Queues are defined in code with `queue({ name, concurrencyLimit })`; `concurrencyKey` at trigger time. Backend triggering: `tasks.trigger(id, payload, { idempotencyKey, delay, tags, concurrencyKey })` with `TRIGGER_SECRET_KEY`. Remaining V-17 items (Playwright extension, `wait.for`, `batchTriggerAndWait`, regions) belong to M3-12 and later.
+- Decision:
+  - `@rc/modules/core/job-runner`: `defineJob`, `JobRunner`, `runJobHandler` (Zod payload validation → `ValidationError`), `triggerJob(ctx, …)` (adds `requestId`), `createInlineJobRunner` (await/background, Trigger.dev-like idempotency, `getRun`), `createTriggerDevJobRunner` (global-scope keys prefixed with the job name, `delay` in seconds), `disabledJobRunner` (default in contexts). `ServiceContext` gained `jobs`.
+  - Registry `modules/src/job-handlers.ts`; core learns names and payload types through declaration merging (`interface JobRegistry`), which avoids a core → handlers → modules cycle.
+  - Wire format `{ payload, meta: { requestId } }`.
+  - `jobs/`: `trigger.config.ts` (project ref from `TRIGGER_PROJECT_REF`, dirs `src/tasks`, node-24, small-1x, maxDuration 900 s, retry defaults from 06 §6.1, empty build extensions), `queues.ts`, `handlerTask()` (task id = job name; non-retryable errors → `AbortTaskRunError` with a scrubbed message), `hello` task, `pnpm jobs:dev`, `pnpm jobs:hello`.
+  - **Deviation:** the dev-only button from the M0-14 "Done when" needs auth (M0-15) and actions (M0-16); `pnpm jobs:hello` triggers the same path from the CLI instead. The button is follow-up task **M0-14a**.
+  - pnpm `allowBuilds: "@depot/cli": false` (remote builds for `trigger deploy`; revisit with CI deploys).
+  - Runbook `docs/runbooks/trigger-dev.md` (project, local dev, how jobs are wired, alert channel setup).
+- Evidence / links: https://trigger.dev/docs/idempotency, https://trigger.dev/docs/config/config-file, https://trigger.dev/docs/queue-concurrency, https://trigger.dev/docs/machines, https://trigger.dev/docs/errors-retrying, https://trigger.dev/docs/triggering. Tests: `modules/src/core/job-runner.test.ts` (inline hello → audit row), `jobs/src/jobs.test.ts`.
+- Impact on plan: new task M0-14a. Pending manual check: `pnpm jobs:dev` + `pnpm jobs:hello` against the dev Trigger.dev project; M0-14 is ticked after it.
+
 ## 2026-09-27 · V-22 verified; storage provider [M0-13]
 - Context: M0-13 needs V-22 (R2 presigned PUT and CORS, single PUT limit, EU jurisdiction, public bucket option).
 - V-22 results (Cloudflare docs, 2026-09-27):

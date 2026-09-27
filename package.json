@@ -12,6 +12,8 @@
     "db:generate": "pnpm --filter @rc/db generate",
     "db:migrate": "pnpm --filter @rc/db migrate",
     "db:seed": "pnpm --filter @rc/db seed",
+    "jobs:dev": "pnpm --filter @rc/jobs dev",
+    "jobs:hello": "pnpm --filter @rc/jobs hello",
     "check": "biome check . && pnpm typecheck && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",

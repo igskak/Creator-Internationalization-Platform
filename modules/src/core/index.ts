@@ -8,4 +8,21 @@ export {
   type UserRole,
   withTransaction,
 } from "./context";
+export {
+  createInlineJobRunner,
+  createTriggerDevJobRunner,
+  defineJob,
+  disabledJobRunner,
+  type InlineJobRunnerOptions,
+  type JobDefinition,
+  type JobEnvelope,
+  type JobMeta,
+  type JobName,
+  type JobPayload,
+  type JobRegistry,
+  type JobRunner,
+  runJobHandler,
+  type TriggerOptions,
+  triggerJob,
+} from "./job-runner";
 export { type StatusTable, type TransitionInput, transition } from "./transition";

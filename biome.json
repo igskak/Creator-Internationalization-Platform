@@ -49,7 +49,7 @@
       }
     },
     {
-      "includes": ["**/*.live.test.ts"],
+      "includes": ["**/*.live.test.ts", "jobs/trigger.config.ts"],
       "linter": {
         "rules": {
           "style": {

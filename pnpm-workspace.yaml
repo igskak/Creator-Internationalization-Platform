@@ -8,6 +8,8 @@ packages:
   - templates
   - evals
 
-# esbuild (tsx, drizzle-kit) gets its binary from an optional dependency; its postinstall is not needed.
 allowBuilds:
+  # Binary for remote image builds in `trigger deploy`; revisit when CI deploys jobs.
+  "@depot/cli": false
+  # tsx and drizzle-kit get the esbuild binary from an optional dependency; postinstall not needed.
   esbuild: false

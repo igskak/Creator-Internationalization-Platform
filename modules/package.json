@@ -14,7 +14,8 @@
     "./offers": "./src/offers/index.ts",
     "./publishing": "./src/publishing/index.ts",
     "./instagram": "./src/instagram/index.ts",
-    "./analytics": "./src/analytics/index.ts"
+    "./analytics": "./src/analytics/index.ts",
+    "./job-handlers": "./src/job-handlers.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
@@ -22,6 +23,8 @@
   },
   "dependencies": {
     "@rc/db": "workspace:*",
-    "@rc/lib": "workspace:*"
+    "@rc/lib": "workspace:*",
+    "@trigger.dev/sdk": "4.6.4",
+    "zod": "^4.6.5"
   }
 }
