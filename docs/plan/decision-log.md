@@ -13,6 +13,24 @@ Template:
 
 ---
 
+## 2026-09-27 · V-22 verified; storage provider [M0-13]
+- Context: M0-13 needs V-22 (R2 presigned PUT and CORS, single PUT limit, EU jurisdiction, public bucket option).
+- V-22 results (Cloudflare docs, 2026-09-27):
+  - Presigned URLs support GET, PUT, HEAD, DELETE; expiry 1 s – 7 days; SDK region `auto`. They work only on the S3 API domain, **not on custom domains**.
+  - PUT can bind `ContentType` (mismatch → 403). Binding `Content-Length` is not documented; we sign it anyway and the gated live test checks it. `completeSourceUpload` also compares sizes with HEAD.
+  - Browser uploads need a bucket CORS policy.
+  - Single PUT ≈ 5 GiB; objects up to ≈ 5 TiB.
+  - EU jurisdiction is chosen at bucket creation, cannot be changed, and needs the endpoint `https://<account>.eu.r2.cloudflarestorage.com`.
+- Decision:
+  - `StorageProvider` in `@rc/lib/providers/storage`: `presignPut`, `presignGet`, `head` (null if missing), `getStream` (web ReadableStream), `getBytes`, `put`, `delete` (missing is fine). R2 adapter on `@aws-sdk/client-s3` 3.1141 with `requestChecksumCalculation/responseChecksumValidation: WHEN_REQUIRED` (otherwise presigned PUTs could demand checksum headers). Errors: 404 → `NotFoundError`, 429 / 5xx / network → `TransientError`, others → `PermanentError`; details carry operation, key and status only.
+  - New optional env `R2_JURISDICTION` (`eu`).
+  - In-memory fake with `memory://` presigned URLs; one contract suite runs on the fake always and on R2 in `r2.live.test.ts` when `R2_LIVE_TEST=1` (Biome allows `process.env` in `*.live.test.ts` only).
+  - `storageKeys` for the 08 §8.8 layout; ids must be single path segments. `safeFileName()` keeps the extension and ASCII only, so Russian names become `file.<ext>` (the original name stays in the DB).
+  - `PRESIGN_TTL` holds the 12 §12.4 lifetimes.
+  - Runbook `docs/runbooks/r2-setup.md`.
+- Evidence / links: https://developers.cloudflare.com/r2/api/s3/presigned-urls/, https://developers.cloudflare.com/r2/platform/limits/, https://developers.cloudflare.com/r2/reference/data-location/, https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/.
+- Impact on plan: the live R2 check runs once a dev bucket exists (B-02); record the result here.
+
 ## 2026-09-27 · Core module design [M0-12]
 - Context: 02 §2.2 lists the `ServiceContext` members; 04 §4.7 rule 6 defines the conditional status update.
 - Decision:

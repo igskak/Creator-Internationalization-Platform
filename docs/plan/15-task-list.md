@@ -116,7 +116,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** PGlite tests for allowed/refused transitions and audit rows.
   - **Refs:** 02 §2.2, 04 §4.7 rule 6.
 
-- [ ] **M0-13 · Storage provider (R2)** · P0 · M · deps: M0-04 · ⚠ V-22
+- [x] **M0-13 · Storage provider (R2)** · P0 · M · deps: M0-04 · ⚠ V-22
   - **Do:** `lib/src/providers/storage/`: interface (`presignPut`, `presignGet`, `head`, `getStream`, `getBytes`, `put`, `delete`), R2 adapter (S3 client with R2 endpoint), in-memory fake, key helpers (08 §8.8). Runbook `docs/runbooks/r2-setup.md` (buckets per env, EU jurisdiction, CORS, scoped tokens).
   - **Done when:** contract tests on the fake; optional live test gated by env; runbook written.
 

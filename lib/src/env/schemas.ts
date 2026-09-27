@@ -42,6 +42,8 @@ export const storageSchema = z
       R2_ACCESS_KEY_ID: required,
       R2_SECRET_ACCESS_KEY: required,
       R2_BUCKET: required,
+      /** Set to `eu` for buckets created with the EU jurisdiction (fixed at creation). */
+      R2_JURISDICTION: z.enum(["eu"]).optional(),
       RENDERS_PUBLIC_BASE_URL: httpsUrl.optional(),
     }),
   ])
@@ -54,6 +56,7 @@ export const storageSchema = z
           accessKeyId: v.R2_ACCESS_KEY_ID,
           secretAccessKey: v.R2_SECRET_ACCESS_KEY,
           bucket: v.R2_BUCKET,
+          jurisdiction: v.R2_JURISDICTION,
           rendersPublicBaseUrl: v.RENDERS_PUBLIC_BASE_URL,
         },
   );
