@@ -1,0 +1,84 @@
+# CI pipeline, plan 13 §13.7. Jobs marked "enable in <task>" are stubs for later tasks.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  static:
+    name: Static (biome, typecheck)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6 # version comes from package.json "packageManager"
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Biome
+        run: pnpm exec biome ci .
+      - name: Typecheck
+        run: pnpm typecheck
+      # Enable in M0-20: module boundary rules (dependency-cruiser).
+      # - name: Dependency rules
+      #   run: pnpm deps:check
+
+  test:
+    name: Tests (unit, integration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  # Enable in M0-08: Next.js production build.
+  # build:
+  #   name: Build (web)
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: pnpm/action-setup@v6
+  #     - uses: actions/setup-node@v7
+  #       with:
+  #         node-version-file: .nvmrc
+  #         cache: pnpm
+  #     - run: pnpm install --frozen-lockfile
+  #     - run: pnpm --filter @rc/web build
+
+  # Enable in M1-25 (E2E spec 1): Playwright smoke against fakes and the mock Graph API.
+  # e2e:
+  #   name: E2E smoke
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 20
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: pnpm/action-setup@v6
+  #     - uses: actions/setup-node@v7
+  #       with:
+  #         node-version-file: .nvmrc
+  #         cache: pnpm
+  #     - run: pnpm install --frozen-lockfile
+  #     - run: pnpm exec playwright install --with-deps chromium
+  #     - run: pnpm test:e2e
+
+  # Enable in M3-14: visual regression runs in its own workflow (visual.yml) with
+  # `on.pull_request.paths: [templates/**]` plus a nightly schedule (plan 08 §8.9, 13 §13.7).

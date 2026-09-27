@@ -64,7 +64,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** `pnpm install && pnpm check` passes; README "Getting started" lists the commands.
   - **Refs:** 03 §3.1–3.3.
 
-- [ ] **M0-02 · CI pipeline** · P0 · S · deps: M0-01
+- [x] **M0-02 · CI pipeline** · P0 · S · deps: M0-01
   - **Do:** `.github/workflows/ci.yml`: pnpm cache, `install --frozen-lockfile`, biome check, typecheck, tests. Leave commented stubs for build, E2E, visual jobs (enabled by later tasks).
   - **Done when:** CI is green on a PR.
   - **Refs:** 13 §13.7.
