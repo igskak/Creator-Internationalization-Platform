@@ -2,7 +2,16 @@ import { defineConfig } from "@trigger.dev/sdk";
 
 // Trigger.dev v4 (plan 01 D-05, 06 §6.1; V-17 checked 2026-09-27).
 // The project ref is not secret; it comes from TRIGGER_PROJECT_REF so each developer can point
-// `pnpm jobs:dev` at their own project.
+// `pnpm jobs:dev` at their own project. `trigger dev --env-file` loads .env for the worker only,
+// not for this file, so read the root .env here (cwd is jobs/; absent in CI, where env is set).
+if (!process.env.TRIGGER_PROJECT_REF) {
+  try {
+    process.loadEnvFile("../.env");
+  } catch {
+    // No .env: the placeholder below makes the CLI say which variable is missing.
+  }
+}
+
 export default defineConfig({
   project: process.env.TRIGGER_PROJECT_REF ?? "proj_set_TRIGGER_PROJECT_REF",
   dirs: ["./src/tasks"],

@@ -14,3 +14,6 @@ coverage/
 # outputs that may contain real Reg.Chef content
 spikes/**/out/
 evals/results/
+
+# Trigger.dev CLI build output (pnpm jobs:dev)
+.trigger/
