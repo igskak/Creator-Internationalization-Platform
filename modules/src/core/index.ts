@@ -26,3 +26,10 @@ export {
   triggerJob,
 } from "./job-runner";
 export { type StatusTable, type TransitionInput, transition } from "./transition";
+export {
+  type AppUser,
+  isEmailAllowed,
+  type ResolveUserResult,
+  requireRole,
+  resolveAppUser,
+} from "./users";
