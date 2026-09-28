@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-09-27 · Dev Supabase project stays in London (eu-west-2) [B-02]
+- Context: D-03 and `docs/runbooks/supabase.md` specify EU Central (Frankfurt). The dev project (`udvisikrshcnbjddgrsr`) was created in `eu-west-2` (London); Supabase cannot move a project between regions.
+- Decision: keep the dev project in London. It holds no real user data; the UK has a GDPR adequacy decision. The **prod** project is still created in Frankfurt.
+- Evidence / links: pooler host `aws-0-eu-west-2.pooler.supabase.com`; both connection strings and Supabase Auth checked from the owner's machine on 2026-09-27; migrations `0000`–`0001` already applied.
+- Impact on plan: `docs/runbooks/supabase.md` (Projects) notes the dev region. D-03 unchanged for production.
+
 ## 2026-09-27 · Authentication design; V-20 auth part [M0-15]
 - Context: M0-15 (01 D-07, 12 §12.5). V-20 still had the Auth part open.
 - V-20 (Supabase docs, 2026-09-27): server code must verify sessions with `getClaims()` (verifies the JWT) or `getUser()`, never trust `getSession()`; the proxy refreshes cookies with `getClaims()`. SSR magic links use the email template `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` and `verifyOtp` on the server. Default mailer: one link per address per 60 s, links expire after 1 h → custom SMTP for production. Supabase now names the public key "publishable key"; the anon key still works.
