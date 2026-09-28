@@ -13,6 +13,18 @@ Template:
 
 ---
 
+## 2026-09-28 · App shell and navigation [M0-17]
+- Context: M0-17 (10 §10.1 navigation, 10 §10.2 screen catalog).
+- Decision:
+  - One screen catalog (`apps/web/src/components/shell/screens.ts`: route, title, purpose, building task, P1 flag) drives the sidebar and every placeholder page; a test checks that each catalog route has a `page.tsx`.
+  - Sidebar per 10 §10.1. **Markets come from the database** (`@rc/modules/localization` `listMarkets`, sidebar order); inactive markets (fr-FR) are shown disabled with "later". P1 screens carry a "P1" note.
+  - `/` redirects to `/dashboard` (10 §10.2). Placeholder pages for all 21 catalog routes, including dynamic ones (`/content/ideas/[id]`, `/content/review/[ideaId]`, `/content/published/[publicationId]`, `/knowledge/sources/[id]`, `/knowledge/cards/[id]`, `/markets/[marketCode]`); unknown market codes → 404.
+  - User menu (Base UI dropdown): email, role, sign out (POST `/auth/sign-out`). Mobile: the sidebar moves into a left sheet that closes on navigation.
+  - Banner slot `Banners` with typed banners (`info | warning | danger`); sources (kill switch, re-auth, token expiry) are added by M4/M5/H-01, so it renders nothing now.
+  - `@rc/db/seed` subpath export (tests of other packages seed with it).
+- Evidence / links: `screens.test.ts`, `modules/src/localization/markets.test.ts`. Live run against dev Supabase with a one-off E2E test-login (secret passed on the command line only): all 25 routes → 200 with a session (`/markets/de-DE` → 404), 307 to `/login` without; sidebar, active item, disabled France, user menu, mobile sheet and sign-out checked in the browser at 1280×800 and 375×812; no console errors.
+- Impact on plan: none.
+
 ## 2026-09-27 · Dev Supabase project stays in London (eu-west-2) [B-02]
 - Context: D-03 and `docs/runbooks/supabase.md` specify EU Central (Frankfurt). The dev project (`udvisikrshcnbjddgrsr`) was created in `eu-west-2` (London); Supabase cannot move a project between regions.
 - Decision: keep the dev project in London. It holds no real user data; the UK has a GDPR adequacy decision. The **prod** project is still created in Frankfurt.

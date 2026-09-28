@@ -139,7 +139,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** unit tests for error mapping and role refusal.
   - **Refs:** 05 §5.1.
 
-- [ ] **M0-17 · App shell and navigation** · P0 · S · deps: M0-15
+- [x] **M0-17 · App shell and navigation** · P0 · S · deps: M0-15
   - **Do:** `(app)` layout with sidebar (10 §10.1), user menu, banner slot, placeholder pages for every route, France item disabled.
   - **Done when:** all routes render for a logged-in user; logged-out users are redirected.
 

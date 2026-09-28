@@ -9,7 +9,8 @@
     "./json": "./src/json/index.ts",
     "./orm": "./src/orm.ts",
     "./pg-core": "./src/pg-core.ts",
-    "./test-db": "./src/test-db.ts"
+    "./test-db": "./src/test-db.ts",
+    "./seed": "./src/seed/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
