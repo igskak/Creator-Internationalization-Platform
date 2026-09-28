@@ -15,7 +15,8 @@
     "./publishing": "./src/publishing/index.ts",
     "./instagram": "./src/instagram/index.ts",
     "./analytics": "./src/analytics/index.ts",
-    "./job-handlers": "./src/job-handlers.ts"
+    "./job-handlers": "./src/job-handlers.ts",
+    "./settings": "./src/settings/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

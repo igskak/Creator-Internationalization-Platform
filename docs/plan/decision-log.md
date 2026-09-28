@@ -13,6 +13,19 @@ Template:
 
 ---
 
+## 2026-09-28 · Brand and market settings [M0-18]
+- Context: M0-18 (05 §5.2): brand and market editors; actions `updateBrand`, `updateMarket`, `upsertTaxonomyTerm`, `setAppSetting` with audit.
+- Decision:
+  - New module subpath `@rc/modules/settings` (brand, taxonomy, app settings): 02 §2.2 has no owner for these tables, and `core` stays infrastructure. The market profile service lives in `@rc/modules/localization` (02 §2.2).
+  - `updateBrand` (owner): `visualSystem` validated with `VisualSystem`; errors come back as `visualSystem.<path>`; audit `brand.updated` with the changed field names.
+  - `updateMarket` (owner, editor): Zod for all fields; `ForbiddenPatternList` compiles REGEX patterns (`iu`) so an invalid regex rejects the whole save with `forbiddenPatterns.<i>.pattern`; time zones checked with `Intl.DateTimeFormat`; only owners may change `isActive` (`ForbiddenError`); audit `market.updated` with changed field names only; no write and no audit when nothing changed.
+  - `upsertTaxonomyTerm` (owner): code `UPPER_SNAKE_CASE`; upsert on `(kind, code)`; no delete (deactivate instead); audit `settings.changed` with `termCode` — a `code` key would be redacted by the audit/log scrubber (M0-05).
+  - `setAppSetting` (owner): allowed keys `publishing.enabled`, `publishing.min_gap_minutes` (0–1440), `analytics.min_sample` (1–1000), `rights.defaults` (`RightsDefaults`); `updated_by` = actor; audit `settings.changed` with from/to (rights defaults: key only). No UI yet: the kill switch UI is H-01 (`/settings/health`), rights defaults with M1.
+  - UI: `/settings/brand` (brand form with Markdown voice guide, visual system JSON editor with parse errors and server field errors, taxonomy tabs with inline label edit, (de)activate, add term); `/markets/[code]` (general, tone and food culture, vocabulary / forbidden patterns (client regex check) / visual hypotheses row editors, sticky save bar). Read-only for roles that cannot edit.
+  - Toasts moved to the top centre: at the default bottom-right an error toast covered the sticky save button, and a second save click never reached the form (found in the live check).
+- Evidence / links: `modules/src/settings/settings.test.ts`, `modules/src/localization/update-market.test.ts` (edits persist with audit rows; invalid regex rejected with a field path and nothing saved). Live check against dev Supabase (one-off E2E test-login): invalid regex refused by client and server; valid save stored tone notes + pattern with a `market.updated` audit row (actor USER, request id, `fields`), then reverted through the UI; invalid visual system refused with `colors.accent` / `logo.minHeightPx` messages and nothing written.
+- Impact on plan: none.
+
 ## 2026-09-28 · App shell and navigation [M0-17]
 - Context: M0-17 (10 §10.1 navigation, 10 §10.2 screen catalog).
 - Decision:

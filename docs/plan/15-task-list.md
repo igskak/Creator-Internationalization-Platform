@@ -143,7 +143,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `(app)` layout with sidebar (10 §10.1), user menu, banner slot, placeholder pages for every route, France item disabled.
   - **Done when:** all routes render for a logged-in user; logged-out users are redirected.
 
-- [ ] **M0-18 · Brand and market settings** · P0 · M · deps: M0-16, M0-17
+- [x] **M0-18 · Brand and market settings** · P0 · M · deps: M0-16, M0-17
   - **Do:** `/settings/brand` (voice guide Markdown editor, visual system JSON editor with Zod errors, taxonomy list), `/markets/[code]` (tone, food culture, vocabulary, forbidden patterns with regex check, visual hypotheses, units, time zone). Actions `updateBrand`, `updateMarket`, `upsertTaxonomyTerm`, `setAppSetting` with audit.
   - **Done when:** edits persist with audit rows; invalid regex rejected (test).
   - **Refs:** 05 §5.2.

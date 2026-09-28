@@ -17,7 +17,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        {/* Top: forms keep their save buttons in a sticky bar at the bottom right. */}
+        <Toaster position="top-center" />
       </body>
     </html>
   );
