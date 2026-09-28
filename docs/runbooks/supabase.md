@@ -34,5 +34,21 @@ pnpm db:seed
 ```
 It inserts only missing rows (brand, markets, taxonomy, owners, settings) and prints how many per table; a second run prints zeros. Existing rows, including edits made in the app, are never changed.
 
+## Auth (magic link, plan 01 D-07, M0-15)
+Supabase is used for **auth only**, from the server (no browser client, no `NEXT_PUBLIC_*` keys).
+
+1. **Authentication → Sign In / Providers → Email**: enabled; **Allow new users to sign up: off**.
+2. **Authentication → URL Configuration**: Site URL = `http://localhost:3000` (dev project) / the prod domain; add preview domains to Redirect URLs.
+3. **Authentication → Emails → Magic Link** template, link:
+   ```
+   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
+   ```
+   `/auth/confirm` calls `verifyOtp` on the server and sets the session cookies.
+4. **Users**: sign-ups are off and the app calls `signInWithOtp({ shouldCreateUser: false })`, so each person needs a Supabase user. Authentication → Users → **Add user → Create new user** (email, auto-confirm) — or **Send invitation**. The same email must be an active row in `app_users` (`pnpm db:seed` for owners; later the settings UI).
+5. `.env`: `SUPABASE_URL` and `SUPABASE_ANON_KEY` (the anon or publishable key from Project Settings → API). `SUPABASE_SERVICE_ROLE_KEY` only for E2E test-login (non-production).
+6. **Production: custom SMTP** (Authentication → Emails → SMTP settings). The default mailer is for testing only: low rate limits, one link per address per 60 s, links expire after 1 h.
+
+How it works: `proxy.ts` refreshes the session and redirects to `/login`; `requireUser()` verifies the JWT with `getClaims()` and checks the allowlist (`resolveAppUser`): first login links `app_users.auth_user_id` (audit `user.linked`); unknown, inactive or mismatched users are signed out with a message. `requestMagicLink` always answers "sent" and only emails active allowlisted users.
+
 ## Still to verify
-V-20 remainder (Auth email OTP + custom SMTP, PITR by plan) belongs to M0-15 and H-03.
+V-20 remainder: PITR by plan (H-03).
