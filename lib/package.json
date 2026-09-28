@@ -10,7 +10,8 @@
     "./logging": "./src/logging/index.ts",
     "./errors": "./src/errors/index.ts",
     "./security": "./src/security/index.ts",
-    "./providers/storage": "./src/providers/storage/index.ts"
+    "./providers/storage": "./src/providers/storage/index.ts",
+    "./observability": "./src/observability/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

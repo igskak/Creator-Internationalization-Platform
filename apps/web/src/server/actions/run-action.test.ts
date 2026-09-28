@@ -155,6 +155,39 @@ describe("runAction", () => {
     expect(logged).toMatchObject({ level: "error", action: "testAction", requestId: "req-1" });
   });
 
+  it("reports only unexpected errors to error tracking, with the request id", async () => {
+    const report = vi.fn();
+    const crash = new Error("db connection reset");
+    await runAction(
+      action(async () => {
+        throw crash;
+      }),
+      { title: "x" },
+      deps({ report }),
+    );
+    await runAction(
+      action(async () => {
+        throw new ConflictError();
+      }),
+      { title: "x" },
+      deps({ report }),
+    );
+    await runAction(
+      action(async () => {
+        throw new PermanentError("vendor 400");
+      }),
+      { title: "x" },
+      deps({ report }),
+    );
+    await runAction(
+      action(async () => "ok"),
+      { title: "" },
+      deps({ report }),
+    );
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith(crash, { action: "testAction", requestId: "req-1" });
+  });
+
   it("lets framework control flow errors through", async () => {
     const redirect = new Error("NEXT_REDIRECT");
     const rethrow = (error: unknown) => {

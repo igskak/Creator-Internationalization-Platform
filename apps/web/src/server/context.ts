@@ -10,6 +10,7 @@ import {
 } from "@rc/modules/core";
 import { jobHandlers } from "@rc/modules/job-handlers";
 import { headers } from "next/headers";
+import { REQUEST_ID_HEADER } from "./request-id";
 import { serverDb, serverEnv, serverLogger } from "./runtime";
 
 let jobs: JobRunner | undefined;
@@ -40,7 +41,7 @@ function jobRunner(): JobRunner {
 
 /** The `x-request-id` header (set by the proxy from M0-19 on), or a new id. */
 export async function currentRequestId(): Promise<string> {
-  return (await headers()).get("x-request-id") ?? randomUUID();
+  return (await headers()).get(REQUEST_ID_HEADER) ?? randomUUID();
 }
 
 /** ServiceContext for one request (plan 03 §3.1 `src/server/context.ts`). */

@@ -1,3 +1,5 @@
+import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
+import { esbuildPlugin } from "@trigger.dev/build/extensions";
 import { defineConfig } from "@trigger.dev/sdk";
 
 // Trigger.dev v4 (plan 01 D-05, 06 §6.1; V-17 checked 2026-09-27).
@@ -11,6 +13,8 @@ if (!process.env.TRIGGER_PROJECT_REF) {
     // No .env: the placeholder below makes the CLI say which variable is missing.
   }
 }
+
+const sentryJobsProject = process.env.SENTRY_PROJECT_JOBS ?? process.env.SENTRY_PROJECT;
 
 export default defineConfig({
   project: process.env.TRIGGER_PROJECT_REF ?? "proj_set_TRIGGER_PROJECT_REF",
@@ -30,6 +34,19 @@ export default defineConfig({
   },
   build: {
     // Playwright/Chromium for render-carousel is added in M3-12.
-    extensions: [],
+    // Source maps go to Sentry on `trigger deploy` when SENTRY_AUTH_TOKEN is set (M0-19).
+    extensions: process.env.SENTRY_AUTH_TOKEN
+      ? [
+          esbuildPlugin(
+            sentryEsbuildPlugin({
+              ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
+              ...(sentryJobsProject ? { project: sentryJobsProject } : {}),
+              authToken: process.env.SENTRY_AUTH_TOKEN,
+              telemetry: false,
+            }),
+            { placement: "last", target: "deploy" },
+          ),
+        ]
+      : [],
   },
 });

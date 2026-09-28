@@ -18,7 +18,10 @@ if (env.jobs.mode !== "trigger") {
 }
 
 const runner = createTriggerDevJobRunner({ secretKey: env.jobs.triggerSecretKey });
-const { runId } = await runner.trigger("hello", { name: process.argv[2] ?? "world" });
+const args = process.argv.slice(2);
+const fail = args.includes("--fail");
+const name = args.find((arg) => !arg.startsWith("--")) ?? "world";
+const { runId } = await runner.trigger("hello", { name, fail });
 console.log(
   `jobs:hello: triggered run ${runId}; check the audit_events table and the Trigger.dev dashboard.`,
 );

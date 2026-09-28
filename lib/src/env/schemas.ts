@@ -175,8 +175,15 @@ export const observabilitySchema = z
   .object({
     SENTRY_DSN: httpsUrl.optional(),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
+    /** Git SHA of the deployed build; set in CI/Trigger.dev. Vercel provides VERCEL_GIT_COMMIT_SHA. */
+    APP_RELEASE: z.string().min(1).max(100).optional(),
+    VERCEL_GIT_COMMIT_SHA: z.string().min(1).max(100).optional(),
   })
-  .transform((v) => ({ sentryDsn: v.SENTRY_DSN, logLevel: v.LOG_LEVEL }));
+  .transform((v) => ({
+    sentryDsn: v.SENTRY_DSN,
+    logLevel: v.LOG_LEVEL,
+    release: v.APP_RELEASE ?? v.VERCEL_GIT_COMMIT_SHA,
+  }));
 
 export const e2eSchema = z
   .object({ E2E_TEST_AUTH_SECRET: z.string().min(32).optional() })

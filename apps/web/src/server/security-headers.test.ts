@@ -23,6 +23,10 @@ describe("securityHeaders", () => {
     expect(csp).toMatch(/img-src 'self' data: blob: https:\/\/\*\.r2\.cloudflarestorage\.com/);
   });
 
+  it("lets the browser report errors to Sentry ingest", () => {
+    expect(contentSecurityPolicy({ dev: false })).toContain("https://*.ingest.de.sentry.io");
+  });
+
   it("allows eval only in development", () => {
     expect(contentSecurityPolicy({ dev: false })).not.toContain("unsafe-eval");
     expect(contentSecurityPolicy({ dev: true })).toContain("'unsafe-eval'");

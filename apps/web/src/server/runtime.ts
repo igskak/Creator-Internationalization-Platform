@@ -22,6 +22,11 @@ export function serverDb(): AnyDatabase {
 
 export function serverLogger(): Logger {
   const e = serverEnv();
-  logger ??= createLogger({ service: "web", env: e.appEnv, level: e.observability.logLevel });
+  logger ??= createLogger({
+    service: "web",
+    env: e.appEnv,
+    level: e.observability.logLevel,
+    ...(e.observability.release ? { release: e.observability.release } : {}),
+  });
   return logger;
 }

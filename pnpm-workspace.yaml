@@ -9,6 +9,8 @@ packages:
   - evals
 
 allowBuilds:
+  # sentry-cli comes from an optional platform package (@sentry/cli-<os>); postinstall not needed.
+  "@sentry/cli": false
   # Binary for remote image builds in `trigger deploy`; revisit when CI deploys jobs.
   "@depot/cli": false
   # tsx and drizzle-kit get the esbuild binary from an optional dependency; postinstall not needed.
