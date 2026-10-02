@@ -16,7 +16,8 @@
     "./instagram": "./src/instagram/index.ts",
     "./analytics": "./src/analytics/index.ts",
     "./job-handlers": "./src/job-handlers.ts",
-    "./settings": "./src/settings/index.ts"
+    "./settings": "./src/settings/index.ts",
+    "./cli-commands": "./src/cli-commands.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

@@ -1,4 +1,5 @@
 export { type AuditEvent, audit } from "./audit";
+export { type CliCommand, type CliCommands, cliHelp, runCliCommand } from "./cli";
 export { type Clock, manualClock, systemClock } from "./clock";
 export {
   type Actor,

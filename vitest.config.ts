@@ -9,6 +9,7 @@ const packages = {
   "@rc/lib": "lib",
   "@rc/db": "db",
   "@rc/jobs": "jobs",
+  "@rc/cli": "cli",
   "@rc/prompts": "prompts",
   "@rc/templates": "templates",
   "@rc/evals": "evals",

@@ -1,0 +1,17 @@
+{
+  "name": "@rc/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev CLI: pnpm rc <command> (commands are registered by @rc/modules)",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "rc": "tsx --env-file-if-exists=../.env src/main.ts"
+  },
+  "dependencies": {
+    "@rc/db": "workspace:*",
+    "@rc/lib": "workspace:*",
+    "@rc/modules": "workspace:*"
+  }
+}
