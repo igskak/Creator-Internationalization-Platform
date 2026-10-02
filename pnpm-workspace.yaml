@@ -4,6 +4,7 @@ packages:
   - lib
   - db
   - jobs
+  - cli
   - prompts
   - templates
   - evals

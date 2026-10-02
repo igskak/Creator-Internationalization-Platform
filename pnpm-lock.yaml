@@ -270,6 +270,18 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
 
+  cli:
+    dependencies:
+      '@rc/db':
+        specifier: workspace:*
+        version: link:../db
+      '@rc/lib':
+        specifier: workspace:*
+        version: link:../lib
+      '@rc/modules':
+        specifier: workspace:*
+        version: link:../modules
+
   db:
     dependencies:
       '@rc/lib':

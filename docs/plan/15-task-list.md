@@ -157,7 +157,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** dependency-cruiser rules from 02 §2.4; CI step.
   - **Done when:** a deliberate forbidden import fails CI.
 
-- [ ] **M0-21 · Dev CLI** · P1 · S · deps: M0-12
+- [x] **M0-21 · Dev CLI** · P1 · S · deps: M0-12
   - **Do:** `pnpm rc <command>` (tsx) with a ServiceContext for the dev DB; commands registered by modules later (`rc ingest <file>`, `rc generate <ideaId>`, `rc eval …`).
   - **Done when:** `pnpm rc hello` writes an audit event in dev.
 

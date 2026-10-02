@@ -25,7 +25,7 @@ module.exports = {
       comment: "@rc/modules never imports apps/* or jobs (02 §2.4).",
       severity: "error",
       from: { path: "^modules/" },
-      to: { path: "^(apps|jobs)/" },
+      to: { path: "^(apps|jobs|cli)/" },
     },
     {
       name: "modules-allowed-packages",
@@ -66,20 +66,20 @@ module.exports = {
       comment:
         "apps/web and jobs reach domain code only through @rc/modules subpaths (package exports), never deep files.",
       severity: "error",
-      from: { path: "^(apps/web/src|jobs/src)/" },
+      from: { path: "^(apps/web/src|jobs/src|cli/src)/" },
       to: {
         path: "^modules/src/",
-        pathNot: "^modules/src/(([^/]+)/index|job-handlers)\\.ts$",
+        pathNot: "^modules/src/(([^/]+)/index|job-handlers|cli-commands)\\.ts$",
       },
     },
     {
       name: "web-and-jobs-no-db-at-runtime",
       comment:
-        "apps/web and jobs use @rc/db only for types, except the composition roots (runtime.ts).",
+        "apps/web and jobs use @rc/db only for types, except the composition roots (runtime.ts, cli/src/main.ts).",
       severity: "error",
       from: {
-        path: "^(apps/web/src|jobs/src)/",
-        pathNot: "^(apps/web/src/server|jobs/src)/runtime\\.ts$",
+        path: "^(apps/web/src|jobs/src|cli/src)/",
+        pathNot: "^((apps/web/src/server|jobs/src)/runtime|cli/src/main)\\.ts$",
       },
       to: { path: "^db/", dependencyTypesNot: ["type-only"] },
     },
