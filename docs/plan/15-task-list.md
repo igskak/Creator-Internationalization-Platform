@@ -129,7 +129,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** dev-only page or shell action (`APP_ENV=development`) that triggers `hello` through `ctx.jobs` and shows the run id; hidden and refused in production.
   - **Done when:** clicking it in `pnpm dev` + `pnpm jobs:dev` writes a `job.hello` audit row. (Split from M0-14: the button needs auth and the action framework; M0-14 verifies the same path with `pnpm jobs:hello`.)
 
-- [ ] **M0-15 · Authentication** · P0 · M · deps: M0-08, M0-11
+- [x] **M0-15 · Authentication** · P0 · M · deps: M0-08, M0-11
   - **Do:** Supabase Auth (magic link, sign-ups off, redirect URLs; note custom SMTP for prod). `@supabase/ssr` clients, `/login`, auth callback, middleware session check for `(app)`, `(app)/layout.tsx` loads `app_users` (link `auth_user_id` on first login; refuse unknown/inactive), `getCurrentUser()`, `requireRole()`, sign-out. Test-login route guarded by `E2E_TEST_AUTH_SECRET` (non-production only).
   - **Done when:** allowlisted email logs in; unknown email refused; unit tests for allowlist and guard.
   - **Refs:** 01 D-07, 12 §12.5.
@@ -148,7 +148,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** edits persist with audit rows; invalid regex rejected (test).
   - **Refs:** 05 §5.2.
 
-- [ ] **M0-19 · Error tracking and request ids** · P0 · S · deps: M0-05, M0-08, M0-14
+- [x] **M0-19 · Error tracking and request ids** · P0 · S · deps: M0-05, M0-08, M0-14
   - **Do:** Sentry for Next.js (server + client) and jobs; release = git SHA; `beforeSend` with the scrubber; `x-request-id` in middleware → ServiceContext → job payload `meta.requestId`.
   - **Done when:** a test error reaches the dev Sentry project with request id and no secrets (manual); scrubber unit-tested.
   - **Refs:** 12 §12.9.
