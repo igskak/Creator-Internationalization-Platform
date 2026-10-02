@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-10-02 · Magic link manual check; default mailer and PKCE callback [M0-15]
+- Context: the dev Supabase project has no custom SMTP. The default mailer cannot edit the Magic Link template (still `{{ .ConfirmationURL }}`) and only delivers to members of the Supabase organisation. The documented template (`/auth/confirm?token_hash=…`) is therefore not usable in dev.
+- Decision: `/auth/confirm` accepts both `?code=` (PKCE, `exchangeCodeForSession`) and `?token_hash=&type=` (`verifyOtp`). `requestMagicLink` passes `emailRedirectTo = <origin>/auth/confirm` (origin from the request headers); `http://localhost:3000/auth/confirm` is in the project's Redirect URLs. The owner's email was invited to the Supabase organisation so the default mailer delivers to it. Production still needs custom SMTP and the `token_hash` template (supabase.md step 6); preview/prod origins must be added to Redirect URLs.
+- Evidence / links: with sign-ups off, an allowlisted address got a link (`delivered:true`), opening it in the same browser gave `GET /auth/confirm?code=… 307` → `/dashboard 200`; `not-allowed-test@example.com` got the same neutral message and no email (`delivered:false`).
+- Impact on plan: `docs/runbooks/supabase.md` step 3 applies to custom SMTP only; M0-15 ticked. `apps/web` needs `.env` in its own folder for `next dev` (symlink `apps/web/.env` → `../../.env`, git-ignored).
+
 ## 2026-09-28 · Sentry, request ids and console scrubbing [M0-19]
 - Context: M0-19 (12 §12.7, §12.9): Sentry for web (server + client) and jobs, release = git SHA, scrubbed events, `x-request-id` → ServiceContext → job `meta.requestId`.
 - Decision:

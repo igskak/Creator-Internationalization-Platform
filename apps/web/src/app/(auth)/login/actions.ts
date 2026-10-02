@@ -1,6 +1,7 @@
 "use server";
 
 import { isEmailAllowed } from "@rc/modules/core";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { requestMagicLinkFor } from "@/server/auth/rules";
 import { requestContext } from "@/server/context";
@@ -21,13 +22,17 @@ export async function requestMagicLink(
   const ctx = await requestContext({ type: "SYSTEM" });
   try {
     const supabase = await supabaseServer();
+    const origin = (await headers()).get("origin");
     const result = await requestMagicLinkFor(parsed.data, {
       isAllowed: (email) => isEmailAllowed(ctx, email),
       send: async (email) => {
         // shouldCreateUser: false — sign-ups are disabled; users are created by the owner.
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { shouldCreateUser: false },
+          options: {
+            shouldCreateUser: false,
+            ...(origin ? { emailRedirectTo: `${origin}/auth/confirm` } : {}),
+          },
         });
         if (error) throw error;
       },
