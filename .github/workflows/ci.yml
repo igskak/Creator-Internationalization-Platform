@@ -30,9 +30,8 @@ jobs:
         run: pnpm exec biome ci .
       - name: Typecheck
         run: pnpm typecheck
-      # Enable in M0-20: module boundary rules (dependency-cruiser).
-      # - name: Dependency rules
-      #   run: pnpm deps:check
+      - name: Dependency rules
+        run: pnpm deps:check
 
   test:
     name: Tests (unit, integration)

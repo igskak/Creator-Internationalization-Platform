@@ -35,7 +35,8 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | Command | What it does |
 |---|---|
 | `pnpm install` | Install (CI and cloud: `--frozen-lockfile`) |
-| `pnpm check` | Biome + typecheck + all tests. Run before every commit. |
+| `pnpm check` | Biome + typecheck + module boundary rules + all tests. Run before every commit. |
+| `pnpm deps:check` | dependency-cruiser module boundary rules (`.dependency-cruiser.cjs`, plan 02 §2.4) |
 | `pnpm test` | Vitest, all packages (`pnpm --filter @rc/<pkg> test` for one) |
 | `pnpm typecheck` | `tsc` in every package |
 | `pnpm lint` / `pnpm format` | Biome lint / format with write |

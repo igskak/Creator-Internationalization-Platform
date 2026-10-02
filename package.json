@@ -14,16 +14,19 @@
     "db:seed": "pnpm --filter @rc/db seed",
     "jobs:dev": "pnpm --filter @rc/jobs dev",
     "jobs:hello": "pnpm --filter @rc/jobs hello",
-    "check": "biome check . && pnpm typecheck && pnpm test",
+    "check": "biome check . && pnpm typecheck && pnpm deps:check && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "deps:check": "depcruise apps/web/src jobs/src modules/src lib/src db/src prompts templates --config .dependency-cruiser.cjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@swc/core": "^1.16.13",
     "@types/node": "^24.0.0",
+    "dependency-cruiser": "^18.5.0",
     "tsx": "^4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.0.2"

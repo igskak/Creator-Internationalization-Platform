@@ -153,7 +153,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** a test error reaches the dev Sentry project with request id and no secrets (manual); scrubber unit-tested.
   - **Refs:** 12 §12.9.
 
-- [ ] **M0-20 · Module boundary rules** · P1 · S · deps: M0-01
+- [x] **M0-20 · Module boundary rules** · P1 · S · deps: M0-01
   - **Do:** dependency-cruiser rules from 02 §2.4; CI step.
   - **Done when:** a deliberate forbidden import fails CI.
 

@@ -15,3 +15,5 @@ allowBuilds:
   "@depot/cli": false
   # tsx and drizzle-kit get the esbuild binary from an optional dependency; postinstall not needed.
   esbuild: false
+  # dependency-cruiser parses TypeScript with swc (TS 7 is not supported by its TS parser); binary is an optional dependency.
+  "@swc/core": false
