@@ -225,3 +225,16 @@ describe("loadSeedEnv", () => {
     ).toThrow(/SEED_OWNER_EMAILS/);
   });
 });
+
+describe("observability release", () => {
+  it("prefers APP_RELEASE, falls back to Vercel's commit SHA", () => {
+    expect(loadServerEnv({ ...base, VERCEL_GIT_COMMIT_SHA: "abc123" }).observability.release).toBe(
+      "abc123",
+    );
+    expect(
+      loadServerEnv({ ...base, APP_RELEASE: "def456", VERCEL_GIT_COMMIT_SHA: "abc123" })
+        .observability.release,
+    ).toBe("def456");
+    expect(loadServerEnv(base).observability.release).toBeUndefined();
+  });
+});

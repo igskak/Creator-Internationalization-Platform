@@ -1,5 +1,5 @@
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
-import { loadServerEnv } from "@rc/lib/env";
+import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
 import {
   createServiceContext,
@@ -14,12 +14,21 @@ type Runtime = { logger: Logger; db: AnyDatabase; jobs: JobRunner | undefined };
 // One set of clients per worker process, created on first use.
 let shared: Runtime | undefined;
 
+let env: ServerEnv | undefined;
+
+/** Validated environment of the worker process (loaded once). */
+export function jobEnv(): ServerEnv {
+  env ??= loadServerEnv();
+  return env;
+}
+
 function createRuntime(): Runtime {
-  const env = loadServerEnv();
+  const env = jobEnv();
   const logger = createLogger({
     service: "jobs",
     env: env.appEnv,
     level: env.observability.logLevel,
+    ...(env.observability.release ? { release: env.observability.release } : {}),
   });
   const { db } = createDb(env.db.url, { pooled: isPoolerUrl(env.db.url), max: 3 });
   // Jobs started from a job go through Trigger.dev as well.

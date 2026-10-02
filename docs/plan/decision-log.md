@@ -13,6 +13,22 @@ Template:
 
 ---
 
+## 2026-09-28 · Sentry, request ids and console scrubbing [M0-19]
+- Context: M0-19 (12 §12.7, §12.9): Sentry for web (server + client) and jobs, release = git SHA, scrubbed events, `x-request-id` → ServiceContext → job `meta.requestId`.
+- Decision:
+  - SDKs `@sentry/nextjs` / `@sentry/node` **11.0.0**. Sentry 11 changes found while wiring: `withSentryConfig` moved to `@sentry/nextjs/config`; `sendDefaultPii` was replaced by `dataCollection`.
+  - Web: `src/instrumentation.ts` (`register` → `sentry.server.config.ts`; `onRequestError = captureRequestError`), `src/instrumentation-client.ts` (DSN from `NEXT_PUBLIC_SENTRY_DSN`), `withSentryConfig` in `next.config.ts` (source maps only with `SENTRY_AUTH_TOKEN`; release = `APP_RELEASE` or `VERCEL_GIT_COMMIT_SHA`). Node runtime only, no edge config. CSP `connect-src` allows `*.ingest{,.us,.de}.sentry.io`. `runAction` reports unexpected errors (tags `action`, `request_id`) through a new optional `report` dependency.
+  - Jobs: `jobs/src/tasks/init.ts` (Trigger.dev v4 init file) initialises `@sentry/node` with `defaultIntegrations: false` and reports the final failure of a run via `tasks.onFailure` (tags `task_id`, `run_id`, `request_id`; payload not sent). Source maps via `esbuildPlugin(sentryEsbuildPlugin)` on deploy only when `SENTRY_AUTH_TOKEN` is set.
+  - Shared in `@rc/lib/observability`: `scrubSentryEvent` (beforeSend: URL/query/headers/cookies/body/exception/breadcrumbs/extra/contexts; user id only; `x-request-id` header → `request_id` tag) and `sentryDataCollection()` (no user info, cookies, bodies, DB query data, stack variables, **no gen-AI inputs/outputs** because prompts contain source IP; header allowlist incl. `x-request-id`). Browser-safe imports (no pino in the client bundle).
+  - Env: `observability.release` from `APP_RELEASE ?? VERCEL_GIT_COMMIT_SHA`; web and jobs loggers now log `release`.
+  - `proxy.ts` keeps a well-formed incoming `x-request-id` (`[A-Za-z0-9._:-]{8,64}`) or creates a UUID, forwards it to the app and sets it on every response (incl. redirects and 401).
+  - **Found in the live check:** Next.js prints unhandled route-handler errors with `console.error`, bypassing the redacting logger — a fake token appeared in stdout in clear text. `installConsoleScrubber()` (web `instrumentation.ts`, jobs `init.ts`) now scrubs `console.error` / `console.warn` arguments (strings, Error message/stack, objects). Re-checked: raw token 0, `access_token=[REDACTED]` 1.
+  - Manual check helpers: `GET /api/dev/sentry-test` (development only, needs a session) and `pnpm jobs:hello --fail` (hello payload `fail`).
+  - pnpm `allowBuilds: "@sentry/cli": false` (binary comes from an optional platform package).
+  - Runbook `docs/runbooks/sentry.md`.
+- Evidence / links: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/, https://trigger.dev/docs/guides/examples/sentry-error-tracking. Tests: `lib/src/observability/*.test.ts`, `apps/web/src/server/request-id.test.ts`, `run-action.test.ts` (report only unexpected errors), `jobs/src/sentry.test.ts`, hello `fail`. Live: own id echoed, bad id replaced, redirects carry the id, `/api/dev/sentry-test` → 500 with the given id.
+- Impact on plan: pending manual check with the dev Sentry projects (runbook "Manual check"); M0-19 is ticked after it.
+
 ## 2026-09-28 · Brand and market settings [M0-18]
 - Context: M0-18 (05 §5.2): brand and market editors; actions `updateBrand`, `updateMarket`, `upsertTaxonomyTerm`, `setAppSetting` with audit.
 - Decision:

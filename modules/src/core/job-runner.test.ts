@@ -199,3 +199,17 @@ describe("disabledJobRunner", () => {
     await t.close();
   });
 });
+
+describe("hello job fail flag", () => {
+  it("throws a PermanentError without writing an audit row", async () => {
+    const t = await createTestDb();
+    const runner = createInlineJobRunner({
+      handlers: jobHandlers,
+      makeContext: (runId) =>
+        createServiceContext({ db: t.db, logger, actor: { type: "JOB", jobRunId: runId } }),
+    });
+    await expect(runner.trigger("hello", { fail: true })).rejects.toBeInstanceOf(PermanentError);
+    expect(await t.db.select().from(schema.auditEvents)).toHaveLength(0);
+    await t.close();
+  });
+});

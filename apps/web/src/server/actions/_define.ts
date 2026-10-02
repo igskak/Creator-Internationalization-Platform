@@ -1,4 +1,5 @@
 import "server-only";
+import * as Sentry from "@sentry/nextjs";
 import { unstable_rethrow } from "next/navigation";
 import type { z } from "zod";
 import type { ActionResult } from "@/lib/action-result";
@@ -17,6 +18,8 @@ const deps: ActionDeps = {
     requestContext({ type: "USER", userId: user.id, role: user.role }, requestId),
   logger: serverLogger,
   rethrow: unstable_rethrow,
+  report: (error, { action, requestId }) =>
+    Sentry.captureException(error, { tags: { action, request_id: requestId } }),
 };
 
 /**

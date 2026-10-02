@@ -25,6 +25,8 @@ export type ActionDeps = {
   logger: () => Logger;
   /** Lets framework control flow (redirect, notFound) pass through instead of becoming INTERNAL. */
   rethrow?: (error: unknown) => void;
+  /** Error tracking for unexpected errors (Sentry in production, M0-19). */
+  report?: (error: unknown, context: { action: string; requestId: string }) => void;
 };
 
 /**
@@ -49,8 +51,8 @@ export async function runAction<S extends z.ZodType, T>(
     deps.rethrow?.(error);
     const log = deps.logger().child({ action: definition.name, requestId });
     if (!isAppError(error)) {
-      // M0-19 adds Sentry reporting here.
       log.error({ err: error }, "action failed");
+      deps.report?.(error, { action: definition.name, requestId });
     } else if (error.exposeMessage) {
       log.info({ err: error, code: error.code }, "action refused");
     } else {
