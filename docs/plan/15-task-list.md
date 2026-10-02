@@ -148,7 +148,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** edits persist with audit rows; invalid regex rejected (test).
   - **Refs:** 05 §5.2.
 
-- [ ] **M0-19 · Error tracking and request ids** · P0 · S · deps: M0-05, M0-08, M0-14
+- [x] **M0-19 · Error tracking and request ids** · P0 · S · deps: M0-05, M0-08, M0-14
   - **Do:** Sentry for Next.js (server + client) and jobs; release = git SHA; `beforeSend` with the scrubber; `x-request-id` in middleware → ServiceContext → job payload `meta.requestId`.
   - **Done when:** a test error reaches the dev Sentry project with request id and no secrets (manual); scrubber unit-tested.
   - **Refs:** 12 §12.9.
