@@ -125,7 +125,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** inline test triggers `hello` and finds the audit row; in dev, `pnpm jobs:dev` runs it from a dev-only button.
   - **Refs:** 06 §6.1, §6.5.
 
-- [ ] **M0-14a · Dev-only "run hello job" button** · P1 · S · deps: M0-14, M0-16, M0-17
+- [x] **M0-14a · Dev-only "run hello job" button** · P1 · S · deps: M0-14, M0-16, M0-17
   - **Do:** dev-only page or shell action (`APP_ENV=development`) that triggers `hello` through `ctx.jobs` and shows the run id; hidden and refused in production.
   - **Done when:** clicking it in `pnpm dev` + `pnpm jobs:dev` writes a `job.hello` audit row. (Split from M0-14: the button needs auth and the action framework; M0-14 verifies the same path with `pnpm jobs:hello`.)
 
