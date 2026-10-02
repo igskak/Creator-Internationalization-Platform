@@ -13,6 +13,24 @@ Template:
 
 ---
 
+## 2026-10-02 · Dev-only hello job button [M0-14a]
+- Context: M0-14a needs a dev-only button that triggers `hello` through `ctx.jobs` and shows the run id.
+- Decision: page `/dev/jobs` (`(app)` group, so it needs a session) with `HelloJobButton` and the server action `runHelloJob` (`server/actions/dev.ts`, owner only) which calls `triggerJob(ctx, "hello", …)` and returns `{ runId, mode }`. Both the page (`notFound()`) and the action (`NotFoundError`) are refused unless `APP_ENV=development` (`server/dev-tools.ts`, unit-tested). Not linked from the sidebar; open `/dev/jobs` by URL.
+- Evidence / links: manual check in `pnpm dev` with `JOBS_MODE=inline`: the owner clicked the button; `audit_events` row 6 `job.hello` (actor JOB, run `inline_…`, `request_id` from the request, `name=web`). The Trigger.dev path is the same `ctx.jobs` call and was verified for M0-14 with `pnpm jobs:hello` (row 1); it was not re-run from the button. A stale `next start` production build occupied :3000 and returned 404 for the new page; stop it before `pnpm dev`.
+- Impact on plan: M0-14a ticked.
+
+## 2026-10-02 · Dev CLI [M0-21]
+- Context: M0-21 needs `pnpm rc <command>` with a ServiceContext for the dev DB and commands registered by modules.
+- Decision: new workspace package `cli/` (`@rc/cli`, `tsx --env-file-if-exists=../.env src/main.ts`) is only the composition root: loads env, opens the DB (`DATABASE_URL_DIRECT` if set), builds a context with actor SYSTEM, dispatches. The command type, `runCliCommand` and `cliHelp` live in `@rc/modules/core`; the registry is `@rc/modules/cli-commands` (first command `hello [name]`, runs the hello job handler in-process). The CLI refuses `APP_ENV=production`. `cli/src/main.ts` joins the boundary rules like `apps/web` and `jobs` (public entries only; runtime `@rc/db` allowed in the composition root).
+- Evidence / links: `pnpm rc hello m0-21` against the dev database wrote `audit_events` row 5 (`job.hello`, actor SYSTEM). Unit test covers the audit row and unknown/missing command errors.
+- Impact on plan: M0-21 ticked; `CLAUDE.md` command table updated; `cli` added to `pnpm-workspace.yaml` and the Vitest projects. `cli/` is not in the 03 §3.1 tree yet.
+
+## 2026-10-02 · Module boundary rules with dependency-cruiser [M0-20]
+- Context: M0-20 enforces the dependency rules of 02 §2.4 in CI. dependency-cruiser 18.5 supports TypeScript only below 7, and the workspace uses TypeScript 7.0.2.
+- Decision: rules live in `.dependency-cruiser.cjs`, run by `pnpm deps:check` (also part of `pnpm check` and the `static` CI job). TypeScript is parsed with `@swc/core` (`options.parser: "swc"`) instead of installing a second TypeScript; its postinstall is disabled in `allowBuilds` (binary comes from an optional dependency). Rules: no runtime cycles (cycles closed only by `import type` are allowed, e.g. `core/context` ↔ `core/job-runner`); `core` imports no other module; `content`, `publishing`, `analytics` only the domains listed in 02 §2.4; other domains only `core` and themselves; `modules` never imports `apps/*`, `jobs` or `cli`; `apps/web`, `jobs` and `cli` reach modules only through package `index` entries, `job-handlers` and `cli-commands`, use `@rc/db` only for types (composition roots `runtime.ts` and `cli/src/main.ts` excepted), and `apps/web` and `jobs` never import each other; `lib`, `db`, `templates`, `prompts` stay leaves/pure; the web app never imports `modules/visuals/render`. Test files are exempt from the `core` rule (the job-runner test wires the real registry).
+- Evidence / links: clean on current code. 12 deliberate forbidden imports, one per rule family, each failed `pnpm deps:check` and were removed. The `visuals/render` rule is not exercised yet because the directory does not exist (an unresolved import is not reported). The tool prints a "missing-typescript-transpiler" notice because it does not recognise TS 7; harmless with swc, exit code 0.
+- Impact on plan: M0-20 ticked; CI `static` job gains a "Dependency rules" step; `CLAUDE.md` command table updated.
+
 ## 2026-09-28 · Sentry, request ids and console scrubbing [M0-19]
 - Context: M0-19 (12 §12.7, §12.9): Sentry for web (server + client) and jobs, release = git SHA, scrubbed events, `x-request-id` → ServiceContext → job `meta.requestId`.
 - Decision:
