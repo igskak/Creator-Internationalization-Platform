@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Versioned prompt definitions and registry",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./fixtures/knowledge-extractor": "./src/knowledge-extractor/fixtures.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

@@ -226,7 +226,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `prompts/src/knowledge-extractor/v1.ts` + schema (07 §7.7) with taxonomy enums built at call time; rules (07 §7.6.4); synthetic Russian culinary fixture pages written for tests + expected-card notes for evals. Use S-01 learnings.
   - **Done when:** prompt snapshot test; fixture output parses; prompt text reviewed by Ihor. *(Code and tests done 2026-10-03; tick after Ihor's review of `prompts/src/knowledge-extractor/v1.ts`.)*
 
-- [ ] **M1-13 · Extraction batches** · P0 · M · deps: M1-06, M1-07, M1-10, M1-12
+- [x] **M1-13 · Extraction batches** · P0 · M · deps: M1-06, M1-07, M1-10, M1-12
   - **Do:** `extraction/plan.ts` (15-page PDF_NATIVE batches with 25 MB guard; ~12k-token TEXT batches), `extraction/batch.ts` (sub-PDF with `pdf-lib`, `runStage`, TEXT fallback, idempotent inserts by ordinal, batch status).
   - **Done when:** fake-LLM integration tests: success, PDF failure → TEXT fallback, rerun skips SUCCEEDED batches.
   - **Refs:** 06 J2, 07 §7.2.3.

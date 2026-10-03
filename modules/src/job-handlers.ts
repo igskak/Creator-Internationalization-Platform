@@ -2,6 +2,7 @@ import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
 import { audit } from "./core/audit";
 import { defineJob } from "./core/job-runner";
+import { extractBatch } from "./knowledge/extraction";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -41,9 +42,19 @@ export const ingestSourceJob = defineJob({
   },
 });
 
+/**
+ * J2 (plan 06 §6.3): extracts the cards of one batch. A permanent failure is a FAILED batch in
+ * the result, not an exception (retrying would not help); transient errors are rethrown.
+ */
+export const extractKnowledgeBatchJob = defineJob({
+  payload: z.object({ batchId: z.uuid() }),
+  run: (ctx, { batchId }) => extractBatch(ctx, { batchId }),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
+  "extract-knowledge-batch": extractKnowledgeBatchJob,
 };
 
 type JobHandlers = typeof jobHandlers;
