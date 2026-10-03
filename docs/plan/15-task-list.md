@@ -237,7 +237,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 - [ ] **M1-15 · Ingestion orchestrator (`ingest-source`)** · P0 · M · deps: M1-13, M1-14, M0-14
   - **Do:** handler + Trigger.dev task (06 §6.3 J1): rights gate, sniff, parse, pages, plan, `batchTriggerAndWait` (sequential in inline mode), finalize READY/FAILED with progress JSON, audit; reprocess semantics (attempt + 1; unapproved cards of older attempts → ARCHIVED `SUPERSEDED`).
-  - **Done when:** inline integration tests (happy, BLOCKED, one batch failed → READY partial, reprocess); dev run on one real PDF.
+  - **Done when:** inline integration tests (happy, BLOCKED, one batch failed → READY partial, reprocess); dev run on one real PDF. *(Tests done 2026-10-03. Open: the dev run on one real PDF with `pnpm rc ingest <pdf> --ai-allowed`, needs the owner's PDF and live keys; tick after it and record the result in the decision log.)*
 
 - [ ] **M1-16 · Card embeddings and dedupe** · P0 · S · deps: M1-11, M1-15
   - **Do:** `embed-knowledge-items` job (skip if hash unchanged; also the re-embed job for model changes); dedupe suggestions (cosine ≥ 0.92, same language) → `DUPLICATE_SUSPECTED` + `duplicate_of_id`; re-embed on edit/approve.

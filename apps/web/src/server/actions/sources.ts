@@ -10,6 +10,8 @@ import {
   createTextSource as createTextSourceService,
   GetSourceDownloadUrlInput,
   getSourceDownloadUrl as getSourceDownloadUrlService,
+  ReprocessSourceInput,
+  reprocessSource as reprocessSourceService,
   SourceIdInput,
   UpdateSourceRightsInput,
   updateSourceRights as updateSourceRightsService,
@@ -41,6 +43,13 @@ export const updateSourceRights = defineAction({
   input: UpdateSourceRightsInput,
   roles: ["owner"],
   handler: (ctx, input) => updateSourceRightsService(ctx, input),
+});
+
+export const reprocessSource = defineAction({
+  name: "reprocessSource",
+  input: ReprocessSourceInput,
+  roles: ["owner", "editor"],
+  handler: (ctx, input) => reprocessSourceService(ctx, input),
 });
 
 export const archiveSource = defineAction({

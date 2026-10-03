@@ -1,4 +1,5 @@
 export { ACCEPTED_FORMATS, checkUploadAllowed, MAX_TEXT_CHARS, maxBytesFor } from "./limits";
+export { ReprocessSourceInput, reprocessSource } from "./reprocess";
 export {
   ArchiveSourceInput,
   archiveSource,

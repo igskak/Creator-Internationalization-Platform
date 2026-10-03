@@ -3,6 +3,7 @@ import { z } from "zod";
 import { audit } from "./core/audit";
 import { defineJob } from "./core/job-runner";
 import { extractBatch } from "./knowledge/extraction";
+import { ingestSource } from "./knowledge/ingest-source";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -31,15 +32,17 @@ export const helloJob = defineJob({
 });
 
 /**
- * J1 (plan 06 §6.3). Stub until M1-15 (ingestion orchestrator): the source stays QUEUED and the
- * run only records that the job arrived.
+ * J1 (plan 06 §6.3): rights gate, sniff, parse, plan, extract every batch, finalize. Permanent
+ * failures end the source as FAILED and return normally (a retry would not help); a rights block
+ * throws RightsBlockedError (not retried); transient errors are rethrown and the run resumes.
  */
 export const ingestSourceJob = defineJob({
-  payload: z.object({ sourceAssetId: z.uuid(), attempt: z.number().int().positive() }),
-  run: async (ctx, { sourceAssetId, attempt }) => {
-    ctx.logger.warn({ sourceAssetId, attempt }, "ingest-source is a stub until M1-15");
-    return { stub: true as const };
-  },
+  payload: z.object({
+    sourceAssetId: z.uuid(),
+    attempt: z.number().int().positive(),
+    mode: z.enum(["FULL", "KNOWLEDGE_ONLY"]).default("FULL"),
+  }),
+  run: (ctx, payload) => ingestSource(ctx, payload),
 });
 
 /**

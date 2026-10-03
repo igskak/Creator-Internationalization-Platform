@@ -82,6 +82,7 @@ describe("source upload services", () => {
         triggered.push({ name, payload, idempotencyKey: options?.idempotencyKey });
         return { runId: "run-1" };
       },
+      triggerAndWaitAll: async () => [],
     };
     ctx = createServiceContext({
       db: t.db,

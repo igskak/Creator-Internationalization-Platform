@@ -10,6 +10,17 @@ export const ProcessingProgress = z.object({
   batchesTotal: z.number().int().nonnegative().optional(),
   batchesDone: z.number().int().nonnegative().optional(),
   cardsCreated: z.number().int().nonnegative().optional(),
+  /** Batches that could not be extracted; the source can still be READY (06 J1 step 9). */
+  failedBatches: z
+    .array(
+      z.object({
+        batchIndex: z.number().int().nonnegative(),
+        pageStart: z.number().int().positive(),
+        pageEnd: z.number().int().positive(),
+        code: z.string(),
+      }),
+    )
+    .optional(),
 });
 export type ProcessingProgress = z.infer<typeof ProcessingProgress>;
 
