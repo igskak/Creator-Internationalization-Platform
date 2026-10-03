@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!instagram-backup", "!docs"]
+    "includes": ["**", "!instagram-backup", "!spikes", "!docs"]
   },
   "formatter": {
     "enabled": true,
