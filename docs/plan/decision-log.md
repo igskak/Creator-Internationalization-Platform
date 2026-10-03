@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-10-03 · Rights gates [M1-02]
+- Context: 07 §7.13 and 12 §12.4 define the gates by the permission flags only; `rights_status` is not mentioned.
+- Decision: `modules/src/knowledge/rights/`: `canProcessWithAI` / `assertCanProcessWithAI` (throws `RightsBlockedError`), `canVisuallyTransform`, `canUseAsExemplar`, and `getRightsDefault` / `getAllRightsDefaults` reading `rights.defaults` (all-UNKNOWN fallback, confirmation fields stripped). Anything but ALLOWED blocks, so UNKNOWN behaves like DENIED; `improvePrompts` blocks only on DENIED, as in 12 §12.4. A source with `rights_status = RESTRICTED` is blocked by every gate even if its flags say ALLOWED (contradictory data, safer to block).
+- Evidence / links: `modules/src/knowledge/rights/*.test.ts` (full matrix: 3 permissions × 4 statuses × 3 gates).
+- Impact on plan: M1-03 / `completeSourceUpload` uses `canProcessWithAI` to choose QUEUED vs BLOCKED.
+
 ## 2026-10-03 · Knowledge schema 0002 [M1-01]
 - Context: 04 §4.3 lists `content_format` under 0003_content, but `historical_posts.format` (0002) uses it.
 - Decision: `content_format` is created in 0002 (`db/src/schema/knowledge.ts`). M2-01 must reuse it and not create it again. Extras beyond the plan: `updated_at` triggers on `source_assets`, `knowledge_extraction_batches`, `knowledge_items`, `historical_posts`; `created_at`/`updated_at` on `knowledge_extraction_batches` (plan `ts`). Zod shapes for 0002 are in `db/src/json/knowledge.ts` (`RightsPolicy` stays in `rights.ts`).
