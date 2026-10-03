@@ -104,7 +104,7 @@ Note: in this cloud environment the egress proxy blocked `developers.facebook.co
 | Decision | Default in this plan | What changes if you choose otherwise |
 |---|---|---|
 | D-05 Jobs platform | Trigger.dev | Inngest: steps run in Vercel functions → Chromium/duration work moves elsewhere; job code shape changes |
-| D-08 LLM | Claude `claude-opus-5` for all stages | Another vendor: new adapter + prompt re-tuning + evals |
+| D-08 LLM | Claude `claude-opus-5-5` for all stages | Another vendor: new adapter + prompt re-tuning + evals |
 | D-09/D-10 Embeddings and images | OpenAI | Another vendor: adapter + (embeddings) migration and re-embed if dimensions differ |
 | D-11 Embedding placement | Inline columns | Separate table: more joins, easier multi-model |
 | D-13 Renderer | Playwright | Satori: no Chromium, but CSS limits and a second preview path |

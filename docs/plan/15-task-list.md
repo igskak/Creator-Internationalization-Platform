@@ -213,8 +213,8 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests: registry lookup, stable hash, escaping of `<` and `&` in data.
   - **Refs:** 07 §7.5.
 
-- [ ] **M1-10 · runStage and generation logging** · P0 · M · deps: M1-08, M1-09, M1-01
-  - **Do:** `modules/src/ai/`: `config.ts` (stage → prompt, model `claude-opus-5`, effort, maxTokens), `version.ts` (`PIPELINE_VERSION`), `cost.ts` (price table), `runStage()` (render → call → Zod + domain validator hook → one repair as a new request → `generation_runs` row with status, usage, cost, latency, input refs, stop reason).
+- [x] **M1-10 · runStage and generation logging** · P0 · M · deps: M1-08, M1-09, M1-01
+  - **Do:** `modules/src/ai/`: `config.ts` (stage → prompt, model `claude-opus-5-5`, effort, maxTokens), `version.ts` (`PIPELINE_VERSION`), `cost.ts` (price table), `runStage()` (render → call → Zod + domain validator hook → one repair as a new request → `generation_runs` row with status, usage, cost, latency, input refs, stop reason).
   - **Done when:** fake-provider tests: valid; invalid → repaired; invalid twice → INVALID_OUTPUT; refusal → REFUSED; cost computed.
   - **Refs:** 07 §7.4, §7.5, §7.8.
 

@@ -15,7 +15,7 @@ Legend: [S§x] = from the spec · ⚠ V-xx = verify against current official doc
 | D-05 **(material)** | Background jobs | **Trigger.dev (v4)** | Long tasks without serverless timeouts; Playwright/ffmpeg build extensions; retries; idempotency keys; cron; queues with per-key concurrency; run dashboard + alerts | Second deploy target; task code must stay thin |
 | D-06 | Object storage | **Cloudflare R2** through the S3 API. One private bucket per environment. Access only through presigned URLs | [S§4.1, §19]; zero egress fees; S3-compatible | Meta must accept presigned URLs ⚠ V-14 (fallback: public bucket with unguessable keys for renders only) |
 | D-07 | Internal auth | Supabase Auth, email magic link, sign-ups disabled, allowlist table `app_users`, 3 roles (`owner`, `editor`, `chef`) | 2–5 users [S§22]; no passwords | Production needs custom SMTP (the default Supabase mailer is rate-limited) ⚠ V-20 |
-| D-08 **(material)** | LLM | Claude through the official SDK behind an `LLMProvider` interface. Default model **`claude-opus-5`** for every stage; model and effort configurable per stage | Quality first; low volume; structured outputs; native PDF input | One LLM vendor at launch; switching = one adapter + evals |
+| D-08 **(material)** | LLM | Claude through the official SDK behind an `LLMProvider` interface. Default model **`claude-opus-5-5`** for every stage; model and effort configurable per stage | Quality first; low volume; structured outputs; native PDF input | One LLM vendor at launch; switching = one adapter + evals |
 | D-09 **(material)** | Embeddings | OpenAI `text-embedding-3-large` with `dimensions=1536`, behind `EmbeddingProvider` ⚠ V-19 | Multilingual (RU/ES/EN); fits the pgvector HNSW limit (2,000 dims); same vendor as images | Changing dimensions = migration + re-embed job |
 | D-10 | Image generation | `ImageProvider` interface. First adapter: OpenAI Images (gpt-image family) ⚠ V-19. Bake-off against one alternative before M3 is done (M3-15) | Two AI vendors in total (fewer contracts and data reviews) | Photo-realism may favour another model → add a second adapter |
 | D-11 **(material)** | Embedding placement | Inline `embedding vector(1536)` on `knowledge_items` (as in the spec) and on `source_chunks` (P1). Extra columns `embedding_model`, `embedding_hash` | Small corpus (< 50k rows); simplest queries | Model change needs a re-embed job (planned) |
@@ -54,7 +54,7 @@ Legend: [S§x] = from the spec · ⚠ V-xx = verify against current official doc
 R2 has no egress fees. This matters for Meta fetching every slide, for admin previews and later for video. The S3 API is compatible, so we use `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner`. Choosing S3 later is a configuration change. Choose S3 now only if company policy requires AWS.
 
 ### D-08 Claude as the first LLM
-- Default model `claude-opus-5` for all stages. We do not downgrade models for cost without an eval that shows equal quality (owner decision, see H-05).
+- Default model `claude-opus-5-5` for all stages. We do not downgrade models for cost without an eval that shows equal quality (owner decision, see H-05).
 - Per stage we set `effort` (`medium` for extraction and visual direction; `high` for ideas, market adaptation, writing, critic) and use adaptive thinking.
 - Current Claude models do not accept `temperature`. The `LLMProvider` interface therefore has no temperature. Variety comes from the prompt (for example "propose 8 ideas with different angles").
 - Structured output: `client.messages.parse()` with a Zod schema (`zodOutputFormat`). Long outputs (extraction) use streaming with the same schema, then Zod validation of the final text.
@@ -163,7 +163,7 @@ Supabase Auth (email magic link). Public sign-ups are disabled. After login, the
 
 ## 1.5 Cost envelope (rough, for planning only)
 
-Prices: Anthropic from the `claude-api` skill cache (June 2026: `claude-opus-5` $5 / $25 per million input / output tokens). OpenAI prices ⚠ V-19. Numbers include a margin for thinking tokens.
+Prices: Anthropic from the `claude-api` skill cache (Sept 2026: `claude-opus-5-5` $4 / $20 per million input / output tokens). OpenAI prices ⚠ V-19. Numbers include a margin for thinking tokens.
 
 | Work item | Estimate |
 |---|---|

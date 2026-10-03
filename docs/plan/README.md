@@ -37,7 +37,7 @@ This plan follows spec §23. Files 01–17 map one-to-one to the output format r
 
 ## Plan at a glance
 - **Shape**: modular monolith in one pnpm workspace — Next.js on Vercel, Trigger.dev workers, Supabase Postgres + pgvector, Cloudflare R2. TypeScript everywhere.
-- **AI**: Claude (`claude-opus-5`) behind a provider interface; OpenAI for embeddings and the first image adapter. Every call has a Zod schema, deterministic validators, one repair, and is logged with cost. Generation is closed-book on approved Knowledge Cards; a critic loop plus human approval guard quality.
+- **AI**: Claude (`claude-opus-5-5`) behind a provider interface; OpenAI for embeddings and the first image adapter. Every call has a Zod schema, deterministic validators, one repair, and is logged with cost. Generation is closed-book on approved Knowledge Cards; a critic loop plus human approval guard quality.
 - **Rendering**: AI makes images; HTML/CSS templates rendered by Chromium make the final 1080×1350 slides, with QA for overflow, glyphs and logo placement.
 - **Publishing**: official Instagram API (Instagram Login); approval snapshots, safeguards, idempotency and reconciliation prevent wrong or duplicate posts; kill switch and dry runs.
 - **Order**: M0 Foundation → M1 Knowledge → M2 Content → **G1 quality gate** → M3 Creative → M4 Review + Calendar → M5 Instagram → **G2 go-live gate** → M6 Analytics → M7 Learning (P1) → Hardening + MVP sign-off. Rough effort: 12–16 weeks for one engineer with Claude Code (14 §14.1).

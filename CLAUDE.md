@@ -20,7 +20,7 @@ Internal tool that turns Reg.Chef's Russian-language culinary IP into original S
 - Services take a `ServiceContext` (db, logger, clock, actor, storage, providers, jobs). No `process.env` outside `@rc/lib/env`.
 - Status changes go through the transition helper and write `audit_events`.
 - AI calls go through `runStage()`; never call a vendor SDK from business code. Prompt versions are immutable (`vN.ts`); change = new version + eval.
-- Default model `claude-opus-5`; no `temperature`. Load the `claude-api` skill before touching the Anthropic adapter.
+- Default model `claude-opus-5-5`; no `temperature`. Load the `claude-api` skill before touching the Anthropic adapter.
 - Instagram specifics live only in `modules/instagram`. Never publish content that is not APPROVED; never retry `media_publish` blindly.
 
 ## Safety rules

@@ -26,6 +26,7 @@
   "dependencies": {
     "@rc/db": "workspace:*",
     "@rc/lib": "workspace:*",
+    "@rc/prompts": "workspace:*",
     "@trigger.dev/sdk": "4.6.4",
     "file-type": "^22.1.1",
     "iconv-lite": "^0.7.3",
