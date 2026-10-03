@@ -1,5 +1,7 @@
 import type { AnyDatabase } from "@rc/db";
+import { PermanentError } from "@rc/lib/errors";
 import type { Logger } from "@rc/lib/logging";
+import type { StorageProvider } from "@rc/lib/providers/storage";
 import { type Clock, systemClock } from "./clock";
 import { disabledJobRunner, type JobRunner } from "./job-runner";
 
@@ -13,7 +15,7 @@ export type Actor =
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
- * Storage and AI providers are added by the tasks that first use them.
+ * AI providers are added by the tasks that first use them.
  */
 export type ServiceContext = {
   db: AnyDatabase;
@@ -24,6 +26,8 @@ export type ServiceContext = {
   requestId: string | undefined;
   /** Starts background jobs; use triggerJob() to pass the request id along. */
   jobs: JobRunner;
+  /** Private object storage (R2, or in-memory in tests). */
+  storage: StorageProvider;
 };
 
 export type CreateServiceContextInput = {
@@ -34,6 +38,8 @@ export type CreateServiceContextInput = {
   clock?: Clock;
   /** Default: a runner that refuses to start jobs. */
   jobs?: JobRunner;
+  /** Default: a provider that refuses every call. */
+  storage?: StorageProvider;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -49,8 +55,24 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     actor: input.actor,
     requestId: input.requestId,
     jobs: input.jobs ?? disabledJobRunner,
+    storage: input.storage ?? disabledStorage,
   };
 }
+
+const storageDisabled = (): never => {
+  throw new PermanentError("No storage provider is configured for this context.");
+};
+
+/** Default for contexts that must not touch storage. */
+export const disabledStorage: StorageProvider = {
+  presignPut: storageDisabled,
+  presignGet: storageDisabled,
+  head: storageDisabled,
+  getStream: storageDisabled,
+  getBytes: storageDisabled,
+  put: storageDisabled,
+  delete: storageDisabled,
+};
 
 /** Runs `fn` in a transaction; the context passed to `fn` uses the transaction. Nested calls use savepoints. */
 export function withTransaction<T>(

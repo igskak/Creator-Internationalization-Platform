@@ -180,7 +180,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** permission matrix tests.
   - **Refs:** 07 §7.13, 12 §12.4.
 
-- [ ] **M1-03 · Source upload backend** · P0 · M · deps: M0-13, M0-16, M1-02
+- [x] **M1-03 · Source upload backend** · P0 · M · deps: M0-13, M0-16, M1-02
   - **Do:** services + actions `createSourceUpload`, `completeSourceUpload`, `createTextSource`, `updateSourceRights`, `archiveSource`, `getSourceDownloadUrl`; limits (07 §7.2.1); audit; trigger `ingest-source` via JobRunner (handler stub until M1-15).
   - **Done when:** integration tests with fake storage: limits, size mismatch, BLOCKED path, audit rows.
   - **Refs:** 05 §5.3.
@@ -287,6 +287,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `products`, `offers`, `master_ideas`, `master_idea_knowledge`, `content_variants`, `voice_examples`; FKs on `generation_runs`; JSON types (`Slide`, `CtaSpec`, `UtmSpec`, `MarketBrief`, `CriticReport`, `DifferentiationReport`, `GenerationConfig`, `PipelineState`, `ValidationIssue`).
   - **Done when:** migration + round-trip tests; partial unique index test.
   - **Refs:** 04 §4.3 (0003).
+
+- [ ] **M2-01a · archiveSource idea-usage guard** · P1 · S · deps: M2-01, M1-03
+  - **Do:** in `archiveSource` (`modules/src/knowledge/sources/service.ts`, TODO marker) refuse with `InvalidStateError` listing the ideas when an approved card of the source is linked through `master_idea_knowledge` to a non-archived idea [05 §5.3].
+  - **Done when:** test with a linked idea (refused) and after the idea is archived (allowed).
+  - **Refs:** 05 §5.3.
 
 - [ ] **M2-02 · Products and offers** · P0 · M · deps: M2-01, M0-17
   - **Do:** services, actions, `/knowledge/offers` UI (products; offers per market with currency check, priority, default keyword, landing URL).

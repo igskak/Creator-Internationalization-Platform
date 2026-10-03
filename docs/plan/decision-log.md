@@ -13,6 +13,21 @@ Template:
 
 ---
 
+## 2026-10-03 · Source upload backend [M1-03]
+- Context: M1-03 needs storage in services, a status column named `processing_status`, and `archiveSource` needs idea tables that do not exist before M2-01.
+- Decision:
+  - `ServiceContext.storage` (`StorageProvider`, default refuses every call) is wired in web, jobs and CLI through `createStorage(env.storage)` (`lib/src/providers/storage/factory.ts`).
+  - `transition()` takes an optional `statusKey` (default `status`), so `source_assets.processing_status` still changes only through the helper.
+  - Services in `modules/src/knowledge/sources/`; actions in `apps/web/src/server/actions/sources.ts` (rights and archive: owner; the rest: any user). Services also refuse non-owner USER actors for those two.
+  - Accepted: PDF/DOCX/TXT/MD for BOOK, GUIDE, RECIPE, PRODUCT_MATERIAL; TXT/MD for NOTE; SRT/VTT/TXT for TRANSCRIPT; limits from 07 §7.2.1. VIDEO, INSTAGRAM_POST and PHOTO are rejected with a message (posts come through the historical import, photos are P1).
+  - Size mismatch at `completeSourceUpload` → source FAILED (`SIZE_MISMATCH`), object deleted, audit `source.failed`. Missing object → validation error, source stays PENDING_UPLOAD. Calling complete again on QUEUED/BLOCKED returns that status.
+  - The checksum column stays empty here; `ingest-source` (M1-15) computes it and detects duplicates (06 J1 step 3). Pasted text keeps its SHA-256 in `metadata_json.sha256`.
+  - `ingest-source` is registered as a stub (logs, returns `{stub: true}`; the source stays QUEUED) with a Trigger.dev task on `medium-1x`, 60 min, until M1-15. `source.unblocked` is an extra audit action (BLOCKED → QUEUED after `updateSourceRights`).
+  - `archiveSource` is not guarded against live ideas yet: follow-up task M2-01a. It does refuse QUEUED and PROCESSING sources.
+  - Job trigger runs after the status transition commits; if the trigger call fails the source stays QUEUED without a run (recovered by reprocess, M1-15).
+- Evidence / links: `modules/src/knowledge/sources/sources.test.ts` (limits, size mismatch, BLOCKED path, unblock, audit rows).
+- Impact on plan: new task M2-01a in 15.
+
 ## 2026-10-03 · Rights gates [M1-02]
 - Context: 07 §7.13 and 12 §12.4 define the gates by the permission flags only; `rights_status` is not mentioned.
 - Decision: `modules/src/knowledge/rights/`: `canProcessWithAI` / `assertCanProcessWithAI` (throws `RightsBlockedError`), `canVisuallyTransform`, `canUseAsExemplar`, and `getRightsDefault` / `getAllRightsDefaults` reading `rights.defaults` (all-UNKNOWN fallback, confirmation fields stripped). Anything but ALLOWED blocks, so UNKNOWN behaves like DENIED; `improvePrompts` blocks only on DENIED, as in 12 §12.4. A source with `rights_status = RESTRICTED` is blocked by every gate even if its flags say ALLOWED (contradictory data, safer to block).
