@@ -13,6 +13,15 @@ Template:
 
 ---
 
+## 2026-10-03 · File sniffing and validation [M1-05]
+- Context: M1-05 asks for sniffing, hashing and PDF checks on the real bytes; parsing into pages is M1-06/07.
+- Decision: `modules/src/knowledge/ingestion/sniff.ts`. `sniffSource(ctx, {fileKey, fileName, type})` streams the object to a temp file while hashing (SHA-256) and enforcing the per-type size limit, then checks the real type with `file-type` against the file extension: PDF (`pdf-lib` load → encrypted / corrupt / page count ≤ 1,000), DOCX (needs a Word package, a plain ZIP is rejected), text (`file-type` must find nothing; valid UTF-8, else Windows-1251 when ≥ 70 % of high bytes decode to Cyrillic; NUL or > 1 % control bytes → `NOT_TEXT`). It returns kind, size, checksum, temp path + `cleanup()`, page count or encoding; the temp file is removed on every failure. `assertNotDuplicate` (same brand, same checksum, not archived, other id) is separate so M1-15 can order the steps as in 06 J1. Rejections are `SourceRejectedError` (code `VALIDATION`, safe message, `reason` for `processing_error.code`): FILE_MISSING, UNSUPPORTED_TYPE, TOO_LARGE, TYPE_MISMATCH, ENCRYPTED_PDF, CORRUPT_PDF, TOO_MANY_PAGES, EMPTY_FILE, NOT_TEXT, DUPLICATE_SOURCE (with `duplicateOfId`). It is not retryable, so the job runner will not retry it.
+  - Windows-1251 is detected with `TextDecoder`; `iconv-lite` is not needed until M1-07 decodes the text.
+  - `pdf-lib` reports encryption only through its message, so that is what is matched.
+  - A PDF is loaded fully into memory for the check (up to 200 MB on the `medium-1x` machine); revisit if M1-06 shows memory pressure.
+- Evidence / links: `modules/src/knowledge/ingestion/sniff.test.ts` with fixtures built in code (valid, renamed, encrypted, corrupt and 1,001-page PDFs; DOCX and plain ZIP; UTF-8 and cp1251 text; PNG and binary renamed to .txt).
+- Impact on plan: new dependencies `file-type`, `pdf-lib` in `@rc/modules`.
+
 ## 2026-10-03 · Source upload backend [M1-03]
 - Context: M1-03 needs storage in services, a status column named `processing_status`, and `archiveSource` needs idea tables that do not exist before M2-01.
 - Decision:

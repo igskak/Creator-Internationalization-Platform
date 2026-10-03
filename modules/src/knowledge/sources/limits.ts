@@ -42,6 +42,11 @@ const NOT_ACCEPTED: Partial<Record<SourceType, string>> = {
   PHOTO: "Photo sources are not supported yet.",
 };
 
+/** Largest accepted size for a type and file name, or undefined if the file is not accepted. */
+export function maxBytesFor(type: SourceType, fileName: string): number | undefined {
+  return ACCEPTED_FORMATS[type]?.[fileExtension(fileName)]?.maxBytes;
+}
+
 /** Lower-case extension without the dot, or "". */
 export function fileExtension(fileName: string): string {
   const base = fileName.split(/[\\/]/).pop() ?? "";

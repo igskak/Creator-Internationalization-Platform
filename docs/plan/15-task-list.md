@@ -190,7 +190,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** a PDF uploads end to end to dev R2; screenshots in the PR.
   - **Refs:** 10 §10.2.
 
-- [ ] **M1-05 · File sniffing and validation (job side)** · P0 · S · deps: M1-01, M0-13
+- [x] **M1-05 · File sniffing and validation (job side)** · P0 · S · deps: M1-01, M0-13
   - **Do:** `knowledge/ingestion/sniff.ts`: stream to temp file, SHA-256, `file-type` vs declared type, size, PDF checks (encrypted, ≤ 1,000 pages), duplicate checksum, error codes.
   - **Done when:** tests with tiny fixtures (valid PDF, renamed non-PDF, encrypted PDF, DOCX, cp1251 TXT).
 

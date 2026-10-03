@@ -27,6 +27,8 @@
     "@rc/db": "workspace:*",
     "@rc/lib": "workspace:*",
     "@trigger.dev/sdk": "4.6.4",
+    "file-type": "^22.1.1",
+    "pdf-lib": "^1.17.1",
     "zod": "^4.6.5"
   }
 }
