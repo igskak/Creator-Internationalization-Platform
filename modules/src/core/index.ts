@@ -5,6 +5,7 @@ export {
   type Actor,
   type CreateServiceContextInput,
   createServiceContext,
+  disabledEmbeddings,
   disabledLlm,
   disabledStorage,
   type ServiceContext,

@@ -5,6 +5,7 @@ import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { PermanentError, TransientError, ValidationError } from "@rc/lib/errors";
 import { createLogger } from "@rc/lib/logging";
+import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from "@rc/lib/providers/embeddings";
 import {
   createFakeLLMProvider,
   type FakeResponse,
@@ -14,7 +15,7 @@ import {
 import { definePrompt, PROMPT_STAGES, promptRegistry, renderSections, section } from "@rc/prompts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createServiceContext, type ServiceContext } from "../core";
+import { createServiceContext, disabledEmbeddings, type ServiceContext } from "../core";
 import {
   computeCostUsd,
   DEFAULT_MODEL,
@@ -45,6 +46,23 @@ const prompt = definePrompt({
   render: (input) => [{ type: "text", text: renderSections(section("topic", input.topic)) }],
   renderTemplate: "<topic>",
   changelog: "Test prompt.",
+});
+
+describe("embeddings wiring", () => {
+  it("stores vectors of the dimensions the provider produces, with the model named in the plan", () => {
+    expect(EMBEDDING_DIMENSIONS).toBe(schema.EMBEDDING_DIMENSIONS);
+    expect(EMBEDDING_MODEL).toBe("text-embedding-3-large");
+  });
+
+  it("a context without an embedding provider refuses to embed", async () => {
+    const t = await createTestDb();
+    const ctx = createServiceContext({ db: t.db, logger, actor: { type: "SYSTEM" } });
+    expect(ctx.embeddings).toBe(disabledEmbeddings);
+    await expect(ctx.embeddings.embed(["x"], { purpose: "document" })).rejects.toBeInstanceOf(
+      PermanentError,
+    );
+    await t.close();
+  });
 });
 
 describe("config, version and cost", () => {

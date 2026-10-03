@@ -2,6 +2,7 @@ import "server-only";
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
 import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
+import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 
@@ -12,6 +13,7 @@ let db: AnyDatabase | undefined;
 let logger: Logger | undefined;
 let storage: StorageProvider | undefined;
 let llm: LLMProvider | undefined;
+let embeddings: EmbeddingProvider | undefined;
 
 export function serverEnv(): ServerEnv {
   env ??= loadServerEnv();
@@ -43,4 +45,9 @@ export function serverStorage(): StorageProvider {
 export function serverLlm(): LLMProvider {
   llm ??= createLlmProvider(serverEnv().ai);
   return llm;
+}
+
+export function serverEmbeddings(): EmbeddingProvider {
+  embeddings ??= createEmbeddingProvider(serverEnv().ai);
+  return embeddings;
 }

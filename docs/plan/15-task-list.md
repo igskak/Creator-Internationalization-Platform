@@ -218,7 +218,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** fake-provider tests: valid; invalid → repaired; invalid twice → INVALID_OUTPUT; refusal → REFUSED; cost computed.
   - **Refs:** 07 §7.4, §7.5, §7.8.
 
-- [ ] **M1-11 · Embedding provider** · P0 · S · deps: M0-04 · ⚠ V-19
+- [x] **M1-11 · Embedding provider** · P0 · S · deps: M0-04 · ⚠ V-19
   - **Do:** interface + OpenAI adapter (`text-embedding-3-large`, `dimensions: 1536`, batching, retries) + deterministic fake; `embedTexts()` returns vectors + model + hash.
   - **Done when:** MSW contract test (dimensions param), fake determinism test.
 

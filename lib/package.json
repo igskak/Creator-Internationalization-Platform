@@ -12,7 +12,8 @@
     "./security": "./src/security/index.ts",
     "./providers/storage": "./src/providers/storage/index.ts",
     "./observability": "./src/observability/index.ts",
-    "./providers/llm": "./src/providers/llm/index.ts"
+    "./providers/llm": "./src/providers/llm/index.ts",
+    "./providers/embeddings": "./src/providers/embeddings/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
