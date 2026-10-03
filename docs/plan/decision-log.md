@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-10-03 · PDF page extraction [M1-06]
+- Context: M1-06 stores per-page text and the text-layer flag; 07 §7.2.2 gives the heuristic.
+- Decision: `modules/src/knowledge/ingestion/pdf.ts`. `extractPdfPages(path)` uses `unpdf` (`extractText`, one string per page), strips NUL bytes (Postgres rejects them) and trims; `hasTextLayer` = at least 200 characters and under 5 % U+FFFD. Pages without a text layer are kept with empty or short text, since they still go to Claude as PDF pages. `savePages(ctx, sourceAssetId, attempt, pages)` deletes all existing rows of the source and inserts the attempt's pages (200 per statement) and `page_count` in one transaction, so a failed write keeps the previous pages and a retried job is idempotent. An unreadable PDF raises `SourceRejectedError` `CORRUPT_PDF`. `section_path` stays null for PDFs (no chapter map in MVP).
+- Evidence / links: `modules/src/knowledge/ingestion/pdf.test.ts` (3-page fixture built with pdf-lib, image-only page 2 → `has_text_layer = false`; attempt replacement; rollback; 450-page chunking).
+- Impact on plan: new dependency `unpdf` in `@rc/modules`. M1-15 calls `sniffSource` → `extractPdfPages` → `savePages` and removes the temp file.
+
 ## 2026-10-03 · File sniffing and validation [M1-05]
 - Context: M1-05 asks for sniffing, hashing and PDF checks on the real bytes; parsing into pages is M1-06/07.
 - Decision: `modules/src/knowledge/ingestion/sniff.ts`. `sniffSource(ctx, {fileKey, fileName, type})` streams the object to a temp file while hashing (SHA-256) and enforcing the per-type size limit, then checks the real type with `file-type` against the file extension: PDF (`pdf-lib` load → encrypted / corrupt / page count ≤ 1,000), DOCX (needs a Word package, a plain ZIP is rejected), text (`file-type` must find nothing; valid UTF-8, else Windows-1251 when ≥ 70 % of high bytes decode to Cyrillic; NUL or > 1 % control bytes → `NOT_TEXT`). It returns kind, size, checksum, temp path + `cleanup()`, page count or encoding; the temp file is removed on every failure. `assertNotDuplicate` (same brand, same checksum, not archived, other id) is separate so M1-15 can order the steps as in 06 J1. Rejections are `SourceRejectedError` (code `VALIDATION`, safe message, `reason` for `processing_error.code`): FILE_MISSING, UNSUPPORTED_TYPE, TOO_LARGE, TYPE_MISMATCH, ENCRYPTED_PDF, CORRUPT_PDF, TOO_MANY_PAGES, EMPTY_FILE, NOT_TEXT, DUPLICATE_SOURCE (with `duplicateOfId`). It is not retryable, so the job runner will not retry it.

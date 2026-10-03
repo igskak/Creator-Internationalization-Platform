@@ -194,7 +194,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `knowledge/ingestion/sniff.ts`: stream to temp file, SHA-256, `file-type` vs declared type, size, PDF checks (encrypted, ≤ 1,000 pages), duplicate checksum, error codes.
   - **Done when:** tests with tiny fixtures (valid PDF, renamed non-PDF, encrypted PDF, DOCX, cp1251 TXT).
 
-- [ ] **M1-06 · PDF page extraction** · P0 · M · deps: M1-05
+- [x] **M1-06 · PDF page extraction** · P0 · M · deps: M1-05
   - **Do:** `ingestion/pdf.ts`: `unpdf` per-page text, text-layer heuristic, write `source_pages` for the attempt (replace older attempts in one transaction), `page_count`.
   - **Done when:** 3-page fixture (one image-only page) → 3 rows with correct `has_text_layer`.
   - **Refs:** 07 §7.2.2.
