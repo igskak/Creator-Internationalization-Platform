@@ -1,4 +1,4 @@
-export { ACCEPTED_FORMATS, checkUploadAllowed, MAX_TEXT_CHARS } from "./limits";
+export { ACCEPTED_FORMATS, checkUploadAllowed, MAX_TEXT_CHARS, maxBytesFor } from "./limits";
 export {
   ArchiveSourceInput,
   archiveSource,
