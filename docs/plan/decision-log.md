@@ -14,7 +14,7 @@ Template:
 ---
 
 ## 2026-10-02 · Core AI quality spike, first results [S-01]
-- Context: spike on one real source (guide «Не Вари. Проектируй. Крупы», 18 pages, text layer) plus @reg.chef style (one caption and slide descriptions read from the live profile; the local Instagram backup failed on rate limits). Model `claude-opus-5-5`. Scripts `spikes/core-loop/run.mjs` (cards, 1 idea, ES, EN) and `run2.mjs` (3 ideas, 8 checker agents, one repair round). Outputs in git-ignored `spikes/core-loop/out/`. Not yet reviewed by Ihor and Sergey, so S-01 stays open.
+- Context: spike on one real source (guide «Не Вари. Проектируй. Крупы», 18 pages, text layer) plus @reg.chef style (one caption and slide descriptions read from the live profile; the local Instagram backup failed on rate limits). Model `claude-opus-5-5`. Scripts `spikes/core-loop/run.mjs` (cards, 1 idea, ES, EN) and `run2.mjs` (3 ideas, 8 checker agents, one repair round). Outputs in git-ignored `spikes/core-loop/out/`. Outputs reviewed by the owner on 2026-10-03; no blocking concerns, S-01 closed.
 - Decision / findings:
   - Extraction: 20 cards, 20/20 quotes verbatim in the source; numbers and units preserved in every draft. Single run: ~20k tokens in, ~18.5k out, ~3 min.
   - Invented content: first drafts added scenes and claims absent from the cards ("Monday/Thursday", "change the brand"). A hard ban in the prompt (no facts, scenes or numbers not in the cards) removed scenes but not intensifiers ("most common error", "water never exceeds 100 °C", "it's physics"). A fidelity checker agent finds these reliably.
@@ -26,7 +26,7 @@ Template:
   - Cost with checkers: 3 ideas, 63 calls, ~242k tokens in and ~109k out (about 5× the single run per idea). Run the full checker set only on candidates that pass a cheap filter.
   - Data is thin (one source, one caption sample); voice conclusions are preliminary.
 - Evidence / links: `spikes/core-loop/out/` (`1-cards-verified.json`, `3-es*.txt`, `3-en*.txt`, `checkers-report.json`, `usage.json`, `usage2.json`).
-- Impact on plan: M2-09/10 prompts carry the fact ban and the trigger whitelist; the critic loop (07 §7.6.3) needs 2–3 repair rounds, a separate market brief per language and a fidelity rubric that permits brand rhetoric; M1-12 can reuse the card shape (category, claim, explanation, numbers, quote, page). 20–30 Reg.Chef posts are needed as voice exemplars (B-08) before voice can be judged. Open: Ihor and Sergey review of the ES/EN outputs.
+- Impact on plan: M2-09/10 prompts carry the fact ban and the trigger whitelist; the critic loop (07 §7.6.3) needs 2–3 repair rounds, a separate market brief per language and a fidelity rubric that permits brand rhetoric; M1-12 can reuse the card shape (category, claim, explanation, numbers, quote, page). 20–30 Reg.Chef posts are needed as voice exemplars (B-08) before voice can be judged. 
 
 ## 2026-10-02 · Dev-only hello job button [M0-14a]
 - Context: M0-14a needs a dev-only button that triggers `hello` through `ctx.jobs` and shows the run id.

@@ -163,7 +163,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## S · Early spike (parallel with M0)
 
-- [ ] **S-01 · Core AI quality spike (throwaway)** · P0 · M · deps: M0-01, B-03, B-04, B-05
+- [x] **S-01 · Core AI quality spike (throwaway)** · P0 · M · deps: M0-01, B-03, B-04, B-05
   - **Do:** load the `claude-api` skill. In `spikes/core-loop/`: script that sends 15–30 pages of one real PDF to Claude (PDF input) and extracts cards; pick 5 cards; generate 1 Master Idea; generate ES and EN drafts with simple prompts. Write outputs, tokens, cost and time to `spikes/core-loop/out/` (git-ignored).
   - **Done when:** Ihor and Sergey reviewed the outputs; quality issues, prompt ideas, cost and latency are in `decision-log.md`. No production code imports the spike.
   - **Why:** tests the core product bet in week 1–2 [S§24 priority reminder].
