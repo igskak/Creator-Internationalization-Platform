@@ -2,11 +2,12 @@ import { readFile } from "node:fs/promises";
 import { basename, extname } from "node:path";
 import { schema } from "@rc/db";
 import { SOURCE_TYPES, type SourceType } from "@rc/db/json";
-import { eq } from "@rc/db/orm";
+import { eq, sql } from "@rc/db/orm";
 import { ValidationError } from "@rc/lib/errors";
 import type { CliCommands } from "./core/cli";
 import { runJobHandler } from "./core/job-runner";
 import { helloJob } from "./job-handlers";
+import { embedAndSuggest } from "./knowledge/embedding";
 import { completeSourceUpload, createSourceUpload } from "./knowledge/sources";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -46,6 +47,19 @@ export const cliCommands: CliCommands = {
         auditEventId: number;
       };
       console.log(`rc hello: wrote audit event ${result.auditEventId}`);
+    },
+  },
+  embed: {
+    description: "Embed every card without a current vector and suggest duplicates (J3 backfill)",
+    usage: "embed",
+    run: async (ctx) => {
+      const result = await embedAndSuggest(ctx, {});
+      console.log(
+        `rc embed: ${result.embedded} cards embedded, ${result.skipped} already current, ${result.duplicates.length} duplicates suspected (model ${ctx.embeddings.model})`,
+      );
+      for (const d of result.duplicates) {
+        console.log(`  ${d.id} ~ ${d.duplicateOfId} (${d.similarity})`);
+      }
     },
   },
   ingest: {
@@ -104,6 +118,7 @@ export const cliCommands: CliCommands = {
         .select({
           status: schema.knowledgeItems.reviewStatus,
           flags: schema.knowledgeItems.reviewFlags,
+          hasVector: sql<boolean>`${schema.knowledgeItems.embedding} is not null`,
         })
         .from(schema.knowledgeItems)
         .where(eq(schema.knowledgeItems.sourceAssetId, sourceAssetId));
@@ -119,12 +134,14 @@ export const cliCommands: CliCommands = {
         }),
         { input: 0, output: 0 },
       );
+      const embedded = cards.filter((c) => c.hasVector).length;
       const unverified = cards.filter((c) => c.flags.includes("QUOTE_UNVERIFIED")).length;
       console.log(
         [
           `rc ingest: source ${sourceAssetId}`,
           `  status:  ${source?.processingStatus}${source?.processingError ? ` (${source.processingError.code}: ${source.processingError.message})` : ""}`,
           `  pages:   ${source?.pageCount ?? 0}`,
+          `  vectors: ${embedded}/${cards.length} cards embedded, duplicates suspected: ${cards.filter((c) => c.flags.includes("DUPLICATE_SUSPECTED")).length}`,
           `  cards:   ${cards.length} (quote unverified: ${unverified}, safety-sensitive: ${cards.filter((c) => c.flags.includes("SAFETY_SENSITIVE")).length})`,
           `  model:   ${runs.length} calls, ${tokens.input} in / ${tokens.output} out tokens, $${cost.toFixed(4)}`,
           ...(source?.processingProgress?.failedBatches?.length

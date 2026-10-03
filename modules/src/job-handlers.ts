@@ -2,6 +2,7 @@ import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
 import { audit } from "./core/audit";
 import { defineJob } from "./core/job-runner";
+import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
 
@@ -54,10 +55,21 @@ export const extractKnowledgeBatchJob = defineJob({
   run: (ctx, { batchId }) => extractBatch(ctx, { batchId }),
 });
 
+/**
+ * J3 (plan 06 §6.3): embeds cards and suggests duplicates. With ids it handles those cards; with
+ * none it handles every card whose vector is missing or from another model (backfill, re-embed
+ * after a model change).
+ */
+export const embedKnowledgeItemsJob = defineJob({
+  payload: z.object({ knowledgeItemIds: z.array(z.uuid()).max(500).optional() }),
+  run: (ctx, { knowledgeItemIds }) => embedAndSuggest(ctx, { knowledgeItemIds }),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
+  "embed-knowledge-items": embedKnowledgeItemsJob,
 };
 
 type JobHandlers = typeof jobHandlers;
