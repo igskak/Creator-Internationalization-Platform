@@ -13,6 +13,18 @@ Template:
 
 ---
 
+## 2026-10-03 · First real ingestion: guide «Не Вари. Проектируй. Крупы» [M1-15]
+- Context: dev run of `pnpm rc ingest` on the real PDF (93 KB, 18 pages, text layer) with `AI_PROVIDER=live`, model `claude-opus-5-5`, dev Supabase database and R2. The migration `0002_knowledge` had not been applied to the dev database yet; the owner approved `pnpm db:migrate` and it ran first.
+- Result: source READY. Two PDF_NATIVE batches (pages 1–15 and 16–18), both SUCCEEDED on the first attempt without a repair. **81 cards**, all NEEDS_REVIEW; **0 with an unverified quote**; 4 `SAFETY_SENSITIVE`; no `LOW_CONFIDENCE`. Model: 2 calls, 40,152 input and 28,446 output tokens, **$0.7465** (batch 1: $0.62, 168 s; batch 2: $0.12, 38 s). Page 1 (cover, 101 characters) skipped as FRONT_MATTER. Every content page produced between 1 and 13 cards, so no page of the content was left out.
+- Findings:
+  - The model followed the fidelity rules: every quote was found in the cited pages (score check passed for all 81), confidence 0.80–0.95 (average 0.88, 28 cards below 0.90), categories from the taxonomy (51 GRAINS_RICE_PASTA, 13 TECHNIQUES, 7 FOOD_SCIENCE, 5 SPICES_SEASONING, 2 EQUIPMENT, 2 STORAGE_SAFETY, 1 SAUCES_STOCKS).
+  - 81 cards from 17 pages is about four times the 20 cards of the S-01 spike: the new prompt says "as many as the pages support". Expect near-duplicates and fine-grained cards (page 17 alone gave 13); M1-16 dedupe and the review queue order (07 §7.2.8) matter more now, and the chef's review load is the bottleneck (R-20): 81 cards for an 18-page guide. A per-batch target or a "merge closely related points" rule is a candidate for `v2` if Ihor and Sergey find the cards too granular.
+  - 58 of 81 cards have an empty `explanation` (the source gives none, as the rule asks); ratios such as grain:water have no structured field and stay in `claim`/`procedure`; only 5 cards have timings and 1 a temperature.
+  - A 15-page batch took 168 s, within the 20-minute task limit; whole-guide cost scales roughly $0.04 per page, so a 200-page book is about $8 and a 1,000-page one about $40.
+- Decision: M1-15 done. The 81 cards stay in the dev database as the first real data for M1-17/M1-18. No change to prompt or checks yet; revisit granularity after the owners' review of the cards.
+- Evidence / links: source id `ac755636-d331-46ec-833d-da736aabd681` in the dev database; `generation_runs` rows for the two batches.
+- Impact on plan: none to scope; R-20 (chef review load) gets a concrete number.
+
 ## 2026-10-03 · Ingestion orchestrator `ingest-source` and reprocessing [M1-15]
 - Context: M1-15 chains the earlier pieces into J1 (06 §6.3) and adds reprocessing (05 §5.3).
 - Decision:
