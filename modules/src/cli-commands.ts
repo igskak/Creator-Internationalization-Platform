@@ -1,8 +1,41 @@
+import { readFile } from "node:fs/promises";
+import { basename, extname } from "node:path";
+import { schema } from "@rc/db";
+import { SOURCE_TYPES, type SourceType } from "@rc/db/json";
+import { eq } from "@rc/db/orm";
+import { ValidationError } from "@rc/lib/errors";
 import type { CliCommands } from "./core/cli";
 import { runJobHandler } from "./core/job-runner";
 import { helloJob } from "./job-handlers";
+import { completeSourceUpload, createSourceUpload } from "./knowledge/sources";
 
-// Dev CLI commands (`pnpm rc <name>`, plan 15 M0-21). Later tasks add `ingest`, `generate`, `eval`.
+const MIME_BY_EXTENSION: Record<string, string> = {
+  ".pdf": "application/pdf",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".txt": "text/plain",
+  ".md": "text/markdown",
+  ".srt": "application/x-subrip",
+  ".vtt": "text/vtt",
+};
+
+/** `--name value` options and `--flag` switches after the positional arguments. */
+function parseOptions(args: string[], flags: string[]) {
+  const positional: string[] = [];
+  const options = new Map<string, string | true>();
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i] ?? "";
+    if (!arg.startsWith("--")) {
+      positional.push(arg);
+    } else if (flags.includes(arg.slice(2))) {
+      options.set(arg.slice(2), true);
+    } else {
+      options.set(arg.slice(2), args[++i] ?? "");
+    }
+  }
+  return { positional, options };
+}
+
+// Dev CLI commands (`pnpm rc <name>`, plan 15 M0-21). Later tasks add `generate`, `eval`.
 // Like jobs and server actions, commands stay thin: validate → call one service.
 export const cliCommands: CliCommands = {
   hello: {
@@ -13,6 +46,92 @@ export const cliCommands: CliCommands = {
         auditEventId: number;
       };
       console.log(`rc hello: wrote audit event ${result.auditEventId}`);
+    },
+  },
+  ingest: {
+    description:
+      "Upload a file as a source and ingest it in-process (options: --type, --language, --title)",
+    usage: "ingest <file> --ai-allowed",
+    run: async (ctx, args) => {
+      const { positional, options } = parseOptions(args, ["ai-allowed"]);
+      const path = positional[0];
+      if (!path) throw new ValidationError("Give a file: ingest <file> --ai-allowed");
+      if (!options.has("ai-allowed")) {
+        throw new ValidationError(
+          "Ingestion sends the file to the language model. Pass --ai-allowed to confirm that you may send this material.",
+        );
+      }
+      const type = String(options.get("type") ?? "GUIDE").toUpperCase();
+      if (!(SOURCE_TYPES as readonly string[]).includes(type)) {
+        throw new ValidationError(
+          `Unknown source type "${type}". Use one of: ${SOURCE_TYPES.join(", ")}.`,
+        );
+      }
+      const mimeType = MIME_BY_EXTENSION[extname(path).toLowerCase()];
+      if (!mimeType) throw new ValidationError(`Unsupported file extension "${extname(path)}".`);
+      const bytes = new Uint8Array(await readFile(path));
+
+      const { sourceAssetId } = await createSourceUpload(ctx, {
+        type: type as SourceType,
+        title: String(options.get("title") ?? basename(path)),
+        fileName: basename(path),
+        mimeType,
+        sizeBytes: bytes.byteLength,
+        originalLanguage: String(options.get("language") ?? "ru"),
+        rights: {
+          use: "UNKNOWN",
+          translate: "UNKNOWN",
+          adapt: "UNKNOWN",
+          visuallyTransform: "UNKNOWN",
+          sell: "UNKNOWN",
+          aiProcessing: "ALLOWED",
+          improvePrompts: "UNKNOWN",
+          notes: "Set by the dev CLI (--ai-allowed).",
+        },
+      });
+      const [created] = await ctx.db
+        .select({ fileKey: schema.sourceAssets.fileKey })
+        .from(schema.sourceAssets)
+        .where(eq(schema.sourceAssets.id, sourceAssetId));
+      await ctx.storage.put(created?.fileKey ?? "", bytes, { contentType: mimeType });
+      await completeSourceUpload(ctx, { sourceAssetId });
+
+      const [source] = await ctx.db
+        .select()
+        .from(schema.sourceAssets)
+        .where(eq(schema.sourceAssets.id, sourceAssetId));
+      const cards = await ctx.db
+        .select({
+          status: schema.knowledgeItems.reviewStatus,
+          flags: schema.knowledgeItems.reviewFlags,
+        })
+        .from(schema.knowledgeItems)
+        .where(eq(schema.knowledgeItems.sourceAssetId, sourceAssetId));
+      const runs = await ctx.db
+        .select({ cost: schema.generationRuns.costUsd, usage: schema.generationRuns.usage })
+        .from(schema.generationRuns)
+        .where(eq(schema.generationRuns.sourceAssetId, sourceAssetId));
+      const cost = runs.reduce((sum, run) => sum + Number(run.cost ?? 0), 0);
+      const tokens = runs.reduce(
+        (sum, run) => ({
+          input: sum.input + (run.usage?.inputTokens ?? 0),
+          output: sum.output + (run.usage?.outputTokens ?? 0),
+        }),
+        { input: 0, output: 0 },
+      );
+      const unverified = cards.filter((c) => c.flags.includes("QUOTE_UNVERIFIED")).length;
+      console.log(
+        [
+          `rc ingest: source ${sourceAssetId}`,
+          `  status:  ${source?.processingStatus}${source?.processingError ? ` (${source.processingError.code}: ${source.processingError.message})` : ""}`,
+          `  pages:   ${source?.pageCount ?? 0}`,
+          `  cards:   ${cards.length} (quote unverified: ${unverified}, safety-sensitive: ${cards.filter((c) => c.flags.includes("SAFETY_SENSITIVE")).length})`,
+          `  model:   ${runs.length} calls, ${tokens.input} in / ${tokens.output} out tokens, $${cost.toFixed(4)}`,
+          ...(source?.processingProgress?.failedBatches?.length
+            ? [`  failed batches: ${JSON.stringify(source.processingProgress.failedBatches)}`]
+            : []),
+        ].join("\n"),
+      );
     },
   },
 };

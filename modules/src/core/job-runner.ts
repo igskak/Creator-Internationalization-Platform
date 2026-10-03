@@ -39,7 +39,20 @@ export type TriggerOptions = {
   requestId?: string;
 };
 
+/** Outcome of one run started by `triggerAndWaitAll`. */
+export type JobWaitResult = { ok: true; output: unknown } | { ok: false; error: string };
+
 export type JobRunner = {
+  /**
+   * Starts one run per payload and waits for all of them (Trigger.dev `batchTriggerAndWait`:
+   * only inside a task; waiting does not use compute). The inline runner runs them one after the
+   * other. A run that failed is reported as `ok: false`, it does not throw.
+   */
+  triggerAndWaitAll<N extends JobName>(
+    name: N,
+    payloads: readonly JobPayload<N>[],
+    options?: { requestId?: string },
+  ): Promise<JobWaitResult[]>;
   trigger<N extends JobName>(
     name: N,
     payload: JobPayload<N>,
@@ -80,6 +93,11 @@ export const disabledJobRunner: JobRunner = {
       details: { job: name },
     });
   },
+  triggerAndWaitAll: async (name) => {
+    throw new PermanentError("No job runner is configured for this context.", {
+      details: { job: name },
+    });
+  },
 };
 
 type RunRecord = { status: "running" | "succeeded" | "failed"; result?: unknown; error?: unknown };
@@ -104,37 +122,61 @@ export function createInlineJobRunner(options: InlineJobRunnerOptions) {
   const runs = new Map<string, RunRecord>();
   const keys = new Map<string, string>();
 
+  /** Registers a run and starts its handler; `execution` settles when the handler does. */
+  function start(name: string, payload: unknown, triggerOptions: TriggerOptions = {}) {
+    const definition = options.handlers[name];
+    if (!definition) throw new PermanentError("Unknown job.", { details: { job: name } });
+
+    const key = triggerOptions.idempotencyKey && `${name}:${triggerOptions.idempotencyKey}`;
+    const existing = key ? keys.get(key) : undefined;
+    if (existing && runs.get(existing)?.status !== "failed") {
+      return { runId: existing, execution: Promise.resolve() };
+    }
+
+    const runId = newRunId();
+    if (key) keys.set(key, runId);
+    const record: RunRecord = { status: "running" };
+    runs.set(runId, record);
+    const meta: JobMeta = triggerOptions.requestId ? { requestId: triggerOptions.requestId } : {};
+    const ctx = options.makeContext(runId, meta);
+
+    const execution = runJobHandler(definition, ctx, payload).then(
+      (result) => {
+        record.status = "succeeded";
+        record.result = result;
+      },
+      (error: unknown) => {
+        record.status = "failed";
+        record.error = error;
+        ctx.logger.error({ err: error, job: name }, "inline job failed");
+        throw error;
+      },
+    );
+    return { runId, execution };
+  }
+
   const runner: JobRunner & { getRun(runId: string): RunRecord | undefined } = {
     async trigger(name, payload, triggerOptions = {}) {
-      const definition = options.handlers[name];
-      if (!definition) throw new PermanentError("Unknown job.", { details: { job: name } });
-
-      const key = triggerOptions.idempotencyKey && `${name}:${triggerOptions.idempotencyKey}`;
-      const existing = key ? keys.get(key) : undefined;
-      if (existing && runs.get(existing)?.status !== "failed") return { runId: existing };
-
-      const runId = newRunId();
-      if (key) keys.set(key, runId);
-      const record: RunRecord = { status: "running" };
-      runs.set(runId, record);
-      const meta: JobMeta = triggerOptions.requestId ? { requestId: triggerOptions.requestId } : {};
-      const ctx = options.makeContext(runId, meta);
-
-      const execution = runJobHandler(definition, ctx, payload).then(
-        (result) => {
-          record.status = "succeeded";
-          record.result = result;
-        },
-        (error: unknown) => {
-          record.status = "failed";
-          record.error = error;
-          ctx.logger.error({ err: error, job: name }, "inline job failed");
-          throw error;
-        },
-      );
+      const { runId, execution } = start(name, payload, triggerOptions);
       if (mode === "await") await execution;
       else execution.catch(() => {});
       return { runId };
+    },
+    async triggerAndWaitAll(name, payloads, waitOptions = {}) {
+      const results: JobWaitResult[] = [];
+      for (const payload of payloads) {
+        try {
+          const { runId, execution } = start(name, payload, waitOptions);
+          await execution;
+          results.push({ ok: true, output: runs.get(runId)?.result });
+        } catch (error) {
+          results.push({
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+      return results;
     },
     getRun: (runId) => runs.get(runId),
   };
@@ -148,11 +190,19 @@ type TriggerSdk = {
     options: Record<string, unknown>,
   ) => Promise<{ id: string }>;
   createIdempotencyKey: (key: string) => Promise<string>;
+  batchTriggerAndWait: (
+    name: string,
+    items: { payload: JobEnvelope }[],
+  ) => Promise<{ runs: { ok: boolean; output?: unknown; error?: unknown }[] }>;
 };
 
 const defaultSdk: TriggerSdk = {
   trigger: (name, envelope, options) => tasks.trigger(name, envelope, options),
   createIdempotencyKey: async (key) => idempotencyKeys.create(key, { scope: "global" }),
+  batchTriggerAndWait: async (name, items) =>
+    (await tasks.batchTriggerAndWait(name, items)) as Awaited<
+      ReturnType<TriggerSdk["batchTriggerAndWait"]>
+    >,
 };
 
 /**
@@ -165,6 +215,21 @@ export function createTriggerDevJobRunner(
 ): JobRunner {
   if (sdk === defaultSdk) configure({ accessToken: secretKey });
   return {
+    async triggerAndWaitAll(name, payloads, waitOptions = {}) {
+      const meta: JobMeta = waitOptions.requestId ? { requestId: waitOptions.requestId } : {};
+      const { runs } = await sdk.batchTriggerAndWait(
+        name,
+        payloads.map((payload) => ({ payload: { payload, meta } })),
+      );
+      return runs.map((run) =>
+        run.ok
+          ? { ok: true as const, output: run.output }
+          : {
+              ok: false as const,
+              error: run.error instanceof Error ? run.error.message : String(run.error),
+            },
+      );
+    },
     async trigger(name, payload, triggerOptions = {}) {
       const meta: JobMeta = triggerOptions.requestId ? { requestId: triggerOptions.requestId } : {};
       const options: Record<string, unknown> = {};

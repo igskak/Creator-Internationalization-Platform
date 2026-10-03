@@ -4,7 +4,13 @@ import { createLogger } from "@rc/lib/logging";
 import { createLlmProvider } from "@rc/lib/providers/llm";
 import { createStorage } from "@rc/lib/providers/storage";
 import { cliCommands } from "@rc/modules/cli-commands";
-import { cliHelp, createServiceContext, runCliCommand } from "@rc/modules/core";
+import {
+  cliHelp,
+  createInlineJobRunner,
+  createServiceContext,
+  runCliCommand,
+} from "@rc/modules/core";
+import { jobHandlers } from "@rc/modules/job-handlers";
 
 // `pnpm rc <command>`: runs a module-registered command against the database in .env.
 // Actor is SYSTEM; the CLI is a development tool and refuses production.
@@ -30,17 +36,25 @@ if (env.appEnv === "production") {
 
 const url = env.db.directUrl ?? env.db.url;
 const { db, close } = createDb(url, { pooled: isPoolerUrl(url), max: 1 });
-const ctx = createServiceContext({
+const logger = createLogger({
+  service: "cli",
+  env: env.appEnv,
+  level: env.observability.logLevel,
+});
+const providers = {
   db,
-  logger: createLogger({
-    service: "cli",
-    env: env.appEnv,
-    level: env.observability.logLevel,
-  }),
-  actor: { type: "SYSTEM" },
+  logger,
   storage: createStorage(env.storage),
   llm: createLlmProvider(env.ai),
+};
+// Jobs run in-process, one after the other, so a command can wait for ingestion to finish.
+const jobs: ReturnType<typeof createInlineJobRunner> = createInlineJobRunner({
+  handlers: jobHandlers,
+  mode: "await",
+  makeContext: (runId) =>
+    createServiceContext({ ...providers, actor: { type: "JOB", jobRunId: runId }, jobs }),
 });
+const ctx = createServiceContext({ ...providers, actor: { type: "SYSTEM" }, jobs });
 
 try {
   await runCliCommand(cliCommands, ctx, argv);

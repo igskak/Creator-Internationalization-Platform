@@ -24,6 +24,7 @@ export {
   type JobPayload,
   type JobRegistry,
   type JobRunner,
+  type JobWaitResult,
   runJobHandler,
   type TriggerOptions,
   triggerJob,

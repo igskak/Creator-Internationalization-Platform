@@ -47,6 +47,7 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | `pnpm jobs:dev` | Trigger.dev dev worker for `jobs/` (needs `TRIGGER_PROJECT_REF`, login via `pnpm --filter @rc/jobs exec trigger login`) |
 | `pnpm jobs:hello` | Trigger the `hello` smoke task through Trigger.dev (`JOBS_MODE=trigger`) |
 | `pnpm rc <command>` | Dev CLI (`cli/`) with a SYSTEM ServiceContext for the `.env` database; refuses `APP_ENV=production`. `pnpm rc help` lists commands; modules register theirs in `modules/src/cli-commands.ts` |
+| `pnpm rc ingest <file> --ai-allowed [--type GUIDE] [--language ru] [--title T]` | Upload a local file as a source and run ingestion in-process against the `.env` database, storage and model (real API calls and cost with `AI_PROVIDER=live`); prints status, pages, cards and cost |
 | `pnpm db:seed` | Insert missing reference rows (brand, markets, taxonomy, owners from `SEED_OWNER_EMAILS`, settings); never overwrites |
 
 Added by later tasks (not available yet): `pnpm test:e2e` (M1-25), `pnpm test:visual` (M3-14), `pnpm eval` (M2-16). Update this table when you add one.

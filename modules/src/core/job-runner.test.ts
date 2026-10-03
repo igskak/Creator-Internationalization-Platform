@@ -158,6 +158,7 @@ describe("TriggerDevJobRunner", () => {
           scopedKeys.push(key);
           return `global:${key}`;
         },
+        batchTriggerAndWait: async () => ({ runs: [] }),
       },
     );
 
@@ -190,12 +191,91 @@ describe("TriggerDevJobRunner", () => {
   });
 });
 
+describe("triggerAndWaitAll", () => {
+  it("Trigger.dev runner waits for a batch and maps outputs and failures", async () => {
+    const seen: { name: string; items: unknown[] }[] = [];
+    const runner = createTriggerDevJobRunner(
+      { secretKey: "tr_dev_synthetic" },
+      {
+        trigger: async () => ({ id: "x" }),
+        createIdempotencyKey: async (key) => key,
+        batchTriggerAndWait: async (name, items) => {
+          seen.push({ name, items });
+          return {
+            runs: [
+              { ok: true, output: { n: 1 } },
+              { ok: false, error: new Error("boom") },
+              { ok: false, error: "plain" },
+            ],
+          };
+        },
+      },
+    );
+    const results = await runner.triggerAndWaitAll(
+      "hello",
+      [{ name: "a" }, { name: "b" }, { name: "c" }],
+      { requestId: "req-9" },
+    );
+    expect(results).toEqual([
+      { ok: true, output: { n: 1 } },
+      { ok: false, error: "boom" },
+      { ok: false, error: "plain" },
+    ]);
+    expect(seen).toEqual([
+      {
+        name: "hello",
+        items: [
+          { payload: { payload: { name: "a" }, meta: { requestId: "req-9" } } },
+          { payload: { payload: { name: "b" }, meta: { requestId: "req-9" } } },
+          { payload: { payload: { name: "c" }, meta: { requestId: "req-9" } } },
+        ],
+      },
+    ]);
+  });
+
+  it("the inline runner runs the payloads one after the other and reports a failure per run", async () => {
+    const t = await createTestDb();
+    const order: string[] = [];
+    const runner = createInlineJobRunner({
+      handlers: {
+        hello: defineJob({
+          payload: z.object({ name: z.string() }),
+          run: async (_ctx, { name }) => {
+            order.push(`start ${name}`);
+            await new Promise((r) => setTimeout(r, name === "a" ? 20 : 0));
+            if (name === "bad") throw new Error("handler failed");
+            order.push(`end ${name}`);
+            return { name };
+          },
+        }),
+      },
+      mode: "background",
+      makeContext: () => createServiceContext({ db: t.db, logger, actor: { type: "SYSTEM" } }),
+    });
+    const results = await runner.triggerAndWaitAll("hello", [
+      { name: "a" },
+      { name: "bad" },
+      { name: "c" },
+    ]);
+    expect(results).toEqual([
+      { ok: true, output: { name: "a" } },
+      { ok: false, error: "handler failed" },
+      { ok: true, output: { name: "c" } },
+    ]);
+    expect(order).toEqual(["start a", "end a", "start bad", "start c", "end c"]);
+    await t.close();
+  });
+});
+
 describe("disabledJobRunner", () => {
   it("is the default and refuses to start jobs", async () => {
     const t = await createTestDb();
     const ctx = createServiceContext({ db: t.db, logger, actor: { type: "SYSTEM" } });
     expect(ctx.jobs).toBe(disabledJobRunner);
     await expect(triggerJob(ctx, "hello", { name: "x" })).rejects.toBeInstanceOf(PermanentError);
+    await expect(ctx.jobs.triggerAndWaitAll("hello", [{ name: "x" }])).rejects.toBeInstanceOf(
+      PermanentError,
+    );
     await t.close();
   });
 });
