@@ -11,7 +11,7 @@ import {
   type LLMProvider,
   type StructuredResult,
 } from "@rc/lib/providers/llm";
-import { definePrompt, PROMPT_STAGES, renderSections, section } from "@rc/prompts";
+import { definePrompt, PROMPT_STAGES, promptRegistry, renderSections, section } from "@rc/prompts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { createServiceContext, type ServiceContext } from "../core";
@@ -64,6 +64,15 @@ describe("config, version and cost", () => {
       effort: "medium",
       maxTokens: 32_000,
     });
+  });
+
+  it("points at registered prompts of the right stage where a prompt exists", () => {
+    for (const stage of PROMPT_STAGES) {
+      const { promptId, version } = STAGE_CONFIG[stage];
+      if (!promptRegistry.has(promptId, version)) continue;
+      expect(promptRegistry.get(promptId, version).stage).toBe(stage);
+    }
+    expect(promptRegistry.has("knowledge-extractor", 1)).toBe(true);
   });
 
   it("formats the generation version", () => {
@@ -396,9 +405,41 @@ describe("runStage", () => {
   });
 
   it("fails clearly when the active prompt is not registered yet", async () => {
-    await expect(
-      runStage(ctxWith(scripted(good)), { stage: "KNOWLEDGE_EXTRACTION", input: {} }),
-    ).rejects.toThrow("Unknown prompt knowledge-extractor@1");
+    await expect(runStage(ctxWith(scripted(good)), { stage: "CRITIC", input: {} })).rejects.toThrow(
+      "Unknown prompt critic@1",
+    );
+  });
+
+  it("sends the per-call output schema from outputFor and checks the answer against it", async () => {
+    const Strict = definePrompt({
+      id: "idea-generator",
+      version: 2,
+      stage: "IDEA_GENERATION",
+      input: z.object({ allowed: z.array(z.string()).min(1) }),
+      output: z.object({ topic: z.string() }),
+      outputFor: (input) => z.object({ topic: z.enum(input.allowed as [string, ...string[]]) }),
+      defaults: { maxTokens: 100 },
+      system: [{ text: "S" }],
+      render: () => [{ type: "text", text: "go" }],
+      changelog: "Test.",
+    });
+    const fake = scripted({ topic: "salt" });
+    const ok = await runStage(ctxWith(fake), {
+      stage: "IDEA_GENERATION",
+      input: { allowed: ["salt"] },
+      prompt: Strict,
+    });
+    expect(ok).toMatchObject({ status: "SUCCEEDED", data: { topic: "salt" } });
+    expect(z.toJSONSchema(fake.calls[0]?.schema as z.ZodType)).toMatchObject({
+      properties: { topic: { enum: ["salt"] } },
+    });
+    // The same answer is invalid when the allowed list does not contain it.
+    const bad = await runStage(ctxWith(scripted({ topic: "salt" })), {
+      stage: "IDEA_GENERATION",
+      input: { allowed: ["pepper"] },
+      prompt: Strict,
+    });
+    expect(bad.status).toBe("INVALID_OUTPUT");
   });
 
   it("uses the streaming flag from the stage config", async () => {

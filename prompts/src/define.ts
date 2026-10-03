@@ -37,6 +37,12 @@ export type PromptDefinition<I, O> = {
   stage: PromptStage;
   input: z.ZodType<I>;
   output: z.ZodType<O>;
+  /**
+   * Schema for one call when it depends on the input, e.g. category enums built from
+   * `taxonomy_terms` (07 §7.7). `output` stays the structural schema for types and tests; the
+   * runner uses `outputFor(input)` when present. Like `render`, a behavior change needs a new version.
+   */
+  outputFor?: (input: I) => z.ZodType<O>;
   defaults: { effort?: Effort; maxTokens: number };
   system: readonly SystemBlock[];
   render: (input: I) => PromptContent[];
@@ -105,6 +111,11 @@ export function definePrompt<I, O>(definition: PromptDefinition<I, O>): Prompt<I
     key: `${definition.id}@${definition.version}`,
     hash: promptHash(definition),
   });
+}
+
+/** The output schema to send and check against for this input. */
+export function outputSchema<I, O>(prompt: Prompt<I, O>, input: I): z.ZodType<O> {
+  return prompt.outputFor ? prompt.outputFor(input) : prompt.output;
 }
 
 /**

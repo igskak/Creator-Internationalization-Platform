@@ -52,9 +52,9 @@ const base = (patch: Partial<PromptDefinition<In, z.infer<typeof Output>>> = {})
 const input: In = { topic: "salt", cards: [{ id: "k1", claim: "Salt early" }] };
 
 describe("@rc/prompts", () => {
-  it("exposes its package name and an empty registry until prompts are added", () => {
+  it("exposes its package name and the released prompts", () => {
     expect(PACKAGE_NAME).toBe("@rc/prompts");
-    expect(promptRegistry.list()).toEqual([]);
+    expect(promptRegistry.list().map((p) => p.key)).toEqual(["knowledge-extractor@1"]);
   });
 });
 

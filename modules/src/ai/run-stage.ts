@@ -12,13 +12,13 @@ import {
 } from "@rc/lib/providers/llm";
 import {
   type AnyPrompt,
+  outputSchema,
   type PromptStage,
   promptRegistry,
-  renderPrompt,
   renderSections,
   section,
 } from "@rc/prompts";
-import type { ZodError } from "zod";
+import type { ZodError, z } from "zod";
 import type { ServiceContext } from "../core";
 import { STAGE_CONFIG, type StageConfig } from "./config";
 import { computeCostUsd } from "./cost";
@@ -139,8 +139,11 @@ export async function runStage<O = unknown>(
     throw new Error(`Prompt ${prompt.key} is for stage ${prompt.stage}, not ${options.stage}.`);
   }
   let rendered: LLMContent[];
+  let schemaForCall: z.ZodType<unknown>;
   try {
-    rendered = renderPrompt(prompt, options.input);
+    const input = prompt.input.parse(options.input);
+    rendered = prompt.render(input);
+    schemaForCall = outputSchema(prompt, input);
   } catch (error) {
     if (error && typeof error === "object" && "issues" in error) {
       throw ValidationError.fromZod(error as ZodError, `Invalid input for ${prompt.key}.`);
@@ -155,7 +158,7 @@ export async function runStage<O = unknown>(
     model: config.model,
     system: prompt.system,
     messages: [{ role: "user", content: [...attachments, ...rendered, ...extra] }],
-    schema: prompt.output,
+    schema: schemaForCall as z.ZodType<O>,
     schemaName: prompt.id,
     ...(effort ? { effort } : {}),
     maxTokens,
