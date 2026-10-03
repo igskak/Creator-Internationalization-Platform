@@ -1,0 +1,167 @@
+import type { Messages } from "./en";
+import type { PluralForms } from "./format";
+
+// Russian messages. The type comes from en.ts, so a missing or extra key fails the type check.
+
+export const ru: Messages = {
+  shell: {
+    appName: "RegChef Content Engine",
+    userMenu: "Меню пользователя",
+    role: "Роль: {role}",
+    signOut: "Выйти",
+    language: "Язык",
+    mainNav: "Главное меню",
+    later: "позже",
+  },
+  nav: {
+    sections: {
+      dashboard: "Дашборд",
+      content: "Контент",
+      knowledge: "Знания",
+      markets: "Рынки",
+      analytics: "Аналитика",
+      experiments: "Эксперименты",
+      settings: "Настройки",
+    },
+    screens: {
+      dashboard: "Дашборд",
+      ideas: "Идеи",
+      drafts: "Черновики",
+      calendar: "Календарь",
+      published: "Опубликовано",
+      sources: "Источники",
+      cards: "База знаний",
+      offers: "Продукты и офферы",
+      posts: "Прошлые посты",
+      analytics: "Аналитика",
+      experiments: "Эксперименты",
+      instagram: "Instagram",
+      brand: "Бренд",
+      ai: "ИИ и провайдеры",
+      health: "Состояние системы",
+    },
+  },
+  cards: {
+    title: "База знаний",
+    subtitle: "Карточки, извлечённые из источников. Проверьте их, затем утвердите или архивируйте.",
+    tabs: {
+      NEEDS_REVIEW: "На проверке",
+      CHEF_APPROVED: "Утверждено",
+      ARCHIVED: "В архиве",
+      EXTRACTED: "Обрабатываются",
+      all: "Все",
+    },
+    columns: { card: "Карточка", check: "Проверка" },
+    searchPlaceholder: "Поиск по карточкам",
+    searchLabel: "Поиск по карточкам",
+    filters: {
+      category: "Категория",
+      flags: "Флаги",
+      source: "Источник",
+      language: "Язык",
+      clear: "Сбросить фильтры",
+      none: "Фильтровать не по чему",
+    },
+    flags: {
+      QUOTE_UNVERIFIED: "Цитата не найдена",
+      LOW_CONFIDENCE: "Низкая уверенность",
+      DUPLICATE_SUSPECTED: "Возможный дубль",
+      SAFETY_SENSITIVE: "Безопасность",
+    },
+    flagHints: {
+      QUOTE_UNVERIFIED:
+        "Цитаты нет на указанных страницах. Сверьтесь с источником перед утверждением.",
+      LOW_CONFIDENCE: "Число не найдено в источнике или модель не была уверена.",
+      DUPLICATE_SUSPECTED: "Очень похожа на более старую карточку.",
+      SAFETY_SENSITIVE: "Тема безопасности еды. Прочитайте внимательно перед утверждением.",
+    },
+    quote: {
+      verified: "Цитата найдена в источнике",
+      unverified: "Цитата не найдена в источнике",
+      manual: "Добавлена вручную, цитаты из источника нет",
+    },
+    confidence: "Уверенность модели {value}",
+    order: "Порядок: сначала проверенные цитаты, затем по уверенности",
+    selectAll: "Выбрать все карточки на странице",
+    selectRow: "Выбрать: {title}",
+    openCard: "Открыть карточку",
+    sourcePage: "{source}, стр. {page}",
+    bulk: {
+      selected: {
+        one: "Выбрана {count} карточка",
+        few: "Выбрано {count} карточки",
+        many: "Выбрано {count} карточек",
+        other: "Выбрано {count} карточки",
+      } satisfies PluralForms,
+      approve: "Утвердить",
+      archive: "Архивировать",
+      clear: "Снять выбор",
+      approveVerified: "Утвердить проверенные ({count})",
+      approveVerifiedHint:
+        "Карточки с найденной цитатой и без флагов, не больше {batch} за раз. Карточки с флагами нужно смотреть отдельно.",
+      onlyChef: "Утверждать карточки может только шеф или владелец.",
+    },
+    archiveDialog: {
+      title: {
+        one: "Архивировать {count} карточку",
+        few: "Архивировать {count} карточки",
+        many: "Архивировать {count} карточек",
+        other: "Архивировать {count} карточки",
+      } satisfies PluralForms,
+      description:
+        "Архивные карточки остаются в базе, но не используются для новых идей. Их можно вернуть позже.",
+      reason: "Причина",
+      reasons: {
+        INACCURATE: "Неточная",
+        DUPLICATE: "Дубль",
+        OUT_OF_SCOPE: "Не по теме",
+        OTHER: "Другое",
+      },
+      confirm: "Архивировать",
+      cancel: "Отмена",
+    },
+    result: {
+      approved: {
+        one: "Утверждена {count} карточка",
+        few: "Утверждено {count} карточки",
+        many: "Утверждено {count} карточек",
+        other: "Утверждено {count} карточки",
+      } satisfies PluralForms,
+      archived: {
+        one: "В архив отправлена {count} карточка",
+        few: "В архив отправлено {count} карточки",
+        many: "В архив отправлено {count} карточек",
+        other: "В архив отправлено {count} карточки",
+      } satisfies PluralForms,
+      skipped: {
+        one: "Пропущена {count} карточка",
+        few: "Пропущено {count} карточки",
+        many: "Пропущено {count} карточек",
+        other: "Пропущено {count} карточки",
+      } satisfies PluralForms,
+      reasons: {
+        QUOTE_UNVERIFIED: "цитата не проверена",
+        HAS_FLAGS: "есть флаги",
+        INVALID_STATE: "неподходящий статус",
+        NOT_FOUND: "не найдена",
+        MISSING_FIELDS: "не заполнены заголовок, утверждение или категория",
+      },
+    },
+    empty: {
+      noneTitle: "Карточек знаний пока нет",
+      noneBody: "Загрузите источник, и его карточки появятся здесь на проверку.",
+      noneAction: "Перейти к источникам",
+      filteredTitle: "Ничего не найдено",
+      filteredBody: "Попробуйте другие фильтры или другой запрос.",
+      reviewDoneTitle: "Проверять больше нечего",
+      reviewDoneBody: "Все карточки утверждены или в архиве.",
+      clear: "Сбросить фильтры",
+    },
+    pagination: {
+      range: "{from}–{to} из {total}",
+      previous: "Назад",
+      next: "Вперёд",
+      label: "Страницы",
+    },
+  },
+};

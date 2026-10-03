@@ -245,7 +245,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 - [ ] **M1-17 · Knowledge Base list UI** · P0 · M · deps: M1-15, M0-16
   - **Do:** `/knowledge/cards`: filters (status, category, source, flags, language), text search, status counts, default review order (07 §7.2.8), bulk approve/archive (`bulkTransitionKnowledgeCards`).
-  - **Done when:** 500-card fixture list loads in < 1 s server time; bulk approve skips unverified cards (test).
+  - **Done when:** 500-card fixture list loads in < 1 s server time; bulk approve skips unverified cards (test). *(Service, screen, tests and build done 2026-10-03; open: Ihor's visual check of `/knowledge/cards` on the dev database, then tick.)*
 
 - [ ] **M1-18 · Knowledge card review UI and versions** · P0 · L · deps: M1-17
   - **Do:** `/knowledge/cards/[id]`: structured editor (procedure, ingredients, temperatures, timings, mistakes), evidence viewer (cited page ± 1, highlighted quote, link to PDF page via presigned URL), flags, version history, transitions (10 §10.4.1) with role guard. Actions `updateKnowledgeCard`, `transitionKnowledgeCard`; `knowledge_item_versions` snapshot on approve; approved-card edit → NEEDS_REVIEW + variant flags hook.
@@ -280,6 +280,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 - [ ] **M1-25 · M1 acceptance** · P0 · S · deps: M1-18, M1-19
   - **Do:** E2E spec 1 (13 §13.4) with fakes; manual run on one real book and one DOCX in dev; record pages, cards, % verified quotes, cost, time, top issues in `decision-log.md`.
   - **Done when:** M1 DoD (14 §14.2) checked.
+
+- [ ] **I18N-01 · Russian interface for the remaining screens** · P1 · M · deps: M1-17
+  - **Do:** move the hard-coded English strings of the other screens into `apps/web/src/lib/i18n` (`en.ts`, `ru.ts`): settings forms (brand, visual system, taxonomy, markets), placeholders, banners, the `useAction` fallback error, field errors, dates and the market time zones; translate the taxonomy and category labels shown in the UI (they come from `taxonomy_terms`, so either a per-locale label column or a code → label table in the catalogs). Every new screen from now on adds `en` and `ru` together.
+  - **Done when:** no English literal is left in `apps/web/src` JSX outside the catalogs and brand names; the catalog parity test passes; each screen checked in both languages.
+  - **Refs:** M1-17 decision log entry, 10 §10.5.
 
 ## M2 · Content Engine → Gate G1
 

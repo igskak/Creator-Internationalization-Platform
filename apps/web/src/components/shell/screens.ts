@@ -1,5 +1,6 @@
 // Screen catalog (plan 10 §10.1–10.2): one source for the sidebar and the placeholder pages.
 // `task` is the task that builds the real screen.
+import { en, type Messages } from "../../lib/i18n/en";
 
 export type Screen = { route: string; title: string; purpose: string; task: string; p1?: boolean };
 
@@ -155,38 +156,48 @@ export type NavMarket = {
   isActive: boolean;
 };
 
-const item = (key: ScreenKey, label?: string): NavItem => ({
-  label: label ?? SCREENS[key].title,
-  href: SCREENS[key].route,
-  screen: key,
-  ...("p1" in SCREENS[key] ? { note: "P1" } : {}),
-});
+/** Names of the sidebar sections and screens in the interface language (`messages.nav`). */
+export type NavLabels = Messages["nav"] & { later: string };
+const ENGLISH_LABELS: NavLabels = { ...en.nav, later: en.shell.later };
 
 /** Sidebar (10 §10.1). Markets come from the database; inactive ones are shown disabled. */
-export function buildNav(markets: NavMarket[]): NavSection[] {
+export function buildNav(markets: NavMarket[], labels: NavLabels = ENGLISH_LABELS): NavSection[] {
+  const item = (key: ScreenKey): NavItem => ({
+    label:
+      key in labels.screens
+        ? labels.screens[key as keyof NavLabels["screens"]]
+        : SCREENS[key].title,
+    href: SCREENS[key].route,
+    screen: key,
+    ...("p1" in SCREENS[key] ? { note: "P1" } : {}),
+  });
+  const { sections } = labels;
   return [
-    { label: "Dashboard", href: SCREENS.dashboard.route, items: [] },
+    { label: sections.dashboard, href: SCREENS.dashboard.route, items: [] },
     {
-      label: "Content",
+      label: sections.content,
       items: [item("ideas"), item("drafts"), item("calendar"), item("published")],
     },
     {
-      label: "Knowledge",
-      items: [item("sources"), item("cards"), item("offers", "Products/Offers"), item("posts")],
+      label: sections.knowledge,
+      items: [item("sources"), item("cards"), item("offers"), item("posts")],
     },
     {
-      label: "Markets",
+      label: sections.markets,
       items: markets.map((m) => ({
         label: m.displayName,
         ...(m.flagEmoji ? { icon: m.flagEmoji } : {}),
         href: `/markets/${encodeURIComponent(m.code)}`,
         screen: "market" as const,
-        ...(m.isActive ? {} : { disabled: true, note: "later" }),
+        ...(m.isActive ? {} : { disabled: true, note: labels.later }),
       })),
     },
-    { label: "Analytics", href: SCREENS.analytics.route, items: [] },
-    { label: "Experiments", href: SCREENS.experiments.route, items: [] },
-    { label: "Settings", items: [item("instagram"), item("brand"), item("ai"), item("health")] },
+    { label: sections.analytics, href: SCREENS.analytics.route, items: [] },
+    { label: sections.experiments, href: SCREENS.experiments.route, items: [] },
+    {
+      label: sections.settings,
+      items: [item("instagram"), item("brand"), item("ai"), item("health")],
+    },
   ];
 }
 

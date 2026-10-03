@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import { isActiveHref, type NavItem, type NavSection } from "./screens";
 
@@ -56,8 +57,9 @@ export function SidebarNav({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const { messages } = useI18n();
   return (
-    <nav aria-label="Main" className="flex flex-col gap-4">
+    <nav aria-label={messages.shell.mainNav} className="flex flex-col gap-4">
       {sections.map((section) => (
         <div key={section.label} className="flex flex-col gap-0.5">
           {section.href ? (
