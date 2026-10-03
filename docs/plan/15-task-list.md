@@ -239,7 +239,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** handler + Trigger.dev task (06 §6.3 J1): rights gate, sniff, parse, pages, plan, `batchTriggerAndWait` (sequential in inline mode), finalize READY/FAILED with progress JSON, audit; reprocess semantics (attempt + 1; unapproved cards of older attempts → ARCHIVED `SUPERSEDED`).
   - **Done when:** inline integration tests (happy, BLOCKED, one batch failed → READY partial, reprocess); dev run on one real PDF. *(Tests and the real-PDF dev run done 2026-10-03, see decision log.)*
 
-- [ ] **M1-16 · Card embeddings and dedupe** · P0 · S · deps: M1-11, M1-15
+- [x] **M1-16 · Card embeddings and dedupe** · P0 · S · deps: M1-11, M1-15
   - **Do:** `embed-knowledge-items` job (skip if hash unchanged; also the re-embed job for model changes); dedupe suggestions (cosine ≥ 0.92, same language) → `DUPLICATE_SUSPECTED` + `duplicate_of_id`; re-embed on edit/approve.
   - **Done when:** tests with fake embeddings (forced similar pair flagged; unchanged card not re-embedded).
 

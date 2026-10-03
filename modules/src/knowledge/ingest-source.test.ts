@@ -11,6 +11,7 @@ import {
   TransientError,
 } from "@rc/lib/errors";
 import { createLogger } from "@rc/lib/logging";
+import { createFakeEmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createFakeLLMProvider, type FakeResponse } from "@rc/lib/providers/llm";
 import { createMemoryStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import { FIXTURE_OUTPUT, FIXTURE_PAGES } from "@rc/prompts/fixtures/knowledge-extractor";
@@ -111,7 +112,10 @@ describe("ingest-source (inline, end to end)", () => {
     },
   });
 
-  function build(handler: (index: number) => FakeResponse | unknown) {
+  function build(
+    handler: (index: number) => FakeResponse | unknown,
+    embeddings = createFakeEmbeddingProvider(),
+  ) {
     llmCalls = 0;
     const llm = createFakeLLMProvider({ handler: () => handler(llmCalls++) });
     const store = wrapStorage(storage);
@@ -124,11 +128,12 @@ describe("ingest-source (inline, end to end)", () => {
           logger,
           actor: { type: "JOB", jobRunId: runId },
           llm,
+          embeddings,
           storage: store,
           jobs: runner,
         }),
     });
-    return { llm, jobs: runner, store };
+    return { llm, jobs: runner, store, embeddings };
   }
 
   let ownerId = "";
@@ -141,6 +146,7 @@ describe("ingest-source (inline, end to end)", () => {
       logger,
       actor: { type: "USER", userId: ownerId, role },
       llm: harness.llm,
+      embeddings: harness.embeddings,
       storage: harness.store,
       jobs: harness.jobs,
     });
@@ -255,6 +261,47 @@ describe("ingest-source (inline, end to end)", () => {
       "knowledge.needs_review",
       "source.processed",
     ]);
+  });
+
+  it("embeds the new cards after READY and flags a duplicate pair", async () => {
+    const [first, second] = FIXTURE_OUTPUT.cards;
+    // The writer returned the first card twice (same text, so the same vector).
+    const h = build(() => ({ ...FIXTURE_OUTPUT, cards: [first, second, first] }));
+    const ctx = ctxFor(h);
+    const id = await upload(ctx, markdown);
+    await completeSourceUpload(ctx, { sourceAssetId: id });
+
+    expect((await source(id)).processingStatus).toBe("READY");
+    const cards = await cardsOf(id);
+    expect(cards).toHaveLength(3);
+    for (const card of cards) {
+      expect(card.embedding).toHaveLength(1536);
+      expect(card.embeddingModel).toBe("fake-embedding");
+      expect(card.embeddingHash).toMatch(/^[0-9a-f]{64}$/);
+    }
+    const flagged = cards.filter((c) => c.reviewFlags.includes("DUPLICATE_SUSPECTED"));
+    expect(flagged).toHaveLength(1);
+    const twins = cards.filter((c) => c.title === first?.title).map((c) => c.id);
+    expect(twins).toContain(flagged[0]?.id);
+    expect(twins).toContain(flagged[0]?.duplicateOfId);
+    expect(h.embeddings.calls).toHaveLength(1);
+  });
+
+  it("stays READY when the vectors cannot be made; the backfill job catches up later", async () => {
+    const failing = createFakeEmbeddingProvider();
+    failing.embed = async () => {
+      throw new TransientError("embeddings down");
+    };
+    const h = build(() => FIXTURE_OUTPUT, failing);
+    const ctx = ctxFor(h);
+    const id = await upload(ctx, markdown);
+    await completeSourceUpload(ctx, { sourceAssetId: id });
+    expect((await source(id)).processingStatus).toBe("READY");
+    expect((await cardsOf(id)).every((c) => c.embedding === null)).toBe(true);
+
+    const healthy = build(() => FIXTURE_OUTPUT);
+    await healthy.jobs.trigger("embed-knowledge-items", {});
+    expect((await cardsOf(id)).every((c) => c.embedding !== null)).toBe(true);
   });
 
   it("extracts a PDF through PDF_NATIVE batches", async () => {

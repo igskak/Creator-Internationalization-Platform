@@ -1,9 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { schema } from "@rc/db";
 import type { ProcessingProgress } from "@rc/db/json";
-import { and, count, eq } from "@rc/db/orm";
+import { and, count, eq, inArray } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, RightsBlockedError } from "@rc/lib/errors";
 import { type ServiceContext, transition } from "../core";
+import { requestEmbedding } from "./embedding";
 import { insertBatches, pdfMeasurer, planPdfBatches, planTextBatches } from "./extraction";
 import {
   assertNotDuplicate,
@@ -218,6 +219,10 @@ export async function ingestSource(
           failedBatches: failedBatches.length,
         },
       );
+      await requestCardEmbeddings(
+        ctx,
+        succeeded.map((b) => b.id),
+      );
       return {
         status: "READY",
         cardsCreated,
@@ -257,6 +262,27 @@ export async function ingestSource(
     }
     // Transient and unexpected errors: stay PROCESSING; the job runner retries and resumes.
     throw error;
+  }
+}
+
+/**
+ * After READY: vectors and duplicate suggestions for the new cards run as their own job (J3). If
+ * that cannot even be started, the source stays READY and the backfill job picks the cards up.
+ */
+async function requestCardEmbeddings(ctx: ServiceContext, batchIds: string[]): Promise<void> {
+  try {
+    const cards = await ctx.db
+      .select({ id: schema.knowledgeItems.id })
+      .from(schema.knowledgeItems)
+      .where(inArray(schema.knowledgeItems.extractionBatchId, batchIds));
+    for (let i = 0; i < cards.length; i += 500) {
+      await requestEmbedding(
+        ctx,
+        cards.slice(i, i + 500).map((c) => c.id),
+      );
+    }
+  } catch (error) {
+    ctx.logger.warn({ err: error }, "could not embed the new cards now; the backfill job will");
   }
 }
 
