@@ -21,6 +21,7 @@ Internal tool that turns Reg.Chef's Russian-language culinary IP into original S
 - Status changes go through the transition helper and write `audit_events`.
 - AI calls go through `runStage()`; never call a vendor SDK from business code. Prompt versions are immutable (`vN.ts`); change = new version + eval.
 - Default model `claude-opus-5-5`; no `temperature`. Load the `claude-api` skill before touching the Anthropic adapter.
+- UI text lives in the message catalogs `apps/web/src/lib/i18n/{en,ru}.ts` (cookie `rc-locale`, English by default); a new screen adds both languages, the parity test fails otherwise. Screens built before M1-17 are still English only (I18N-01).
 - Instagram specifics live only in `modules/instagram`. Never publish content that is not APPROVED; never retry `media_publish` blindly.
 
 ## Safety rules
