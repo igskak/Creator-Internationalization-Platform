@@ -5,6 +5,8 @@ import {
   bulkTransitionKnowledgeCards as bulkTransitionService,
   TransitionCardInput,
   transitionKnowledgeCard as transitionService,
+  UpdateCardInput,
+  updateKnowledgeCard as updateService,
 } from "@rc/modules/knowledge";
 import { defineAction } from "./_define";
 
@@ -27,4 +29,14 @@ export const bulkTransitionKnowledgeCards = defineAction({
   input: BulkTransitionInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => bulkTransitionService(ctx, input),
+});
+
+export const updateKnowledgeCard = defineAction({
+  name: "updateKnowledgeCard",
+  input: UpdateCardInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const card = await updateService(ctx, input);
+    return { id: card.id, status: card.status, version: card.version };
+  },
 });

@@ -189,3 +189,52 @@ export function verifyNumbers(
   }
   return { missing: [...new Set(missing)] };
 }
+
+// --- locating a quote in the original text (for highlighting) ----------------------------------
+
+const MAPPED_DASHES = new Set("‐‑‒–—―−﹘﹣－");
+const MAPPED_QUOTES = new Set("«»„“”‟‹›");
+const MAPPED_APOSTROPHES = new Set("‘’‚‛`´");
+
+/** Normalized text plus, for every normalized character, its index in the original. */
+function normalizedWithMap(text: string): { text: string; map: number[] } {
+  const chars: string[] = [];
+  const map: number[] = [];
+  let previousSpace = true; // leading whitespace is dropped
+  for (let i = 0; i < text.length; i++) {
+    const original = text[i] ?? "";
+    if (original === "\u00AD" || /[\u200B-\u200D\uFEFF]/.test(original)) continue;
+    let piece = original.normalize("NFKC").toLowerCase().replaceAll("ё", "е");
+    if (MAPPED_DASHES.has(original)) piece = "-";
+    else if (MAPPED_QUOTES.has(original)) piece = '"';
+    else if (MAPPED_APOSTROPHES.has(original)) piece = "'";
+    for (const ch of piece) {
+      if (/\s/.test(ch)) {
+        if (previousSpace) continue;
+        previousSpace = true;
+        chars.push(" ");
+      } else {
+        previousSpace = false;
+        chars.push(ch);
+      }
+      map.push(i);
+    }
+  }
+  return { text: chars.join(""), map };
+}
+
+/**
+ * Where `quote` stands in `text` as a character range of the original text, or null. Case, `ё`,
+ * quote and dash styles, soft hyphens and white space are ignored, as in verification. A quote
+ * that only matches fuzzily, or across a hyphenated line break, is not located.
+ */
+export function locateQuote(text: string, quote: string): { start: number; end: number } | null {
+  const wanted = normalizeForMatch(quote);
+  if (!wanted) return null;
+  const { text: haystack, map } = normalizedWithMap(text);
+  const at = haystack.indexOf(wanted);
+  if (at < 0) return null;
+  const start = map[at];
+  const last = map[at + wanted.length - 1];
+  return start === undefined || last === undefined ? null : { start, end: last + 1 };
+}

@@ -243,13 +243,13 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `embed-knowledge-items` job (skip if hash unchanged; also the re-embed job for model changes); dedupe suggestions (cosine ≥ 0.92, same language) → `DUPLICATE_SUSPECTED` + `duplicate_of_id`; re-embed on edit/approve.
   - **Done when:** tests with fake embeddings (forced similar pair flagged; unchanged card not re-embedded).
 
-- [ ] **M1-17 · Knowledge Base list UI** · P0 · M · deps: M1-15, M0-16
+- [x] **M1-17 · Knowledge Base list UI** · P0 · M · deps: M1-15, M0-16
   - **Do:** `/knowledge/cards`: filters (status, category, source, flags, language), text search, status counts, default review order (07 §7.2.8), bulk approve/archive (`bulkTransitionKnowledgeCards`).
-  - **Done when:** 500-card fixture list loads in < 1 s server time; bulk approve skips unverified cards (test). *(Service, screen, tests and build done 2026-10-03; open: Ihor's visual check of `/knowledge/cards` on the dev database, then tick.)*
+  - **Done when:** 500-card fixture list loads in < 1 s server time; bulk approve skips unverified cards (test). *(Visual check by Ihor on the dev database, 2026-10-04: no remarks.)*
 
 - [ ] **M1-18 · Knowledge card review UI and versions** · P0 · L · deps: M1-17
   - **Do:** `/knowledge/cards/[id]`: structured editor (procedure, ingredients, temperatures, timings, mistakes), evidence viewer (cited page ± 1, highlighted quote, link to PDF page via presigned URL), flags, version history, transitions (10 §10.4.1) with role guard. Actions `updateKnowledgeCard`, `transitionKnowledgeCard`; `knowledge_item_versions` snapshot on approve; approved-card edit → NEEDS_REVIEW + variant flags hook.
-  - **Done when:** the chef approves/edits/archives in the UI; version rows are correct (tests).
+  - **Done when:** the chef approves/edits/archives in the UI; version rows are correct (tests). *(Service, screen, tests and build done 2026-10-04; open: the chef's and Ihor's try-out of `/knowledge/cards/[id]` on the dev database, then tick.)*
   - **Refs:** 05 §5.4.
 
 - [x] **M1-19 · Retrieval service** · P0 · S · deps: M1-16
@@ -353,6 +353,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 - [ ] **M2-13 · Variant generation pipeline** · P0 · L · deps: M2-10, M2-11, M2-12
   - **Do:** `content/pipeline/generate-variants.ts` (07 §7.6.2): locking, shuffled sequential adapters, parallel writers, validation + repair, critic loop (≤ 2 rewrites), persistence of fields/flags/config/`template_sequence`/`content_length`, `pipeline_state` resume, failure handling.
   - **Done when:** integration tests: happy, rewrite, flag, resume after simulated crash, failure → DRAFT + `GENERATION_FAILED`.
+
+- [ ] **M2-13a · Flag variants when a card they cite changes** · P0 · S · deps: M2-01, M1-18
+  - **Do:** the hook of 05 §5.4 that M1-18 left open: when a CHEF_APPROVED card is edited (`updateKnowledgeCard`, back to NEEDS_REVIEW as version + 1) every unpublished variant that cites it gets flag `KNOWLEDGE_CHANGED` (a warning); when an approved card is archived (`transitionKnowledgeCard`) they get `KNOWLEDGE_ARCHIVED` (blocks approval). Published variants are never touched. Fill `usedByIdeas` in `getCardWithEvidence` (M2-06a lookup).
+  - **Done when:** tests with a linked idea and variants in several statuses (flag set on the unpublished ones only, cleared when the card is approved again).
+  - **Refs:** 05 §5.4, 10 §10.4.1, 04 §4.4 `VariantFlag`.
 
 - [ ] **M2-14 · `generate-content` job and actions** · P0 · M · deps: M2-13, M0-14
   - **Do:** J5 handler + task; actions `generateVariants`, `regenerateVariant`; `getStatuses` for variants (stage from `pipeline_state`).

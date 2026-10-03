@@ -2,7 +2,13 @@ import { FIXTURE_OUTPUT, FIXTURE_PAGES } from "@rc/prompts/fixtures/knowledge-ex
 import { describe, expect, it } from "vitest";
 import { assessCard } from "./assess";
 import { safetyReasons } from "./safety";
-import { normalizeForMatch, statedNumbers, verifyNumbers, verifyQuote } from "./verify-quote";
+import {
+  locateQuote,
+  normalizeForMatch,
+  statedNumbers,
+  verifyNumbers,
+  verifyQuote,
+} from "./verify-quote";
 
 const page = (pageNumber: number, text: string) => ({ pageNumber, text });
 const cited = (pageStart: number, pageEnd = pageStart) => ({ pageStart, pageEnd });
@@ -295,5 +301,60 @@ describe("assessCard", () => {
     });
     expect(result.flags).toContain("SAFETY_SENSITIVE");
     expect(result.flags).toContain("LOW_CONFIDENCE"); // 74 is not on page 2
+  });
+});
+
+describe("locateQuote", () => {
+  const slice = (text: string, quote: string) => {
+    const range = locateQuote(text, quote);
+    return range ? text.slice(range.start, range.end) : null;
+  };
+
+  it.each([
+    [
+      "exact",
+      "Гречку варят 15 минут. Крышку не поднимают.",
+      "Крышку не поднимают",
+      "Крышку не поднимают",
+    ],
+    ["case and ё", "Всё готово, когда ВСЁ впитало воду.", "все готово", "Всё готово"],
+    [
+      "line breaks and spaces",
+      "Пар доваривает\n  крупу, а каждое открывание его выпускает.",
+      "доваривает крупу, а каждое",
+      "доваривает\n  крупу, а каждое",
+    ],
+    [
+      "quotes and dashes",
+      "Он сказал: «варить — долго» и ушёл.",
+      '"варить - долго"',
+      "«варить — долго»",
+    ],
+    [
+      "soft hyphen inside a word",
+      `Кастрю${SHY}ля стоит на огне.`,
+      "кастрюля стоит",
+      `Кастрю${SHY}ля стоит`,
+    ],
+    ["NBSP", `Варить${NBSP}15${NBSP}минут.`, "варить 15 минут", `Варить${NBSP}15${NBSP}минут`],
+  ])(
+    "finds a quote that differs only in %s, and the range slices the original text",
+    (_n, text, quote, expected) => {
+      expect(slice(text, quote)).toBe(expected);
+    },
+  );
+
+  it("returns null for a quote that is absent, empty, or only a near match", () => {
+    expect(locateQuote("Гречку варят 15 минут.", "Рис промывают")).toBeNull();
+    expect(locateQuote("Гречку варят 15 минут.", "  ")).toBeNull();
+    expect(locateQuote("Гречку варят 15 минут.", "Гречку варят 20 минут")).toBeNull();
+    expect(locateQuote("", "текст")).toBeNull();
+  });
+
+  it("locates the first occurrence and a quote at the very start or end", () => {
+    expect(slice("ab ab", "ab")).toBe("ab");
+    expect(locateQuote("ab ab", "ab")).toEqual({ start: 0, end: 2 });
+    expect(slice("начало и конец", "конец")).toBe("конец");
+    expect(slice("   отступ в начале", "отступ в начале")).toBe("отступ в начале");
   });
 });

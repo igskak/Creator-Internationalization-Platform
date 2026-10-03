@@ -27,6 +27,7 @@ export { SAFETY_RULES, safetyReasons } from "./safety";
 export { type ExtractionTaxonomy, loadExtractionTaxonomy } from "./taxonomy";
 export { MAX_QUOTE_CHARS, validateExtraction } from "./validate";
 export {
+  locateQuote,
   normalizeForMatch,
   QUOTE_VERIFIED_THRESHOLD,
   statedNumbers,

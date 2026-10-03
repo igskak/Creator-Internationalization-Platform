@@ -1,4 +1,11 @@
 export {
+  type CardDetail,
+  type CardVersionView,
+  type CardView,
+  type EvidencePage,
+  getCardWithEvidence,
+} from "./detail";
+export {
   APPROVE_BATCH,
   CARD_FLAGS,
   CARD_SORTS,
@@ -21,3 +28,4 @@ export {
   TransitionCardInput,
   transitionKnowledgeCard,
 } from "./transition";
+export { KnowledgeCardPatch, UpdateCardInput, updateKnowledgeCard } from "./update";
