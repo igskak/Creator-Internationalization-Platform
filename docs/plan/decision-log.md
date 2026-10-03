@@ -13,6 +13,17 @@ Template:
 
 ---
 
+## 2026-10-03 · Retrieval service [M1-19]
+- Context: M1-19 asks for `candidatePool()`, `searchApproved()` and `getIdeaCards(ideaId)` (07 §7.9.1). The tables for ideas (`master_ideas`, `master_idea_knowledge`) come with M2-01, so what depends on them cannot be built yet.
+- Decision: `modules/src/knowledge/retrieval/`.
+  - **`candidatePool(ctx, options)`:** approved (`CHEF_APPROVED`) cards that have a vector, filtered by categories and language, newest approval first (at most 2,000 are considered); cards in `recentlyUsedIds` are left out unless that leaves fewer than `minPool` (40), in which case the exclusion is skipped and `exclusionApplied` says so; then at most 60 cards by MMR (λ 0.7, `mmr.ts`) over the vectors. `categoryWeights` multiply relevance per category (above 1 for a coverage gap, below 1 for an overused category; both inputs come from the idea stage and later from performance memory). Without a query the relevance of a card is its weight, so the first pick is the most relevant one and the rest are chosen for difference; ties go to the smaller id, so a call is repeatable. The digest is `{id, category, title, claim ≤ 200 characters cut at a word with "…", language, version}`. The "angles" focus filter is not applied: cards have no angle, ideas do.
+  - **MMR cost:** the highest similarity to the picked set is updated after each pick, so choosing 60 of N cards costs 60 × N dot products instead of 60 × N × 60.
+  - **`searchApproved(ctx, {query, limit, categories, language, minSimilarity})`:** embeds the query (purpose `query`), orders approved cards by cosine distance, returns digests with `similarity`; an empty query is a `ValidationError` before anything is embedded; limit 1–50.
+  - **`getApprovedSnapshots(ctx, [{knowledgeItemId, version}])`:** the frozen text from `knowledge_item_versions`, whatever happened to the card since; `NotFoundError` lists missing versions. Resolving an idea's links is the new follow-up task **M2-06a** (`getIdeaCards(ideaId)` and the "PRIMARY in the last 30 days" lookup that feeds `recentlyUsedIds`), needing M2-01.
+  - The 81 real cards are still NEEDS_REVIEW, so the pool is empty on the dev database until the chef approves cards (M1-17/M1-18).
+- Evidence / links: `modules/src/knowledge/retrieval/retrieval.test.ts` (MMR clusters and weights; pool filters, diversity 3 topics × 30, exclusion and its fallback, category weights, only approved cards with vectors; search ranking, filters, floor, empty query; snapshots).
+- Impact on plan: new task M2-06a; M2-06 builds the idea context from `candidatePool` and passes `recentlyUsedIds`.
+
 ## 2026-10-03 · First real embeddings: the 81 cards of the guide [M1-16]
 - Context: with the owner's go-ahead, `AI_PROVIDER=live pnpm rc embed` embedded the 81 cards of «Не Вари. Проектируй. Крупы» with `text-embedding-3-large` (1536 dimensions) in the dev database; their text went to OpenAI.
 - Result: 81 cards embedded, 0 already current, **0 duplicates suspected** at the 0.92 threshold. The closest pairs have cosine similarity 0.70–0.75 and are different concepts (risotto rice vs basmati "what it likes", formula 1 vs formula 2, "culinary engineering" vs "five variables"); nearly all of the 3,240 pairs lie between 0.3 and 0.6. All vectors carry `embedding_model = text-embedding-3-large`.

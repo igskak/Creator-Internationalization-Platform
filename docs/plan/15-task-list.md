@@ -252,7 +252,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** the chef approves/edits/archives in the UI; version rows are correct (tests).
   - **Refs:** 05 §5.4.
 
-- [ ] **M1-19 · Retrieval service** · P0 · S · deps: M1-16
+- [x] **M1-19 · Retrieval service** · P0 · S · deps: M1-16
   - **Do:** `knowledge/retrieval/`: `candidatePool()` (filters, recent-use exclusion, MMR λ 0.7, ≤ 60), `searchApproved(query)`, `getIdeaCards(ideaId)` (approved snapshots).
   - **Done when:** PGlite tests with fake embeddings (diversity, exclusion).
   - **Refs:** 07 §7.9.1.
@@ -314,6 +314,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** prompt + schema; context (card digests from `candidatePool`, ideas of the last 60 days, offers by priority, market notes, optional performance memory); post-validation (IDs ⊆ pool, near-duplicate filter vs recent ideas, product exists).
   - **Done when:** fake-LLM tests; prompt snapshot.
   - **Refs:** 07 §7.6, §7.9.1.
+
+- [ ] **M2-06a · `getIdeaCards(ideaId)`** · P0 · S · deps: M2-01, M1-19
+  - **Do:** in `knowledge/retrieval`: the approved snapshots of the cards linked to an idea through `master_idea_knowledge` (PRIMARY and SUPPORTING, with the linked `knowledge_version`), using `getApprovedSnapshots`; plus the "used as PRIMARY in the last 30 days" lookup that feeds `candidatePool({ recentlyUsedIds })`.
+  - **Done when:** tests with a linked idea: snapshots in link order, an edited card still returns the linked version; recent-use lookup respects the 30-day window and PRIMARY only.
+  - **Refs:** 07 §7.9.1, 04 §4.3.
 
 - [ ] **M2-07 · Ideas service and job** · P0 · M · deps: M2-06, M2-01
   - **Do:** `generate-ideas` handler + task; actions `generateIdeas`, `createManualIdea`, `updateIdea`, `transitionIdea`; links with approved versions; audit.
