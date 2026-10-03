@@ -203,7 +203,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `ingestion/docx.ts` (mammoth + headings), `text.ts` (UTF-8, cp1251 fallback, Markdown headings), `transcript.ts` (SRT/VTT → segments with `locator`); pseudo-pages ~3,000 chars that never cross a heading; `section_path`.
   - **Done when:** fixture tests per format, incl. Cyrillic and Spanish characters.
 
-- [ ] **M1-08 · LLM provider interface and Anthropic adapter** · P0 · M · deps: M0-04, M0-06 · ⚠ V-18
+- [x] **M1-08 · LLM provider interface and Anthropic adapter** · P0 · M · deps: M0-04, M0-06 · ⚠ V-18
   - **Do:** load the `claude-api` skill first. `lib/src/providers/llm/`: types (07 §7.3), Anthropic adapter (`messages.parse` + `zodOutputFormat`, streaming path, PDF document blocks, adaptive thinking + effort, no temperature, `stop_reason` handling, refusal fallback as documented, usage incl. cache tokens, error mapping), `FakeLLMProvider`.
   - **Done when:** MSW contract tests (request shape: no temperature, `output_config`, document block; error mapping); fake tests.
   - **Refs:** 07 §7.4.
