@@ -6,13 +6,14 @@ import type { knowledgeExtractor } from "@rc/prompts";
 import { runStage, type StageResult } from "../../ai";
 import { type ServiceContext, transition, withTransaction } from "../../core";
 import { assertCanProcessWithAI } from "../rights";
+import { assessCard } from "./assess";
 import { cutPdf, MAX_SUB_PDF_BYTES } from "./plan";
 import { loadExtractionTaxonomy } from "./taxonomy";
 import { validateExtraction } from "./validate";
 
 // J2 `extract-knowledge-batch` (plan 06 §6.3, 07 §7.2.3): one page range of one source →
-// validated cards. Quote and number verification is added by M1-14, the move to NEEDS_REVIEW and
-// embeddings by M1-15/M1-16.
+// validated, checked cards in the review queue (quote, number and safety checks: ./assess).
+// Embeddings and dedupe are M1-16.
 
 type Output = knowledgeExtractor.ExtractorOutput;
 type Batch = typeof schema.knowledgeExtractionBatches.$inferSelect;
@@ -136,6 +137,17 @@ export async function extractBatch(
     )
     .orderBy(asc(schema.sourcePages.pageNumber));
   const textPages = pages.filter((p) => p.text.trim().length > 0);
+  // Quote verification looks one page beyond the cited range (07 §7.2.4).
+  const evidencePages = await ctx.db
+    .select({ pageNumber: schema.sourcePages.pageNumber, text: schema.sourcePages.text })
+    .from(schema.sourcePages)
+    .where(
+      and(
+        eq(schema.sourcePages.sourceAssetId, source.id),
+        eq(schema.sourcePages.processingAttempt, batch.processingAttempt),
+        between(schema.sourcePages.pageNumber, batch.pageStart - 1, batch.pageEnd + 1),
+      ),
+    );
   const taxonomy = await loadExtractionTaxonomy(ctx);
   const runIds: string[] = [];
 
@@ -255,8 +267,10 @@ export async function extractBatch(
 
     const cards = result.data?.cards ?? [];
     const cardsCreated = await withTransaction(ctx, async (tx) => {
+      const inserted: string[] = [];
       for (const [ordinal, card] of cards.entries()) {
-        await tx.db
+        const check = assessCard(card, evidencePages);
+        const [row] = await tx.db
           .insert(schema.knowledgeItems)
           .values({
             brandId: source.brandId,
@@ -276,22 +290,37 @@ export async function extractBatch(
               pageEnd: card.pageEnd,
               ...(card.sectionHint ? { sectionPath: card.sectionHint } : {}),
               quote: card.sourceQuote,
-              quoteVerified: false,
+              quoteVerified: check.quoteVerified,
+              matchScore: check.matchScore,
+              ...(check.notes.length ? { note: check.notes.join("; ") } : {}),
             }),
             language: source.originalLanguage,
             origin: "SOURCE_EXTRACTED",
             confidence: card.confidence.toFixed(2),
             reviewStatus: "EXTRACTED",
-            reviewFlags: card.safetySensitive ? ["SAFETY_SENSITIVE"] : [],
-            safetySensitive: card.safetySensitive,
-            safetyNotes: card.safetySensitive ? (card.safetyReason ?? null) : null,
+            reviewFlags: check.flags,
+            safetySensitive: check.safetySensitive,
+            safetyNotes: check.safetyNotes,
             extractionBatchId: batch.id,
             generationRunId: result?.runId ?? null,
             ordinalInBatch: ordinal,
           })
           .onConflictDoNothing({
             target: [schema.knowledgeItems.extractionBatchId, schema.knowledgeItems.ordinalInBatch],
-          });
+          })
+          .returning({ id: schema.knowledgeItems.id });
+        if (row) inserted.push(row.id);
+      }
+      // The checks are done: new cards go to the chef's review queue (EXTRACTED → NEEDS_REVIEW).
+      for (const id of inserted) {
+        await transition(tx, {
+          table: schema.knowledgeItems,
+          statusKey: "reviewStatus",
+          id,
+          from: ["EXTRACTED"],
+          to: "NEEDS_REVIEW",
+          audit: { action: "knowledge.needs_review", entityType: "knowledge_item" },
+        });
       }
       const [stored] = await tx.db
         .select({ n: count() })
