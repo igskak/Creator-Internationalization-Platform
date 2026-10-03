@@ -13,6 +13,16 @@ Template:
 
 ---
 
+## 2026-10-03 · Prompts package foundation [M1-09]
+- Context: 07 §7.5 defines `definePrompt`, the registry and the hash as "SHA-256 of id, version, system texts and the render template".
+- Decision: `prompts/src/` has `define.ts` (`definePrompt` validates id kebab-case, integer version ≥ 1, stage from the `generation_stage` list, non-empty system blocks, maxTokens, changelog; returns a frozen prompt with `key` = `id@version` and `hash`; `renderPrompt` validates input with the Zod schema first; `renderSnapshot` returns system + user text with key and short hash for snapshot tests), `registry.ts` (`createRegistry`: get / has / versions / latest / list, duplicate keys throw), `xml.ts` (`section`, `renderSections`, `raw`, `escapeText`, `escapeAttr`) and `index.ts` (`promptRegistry`, empty until the prompt tasks add their `vN.ts`).
+  - The hash covers id, version, system blocks (text and cache hint) and an explicit `renderTemplate` string, not the render function's source: `Function.toString()` changes when a bundler minifies, which would give web and jobs different `prompt_hash` values for the same prompt. A change to the rendered structure must therefore change `renderTemplate` and the version; `renderSnapshot` tests catch a render change that forgot to.
+  - Escaping: `&`, `<`, `>` in all data; `"`, line breaks and tabs also in attributes; XML-invalid control characters are dropped; tag and attribute names must be lower snake case. Nested sections are passed as `Raw` so they are not escaped twice.
+  - Active versions and `PIPELINE_VERSION` stay in `modules/src/ai/` (M1-10); the registry only knows what exists.
+  - `@rc/prompts` now depends on `zod` and `node:crypto` (no workspace dependency, as in 03 §3.4).
+- Evidence / links: `prompts/src/index.test.ts` (registry lookup, stable and pinned hash checked against openssl, escaping of `<` and `&`, injection attempt through data and attribute).
+- Impact on plan: prompt tasks (M1-12, M2-06, M2-09, M2-10, M2-12, M3-02) fill `renderTemplate` and register in `prompts/src/index.ts`.
+
 ## 2026-10-03 · DOCX, text and transcript parsers [M1-07]
 - Context: M1-07 turns non-paginated sources into pseudo-pages (07 §7.2.2) with `section_path` and, for transcripts, a time locator.
 - Decision: in `modules/src/knowledge/ingestion/`: `pseudo-pages.ts` (`paginate`: pages of at most 3,000 characters, a forced break whenever the heading trail changes, an oversized paragraph is split at whitespace; the heading line is the first text of its page), `docx.ts` (`mammoth.convertToHtml` with images dropped; h1–h6 → trail `A › B`, paragraphs, list items as `• …`, table rows as `cell | cell`), `text.ts` (UTF-8 with BOM removed or Windows-1251 through `iconv-lite`; `\r\n` → `\n`; `#` headings only for `.md`, ignored inside code fences), `transcript.ts` (SRT/VTT cues, markup and VTT header/NOTE/cue settings dropped, cues joined with newlines; a page's locator runs from its first cue start to its last cue end). All return `ExtractedPage[]`; `ExtractedPage` and `savePages` gained `sectionPath` and `locator`. New rejection code `CORRUPT_DOCX`; a DOCX or subtitle file with no text/cues is `EMPTY_FILE`. Pseudo-pages always have `has_text_layer = true`. Test-only zip and cp1251 builders moved to `test-fixtures.ts`.

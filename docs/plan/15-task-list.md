@@ -208,7 +208,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** MSW contract tests (request shape: no temperature, `output_config`, document block; error mapping); fake tests.
   - **Refs:** 07 §7.4.
 
-- [ ] **M1-09 · Prompts package foundation** · P0 · S · deps: M0-01
+- [x] **M1-09 · Prompts package foundation** · P0 · S · deps: M0-01
   - **Do:** `definePrompt`, registry (`id@version`), prompt hash, XML section rendering with escaping, snapshot helper.
   - **Done when:** tests: registry lookup, stable hash, escaping of `<` and `&` in data.
   - **Refs:** 07 §7.5.
