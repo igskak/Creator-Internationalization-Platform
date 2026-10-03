@@ -1,4 +1,11 @@
 export {
+  assessCard,
+  type CardAssessment,
+  LOW_CONFIDENCE_THRESHOLD,
+  REVIEW_FLAGS,
+  type ReviewFlag,
+} from "./assess";
+export {
   type BatchOutcome,
   type ExtractBatchOptions,
   extractBatch,
@@ -16,5 +23,13 @@ export {
   planTextBatches,
   TEXT_BATCH_TOKENS,
 } from "./plan";
+export { SAFETY_RULES, safetyReasons } from "./safety";
 export { type ExtractionTaxonomy, loadExtractionTaxonomy } from "./taxonomy";
 export { MAX_QUOTE_CHARS, validateExtraction } from "./validate";
+export {
+  normalizeForMatch,
+  QUOTE_VERIFIED_THRESHOLD,
+  statedNumbers,
+  verifyNumbers,
+  verifyQuote,
+} from "./verify-quote";

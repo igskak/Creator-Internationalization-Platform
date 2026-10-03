@@ -287,7 +287,7 @@ describe("extractBatch", () => {
       subcategory: "BUCKWHEAT",
       language: "ru",
       origin: "SOURCE_EXTRACTED",
-      reviewStatus: "EXTRACTED",
+      reviewStatus: "NEEDS_REVIEW",
       confidence: "0.95",
       sourceAssetId: sourceId,
       ordinalInBatch: 0,
@@ -297,7 +297,8 @@ describe("extractBatch", () => {
         pageStart: 2,
         pageEnd: 2,
         sectionPath: "Крупы без каши",
-        quoteVerified: false,
+        quoteVerified: true,
+        matchScore: 1,
       },
     });
     expect(stored[0]?.timingsJson).toEqual(FIXTURE_OUTPUT.cards[0]?.timings);
@@ -324,6 +325,47 @@ describe("extractBatch", () => {
       inputRefs: { sourceAssetId: sourceId, pageRange: [1, 4] },
     });
     expect(JSON.stringify(run?.request)).not.toContain("JVBER"); // no PDF bytes
+  });
+
+  it("flags cards whose quote, numbers or confidence do not hold and moves all cards to review", async () => {
+    const [good, safe] = FIXTURE_OUTPUT.cards;
+    const llm = scripted({
+      cards: [
+        {
+          ...good,
+          sourceQuote:
+            "Гречку нужно варить ровно пять минут и ни секундой больше, иначе она испортится.",
+        },
+        {
+          ...good,
+          title: "Числа",
+          timings: [{ value: 45, unit: "min", context: "нет в тексте" }],
+          confidence: 0.4,
+        },
+        {
+          ...safe,
+          claim: "Сырое мясо нельзя оставлять при комнатной температуре.",
+          safetySensitive: false,
+          safetyReason: undefined,
+        },
+      ],
+      skippedPages: [],
+    });
+    const outcome = await extractBatch(makeCtx(llm), { batchId });
+    expect(outcome.cardsCreated).toBe(3);
+    const stored = await cards();
+    expect(stored.every((c) => c.reviewStatus === "NEEDS_REVIEW")).toBe(true);
+    expect(stored[0]).toMatchObject({ reviewFlags: ["QUOTE_UNVERIFIED"] });
+    expect(stored[0]?.sourceReference).toMatchObject({ quoteVerified: false });
+    expect(stored[0]?.sourceReference?.note).toContain("quote not found");
+    expect(stored[1]?.reviewFlags).toEqual(["LOW_CONFIDENCE"]);
+    expect(stored[1]?.sourceReference?.note).toContain("number not found in source: 45");
+    expect(stored[1]?.sourceReference?.note).toContain("model confidence 0.40");
+    // The keyword rules catch what the model did not flag.
+    expect(stored[2]).toMatchObject({ safetySensitive: true, reviewFlags: ["SAFETY_SENSITIVE"] });
+    expect(stored[2]?.safetyNotes).toMatch(/^Keyword rule:/);
+    const events = await t.db.select().from(schema.auditEvents);
+    expect(events.filter((e) => e.action === "knowledge.needs_review")).toHaveLength(3);
   });
 
   it("skips a SUCCEEDED batch on rerun without a model call or duplicate cards", async () => {
@@ -354,7 +396,11 @@ describe("extractBatch", () => {
       .where(eq(schema.knowledgeExtractionBatches.id, batchId));
     const outcome = await extractBatch(makeCtx(scripted(FIXTURE_OUTPUT)), { batchId });
     expect(outcome).toMatchObject({ status: "SUCCEEDED", cardsCreated: 2 });
-    expect((await cards()).map((c) => c.title)).toEqual(["kept", "Рис: остывание и хранение"]);
+    const after = await cards();
+    expect(after.map((c) => [c.title, c.reviewStatus])).toEqual([
+      ["kept", "EXTRACTED"], // inserted by an earlier run; only new cards are moved on
+      ["Рис: остывание и хранение", "NEEDS_REVIEW"],
+    ]);
   });
 
   it("falls back to the page text when the API rejects the PDF", async () => {
