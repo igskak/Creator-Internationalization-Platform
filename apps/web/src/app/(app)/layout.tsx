@@ -6,6 +6,7 @@ import { MobileNav } from "@/components/shell/mobile-nav";
 import { buildNav } from "@/components/shell/screens";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { UserMenu } from "@/components/shell/user-menu";
+import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/server/auth/session";
 import { requestContext } from "@/server/context";
 
@@ -15,7 +16,8 @@ export const dynamic = "force-dynamic";
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
   const ctx = await requestContext({ type: "USER", userId: user.id, role: user.role });
-  const nav = buildNav(await listMarkets(ctx));
+  const { messages } = await getI18n();
+  const nav = buildNav(await listMarkets(ctx), { ...messages.nav, later: messages.shell.later });
   // Banner sources (kill switch, Instagram re-auth, token expiry) arrive with M4/M5 and H-01.
   const banners: Banner[] = [];
 

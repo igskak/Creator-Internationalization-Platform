@@ -1,0 +1,30 @@
+"use server";
+
+import {
+  BulkTransitionInput,
+  bulkTransitionKnowledgeCards as bulkTransitionService,
+  TransitionCardInput,
+  transitionKnowledgeCard as transitionService,
+} from "@rc/modules/knowledge";
+import { defineAction } from "./_define";
+
+// Plan 05 §5.4. The service enforces who may approve or restore (chef, owner) and archive an
+// approved card (chef, owner); every signed-in role may call these actions.
+
+export const transitionKnowledgeCard = defineAction({
+  name: "transitionKnowledgeCard",
+  input: TransitionCardInput,
+  roles: ["owner", "editor", "chef"],
+  // Only plain fields go back to the browser, not the whole row with embeddings.
+  handler: async (ctx, input) => {
+    const card = await transitionService(ctx, input);
+    return { id: card.id, status: card.reviewStatus };
+  },
+});
+
+export const bulkTransitionKnowledgeCards = defineAction({
+  name: "bulkTransitionKnowledgeCards",
+  input: BulkTransitionInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => bulkTransitionService(ctx, input),
+});
