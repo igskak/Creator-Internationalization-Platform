@@ -2,6 +2,7 @@ import "server-only";
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
 import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
+import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 
 // Process-wide clients, created on first use (never at build time).
@@ -10,6 +11,7 @@ let env: ServerEnv | undefined;
 let db: AnyDatabase | undefined;
 let logger: Logger | undefined;
 let storage: StorageProvider | undefined;
+let llm: LLMProvider | undefined;
 
 export function serverEnv(): ServerEnv {
   env ??= loadServerEnv();
@@ -36,4 +38,9 @@ export function serverLogger(): Logger {
 export function serverStorage(): StorageProvider {
   storage ??= createStorage(serverEnv().storage);
   return storage;
+}
+
+export function serverLlm(): LLMProvider {
+  llm ??= createLlmProvider(serverEnv().ai);
+  return llm;
 }

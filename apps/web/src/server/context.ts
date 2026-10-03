@@ -11,7 +11,7 @@ import {
 import { jobHandlers } from "@rc/modules/job-handlers";
 import { headers } from "next/headers";
 import { REQUEST_ID_HEADER } from "./request-id";
-import { serverDb, serverEnv, serverLogger, serverStorage } from "./runtime";
+import { serverDb, serverEnv, serverLlm, serverLogger, serverStorage } from "./runtime";
 
 let jobs: JobRunner | undefined;
 
@@ -34,6 +34,7 @@ function jobRunner(): JobRunner {
         ...(meta.requestId ? { requestId: meta.requestId } : {}),
         jobs: runner,
         storage: serverStorage(),
+        llm: serverLlm(),
       }),
   });
   jobs = runner;
@@ -54,5 +55,6 @@ export async function requestContext(actor: Actor, requestId?: string): Promise<
     requestId: requestId ?? (await currentRequestId()),
     jobs: jobRunner(),
     storage: serverStorage(),
+    llm: serverLlm(),
   });
 }

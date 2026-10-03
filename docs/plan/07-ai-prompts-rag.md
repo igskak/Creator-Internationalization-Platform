@@ -105,7 +105,7 @@ Fakes: `FakeLLMProvider` returns fixtures keyed by `promptId + input hash` (or a
 
 ## 7.4 Anthropic adapter rules (M1-08) ⚠ V-18
 - Load the `claude-api` skill before writing the adapter. Use the official `@anthropic-ai/sdk`.
-- Model from config; default `claude-opus-5`. Use `thinking: { type: 'adaptive' }` and `output_config.effort` per stage. Do not send `temperature` (rejected by current models).
+- Model from config; default `claude-opus-5-5`. Use `thinking: { type: 'adaptive' }` and `output_config.effort` per stage. Do not send `temperature` (rejected by current models).
 - Structured output: `client.messages.parse()` with `output_config.format = zodOutputFormat(schema)`. For long outputs use streaming (`stream().finalMessage()`) with the same format and validate the final text with Zod.
 - JSON Schema limits: no `minLength/maxLength/minimum/maximum`, no recursive schemas, `additionalProperties: false` everywhere. The SDK strips unsupported constraints and checks them client-side; we still keep length limits in our own validators (7.8) so a violation produces a precise repair message, not a parse failure. Use arrays of `{ slot, text }` instead of free-key records.
 - Check `stop_reason` before reading content: `refusal` → run status REFUSED (permanent for this input); `max_tokens` → one retry with a larger `maxTokens`, then INVALID_OUTPUT.
@@ -153,7 +153,7 @@ export default definePrompt({
 | Visual QA (P1) | `visual-qa@1` | rendered slide JPEGs | issues | medium | – | adds issues to critic report |
 | Eval judge | `eval-judge@1` | variant + rubric | scores | high | – | – |
 
-All stages use `claude-opus-5` by default (D-08).
+All stages use `claude-opus-5-5` by default (D-08).
 
 ### 7.6.2 Flow for one Master Idea
 

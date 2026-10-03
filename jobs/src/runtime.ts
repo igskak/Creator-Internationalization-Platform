@@ -1,6 +1,7 @@
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
 import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
+import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import {
   createServiceContext,
@@ -15,6 +16,7 @@ type Runtime = {
   db: AnyDatabase;
   jobs: JobRunner | undefined;
   storage: StorageProvider;
+  llm: LLMProvider;
 };
 
 // One set of clients per worker process, created on first use.
@@ -42,18 +44,19 @@ function createRuntime(): Runtime {
     env.jobs.mode === "trigger"
       ? createTriggerDevJobRunner({ secretKey: env.jobs.triggerSecretKey })
       : undefined;
-  return { logger, db, jobs, storage: createStorage(env.storage) };
+  return { logger, db, jobs, storage: createStorage(env.storage), llm: createLlmProvider(env.ai) };
 }
 
 /** Service context for one Trigger.dev run (actor JOB, run id, request id from the envelope). */
 export function jobContext(runId: string, taskId: string, meta: JobMeta): ServiceContext {
   shared ??= createRuntime();
-  const { logger, db, jobs, storage } = shared;
+  const { logger, db, jobs, storage, llm } = shared;
   return createServiceContext({
     db,
     logger: logger.child({ taskId }),
     actor: { type: "JOB", jobRunId: runId },
     storage,
+    llm,
     ...(meta.requestId ? { requestId: meta.requestId } : {}),
     ...(jobs ? { jobs } : {}),
   });

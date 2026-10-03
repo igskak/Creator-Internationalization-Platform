@@ -135,6 +135,9 @@ export const GenerationParams = z.object({
   maxTokens: z.number().int().positive().optional(),
   thinking: z.unknown().optional(),
   stream: z.boolean().optional(),
+  /** The model that actually answered differs from `generation_runs.model` only after a fallback. */
+  fallbackRan: z.boolean().optional(),
+  retriedForMaxTokens: z.boolean().optional(),
 });
 export type GenerationParams = z.infer<typeof GenerationParams>;
 

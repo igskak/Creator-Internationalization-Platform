@@ -1,6 +1,7 @@
 import type { AnyDatabase } from "@rc/db";
 import { PermanentError } from "@rc/lib/errors";
 import type { Logger } from "@rc/lib/logging";
+import type { LLMProvider } from "@rc/lib/providers/llm";
 import type { StorageProvider } from "@rc/lib/providers/storage";
 import { type Clock, systemClock } from "./clock";
 import { disabledJobRunner, type JobRunner } from "./job-runner";
@@ -15,7 +16,7 @@ export type Actor =
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
- * AI providers are added by the tasks that first use them.
+ * Embedding and image providers are added by the tasks that first use them.
  */
 export type ServiceContext = {
   db: AnyDatabase;
@@ -28,6 +29,8 @@ export type ServiceContext = {
   jobs: JobRunner;
   /** Private object storage (R2, or in-memory in tests). */
   storage: StorageProvider;
+  /** Language model; every call goes through runStage(). */
+  llm: LLMProvider;
 };
 
 export type CreateServiceContextInput = {
@@ -40,6 +43,8 @@ export type CreateServiceContextInput = {
   jobs?: JobRunner;
   /** Default: a provider that refuses every call. */
   storage?: StorageProvider;
+  /** Default: a provider that refuses every call. */
+  llm?: LLMProvider;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -56,6 +61,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     requestId: input.requestId,
     jobs: input.jobs ?? disabledJobRunner,
     storage: input.storage ?? disabledStorage,
+    llm: input.llm ?? disabledLlm,
   };
 }
 
@@ -72,6 +78,14 @@ export const disabledStorage: StorageProvider = {
   getBytes: storageDisabled,
   put: storageDisabled,
   delete: storageDisabled,
+};
+
+/** Default for contexts that must not call a model. */
+export const disabledLlm: LLMProvider = {
+  id: "fake",
+  generateStructured: async () => {
+    throw new PermanentError("No LLM provider is configured for this context.");
+  },
 };
 
 /** Runs `fn` in a transaction; the context passed to `fn` uses the transaction. Nested calls use savepoints. */

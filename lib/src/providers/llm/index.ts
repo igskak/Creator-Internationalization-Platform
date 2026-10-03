@@ -4,6 +4,7 @@ export {
   FALLBACK_BETA,
   mapAnthropicError,
 } from "./anthropic";
+export { createLlmProvider, type LlmConfig } from "./factory";
 export {
   createFakeLLMProvider,
   type FakeLLMOptions,

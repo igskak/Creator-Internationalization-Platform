@@ -370,6 +370,9 @@ importers:
       '@rc/lib':
         specifier: workspace:*
         version: link:../lib
+      '@rc/prompts':
+        specifier: workspace:*
+        version: link:../prompts
       '@trigger.dev/sdk':
         specifier: 4.6.4
         version: 4.6.4(react@19.3.0)(supports-color@10.2.2)(zod@4.6.5)

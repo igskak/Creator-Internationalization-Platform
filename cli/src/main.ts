@@ -1,6 +1,7 @@
 import { createDb, isPoolerUrl } from "@rc/db";
 import { EnvValidationError, loadServerEnv } from "@rc/lib/env";
 import { createLogger } from "@rc/lib/logging";
+import { createLlmProvider } from "@rc/lib/providers/llm";
 import { createStorage } from "@rc/lib/providers/storage";
 import { cliCommands } from "@rc/modules/cli-commands";
 import { cliHelp, createServiceContext, runCliCommand } from "@rc/modules/core";
@@ -38,6 +39,7 @@ const ctx = createServiceContext({
   }),
   actor: { type: "SYSTEM" },
   storage: createStorage(env.storage),
+  llm: createLlmProvider(env.ai),
 });
 
 try {

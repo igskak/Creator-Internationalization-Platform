@@ -4,6 +4,9 @@
 
 /** Domain folders under modules/src that may depend on each other (02 §2.4). */
 const DOMAIN_ALLOWED = {
+  knowledge: ["ai"],
+  localization: ["ai"],
+  visuals: ["ai"],
   content: ["knowledge", "localization", "offers", "visuals", "ai"],
   publishing: ["content", "instagram"],
   analytics: ["publishing", "instagram", "content"],
@@ -57,7 +60,7 @@ module.exports = {
       comment: "Domains with no allowed module deps may import only core and themselves (02 §2.4).",
       severity: "error",
       from: {
-        path: "^modules/src/(knowledge|localization|offers|visuals|ai|instagram|settings)/",
+        path: "^modules/src/(offers|ai|instagram|settings)/",
       },
       to: { path: "^modules/src/[^/]+/", pathNot: "^modules/src/(core|$1)/" },
     },
