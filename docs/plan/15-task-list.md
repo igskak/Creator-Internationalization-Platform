@@ -170,7 +170,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M1 · Knowledge Engine
 
-- [ ] **M1-01 · Knowledge schema (0002_knowledge)** · P0 · M · deps: M0-10
+- [x] **M1-01 · Knowledge schema (0002_knowledge)** · P0 · M · deps: M0-10
   - **Do:** schema + migration: `source_assets`, `source_pages`, `source_chunks`, `generation_runs`, `knowledge_extraction_batches`, `knowledge_items`, `knowledge_item_versions`, `historical_posts`; enums; HNSW indexes; Zod JSON types (`RightsPolicy`, `SourceReference`, `ProcedureStep`, `Ingredient`, `Temperature`, `Timing`, `CommonMistake`).
   - **Done when:** migration on PGlite; vector insert + cosine query; JSON validation tests.
   - **Refs:** 04 §4.3 (0002), §4.4.
