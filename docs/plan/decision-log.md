@@ -13,6 +13,14 @@ Template:
 
 ---
 
+## 2026-10-03 · First real embeddings: the 81 cards of the guide [M1-16]
+- Context: with the owner's go-ahead, `AI_PROVIDER=live pnpm rc embed` embedded the 81 cards of «Не Вари. Проектируй. Крупы» with `text-embedding-3-large` (1536 dimensions) in the dev database; their text went to OpenAI.
+- Result: 81 cards embedded, 0 already current, **0 duplicates suspected** at the 0.92 threshold. The closest pairs have cosine similarity 0.70–0.75 and are different concepts (risotto rice vs basmati "what it likes", formula 1 vs formula 2, "culinary engineering" vs "five variables"); nearly all of the 3,240 pairs lie between 0.3 and 0.6. All vectors carry `embedding_model = text-embedding-3-large`.
+- Findings: the 81 cards are fine-grained but not redundant. The granularity question from the first ingestion (the chef's review load) is therefore about how many distinct points the extractor splits a page into, not about duplicates; dedupe at 0.92 has nothing to do on this guide. Real near-copies are expected only across sources (the same technique in two books), where the threshold stays as is until a pair shows it too strict or too loose.
+- Decision: no change to the threshold or the prompt. Keep the vectors for M1-19 retrieval tests.
+- Evidence / links: source `ac755636-d331-46ec-833d-da736aabd681` in the dev database.
+- Impact on plan: none.
+
 ## 2026-10-03 · Card embeddings and duplicate suggestions [M1-16]
 - Context: M1-16 gives cards vectors (for retrieval, M1-19) and suggests duplicates (07 §7.2.6).
 - Decision: `modules/src/knowledge/embedding/`.
