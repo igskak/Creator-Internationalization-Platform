@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-10-03 · Knowledge schema 0002 [M1-01]
+- Context: 04 §4.3 lists `content_format` under 0003_content, but `historical_posts.format` (0002) uses it.
+- Decision: `content_format` is created in 0002 (`db/src/schema/knowledge.ts`). M2-01 must reuse it and not create it again. Extras beyond the plan: `updated_at` triggers on `source_assets`, `knowledge_extraction_batches`, `knowledge_items`, `historical_posts`; `created_at`/`updated_at` on `knowledge_extraction_batches` (plan `ts`). Zod shapes for 0002 are in `db/src/json/knowledge.ts` (`RightsPolicy` stays in `rights.ts`).
+- Evidence / links: `db/src/schema/knowledge.test.ts` (migration on PGlite, vector insert + cosine query, partial unique checksum index, cascades, flags GIN query), `db/src/json/knowledge.test.ts`.
+- Impact on plan: 04 §4.2 enum placement differs for `content_format`.
+
 ## 2026-10-02 · Core AI quality spike, first results [S-01]
 - Context: spike on one real source (guide «Не Вари. Проектируй. Крупы», 18 pages, text layer) plus @reg.chef style (one caption and slide descriptions read from the live profile; the local Instagram backup failed on rate limits). Model `claude-opus-5-5`. Scripts `spikes/core-loop/run.mjs` (cards, 1 idea, ES, EN) and `run2.mjs` (3 ideas, 8 checker agents, one repair round). Outputs in git-ignored `spikes/core-loop/out/`. Outputs reviewed by the owner on 2026-10-03; no blocking concerns, S-01 closed.
 - Decision / findings:
