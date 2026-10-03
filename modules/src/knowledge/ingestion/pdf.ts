@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { schema } from "@rc/db";
+import type { PageLocator } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
 import { extractText, getDocumentProxy } from "unpdf";
 import { type ServiceContext, withTransaction } from "../../core";
@@ -18,6 +19,10 @@ export type ExtractedPage = {
   text: string;
   charCount: number;
   hasTextLayer: boolean;
+  /** 'Ch. 3 › Dry brining'; set by the DOCX and text parsers. */
+  sectionPath?: string | null;
+  /** Transcript segments: time range of the page. */
+  locator?: PageLocator | null;
 };
 
 /** Text-layer heuristic on already-cleaned page text. */
@@ -79,6 +84,8 @@ export async function savePages(
           text: page.text,
           charCount: page.charCount,
           hasTextLayer: page.hasTextLayer,
+          sectionPath: page.sectionPath ?? null,
+          locator: page.locator ?? null,
           processingAttempt: attempt,
         })),
       );

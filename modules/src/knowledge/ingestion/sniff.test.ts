@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { access } from "node:fs/promises";
-import { crc32 } from "node:zlib";
 import { schema } from "@rc/db";
 import type { RightsPolicy } from "@rc/db/json";
 import { seedDatabase } from "@rc/db/seed";
@@ -11,6 +10,7 @@ import { PDFDocument } from "pdf-lib";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext, type ServiceContext } from "../../core";
 import { assertNotDuplicate, detectTextEncoding, SourceRejectedError, sniffSource } from "./sniff";
+import { cp1251, zip } from "./test-fixtures";
 
 // Tiny synthetic fixtures built in code; no real Reg.Chef files.
 
@@ -39,58 +39,11 @@ startxref
 0
 %%EOF`);
 
-/** Stored (uncompressed) ZIP with the given entries: enough for file-type to see a DOCX. */
-function zip(entries: Record<string, string>): Uint8Array {
-  const parts: Buffer[] = [];
-  const central: Buffer[] = [];
-  let offset = 0;
-  for (const [name, content] of Object.entries(entries)) {
-    const n = Buffer.from(name);
-    const data = Buffer.from(content);
-    const crc = crc32(data);
-    const local = Buffer.alloc(30);
-    local.writeUInt32LE(0x04034b50, 0);
-    local.writeUInt16LE(20, 4);
-    local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(data.length, 18);
-    local.writeUInt32LE(data.length, 22);
-    local.writeUInt16LE(n.length, 26);
-    parts.push(local, n, data);
-    const head = Buffer.alloc(46);
-    head.writeUInt32LE(0x02014b50, 0);
-    head.writeUInt16LE(20, 4);
-    head.writeUInt16LE(20, 6);
-    head.writeUInt32LE(crc, 16);
-    head.writeUInt32LE(data.length, 20);
-    head.writeUInt32LE(data.length, 24);
-    head.writeUInt16LE(n.length, 28);
-    head.writeUInt32LE(offset, 42);
-    central.push(head, n);
-    offset += local.length + n.length + data.length;
-  }
-  const centralBytes = Buffer.concat(central);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(central.length / 2, 8);
-  end.writeUInt16LE(central.length / 2, 10);
-  end.writeUInt32LE(centralBytes.length, 12);
-  end.writeUInt32LE(offset, 16);
-  return Buffer.concat([...parts, centralBytes, end]);
-}
 const docx = zip({
   "[Content_Types].xml":
     '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
   "word/document.xml": "<w:document/>",
 });
-
-/** Windows-1251 bytes for ASCII plus Cyrillic А–я. */
-const cp1251 = (text: string) =>
-  Uint8Array.from(
-    [...text].map((c) => {
-      const code = c.charCodeAt(0);
-      return code >= 0x410 && code <= 0x44f ? code - 0x350 : code;
-    }),
-  );
 
 const rights: RightsPolicy = {
   use: "ALLOWED",

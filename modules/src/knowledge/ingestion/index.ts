@@ -1,3 +1,4 @@
+export { parseDocx } from "./docx";
 export {
   type ExtractedPage,
   extractPdfPages,
@@ -6,6 +7,7 @@ export {
   MIN_TEXT_LAYER_CHARS,
   savePages,
 } from "./pdf";
+export { PSEUDO_PAGE_CHARS } from "./pseudo-pages";
 export {
   assertNotDuplicate,
   detectTextEncoding,
@@ -18,3 +20,5 @@ export {
   sniffSource,
   type TextEncoding,
 } from "./sniff";
+export { decodeText, parseTextFile } from "./text";
+export { parseTranscriptFile } from "./transcript";

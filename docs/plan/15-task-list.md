@@ -199,7 +199,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** 3-page fixture (one image-only page) → 3 rows with correct `has_text_layer`.
   - **Refs:** 07 §7.2.2.
 
-- [ ] **M1-07 · DOCX, TXT/MD and transcript extraction** · P0 · M · deps: M1-05
+- [x] **M1-07 · DOCX, TXT/MD and transcript extraction** · P0 · M · deps: M1-05
   - **Do:** `ingestion/docx.ts` (mammoth + headings), `text.ts` (UTF-8, cp1251 fallback, Markdown headings), `transcript.ts` (SRT/VTT → segments with `locator`); pseudo-pages ~3,000 chars that never cross a heading; `section_path`.
   - **Done when:** fixture tests per format, incl. Cyrillic and Spanish characters.
 

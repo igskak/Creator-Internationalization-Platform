@@ -13,6 +13,14 @@ Template:
 
 ---
 
+## 2026-10-03 · DOCX, text and transcript parsers [M1-07]
+- Context: M1-07 turns non-paginated sources into pseudo-pages (07 §7.2.2) with `section_path` and, for transcripts, a time locator.
+- Decision: in `modules/src/knowledge/ingestion/`: `pseudo-pages.ts` (`paginate`: pages of at most 3,000 characters, a forced break whenever the heading trail changes, an oversized paragraph is split at whitespace; the heading line is the first text of its page), `docx.ts` (`mammoth.convertToHtml` with images dropped; h1–h6 → trail `A › B`, paragraphs, list items as `• …`, table rows as `cell | cell`), `text.ts` (UTF-8 with BOM removed or Windows-1251 through `iconv-lite`; `\r\n` → `\n`; `#` headings only for `.md`, ignored inside code fences), `transcript.ts` (SRT/VTT cues, markup and VTT header/NOTE/cue settings dropped, cues joined with newlines; a page's locator runs from its first cue start to its last cue end). All return `ExtractedPage[]`; `ExtractedPage` and `savePages` gained `sectionPath` and `locator`. New rejection code `CORRUPT_DOCX`; a DOCX or subtitle file with no text/cues is `EMPTY_FILE`. Pseudo-pages always have `has_text_layer = true`. Test-only zip and cp1251 builders moved to `test-fixtures.ts`.
+  - Not handled: DOCX footnotes, headers/footers, text boxes (mammoth ignores them); SRT timestamps with other separators.
+  - Page size is characters, as in the plan; the batching step (M1-13) converts to tokens.
+- Evidence / links: `modules/src/knowledge/ingestion/parsers.test.ts` (Cyrillic and Spanish in every format, cp1251, Markdown fences, VTT variants, long sections).
+- Impact on plan: new dependencies `mammoth`, `iconv-lite` in `@rc/modules`. M1-15 picks the parser by `SniffResult.kind` and file extension (`md` → markdown, `srt`/`vtt` → transcript).
+
 ## 2026-10-03 · PDF page extraction [M1-06]
 - Context: M1-06 stores per-page text and the text-layer flag; 07 §7.2.2 gives the heuristic.
 - Decision: `modules/src/knowledge/ingestion/pdf.ts`. `extractPdfPages(path)` uses `unpdf` (`extractText`, one string per page), strips NUL bytes (Postgres rejects them) and trims; `hasTextLayer` = at least 200 characters and under 5 % U+FFFD. Pages without a text layer are kept with empty or short text, since they still go to Claude as PDF pages. `savePages(ctx, sourceAssetId, attempt, pages)` deletes all existing rows of the source and inserts the attempt's pages (200 per statement) and `page_count` in one transaction, so a failed write keeps the previous pages and a retried job is idempotent. An unreadable PDF raises `SourceRejectedError` `CORRUPT_PDF`. `section_path` stays null for PDFs (no chapter map in MVP).
