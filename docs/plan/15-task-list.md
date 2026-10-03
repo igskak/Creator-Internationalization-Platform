@@ -175,7 +175,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** migration on PGlite; vector insert + cosine query; JSON validation tests.
   - **Refs:** 04 §4.3 (0002), §4.4.
 
-- [ ] **M1-02 · Rights policy and gates** · P0 · S · deps: M1-01
+- [x] **M1-02 · Rights policy and gates** · P0 · S · deps: M1-01
   - **Do:** `knowledge/rights/`: defaults per source type (from `app_settings`), `assertCanProcessWithAI`, `canVisuallyTransform`, `canUseAsExemplar`.
   - **Done when:** permission matrix tests.
   - **Refs:** 07 §7.13, 12 §12.4.
