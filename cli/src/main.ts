@@ -1,6 +1,7 @@
 import { createDb, isPoolerUrl } from "@rc/db";
 import { EnvValidationError, loadServerEnv } from "@rc/lib/env";
 import { createLogger } from "@rc/lib/logging";
+import { createStorage } from "@rc/lib/providers/storage";
 import { cliCommands } from "@rc/modules/cli-commands";
 import { cliHelp, createServiceContext, runCliCommand } from "@rc/modules/core";
 
@@ -36,6 +37,7 @@ const ctx = createServiceContext({
     level: env.observability.logLevel,
   }),
   actor: { type: "SYSTEM" },
+  storage: createStorage(env.storage),
 });
 
 try {

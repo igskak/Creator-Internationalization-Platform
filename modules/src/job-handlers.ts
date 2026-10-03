@@ -29,8 +29,21 @@ export const helloJob = defineJob({
   },
 });
 
+/**
+ * J1 (plan 06 §6.3). Stub until M1-15 (ingestion orchestrator): the source stays QUEUED and the
+ * run only records that the job arrived.
+ */
+export const ingestSourceJob = defineJob({
+  payload: z.object({ sourceAssetId: z.uuid(), attempt: z.number().int().positive() }),
+  run: async (ctx, { sourceAssetId, attempt }) => {
+    ctx.logger.warn({ sourceAssetId, attempt }, "ingest-source is a stub until M1-15");
+    return { stub: true as const };
+  },
+});
+
 export const jobHandlers = {
   hello: helloJob,
+  "ingest-source": ingestSourceJob,
 };
 
 type JobHandlers = typeof jobHandlers;
