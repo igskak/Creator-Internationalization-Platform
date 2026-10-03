@@ -13,6 +13,20 @@ Template:
 
 ---
 
+## 2026-10-03 · Extraction batches [M1-13]
+- Context: M1-13 plans page-range batches and runs the extractor per batch (06 J2, 07 §7.2.3).
+- Decision: `modules/src/knowledge/extraction/`.
+  - **`plan.ts`:** `planTextBatches` packs pages up to ~12k tokens (3 characters per token for ru/uk/bg/be/sr/mk, 4 otherwise; an oversized page goes alone). `planPdfBatches` cuts 15-page PDF_NATIVE batches; a sub-PDF must stay under 25 MB, and since `pdf-lib` copies only the pages' resources, a file under 25 MB needs no measuring, otherwise each range is measured (`pdfMeasurer`) and halved until it fits; a single page still too large becomes a TEXT batch. `cutPdf` makes the sub-PDF.
+  - **`batch.ts`:** `insertBatches` (PENDING rows, `onConflictDoNothing` on (source, attempt, index)) and `extractBatch(ctx, {batchId})` = J2: SUCCEEDED/SKIPPED batches return at once; the AI rights gate runs before anything else; a batch whose attempt is not the source's current one becomes SKIPPED (`STALE_ATTEMPT`); then RUNNING, page rows of the attempt, taxonomy from `taxonomy_terms` (`taxonomy.ts`), `runStage('KNOWLEDGE_EXTRACTION')` with `validateExtraction`, cards inserted by `(batch, ordinal)` with conflicts ignored (so a half-done batch finishes), `cardsCreated` counted from the table, batch SUCCEEDED with the last run id.
+  - **Fallback:** in PDF_NATIVE mode an API-rejected PDF (`PermanentError`), a sub-PDF over the guard, INVALID_OUTPUT after the repair, or a refusal triggers one TEXT attempt (the batch's `mode` becomes TEXT); no page text → batch FAILED (`PDF_FAILED_NO_TEXT`), the source can still finish READY. A transient error is not a fallback case: the batch is marked FAILED (a FAILED batch may run again) and the error is rethrown for the job runner to retry. Permanent failures are returned as `FAILED` in the outcome, with the reason, issues and refusal category in `knowledge_extraction_batches.error`; the job does not throw for them.
+  - **`validate.ts`:** blocking checks for the repair: empty title/claim, missing or over-400-character quote, confidence outside 0–1, pages outside the batch range (or end before start), `safetySensitive` without reason, and the JSON shapes (`Timing` valueMax ≥ value etc.); skipped pages out of range are MINOR.
+  - **Cards:** stored as `EXTRACTED`, `origin = SOURCE_EXTRACTED`, language of the source, `source_reference` with `quoteVerified: false`, flag `SAFETY_SENSITIVE` when the model says so. Quote and number verification and the other flags are M1-14; the move to NEEDS_REVIEW is M1-15; embeddings M1-16.
+  - **Job:** `extract-knowledge-batch` is registered (`{ batchId }`) with a Trigger.dev task on the `llm` queue, 20 minutes.
+  - Each batch loads the whole source PDF from storage to cut its pages (up to 200 MB per batch on the worker); revisit if memory or time shows up as a problem (the alternative is to store sub-PDFs at planning time).
+  - `@rc/prompts` exposes the extractor fixtures as `@rc/prompts/fixtures/knowledge-extractor` for tests.
+- Evidence / links: `modules/src/knowledge/extraction/extraction.test.ts` (planning, validators, success, rerun skip, half-done batch, PDF failure → TEXT, invalid and refused → TEXT, size guard, no-text failure, repair, transient retry, rights gate, stale attempt).
+- Impact on plan: M1-14 plugs quote and number verification into `extractBatch` before the insert; M1-15 plans batches with `planPdfBatches`/`planTextBatches` + `insertBatches` and waits for `extract-knowledge-batch`.
+
 ## 2026-10-03 · Knowledge extractor prompt v1 [M1-12]
 - Context: M1-12 needs the first real prompt, a taxonomy-dependent output schema, and fixtures. The S-01 spike showed models add scenes, intensifiers ("always", "the most common mistake") and facts the source lacks, and that verbatim quotes can be verified by code.
 - Decision:
