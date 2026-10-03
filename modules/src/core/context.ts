@@ -1,6 +1,7 @@
 import type { AnyDatabase } from "@rc/db";
 import { PermanentError } from "@rc/lib/errors";
 import type { Logger } from "@rc/lib/logging";
+import type { EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import type { StorageProvider } from "@rc/lib/providers/storage";
 import { type Clock, systemClock } from "./clock";
@@ -16,7 +17,7 @@ export type Actor =
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
- * Embedding and image providers are added by the tasks that first use them.
+ * The image provider is added by the task that first uses it.
  */
 export type ServiceContext = {
   db: AnyDatabase;
@@ -31,6 +32,8 @@ export type ServiceContext = {
   storage: StorageProvider;
   /** Language model; every call goes through runStage(). */
   llm: LLMProvider;
+  /** Text embeddings for `vector(1536)` columns. */
+  embeddings: EmbeddingProvider;
 };
 
 export type CreateServiceContextInput = {
@@ -45,6 +48,8 @@ export type CreateServiceContextInput = {
   storage?: StorageProvider;
   /** Default: a provider that refuses every call. */
   llm?: LLMProvider;
+  /** Default: a provider that refuses every call. */
+  embeddings?: EmbeddingProvider;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -62,6 +67,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     jobs: input.jobs ?? disabledJobRunner,
     storage: input.storage ?? disabledStorage,
     llm: input.llm ?? disabledLlm,
+    embeddings: input.embeddings ?? disabledEmbeddings,
   };
 }
 
@@ -85,6 +91,16 @@ export const disabledLlm: LLMProvider = {
   id: "fake",
   generateStructured: async () => {
     throw new PermanentError("No LLM provider is configured for this context.");
+  },
+};
+
+/** Default for contexts that must not embed text. */
+export const disabledEmbeddings: EmbeddingProvider = {
+  id: "fake",
+  model: "disabled",
+  dimensions: 0,
+  embed: async () => {
+    throw new PermanentError("No embedding provider is configured for this context.");
   },
 };
 
