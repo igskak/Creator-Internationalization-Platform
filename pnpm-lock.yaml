@@ -385,7 +385,11 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
 
-  prompts: {}
+  prompts:
+    dependencies:
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   templates: {}
 
