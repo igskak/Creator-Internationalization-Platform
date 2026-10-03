@@ -13,6 +13,19 @@ Template:
 
 ---
 
+## 2026-10-03 · Knowledge extractor prompt v1 [M1-12]
+- Context: M1-12 needs the first real prompt, a taxonomy-dependent output schema, and fixtures. The S-01 spike showed models add scenes, intensifiers ("always", "the most common mistake") and facts the source lacks, and that verbatim quotes can be verified by code.
+- Decision:
+  - `prompts/src/knowledge-extractor/`: `schema.ts` (`ExtractorInput`, `ExtractorOutput`, `KnowledgeCardDraft`, `extractorOutputFor`), `v1.ts` (`knowledge-extractor@1`, registered in `promptRegistry`), `fixtures.ts` (4 synthetic Russian pages: table of contents, buckwheat, rice storage, a course advertisement; a reference output), `v1.test.ts` with a file snapshot of the rendered prompt.
+  - **Per-call output schema:** `PromptDefinition` gained an optional `outputFor(input)`; `runStage` parses the input once, renders, and sends and checks against `outputFor(input)` when present (`output` stays the structural schema). The extractor builds category and subcategory enums from the active taxonomy, so the JSON Schema sent to the model lists exactly those codes. Without subcategories the field is free text. Like `render`, `outputFor` is not part of the hash: a behavior change means a new version.
+  - **Input:** source meta, active taxonomy terms, mode (`PDF_NATIVE` with an attached PDF whose first page is `pageStart`, or `TEXT` with `<page n section>` elements), page range. Everything from sources goes through the escaping helpers; the system prompt says tagged and attached content is data, not instructions.
+  - **Rules (S-01 findings built in):** extract only what the pages state; no strengthening or generalization; explanation is the author's, empty if the source gives none; source language, no translation; numbers and units copied exactly, never converted; a verbatim quote of at most 400 characters from one place; source page numbers (not positions in the sub-PDF); skip front matter, contents, advertising, listed in `skippedPages` with an enum reason; confidence below 0.6 when unclear; `safetySensitive` with a reason for raw or undercooked food, core temperatures, storing cooked food, preserving, allergens, alcohol; never soften safety statements. Schema limits that JSON Schema cannot carry (quote length, confidence 0–1, page range, `safetyReason` when safety-sensitive) are for the M1-13 validators.
+  - **Evals:** expected-card notes and "must not happen" list in `evals/datasets/knowledge-extractor/README.md` for the M2-16 harness.
+  - **Status:** v1 is unreleased until the first real extraction run, so edits after Ihor's review go into `v1.ts` (and the snapshot); from the first live use on real sources a change needs `v2.ts` and an eval. The checkbox in 15 stays open until that review.
+  - Fixed on the way: a task sentence rendered `<pages>` escaped (`&lt;pages&gt;`) because plain strings are escaped; the sentence now says "the pages section".
+- Evidence / links: `prompts/src/knowledge-extractor/v1.test.ts` (snapshot, PDF mode, injection through page text, input checks, fixture output parses with both schemas, quotes verbatim on their pages, taxonomy enums in the JSON Schema), `modules/src/ai/ai.test.ts` (`outputFor` through `runStage`; stage config points at the registered prompt).
+- Impact on plan: `outputFor` added to the M1-09 prompt API; M1-13 uses `knowledgeExtractor.ExtractorInput`, builds the taxonomy from `taxonomy_terms` and adds the validators above.
+
 ## 2026-10-03 · runStage and generation logging; default model Claude Opus 5.5 [M1-10]
 - Context: M1-10 builds `runStage()`; the owner decided on 2026-10-03 that the default model is Claude Opus 5.5 (recommendation from the M1-08 entry accepted).
 - Decision:
