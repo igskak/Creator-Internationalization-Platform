@@ -3,6 +3,7 @@ import { listTaxonomyTerms } from "@rc/modules/settings";
 import Link from "next/link";
 import { EmptyState } from "@/components/knowledge/cards-states";
 import { PostsImport } from "@/components/knowledge/posts-import";
+import { PostsSuggest } from "@/components/knowledge/posts-suggest";
 import {
   PostsTable,
   type PostTableRow,
@@ -37,7 +38,7 @@ export default async function PostsPage({
   const exemplar = one(params.exemplar) === "1";
   const page = Math.max(1, Number.parseInt(one(params.page) ?? "1", 10) || 1);
 
-  const [list, imports, terms] = await Promise.all([
+  const [list, imports, terms, none] = await Promise.all([
     listHistoricalPosts(ctx, {
       ...(q ? { q } : {}),
       ...(annotation ? { annotation } : {}),
@@ -46,7 +47,9 @@ export default async function PostsPage({
     }),
     listPostImports(ctx),
     listTaxonomyTerms(ctx),
+    listHistoricalPosts(ctx, { annotation: "NONE", pageSize: 1 }),
   ]);
+  const unannotated = none.total;
   const options = (kind: string) =>
     terms
       .filter((term) => term.kind === kind && term.isActive)
@@ -98,7 +101,10 @@ export default async function PostsPage({
           <h1 className="text-2xl font-semibold">{t.title}</h1>
           <p className="text-muted-foreground">{t.subtitle}</p>
         </div>
-        <PostsImport />
+        <div className="flex flex-wrap gap-2">
+          <PostsSuggest unannotated={unannotated} />
+          <PostsImport isOwner={user.role === "owner"} />
+        </div>
       </div>
 
       <section

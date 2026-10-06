@@ -5,7 +5,11 @@ import { defineJob } from "./core/job-runner";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
-import { importHistoricalPosts } from "./knowledge/posts";
+import {
+  AnnotatePostsInput,
+  annotateHistoricalPosts,
+  importHistoricalPosts,
+} from "./knowledge/posts";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -75,12 +79,22 @@ export const importHistoricalPostsJob = defineJob({
   run: (ctx, payload) => importHistoricalPosts(ctx, payload),
 });
 
+/**
+ * J17 (plan 06 §6.3): suggests taxonomy codes for up to 50 posts. Posts a person confirmed, posts
+ * without a caption and posts whose import forbids AI processing are skipped and reported.
+ */
+export const annotateHistoricalPostsJob = defineJob({
+  payload: AnnotatePostsInput,
+  run: (ctx, payload) => annotateHistoricalPosts(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,
+  "annotate-historical-posts": annotateHistoricalPostsJob,
 };
 
 type JobHandlers = typeof jobHandlers;

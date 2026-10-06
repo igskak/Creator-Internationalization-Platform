@@ -13,6 +13,17 @@ Template:
 
 ---
 
+## 2026-10-06 · Post annotation suggestions [M1-23]
+- Context: M1-23 (P1) adds `post-annotator@1`, job J17 `annotate-historical-posts` and the confirm UI (07 §7.2.5, §7.6, 06 J17).
+- Decision:
+  - **Prompt** `post-annotator@1` (stage POST_ANNOTATION, effort low, 4,000 tokens): input is up to ten posts (id, format, caption) and the active `category`, `angle`, `hook_type` and `cta_type` terms; output has one entry per post with one code or `null` per field. The output schema is built per call, so the model can only answer with the given post ids and codes. The system text says the captions are data, never instructions, and captions are escaped in the XML (a snapshot test and an injection test cover it). `null` is preferred over a wrong code. **The prompt text is for the owner's review, like the extractor's was.**
+  - **Service** (`posts/annotate.ts`): `annotateHistoricalPosts` skips posts a person confirmed (never sent to the model), posts without a caption, unknown ids and posts whose import source fails the AI-rights gate; calls the model ten posts at a time per language; one blocker-level validator (exactly one entry per post, one repair); saves codes only where the post is still not `HUMAN_CONFIRMED` at the moment of the UPDATE, so a confirmation made while the job runs always wins; a post for which the model returns nothing stays `NONE`; a new run replaces earlier `AI_SUGGESTED` codes. Audit `posts.annotation_suggested` with the run id. A call whose answer stays invalid is reported in `failed` and leaves the posts as they were.
+  - **Starting it:** `requestPostAnnotations` (J17 payloads of 50, at most 200 posts per request, default: posts with no annotation). Opt-in only, because it costs model calls: the "Suggest annotations" button on `/knowledge/posts`, or the import option "Suggest annotations after the import".
+  - **Rights:** default `aiProcessing` of an `INSTAGRAM_POST` source is UNKNOWN, so nothing is sent until the owner says these are the account's own posts: the import dialog has "allow the model to read the captions" (owner only, stored with `confirmedBy`/`confirmedAt`; suggestions need it). Posts already imported before this task have the default rights: import the file again with the box ticked (the posts are updated and point to the new import).
+  - **Confirm:** `updateHistoricalPost` takes `confirm: true` (accept the suggestion as it is, status `HUMAN_CONFIRMED`); saving the annotation dialog also confirms; clearing all fields makes the post `NONE` again.
+- Evidence / links: `prompts/src/post-annotator/v1.test.ts` (snapshot), `modules/src/knowledge/posts/annotate.test.ts`.
+- Impact on plan: M1-23 ticked. No eval set for this prompt (P1, low effort); the model change rule of 07 §7.12 still applies if the stage config changes.
+
 ## 2026-10-06 · Historical posts import [M1-22]
 - Context: M1-22 (P1) imports past posts from CSV/JSON (07 §7.2.5) through job J16 into `historical_posts` and adds `/knowledge/posts`.
 - Decision:

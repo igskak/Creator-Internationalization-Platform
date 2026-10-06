@@ -1,12 +1,13 @@
 import { createHash, randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
-import type { PostAnnotations, PostMetrics } from "@rc/db/json";
+import type { PostAnnotations, PostMetrics, RightsPolicy } from "@rc/db/json";
 import { and, count, desc, eq, ilike, inArray, or, sql } from "@rc/db/orm";
-import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
+import { ForbiddenError, InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
 import { storageKeys } from "@rc/lib/providers/storage";
 import { z } from "zod";
 import { audit, type ServiceContext, transition, triggerJob, withTransaction } from "../../core";
 import { canUseAsExemplar, getRightsDefault } from "../rights";
+import { requestPostAnnotations } from "./annotate";
 import { type ParsedPost, PostsFileError, parsePostsFile, type RowError } from "./parse";
 
 // Historical posts (plan 05, 07 §7.2.5, 06 J16, M1-22): the file is stored as a source of type
@@ -39,6 +40,13 @@ export const CreatePostsImportInput = z.object({
     .string()
     .regex(/^[a-z]{2}$/u, "Use an ISO 639-1 code like 'ru'.")
     .default("ru"),
+  /**
+   * The owner confirms that these are the posts of their own account and that the model may read
+   * the captions (`aiProcessing = ALLOWED`). Needed for annotation suggestions.
+   */
+  allowAiProcessing: z.boolean().default(false),
+  /** After the import, ask the model to suggest annotations for the posts that have none (J17). */
+  suggestAnnotations: z.boolean().default(false),
 });
 
 /** What the import left on the source row (`metadata_json.import`). */
@@ -72,6 +80,14 @@ export async function createPostsImport(
   raw: z.input<typeof CreatePostsImportInput>,
 ): Promise<{ sourceAssetId: string }> {
   const input = parseInput(CreatePostsImportInput, raw);
+  if (input.allowAiProcessing && ctx.actor.type === "USER" && ctx.actor.role !== "owner") {
+    throw new ForbiddenError("Only the owner can allow AI processing of a source.");
+  }
+  if (input.suggestAnnotations && !input.allowAiProcessing) {
+    throw new ValidationError("Allow AI processing to get annotation suggestions.", {
+      fieldErrors: { suggestAnnotations: ["Allow AI processing first."] },
+    });
+  }
   const name = input.fileName.toLowerCase();
   if (!name.endsWith(".csv") && !name.endsWith(".json")) {
     throw new ValidationError("Use a .csv or .json file.", {
@@ -90,8 +106,17 @@ export async function createPostsImport(
   const {
     confirmedBy: _by,
     confirmedAt: _at,
-    ...rights
+    ...defaults
   } = await getRightsDefault(ctx, "INSTAGRAM_POST");
+  const rights: RightsPolicy = input.allowAiProcessing
+    ? {
+        ...defaults,
+        aiProcessing: "ALLOWED",
+        ...(ctx.actor.type === "USER"
+          ? { confirmedBy: ctx.actor.userId, confirmedAt: ctx.clock.now().toISOString() }
+          : {}),
+      }
+    : defaults;
   await ctx.storage.put(fileKey, bytes, {
     contentType: name.endsWith(".json") ? "application/json" : "text/csv",
   });
@@ -108,6 +133,7 @@ export async function createPostsImport(
     rights,
     metadataJson: {
       accountHandle: input.accountHandle,
+      suggestAnnotations: input.suggestAnnotations,
       sha256: createHash("sha256").update(bytes).digest("hex"),
     },
     createdBy: actingUserId(ctx),
@@ -122,7 +148,11 @@ export async function createPostsImport(
     audit: {
       action: "posts.import_started",
       entityType: "source_asset",
-      data: { fileName: input.fileName, accountHandle: input.accountHandle },
+      data: {
+        fileName: input.fileName,
+        accountHandle: input.accountHandle,
+        aiProcessing: rights.aiProcessing,
+      },
     },
   });
   await triggerJob(
@@ -329,6 +359,29 @@ export async function importHistoricalPosts(
     "posts.imported",
     { totalRows: report.totalRows, created, updated, errors: errors.length },
   );
+  if (
+    (source.metadataJson as { suggestAnnotations?: boolean }).suggestAnnotations &&
+    created + updated > 0
+  ) {
+    try {
+      const unannotated = await ctx.db
+        .select({ id: schema.historicalPosts.id })
+        .from(schema.historicalPosts)
+        .where(
+          and(
+            eq(schema.historicalPosts.sourceAssetId, source.id),
+            eq(schema.historicalPosts.annotationStatus, "NONE"),
+          ),
+        )
+        .limit(200);
+      if (unannotated.length > 0) {
+        await requestPostAnnotations(ctx, { postIds: unannotated.map((p) => p.id) });
+      }
+    } catch (error) {
+      // The posts are in; the person can ask for suggestions from the screen.
+      ctx.logger.warn({ err: error }, "could not queue annotation suggestions after the import");
+    }
+  }
   return { status: "READY", ...report };
 }
 
@@ -367,6 +420,21 @@ export const interactionsOf = (m: PostMetrics): number | null => {
   return parts.length ? parts.reduce((a, b) => a + b, 0) : null;
 };
 
+const toRow = (p: typeof schema.historicalPosts.$inferSelect): PostRow => ({
+  id: p.id,
+  externalId: p.externalId,
+  accountHandle: p.accountHandle,
+  permalink: p.permalink,
+  postedAt: p.postedAt,
+  format: p.format,
+  caption: p.caption ?? "",
+  metrics: p.metrics,
+  interactions: interactionsOf(p.metrics),
+  annotations: p.annotations,
+  annotationStatus: p.annotationStatus,
+  isExemplar: p.isExemplar,
+});
+
 export async function listHistoricalPosts(
   ctx: ServiceContext,
   raw: z.input<typeof ListPostsInput> = {},
@@ -401,20 +469,7 @@ export async function listHistoricalPosts(
     total: totalRow?.n ?? 0,
     page: input.page,
     pageSize: input.pageSize,
-    rows: rows.map((p) => ({
-      id: p.id,
-      externalId: p.externalId,
-      accountHandle: p.accountHandle,
-      permalink: p.permalink,
-      postedAt: p.postedAt,
-      format: p.format,
-      caption: p.caption ?? "",
-      metrics: p.metrics,
-      interactions: interactionsOf(p.metrics),
-      annotations: p.annotations,
-      annotationStatus: p.annotationStatus,
-      isExemplar: p.isExemplar,
-    })),
+    rows: rows.map(toRow),
   };
 }
 
@@ -466,6 +521,8 @@ export const UpdatePostInput = z.object({
     .strict()
     .optional(),
   isExemplar: z.boolean().optional(),
+  /** Accept the suggested annotations as they are. */
+  confirm: z.boolean().optional(),
 });
 
 /**
@@ -485,7 +542,7 @@ export async function updateHistoricalPost(
   if (!post) throw new NotFoundError("Post not found.", { details: { id: input.id } });
 
   const patch = input.annotations ?? {};
-  if (Object.keys(patch).length === 0 && input.isExemplar === undefined) {
+  if (Object.keys(patch).length === 0 && input.isExemplar === undefined && !input.confirm) {
     throw new ValidationError("Nothing to save.", {
       fieldErrors: { _form: ["Change at least one field."] },
     });
@@ -525,6 +582,11 @@ export async function updateHistoricalPost(
   const annotationsChanged =
     Object.keys(patch).length > 0 &&
     JSON.stringify(annotations) !== JSON.stringify(post.annotations);
+  const nothingToSet =
+    Object.keys(patch).length === 0 &&
+    input.isExemplar === undefined &&
+    !(input.confirm && Object.keys(post.annotations).length > 0);
+  if (nothingToSet) return toRow(post);
   const updated = await withTransaction(ctx, async (tx) => {
     const [row] = await tx.db
       .update(schema.historicalPosts)
@@ -536,7 +598,9 @@ export async function updateHistoricalPost(
                 ? ("HUMAN_CONFIRMED" as const)
                 : ("NONE" as const),
             }
-          : {}),
+          : input.confirm && Object.keys(post.annotations).length > 0
+            ? { annotationStatus: "HUMAN_CONFIRMED" as const }
+            : {}),
         ...(input.isExemplar === undefined ? {} : { isExemplar: input.isExemplar }),
       })
       .where(eq(schema.historicalPosts.id, input.id))
@@ -548,23 +612,11 @@ export async function updateHistoricalPost(
       entityId: row.id,
       data: {
         ...(annotationsChanged ? { annotations: Object.keys(patch) } : {}),
+        ...(input.confirm ? { confirmed: true } : {}),
         ...(input.isExemplar === undefined ? {} : { isExemplar: input.isExemplar }),
       },
     });
     return row;
   });
-  return {
-    id: updated.id,
-    externalId: updated.externalId,
-    accountHandle: updated.accountHandle,
-    permalink: updated.permalink,
-    postedAt: updated.postedAt,
-    format: updated.format,
-    caption: updated.caption ?? "",
-    metrics: updated.metrics,
-    interactions: interactionsOf(updated.metrics),
-    annotations: updated.annotations,
-    annotationStatus: updated.annotationStatus,
-    isExemplar: updated.isExemplar,
-  };
+  return toRow(updated);
 }

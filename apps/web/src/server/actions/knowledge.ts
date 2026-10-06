@@ -9,6 +9,8 @@ import {
   createPostsImport,
   MergeDuplicatesInput,
   mergeDuplicateCards as mergeService,
+  RequestAnnotationsInput,
+  requestPostAnnotations,
   searchSourceChunks,
   TransitionCardInput,
   transitionKnowledgeCard as transitionService,
@@ -103,4 +105,11 @@ export const updateHistoricalPostAction = defineAction({
     const post = await updateHistoricalPost(ctx, input);
     return { id: post.id, annotationStatus: post.annotationStatus, isExemplar: post.isExemplar };
   },
+});
+
+export const suggestPostAnnotations = defineAction({
+  name: "suggestPostAnnotations",
+  input: RequestAnnotationsInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestPostAnnotations(ctx, input),
 });

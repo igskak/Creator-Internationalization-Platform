@@ -24,7 +24,7 @@ import { importHistoricalPostsFile } from "@/server/actions/knowledge";
 const LANGUAGES = ["ru", "en", "uk"] as const;
 
 /** Import dialog: the file is read in the browser and sent as text; J16 does the rest. */
-export function PostsImport() {
+export function PostsImport({ isOwner }: { isOwner: boolean }) {
   const { locale, messages } = useI18n();
   const t = messages.posts.import;
   const router = useRouter();
@@ -32,6 +32,8 @@ export function PostsImport() {
   const [file, setFile] = useState<File | null>(null);
   const [handle, setHandle] = useState("");
   const [language, setLanguage] = useState("ru");
+  const [allowAi, setAllowAi] = useState(false);
+  const [suggest, setSuggest] = useState(false);
   const [reading, setReading] = useState(false);
   const names = new Intl.DisplayNames(locale, { type: "language" });
   const run = useAction(importHistoricalPostsFile, {
@@ -48,7 +50,14 @@ export function PostsImport() {
     setReading(true);
     try {
       const text = await file.text();
-      await run.run({ fileName: file.name, text, accountHandle: handle, language });
+      await run.run({
+        fileName: file.name,
+        text,
+        accountHandle: handle,
+        language,
+        allowAiProcessing: allowAi,
+        suggestAnnotations: allowAi && suggest,
+      });
     } catch {
       toast.error(t.readError);
     } finally {
@@ -109,6 +118,34 @@ export function PostsImport() {
             ))}
           </select>
         </FieldBlock>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 accent-primary"
+              checked={allowAi}
+              disabled={!isOwner}
+              onChange={(event) => {
+                setAllowAi(event.target.checked);
+                if (!event.target.checked) setSuggest(false);
+              }}
+            />
+            <span>
+              {t.allowAi}
+              <span className="block text-xs text-muted-foreground">{t.allowAiHint}</span>
+            </span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-4 accent-primary"
+              checked={suggest}
+              disabled={!allowAi}
+              onChange={(event) => setSuggest(event.target.checked)}
+            />
+            {t.suggest}
+          </label>
+        </div>
         <button
           type="button"
           onClick={template}

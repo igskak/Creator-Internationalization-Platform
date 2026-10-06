@@ -1,4 +1,13 @@
 export {
+  AnnotatePostsInput,
+  type AnnotateResult,
+  type AnnotateSkipReason,
+  annotateHistoricalPosts,
+  MAX_SUGGEST_POSTS,
+  RequestAnnotationsInput,
+  requestPostAnnotations,
+} from "./annotate";
+export {
   MAX_POST_ROWS,
   type ParsedPost,
   type ParsedPosts,

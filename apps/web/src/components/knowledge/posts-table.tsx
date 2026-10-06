@@ -157,6 +157,7 @@ export function PostsTable({ rows, terms }: { rows: PostTableRow[]; terms: TermO
                     <span className="text-xs text-muted-foreground">
                       {t.status[row.annotationStatus]}
                     </span>
+                    {row.annotationStatus === "AI_SUGGESTED" ? <ConfirmButton id={row.id} /> : null}
                     <Button size="xs" variant="ghost" onClick={() => open(row)}>
                       {t.annotate.button}
                     </Button>
@@ -241,6 +242,27 @@ function ExemplarToggle({ row }: { row: PostTableRow }) {
       onClick={() => toggle.run({ id: row.id, isExemplar: !row.isExemplar })}
     >
       <StarIcon className={cn(row.isExemplar && "fill-amber-400 text-amber-500")} />
+    </Button>
+  );
+}
+
+function ConfirmButton({ id }: { id: string }) {
+  const t = useI18n().messages.posts;
+  const router = useRouter();
+  const confirm = useAction(updateHistoricalPostAction, {
+    onSuccess: () => {
+      toast.success(t.suggest.confirmed);
+      router.refresh();
+    },
+  });
+  return (
+    <Button
+      size="xs"
+      variant="outline"
+      disabled={confirm.pending}
+      onClick={() => confirm.run({ id, confirm: true })}
+    >
+      {t.suggest.confirm}
     </Button>
   );
 }
