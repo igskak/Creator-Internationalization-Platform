@@ -13,6 +13,12 @@ Template:
 
 ---
 
+## 2026-10-06 · Direct database URL in development, idle timeouts [M1-18]
+- Context: on the owner's phone-hotspot network the Supabase transaction pooler (port 6543) stalled queued queries, so data pages hung in `next dev` and `next start`; the session pooler (5432) was fine.
+- Decision: `runtimeDatabaseUrl()` returns `DATABASE_DIRECT_URL` when `APP_ENV=development` and it is set, otherwise `DATABASE_URL`; the web and jobs runtimes use it. postgres.js gets `idle_timeout: 20` and `connect_timeout: 15` so connections dropped by NAT are not reused. Production keeps the pooled URL.
+- Evidence / links: `lib/src/env/database-url.test.ts`; list and card screens verified in the built-in browser on the 81 real cards, including the quote highlight.
+- Impact on plan: none.
+
 ## 2026-10-04 · Knowledge card review screen, editing and evidence [M1-18]
 - Context: M1-18 builds `/knowledge/cards/[id]` (10 §10.2): a structured editor, the source evidence with the quote, flags, versions and the review actions. M1-17 was ticked after the owner's visual check (no remarks).
 - Decision:

@@ -1,6 +1,6 @@
 import "server-only";
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
-import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
+import { loadServerEnv, runtimeDatabaseUrl, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
 import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
@@ -21,7 +21,8 @@ export function serverEnv(): ServerEnv {
 }
 
 export function serverDb(): AnyDatabase {
-  const { url } = serverEnv().db;
+  const env = serverEnv();
+  const url = runtimeDatabaseUrl(env.db, env.appEnv);
   db ??= createDb(url, { pooled: isPoolerUrl(url), max: 5 }).db;
   return db;
 }

@@ -1,3 +1,4 @@
+export { runtimeDatabaseUrl } from "./database-url";
 export {
   type EnvProblem,
   EnvValidationError,

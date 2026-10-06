@@ -1,5 +1,5 @@
 import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
-import { loadServerEnv, type ServerEnv } from "@rc/lib/env";
+import { loadServerEnv, runtimeDatabaseUrl, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
 import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
@@ -40,7 +40,8 @@ function createRuntime(): Runtime {
     level: env.observability.logLevel,
     ...(env.observability.release ? { release: env.observability.release } : {}),
   });
-  const { db } = createDb(env.db.url, { pooled: isPoolerUrl(env.db.url), max: 3 });
+  const url = runtimeDatabaseUrl(env.db, env.appEnv);
+  const { db } = createDb(url, { pooled: isPoolerUrl(url), max: 3 });
   // Jobs started from a job go through Trigger.dev as well.
   const jobs =
     env.jobs.mode === "trigger"
