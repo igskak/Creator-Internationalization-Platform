@@ -273,7 +273,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `post-annotator@1` + job J17 + confirm UI.
   - **Done when:** fake-LLM tests; confirmed annotations are never overwritten.
 
-- [ ] **M1-24 · Scanned-page transcription and card English gloss** · P1 · M · deps: M1-15, M1-18
+- [x] **M1-24 · Scanned-page transcription and card English gloss** · P1 · M · deps: M1-15, M1-18
   - **Do:** `page-transcriber@1` + J19 (pages without text layer → text, then re-verify quotes); `knowledge-gloss@1` + `requestCardGloss` (UI label "not approved text").
   - **Done when:** fake tests; the gloss never appears as approved content.
 

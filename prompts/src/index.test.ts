@@ -57,6 +57,8 @@ describe("@rc/prompts", () => {
     expect(promptRegistry.list().map((p) => p.key)).toEqual([
       "knowledge-extractor@1",
       "post-annotator@1",
+      "page-transcriber@1",
+      "knowledge-gloss@1",
     ]);
   });
 });

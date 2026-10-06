@@ -408,6 +408,16 @@ export const en = {
       showText: "Text of this version",
       system: "System",
     },
+    gloss: {
+      title: "English reading aid",
+      label: "Not approved text",
+      hint: "A machine translation to help you read this card. It is never used for posts and is not part of the approved card.",
+      button: "Translate to English",
+      refresh: "Translate again",
+      working: "Translating…",
+      stale: "The card was edited after this translation was made.",
+      fields: { title: "Title", claim: "Claim", explanation: "Explanation" },
+    },
     sourceSearch: {
       title: "Search sources",
       hint: "Finds passages in your sources by meaning, not only by exact words.",
