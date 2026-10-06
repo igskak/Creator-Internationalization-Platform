@@ -7,6 +7,12 @@ export {
   getCardWithEvidence,
 } from "./detail";
 export {
+  glossTextHash,
+  RequestCardGlossInput,
+  requestCardGloss,
+  validateGloss,
+} from "./gloss";
+export {
   APPROVE_BATCH,
   CARD_FLAGS,
   CARD_SORTS,

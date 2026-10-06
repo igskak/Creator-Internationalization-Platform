@@ -10,6 +10,7 @@ import {
   annotateHistoricalPosts,
   importHistoricalPosts,
 } from "./knowledge/posts";
+import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -88,6 +89,15 @@ export const annotateHistoricalPostsJob = defineJob({
   run: (ctx, payload) => annotateHistoricalPosts(ctx, payload),
 });
 
+/**
+ * J19 (plan 06 §6.3): transcribes pages of a PDF that have no text layer, then checks again the
+ * quotes of the cards from those pages. A page the model cannot read stays open.
+ */
+export const transcribePagesJob = defineJob({
+  payload: TranscribePagesInput,
+  run: (ctx, payload) => transcribeSourcePages(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -95,6 +105,7 @@ export const jobHandlers = {
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,
   "annotate-historical-posts": annotateHistoricalPostsJob,
+  "transcribe-pages": transcribePagesJob,
 };
 
 type JobHandlers = typeof jobHandlers;

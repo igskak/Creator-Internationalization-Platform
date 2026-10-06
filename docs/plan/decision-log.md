@@ -13,6 +13,15 @@ Template:
 
 ---
 
+## 2026-10-06 · Scanned-page transcription and card English gloss [M1-24]
+- Context: M1-24 (P1) adds `page-transcriber@1` with J19 `transcribe-pages` (07 §7.2.2), and `knowledge-gloss@1` with `requestCardGloss` (05 §5.4).
+- Decision:
+  - **Transcriber** (`page-transcriber@1`, stage PAGE_TRANSCRIPTION, effort low, 16,000 tokens): up to five consecutive pages of a sub-PDF per call (`cutPdf`), verbatim text, tables as ` | ` rows, `legible: false` for a page it could not read in full; the PDF is material, never instructions. `transcribeSourcePages` takes the pages of the current attempt with no text layer and not yet transcribed, calls the model, checks that each page of the range comes back exactly once (one repair), and saves `text`, `char_count`, `transcribed = true` (`has_text_layer` keeps meaning "the file had a text layer"). A page the model returns empty and legible is done; a page it could not read at all stays open for the next run. The same AI-rights gate as extraction applies.
+  - **Re-check:** cards of the source in EXTRACTED or NEEDS_REVIEW whose cited pages ±1 were transcribed get the quote check and the number check again; a found quote clears `QUOTE_UNVERIFIED` (the note says so), numbers found clear a `LOW_CONFIDENCE` that only missing numbers caused. Approved cards are not touched. J1 starts J19 after READY only when such pages exist (a failure to start it is logged); `rc transcribe-pages [id]` does it by hand.
+  - **Gloss** (`knowledge-gloss@1`, stage KNOWLEDGE_GLOSS, effort low): title, claim and explanation translated into English without additions; a blocker validator requires every number of the original in the translation (one repair, then an error). Cached in `gloss_en` with the model, time and a hash of the card text; `getCardWithEvidence` returns it with `stale` when the card changed since. Not made for English cards; a card of a source needs the source's AI-processing right. **Never approved content:** it is not in `snapshotOf`, `knowledge_item_versions`, the embedding text, retrieval results or `CardView` (tests), and the card screen shows it in its own panel labelled "Not approved text".
+- Evidence / links: `modules/src/knowledge/transcription/transcription.test.ts`, `cards/gloss.test.ts`, `ingest-source.test.ts` (scan → READY → J19 → quote verified), prompt snapshots in `prompts/src/{page-transcriber,knowledge-gloss}`. **Both prompt texts are for the owner's review.** Neither has been run against a real model yet.
+- Impact on plan: M1-24 ticked. `KnowledgeGloss` got an optional `textHash`.
+
 ## 2026-10-06 · Post annotation suggestions [M1-23]
 - Context: M1-23 (P1) adds `post-annotator@1`, job J17 `annotate-historical-posts` and the confirm UI (07 §7.2.5, §7.6, 06 J17).
 - Decision:

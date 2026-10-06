@@ -10,6 +10,8 @@ import {
   MergeDuplicatesInput,
   mergeDuplicateCards as mergeService,
   RequestAnnotationsInput,
+  RequestCardGlossInput,
+  requestCardGloss,
   requestPostAnnotations,
   searchSourceChunks,
   TransitionCardInput,
@@ -112,4 +114,15 @@ export const suggestPostAnnotations = defineAction({
   input: RequestAnnotationsInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => requestPostAnnotations(ctx, input),
+});
+
+/** English reading aid of a card (M1-24); labelled "not approved text" wherever it is shown. */
+export const requestCardGlossAction = defineAction({
+  name: "requestCardGloss",
+  input: RequestCardGlossInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const { gloss, cached } = await requestCardGloss(ctx, input);
+    return { gloss: { ...gloss, stale: false }, cached };
+  },
 });

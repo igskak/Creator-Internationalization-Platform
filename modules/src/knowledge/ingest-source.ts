@@ -3,7 +3,7 @@ import { schema } from "@rc/db";
 import type { ProcessingProgress } from "@rc/db/json";
 import { and, count, eq, inArray } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, RightsBlockedError } from "@rc/lib/errors";
-import { type ServiceContext, transition } from "../core";
+import { type ServiceContext, transition, triggerJob } from "../core";
 import { indexSourceChunks, requestEmbedding } from "./embedding";
 import { insertBatches, pdfMeasurer, planPdfBatches, planTextBatches } from "./extraction";
 import {
@@ -224,6 +224,7 @@ export async function ingestSource(
         succeeded.map((b) => b.id),
       );
       await indexChunks(ctx, id);
+      await requestTranscription(ctx, id, attempt);
       return {
         status: "READY",
         cardsCreated,
@@ -296,6 +297,45 @@ async function indexChunks(ctx: ServiceContext, sourceAssetId: string): Promise<
     await indexSourceChunks(ctx, sourceAssetId);
   } catch (error) {
     ctx.logger.warn({ err: error, sourceAssetId }, "could not index the source for search");
+  }
+}
+
+/**
+ * J19 for scanned pages (P1): pages of a PDF without a text layer get a model transcription, so
+ * quote checks can find the quotes. Only started when there are such pages; a failure to start it
+ * is only logged (`rc transcribe-pages` does it later).
+ */
+async function requestTranscription(
+  ctx: ServiceContext,
+  sourceAssetId: string,
+  attempt: number,
+): Promise<void> {
+  try {
+    const [source] = await ctx.db
+      .select({ name: schema.sourceAssets.originalFilename })
+      .from(schema.sourceAssets)
+      .where(eq(schema.sourceAssets.id, sourceAssetId));
+    if (fileExtension(source?.name ?? "") !== "pdf") return;
+    const [scanned] = await ctx.db
+      .select({ n: count() })
+      .from(schema.sourcePages)
+      .where(
+        and(
+          eq(schema.sourcePages.sourceAssetId, sourceAssetId),
+          eq(schema.sourcePages.processingAttempt, attempt),
+          eq(schema.sourcePages.hasTextLayer, false),
+          eq(schema.sourcePages.transcribed, false),
+        ),
+      );
+    if (!scanned?.n) return;
+    await triggerJob(
+      ctx,
+      "transcribe-pages",
+      { sourceAssetId },
+      { idempotencyKey: `transcribe:${sourceAssetId}:${attempt}` },
+    );
+  } catch (error) {
+    ctx.logger.warn({ err: error, sourceAssetId }, "could not queue the page transcription");
   }
 }
 

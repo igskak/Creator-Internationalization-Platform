@@ -333,6 +333,37 @@ describe("ingest-source (inline, end to end)", () => {
     const [card] = await cardsOf(id);
     expect(card?.sourceReference).toMatchObject({ quoteVerified: true });
     expect(h.llm.id).toBe("fake");
+    // The page has a text layer, so there is nothing to transcribe (M1-24).
+    const stages = (await t.db.select().from(schema.generationRuns)).map((r) => r.stage);
+    expect(stages).not.toContain("PAGE_TRANSCRIPTION");
+  });
+
+  it("transcribes a scanned PDF after READY and verifies the quote against the new text (J19)", async () => {
+    const scan = await PDFDocument.create();
+    scan.addPage();
+    const h = build((call) =>
+      call === 0 ? LATIN_OUTPUT : { pages: [{ page: 1, text: LATIN, legible: true }] },
+    );
+    const ctx = ctxFor(h);
+    const id = await upload(ctx, {
+      name: "scan.pdf",
+      mime: "application/pdf",
+      bytes: await scan.save(),
+    });
+    await completeSourceUpload(ctx, { sourceAssetId: id });
+    expect((await source(id)).processingStatus).toBe("READY");
+    // The extractor saw the page as an image, so its quote could not be checked at first; the
+    // transcription made the text available and the check passed.
+    const stages = (await t.db.select().from(schema.generationRuns)).map((r) => r.stage);
+    expect(stages).toEqual(["KNOWLEDGE_EXTRACTION", "PAGE_TRANSCRIPTION"]);
+    const [page] = await t.db
+      .select()
+      .from(schema.sourcePages)
+      .where(eq(schema.sourcePages.sourceAssetId, id));
+    expect(page).toMatchObject({ transcribed: true, hasTextLayer: false, text: LATIN });
+    const [card] = await cardsOf(id);
+    expect(card?.sourceReference).toMatchObject({ quoteVerified: true });
+    expect(card?.reviewFlags).not.toContain("QUOTE_UNVERIFIED");
   });
 
   it("blocks a source without AI rights, then runs it once the owner confirms the rights", async () => {

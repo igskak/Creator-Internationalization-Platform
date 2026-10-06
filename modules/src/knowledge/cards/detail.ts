@@ -1,9 +1,10 @@
 import { schema } from "@rc/db";
-import type { SourceReference } from "@rc/db/json";
+import type { KnowledgeGloss, SourceReference } from "@rc/db/json";
 import { and, asc, between, desc, eq } from "@rc/db/orm";
 import { NotFoundError } from "@rc/lib/errors";
 import type { ServiceContext } from "../../core";
 import { locateQuote } from "../extraction";
+import { glossTextHash } from "./gloss";
 import type { CardStatus } from "./list";
 import { ideasUsingCards } from "./usage";
 
@@ -48,6 +49,8 @@ export type CardDetail = {
   source: { id: string; title: string; type: string; hasFile: boolean; isPdf: boolean } | null;
   pages: EvidencePage[];
   duplicateOf: { id: string; title: string } | null;
+  /** The English reading aid, if one was made; `stale` when the card text changed since. Not approved text. */
+  gloss: (KnowledgeGloss & { stale: boolean }) | null;
   /** Ideas that use the card; filled in when ideas exist (M2-06a). */
   usedByIdeas: { id: string; topic: string }[];
 };
@@ -172,6 +175,9 @@ export async function getCardWithEvidence(ctx: ServiceContext, id: string): Prom
       : null,
     pages,
     duplicateOf: duplicate[0] ?? null,
+    gloss: card.glossEn
+      ? { ...card.glossEn, stale: card.glossEn.textHash !== glossTextHash(card) }
+      : null,
     usedByIdeas: (await ideasUsingCards(ctx, [id])).get(id) ?? [],
   };
 }

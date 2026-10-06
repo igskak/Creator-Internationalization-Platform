@@ -10,6 +10,7 @@ import { helloJob } from "./job-handlers";
 import { embedAndSuggest, indexSourceChunks } from "./knowledge/embedding";
 import { canProcessWithAI } from "./knowledge/rights";
 import { completeSourceUpload, createSourceUpload } from "./knowledge/sources";
+import { transcribeSourcePages } from "./knowledge/transcription";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   ".pdf": "application/pdf",
@@ -79,6 +80,26 @@ export const cliCommands: CliCommands = {
         const result = await indexSourceChunks(ctx, source.id);
         console.log(
           `rc index-chunks: ${source.title}: ${result.chunks} chunks, ${result.embedded} embedded, ${result.reused} kept (model ${ctx.embeddings.model})`,
+        );
+      }
+    },
+  },
+  "transcribe-pages": {
+    description:
+      "Transcribe the scanned pages (no text layer) of ready PDF sources and re-check their cards' quotes (all, or one id)",
+    usage: "transcribe-pages [sourceAssetId]",
+    run: async (ctx, args) => {
+      const sources = (
+        await ctx.db
+          .select()
+          .from(schema.sourceAssets)
+          .where(eq(schema.sourceAssets.processingStatus, "READY"))
+      ).filter((s) => !s.archivedAt && (args[0] ? s.id === args[0] : canProcessWithAI(s)));
+      if (sources.length === 0) console.log("rc transcribe-pages: no ready source to check");
+      for (const source of sources) {
+        const result = await transcribeSourcePages(ctx, { sourceAssetId: source.id });
+        console.log(
+          `rc transcribe-pages: ${source.title}: ${result.transcribed} pages transcribed, ${result.quotesVerified} quotes now verified, ${result.illegible.length} not fully legible, ${result.failed.length} failed`,
         );
       }
     },

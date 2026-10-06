@@ -1,4 +1,6 @@
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
+import { knowledgeGlossV1 } from "./knowledge-gloss";
+import { pageTranscriberV1 } from "./page-transcriber";
 import { postAnnotatorV1 } from "./post-annotator";
 import { createRegistry } from "./registry";
 
@@ -20,6 +22,8 @@ export {
   type SystemBlock,
 } from "./define";
 export * as knowledgeExtractor from "./knowledge-extractor";
+export * as knowledgeGloss from "./knowledge-gloss";
+export * as pageTranscriber from "./page-transcriber";
 export * as postAnnotator from "./post-annotator";
 export { createRegistry, type PromptRegistry } from "./registry";
 export {
@@ -34,4 +38,9 @@ export {
 } from "./xml";
 
 /** Every released prompt version. Each prompt task adds its `vN.ts` here. */
-export const promptRegistry = createRegistry([knowledgeExtractorV1, postAnnotatorV1]);
+export const promptRegistry = createRegistry([
+  knowledgeExtractorV1,
+  postAnnotatorV1,
+  pageTranscriberV1,
+  knowledgeGlossV1,
+]);

@@ -117,6 +117,8 @@ export const KnowledgeGloss = z.object({
   explanation: z.string(),
   model: z.string(),
   createdAt: z.iso.datetime({ offset: true }),
+  /** SHA-256 of the card text it was made from; a different hash means the card changed since. */
+  textHash: z.string().optional(),
 });
 export type KnowledgeGloss = z.infer<typeof KnowledgeGloss>;
 
