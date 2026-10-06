@@ -247,7 +247,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/knowledge/cards`: filters (status, category, source, flags, language), text search, status counts, default review order (07 §7.2.8), bulk approve/archive (`bulkTransitionKnowledgeCards`).
   - **Done when:** 500-card fixture list loads in < 1 s server time; bulk approve skips unverified cards (test). *(Visual check by Ihor on the dev database, 2026-10-04: no remarks.)*
 
-- [ ] **M1-18 · Knowledge card review UI and versions** · P0 · L · deps: M1-17
+- [x] **M1-18 · Knowledge card review UI and versions** · P0 · L · deps: M1-17
   - **Do:** `/knowledge/cards/[id]`: structured editor (procedure, ingredients, temperatures, timings, mistakes), evidence viewer (cited page ± 1, highlighted quote, link to PDF page via presigned URL), flags, version history, transitions (10 §10.4.1) with role guard. Actions `updateKnowledgeCard`, `transitionKnowledgeCard`; `knowledge_item_versions` snapshot on approve; approved-card edit → NEEDS_REVIEW + variant flags hook.
   - **Done when:** the chef approves/edits/archives in the UI; version rows are correct (tests). *(Service, screen, tests and build done 2026-10-04; open: the chef's and Ihor's try-out of `/knowledge/cards/[id]` on the dev database, then tick.)*
   - **Refs:** 05 §5.4.
