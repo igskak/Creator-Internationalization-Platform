@@ -53,6 +53,8 @@
         "**/*.live.test.ts",
         "jobs/trigger.config.ts",
         "apps/web/next.config.ts",
+        "apps/web/playwright.config.ts",
+        "apps/web/e2e/**",
         "apps/web/src/instrumentation.ts",
         "apps/web/src/instrumentation-client.ts"
       ],

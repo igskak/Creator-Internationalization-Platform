@@ -9,6 +9,7 @@ export {
   type SourceList,
   type SourceRow,
 } from "./read";
+export { getSourceReport, type SourceReport } from "./report";
 export { ReprocessSourceInput, reprocessSource } from "./reprocess";
 export {
   ArchiveSourceInput,
