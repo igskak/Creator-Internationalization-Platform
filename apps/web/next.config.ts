@@ -7,6 +7,8 @@ const config = (phase: string): NextConfig => ({
   poweredByHeader: false,
   // Workspace packages export TypeScript source (plan 03 §3.2).
   transpilePackages: ["@rc/lib", "@rc/modules", "@rc/db", "@rc/prompts", "@rc/templates"],
+  // Posts import files travel as text through a server action (up to 20 MB, plan 07 §7.2.1).
+  experimental: { serverActions: { bodySizeLimit: "21mb" } },
   serverExternalPackages: ["sharp", "playwright-core"],
   async headers() {
     return [

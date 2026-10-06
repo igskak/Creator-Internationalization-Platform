@@ -265,7 +265,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** page-aware chunker (~800 tokens, 100 overlap), chunk embeddings in `ingest-source`, "search sources" panel in the card editor.
   - **Done when:** deterministic chunk tests; search finds the fixture passage.
 
-- [ ] **M1-22 · Historical posts import** · P1 · M · deps: M1-01, M0-16
+- [x] **M1-22 · Historical posts import** · P1 · M · deps: M1-01, M0-16
   - **Do:** CSV/JSON import (07 §7.2.5) → job J16 → `historical_posts`; `/knowledge/posts` with metrics, annotation editor, exemplar toggle; template CSV in `docs/runbooks/historical-posts.md`.
   - **Done when:** parsing tests (quotes, emojis, Russian text, bad rows reported).
 

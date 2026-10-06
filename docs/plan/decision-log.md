@@ -13,6 +13,15 @@ Template:
 
 ---
 
+## 2026-10-06 · Historical posts import [M1-22]
+- Context: M1-22 (P1) imports past posts from CSV/JSON (07 §7.2.5) through job J16 into `historical_posts` and adds `/knowledge/posts`.
+- Decision:
+  - **Parser** (`modules/src/knowledge/posts/parse.ts`, pure): comma, semicolon or tab; BOM; quotes, doubled quotes and line breaks inside quotes; column names matched ignoring case and `_ - space`. Row problems (empty id, unreadable date, empty caption, unknown format, non-integer metric, bad yes/no, link without http, repeated id) are reported with the row number, column and reason and skip that row only; a file that cannot be read (empty, missing required columns, broken JSON, over 5,000 rows) is a file-level error. Dates without a zone are UTC.
+  - **Import** (`importHistoricalPosts`, J16 `import-historical-posts`): the upload is stored as a source of type `INSTAGRAM_POST` (the `source_asset_id` the schema already had) so the file and its result stay traceable; the web action sends the file text (up to 20 MB, `serverActions.bodySizeLimit` 21 MB) because the sources upload screen (M1-04) is not built yet. Taxonomy codes (`category`, `angle`, `hook_type`, `cta_type`) must exist and be active, or the row is rejected; `product_code` and `visual_pattern` are free text (no products table before M2-01, no visual-pattern taxonomy). The account handle is typed in the dialog and kept on the source; the result (`created`, `updated`, up to 200 row errors) is written to `metadata_json.import` and shown under "Latest imports". Upsert on `(platform, external_id)`; a re-import updates caption, link, date, format and the metrics it carries, and changes annotations or the example flag only where the file has a value. A row annotated in the file is `HUMAN_CONFIRMED`.
+  - **Screen:** list newest first with interactions (likes + comments + saves + shares), search, annotation and example filters, an annotation dialog (taxonomy selects, product code, visual pattern; saving makes the status `HUMAN_CONFIRMED`, clearing all fields makes it `NONE`), the example star. A post whose import forbids prompt use (`improvePrompts = DENIED` or RESTRICTED) cannot become an example (07 §7.13 gate). English and Russian.
+- Evidence / links: `modules/src/knowledge/posts/parse.test.ts`, `service.test.ts`; template and rules in `docs/runbooks/historical-posts.md`.
+- Impact on plan: M1-22 ticked. M1-23 (annotation suggestions) must skip `HUMAN_CONFIRMED` posts and check the import source's `aiProcessing` right before sending captions to a model.
+
 ## 2026-10-06 · Source chunks and source search [M1-21]
 - Context: M1-21 (P1) adds chunks of the raw source text with vectors, and a "search sources" panel in the card editor (06 §6.3 step 6, 04 `source_chunks`).
 - Decision:
