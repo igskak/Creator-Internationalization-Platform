@@ -136,7 +136,7 @@ export function PostsTable({ rows, terms }: { rows: PostTableRow[]; terms: TermO
                   <p className="text-muted-foreground">
                     {(["likes", "comments", "saves", "shares", "reach", "views"] as const)
                       .filter((key) => row.metrics[key] !== undefined)
-                      .map((key) => `${number.format(row.metrics[key] ?? 0)} ${t.table[key]}`)
+                      .map((key) => `${t.table[key]}: ${number.format(row.metrics[key] ?? 0)}`)
                       .join(" · ")}
                   </p>
                 </td>
