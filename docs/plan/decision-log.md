@@ -13,6 +13,16 @@ Template:
 
 ---
 
+## 2026-10-06 · Sources UI [M1-04]
+- Context: M1-04 (P0) had been left until last: the library, the upload dialog and the source screen. The M1 acceptance (M1-25) needs them (upload to READY with visible progress, reprocess, rights).
+- Decision:
+  - **Reads** (`modules/src/knowledge/sources/read.ts`): `listSources` (newest first, 25 per page, search by title, status filter, archived hidden unless asked; imports of historical posts have their own screen) with card counts (not archived), progress in percent and the AI-processing right; `getSourceDetail` with page counts (without text layer, transcribed), a three-page preview, the batches of the current attempt, cards by status and the count of unverified quotes. `getStatuses` (05 §5.7) now answers for sources: status, progress and the error text; `progressPercent` maps stages and batches to 1–100 (the last tenth is verification and embeddings).
+  - **Library** `/knowledge/sources`: table with type, language, pages, size, status badge with a progress bar, rights badge, card count linking to the cards filtered by source, date; polls `getStatuses` every 3 s while something is processed and refreshes when a status or progress changes.
+  - **Upload dialog:** a file (type, title, language, author, accepted extensions and the size limit per type from `ACCEPTED_FORMATS`, rights matrix with the defaults of Settings → Rights, presign → XHR PUT with progress → complete) or pasted text (`createTextSource`). A source whose AI processing is not allowed is uploaded and shown as "Blocked: rights" with a message.
+  - **Source screen** `/knowledge/sources/[id]`: details, rights, cards summary, batches with their status and errors, page preview, the processing error; actions: download (presigned URL), process again (FULL or KNOWLEDGE_ONLY; owner and editor), edit rights (owner), archive with a reason (owner). English and Russian.
+- Evidence / links: `modules/src/knowledge/sources/read.test.ts`; list and detail checked in the browser on the guide (81 cards). The upload dialog against real R2 is not tried here (memory storage cannot take a browser PUT); `completeSourceUpload` and the presign are covered by M1-03's tests.
+- Impact on plan: M1-04 ticked.
+
 ## 2026-10-06 · Scanned-page transcription and card English gloss [M1-24]
 - Context: M1-24 (P1) adds `page-transcriber@1` with J19 `transcribe-pages` (07 §7.2.2), and `knowledge-gloss@1` with `requestCardGloss` (05 §5.4).
 - Decision:

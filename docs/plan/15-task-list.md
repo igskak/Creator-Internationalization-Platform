@@ -185,7 +185,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** integration tests with fake storage: limits, size mismatch, BLOCKED path, audit rows.
   - **Refs:** 05 §5.3.
 
-- [ ] **M1-04 · Sources UI** · P0 · M · deps: M1-03, M0-17
+- [x] **M1-04 · Sources UI** · P0 · M · deps: M1-03, M0-17
   - **Do:** `/knowledge/sources` list (status, progress, rights badge, card count); upload dialog (presign → XHR PUT with progress → complete; metadata + rights matrix with explicit choices); `/knowledge/sources/[id]` detail (metadata, owner rights edit, pages preview, batches, errors, reprocess, download).
   - **Done when:** a PDF uploads end to end to dev R2; screenshots in the PR.
   - **Refs:** 10 §10.2.

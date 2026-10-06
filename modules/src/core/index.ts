@@ -30,6 +30,7 @@ export {
   type TriggerOptions,
   triggerJob,
 } from "./job-runner";
+export { progressPercent } from "./progress";
 export { getStatuses, type StatusEntry, type Statuses, StatusesInput } from "./statuses";
 export { type StatusTable, type TransitionInput, transition } from "./transition";
 export {
