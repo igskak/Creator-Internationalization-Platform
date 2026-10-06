@@ -12,7 +12,7 @@ export function FieldBlock({
   label: string;
   htmlFor?: string;
   error?: string | undefined;
-  hint?: string;
+  hint?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
