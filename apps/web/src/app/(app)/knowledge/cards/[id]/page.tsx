@@ -8,6 +8,7 @@ import { UsedByIdeas, VersionHistory } from "@/components/knowledge/card-side-pa
 import { CardWorkspace } from "@/components/knowledge/card-workspace";
 import { EvidencePanel } from "@/components/knowledge/evidence-panel";
 import { FlagBadges } from "@/components/knowledge/flag-badges";
+import { MergeIntoOriginal } from "@/components/knowledge/merge-into-original";
 import { format } from "@/lib/i18n/format";
 import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/server/auth/session";
@@ -74,6 +75,13 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               {detail.duplicateOf.title}
             </Link>
           </p>
+        ) : null}
+        {detail.duplicateOf && card.status !== "ARCHIVED" ? (
+          <MergeIntoOriginal
+            cardId={card.id}
+            original={detail.duplicateOf}
+            canMerge={user.role === "chef" || user.role === "owner"}
+          />
         ) : null}
       </div>
 

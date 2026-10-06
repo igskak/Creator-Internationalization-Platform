@@ -1,3 +1,4 @@
+export { CreateManualCardInput, createManualKnowledgeCard } from "./create";
 export {
   type CardDetail,
   type CardVersionView,
@@ -17,6 +18,7 @@ export {
   ListCardsInput,
   listKnowledgeCards,
 } from "./list";
+export { MergeDuplicatesInput, mergeDuplicateCards } from "./merge";
 export {
   ARCHIVE_REASONS,
   BULK_LIMIT,
@@ -29,3 +31,4 @@ export {
   transitionKnowledgeCard,
 } from "./transition";
 export { KnowledgeCardPatch, UpdateCardInput, updateKnowledgeCard } from "./update";
+export { ideasUsingCards } from "./usage";

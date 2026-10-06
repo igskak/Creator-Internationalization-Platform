@@ -257,7 +257,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** PGlite tests with fake embeddings (diversity, exclusion).
   - **Refs:** 07 §7.9.1.
 
-- [ ] **M1-20 · Manual cards and duplicate merge** · P1 · S · deps: M1-18
+- [x] **M1-20 · Manual cards and duplicate merge** · P1 · S · deps: M1-18
   - **Do:** `createManualKnowledgeCard`, `mergeDuplicateCards` + UI.
   - **Done when:** tests; merge refuses cards used by ideas.
 

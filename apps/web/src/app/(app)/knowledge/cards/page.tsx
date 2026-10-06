@@ -1,10 +1,12 @@
 import { APPROVE_BATCH, type CardStatus, listKnowledgeCards } from "@rc/modules/knowledge";
 import { listTaxonomyTerms } from "@rc/modules/settings";
+import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CardsPagination, EmptyState } from "@/components/knowledge/cards-states";
 import { CardsTable } from "@/components/knowledge/cards-table";
 import { CardsToolbar } from "@/components/knowledge/cards-toolbar";
+import { buttonVariants } from "@/components/ui/button";
 import {
   cardsHref,
   clearedFilters,
@@ -67,9 +69,14 @@ export default async function CardsPage({
 
   return (
     <main className="flex max-w-6xl flex-col gap-4 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t.title}</h1>
-        <p className="text-muted-foreground">{t.subtitle}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-muted-foreground">{t.subtitle}</p>
+        </div>
+        <Link href="/knowledge/cards/new" className={buttonVariants({ size: "sm" })}>
+          <PlusIcon /> {messages.newCard.button}
+        </Link>
       </div>
 
       {nothingYet ? (
