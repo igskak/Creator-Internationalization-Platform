@@ -54,7 +54,10 @@ const input: In = { topic: "salt", cards: [{ id: "k1", claim: "Salt early" }] };
 describe("@rc/prompts", () => {
   it("exposes its package name and the released prompts", () => {
     expect(PACKAGE_NAME).toBe("@rc/prompts");
-    expect(promptRegistry.list().map((p) => p.key)).toEqual(["knowledge-extractor@1"]);
+    expect(promptRegistry.list().map((p) => p.key)).toEqual([
+      "knowledge-extractor@1",
+      "post-annotator@1",
+    ]);
   });
 });
 

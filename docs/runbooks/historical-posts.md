@@ -36,6 +36,17 @@ The "Import posts" dialog also offers this template as a download.
 
 Annotations you set in the screen are "Confirmed". The model's suggestions (M1-23) never overwrite confirmed ones.
 
+## Annotation suggestions
+
+The model can propose a category, angle, hook and call to action from each caption (`post-annotator@1`). It costs model calls, so it is always on request:
+
+- tick "Suggest annotations after the import" in the import dialog, or
+- press "Suggest annotations" on `/knowledge/posts` (up to 200 posts without annotations per press).
+
+Suggestions show as "Suggested"; "Confirm" accepts one as it is, "Annotate" lets you change it. A post you confirmed is never sent to the model again and never overwritten.
+
+The model reads captions only if the owner ticked "These are posts of my own account, and the AI model may read the captions" in the import dialog (it sets `aiProcessing = ALLOWED` on that import). Posts imported without it are skipped; import the same file again with the box ticked.
+
 ## Rights
 
 The import is stored with the rights defaults for `INSTAGRAM_POST` (Settings → Rights). A post can be marked as an example only if the import's rights do not forbid using it for prompts (`improvePrompts` is not `DENIED`, the source is not `RESTRICTED`).

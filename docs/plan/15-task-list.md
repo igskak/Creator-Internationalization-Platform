@@ -269,7 +269,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** CSV/JSON import (07 §7.2.5) → job J16 → `historical_posts`; `/knowledge/posts` with metrics, annotation editor, exemplar toggle; template CSV in `docs/runbooks/historical-posts.md`.
   - **Done when:** parsing tests (quotes, emojis, Russian text, bad rows reported).
 
-- [ ] **M1-23 · Post annotation suggestions** · P1 · M · deps: M1-22, M1-10
+- [x] **M1-23 · Post annotation suggestions** · P1 · M · deps: M1-22, M1-10
   - **Do:** `post-annotator@1` + job J17 + confirm UI.
   - **Done when:** fake-LLM tests; confirmed annotations are never overwritten.
 

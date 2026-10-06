@@ -1,4 +1,5 @@
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
+import { postAnnotatorV1 } from "./post-annotator";
 import { createRegistry } from "./registry";
 
 export const PACKAGE_NAME = "@rc/prompts";
@@ -19,6 +20,7 @@ export {
   type SystemBlock,
 } from "./define";
 export * as knowledgeExtractor from "./knowledge-extractor";
+export * as postAnnotator from "./post-annotator";
 export { createRegistry, type PromptRegistry } from "./registry";
 export {
   type Attrs,
@@ -32,4 +34,4 @@ export {
 } from "./xml";
 
 /** Every released prompt version. Each prompt task adds its `vN.ts` here. */
-export const promptRegistry = createRegistry([knowledgeExtractorV1]);
+export const promptRegistry = createRegistry([knowledgeExtractorV1, postAnnotatorV1]);
