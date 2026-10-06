@@ -5,6 +5,7 @@ import { defineJob } from "./core/job-runner";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
+import { importHistoricalPosts } from "./knowledge/posts";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -65,11 +66,21 @@ export const embedKnowledgeItemsJob = defineJob({
   run: (ctx, { knowledgeItemIds }) => embedAndSuggest(ctx, { knowledgeItemIds }),
 });
 
+/**
+ * J16 (plan 06 §6.3): reads a stored posts file and upserts the posts. A file that cannot be read
+ * ends the import as FAILED and returns normally; bad rows are reported on the source.
+ */
+export const importHistoricalPostsJob = defineJob({
+  payload: z.object({ sourceAssetId: z.uuid() }),
+  run: (ctx, payload) => importHistoricalPosts(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
+  "import-historical-posts": importHistoricalPostsJob,
 };
 
 type JobHandlers = typeof jobHandlers;

@@ -4,6 +4,7 @@ export * from "./embedding";
 export * from "./extraction";
 export { type IngestMode, type IngestOutcome, ingestSource } from "./ingest-source";
 export * from "./ingestion";
+export * from "./posts";
 export * from "./retrieval";
 export * from "./rights";
 export * from "./sources";

@@ -4,13 +4,17 @@ import {
   BulkTransitionInput,
   bulkTransitionKnowledgeCards as bulkTransitionService,
   CreateManualCardInput,
+  CreatePostsImportInput,
   createManualKnowledgeCard as createManualService,
+  createPostsImport,
   MergeDuplicatesInput,
   mergeDuplicateCards as mergeService,
   searchSourceChunks,
   TransitionCardInput,
   transitionKnowledgeCard as transitionService,
   UpdateCardInput,
+  UpdatePostInput,
+  updateHistoricalPost,
   updateKnowledgeCard as updateService,
 } from "@rc/modules/knowledge";
 import { z } from "zod";
@@ -80,4 +84,23 @@ export const searchSources = defineAction({
       ...(input.sourceAssetId ? { sourceAssetId: input.sourceAssetId } : {}),
       limit: 8,
     }),
+});
+
+// Historical posts (M1-22, plan 05 §5.4): import a CSV/JSON file, annotate, mark examples.
+
+export const importHistoricalPostsFile = defineAction({
+  name: "importHistoricalPostsFile",
+  input: CreatePostsImportInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => createPostsImport(ctx, input),
+});
+
+export const updateHistoricalPostAction = defineAction({
+  name: "updateHistoricalPost",
+  input: UpdatePostInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const post = await updateHistoricalPost(ctx, input);
+    return { id: post.id, annotationStatus: post.annotationStatus, isExemplar: post.isExemplar };
+  },
 });
