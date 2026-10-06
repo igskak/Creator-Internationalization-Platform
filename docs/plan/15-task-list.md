@@ -261,7 +261,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `createManualKnowledgeCard`, `mergeDuplicateCards` + UI.
   - **Done when:** tests; merge refuses cards used by ideas.
 
-- [ ] **M1-21 · Source chunks and source search** · P1 · M · deps: M1-06, M1-07, M1-11
+- [x] **M1-21 · Source chunks and source search** · P1 · M · deps: M1-06, M1-07, M1-11
   - **Do:** page-aware chunker (~800 tokens, 100 overlap), chunk embeddings in `ingest-source`, "search sources" panel in the card editor.
   - **Done when:** deterministic chunk tests; search finds the fixture passage.
 

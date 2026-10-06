@@ -284,7 +284,14 @@ describe("ingest-source (inline, end to end)", () => {
     const twins = cards.filter((c) => c.title === first?.title).map((c) => c.id);
     expect(twins).toContain(flagged[0]?.id);
     expect(twins).toContain(flagged[0]?.duplicateOfId);
-    expect(h.embeddings.calls).toHaveLength(1);
+    // One call for the cards, one for the source chunks (M1-21).
+    expect(h.embeddings.calls).toHaveLength(2);
+    const chunks = await t.db
+      .select()
+      .from(schema.sourceChunks)
+      .where(eq(schema.sourceChunks.sourceAssetId, id));
+    expect(chunks.length).toBeGreaterThan(0);
+    expect(chunks.every((c) => c.embedding?.length === 1536 && c.language === "ru")).toBe(true);
   });
 
   it("stays READY when the vectors cannot be made; the backfill job catches up later", async () => {
@@ -298,6 +305,8 @@ describe("ingest-source (inline, end to end)", () => {
     await completeSourceUpload(ctx, { sourceAssetId: id });
     expect((await source(id)).processingStatus).toBe("READY");
     expect((await cardsOf(id)).every((c) => c.embedding === null)).toBe(true);
+    // Source search is optional: no chunks, and the source is still READY.
+    expect(await t.db.select().from(schema.sourceChunks)).toEqual([]);
 
     const healthy = build(() => FIXTURE_OUTPUT);
     await healthy.jobs.trigger("embed-knowledge-items", {});

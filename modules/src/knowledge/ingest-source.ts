@@ -4,7 +4,7 @@ import type { ProcessingProgress } from "@rc/db/json";
 import { and, count, eq, inArray } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, RightsBlockedError } from "@rc/lib/errors";
 import { type ServiceContext, transition } from "../core";
-import { requestEmbedding } from "./embedding";
+import { indexSourceChunks, requestEmbedding } from "./embedding";
 import { insertBatches, pdfMeasurer, planPdfBatches, planTextBatches } from "./extraction";
 import {
   assertNotDuplicate,
@@ -23,7 +23,7 @@ import { fileExtension } from "./sources/limits";
 
 // J1 `ingest-source` (plan 06 §6.3): rights gate → sniff → pages → batches → extraction → READY.
 // Quote verification and the review queue happen inside each batch (M1-13/M1-14); embeddings and
-// dedupe suggestions are M1-16.
+// dedupe suggestions are M1-16, source chunks for search M1-21.
 
 type Source = typeof schema.sourceAssets.$inferSelect;
 export type IngestMode = "FULL" | "KNOWLEDGE_ONLY";
@@ -223,6 +223,7 @@ export async function ingestSource(
         ctx,
         succeeded.map((b) => b.id),
       );
+      await indexChunks(ctx, id);
       return {
         status: "READY",
         cardsCreated,
@@ -283,6 +284,18 @@ async function requestCardEmbeddings(ctx: ServiceContext, batchIds: string[]): P
     }
   } catch (error) {
     ctx.logger.warn({ err: error }, "could not embed the new cards now; the backfill job will");
+  }
+}
+
+/**
+ * Chunks and vectors for searching the raw text (P1). The cards are the product, so a failure here
+ * only costs the source search; `rc index-chunks` or the next processing run indexes the source again.
+ */
+async function indexChunks(ctx: ServiceContext, sourceAssetId: string): Promise<void> {
+  try {
+    await indexSourceChunks(ctx, sourceAssetId);
+  } catch (error) {
+    ctx.logger.warn({ err: error, sourceAssetId }, "could not index the source for search");
   }
 }
 

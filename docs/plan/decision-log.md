@@ -13,6 +13,15 @@ Template:
 
 ---
 
+## 2026-10-06 · Source chunks and source search [M1-21]
+- Context: M1-21 (P1) adds chunks of the raw source text with vectors, and a "search sources" panel in the card editor (06 §6.3 step 6, 04 `source_chunks`).
+- Decision:
+  - **Chunker** (`ingestion/chunking.ts`, pure): sentences are the unit; chunks of about 800 tokens, the last sentences (up to 100 tokens) open the next chunk; a sentence longer than a chunk is cut by words, a word longer than a chunk by characters. Tokens are estimated like the extraction planner (3 characters per token for Cyrillic languages, 4 otherwise). Each chunk keeps its first page, last page, section and a SHA-256 of its text.
+  - **Index** (`embedding/chunks.ts` `indexSourceChunks`): chunks of the source's current attempt replace the old rows in one transaction; a chunk with the same text hash and embedding model keeps its vector, so running it again costs nothing. `ingest-source` calls it after READY; a failure is only logged (the cards are the product, search is optional). `rc index-chunks [sourceId]` indexes the ready sources that allow AI processing (for sources ingested before this task); it calls the embedding provider, so with `AI_PROVIDER=live` it costs a few cents per guide.
+  - **Search** (`searchSourceChunks`): the question is embedded, cosine order, archived sources left out, optional single source, at most 30 hits. The panel on the card screen shows source, pages, section, a match percentage and the passage; "Only in this source" narrows it to the card's source. Chunks are made only after the AI-rights gate passed, so a source that forbids AI processing has no chunks and never appears in the search.
+- Evidence / links: `ingestion/chunking.test.ts`, `embedding/chunks.test.ts`, `ingest-source.test.ts`.
+- Impact on plan: M1-21 ticked. The panel does not yet open the PDF at the found page; the sources screen (M1-04) can link there.
+
 ## 2026-10-06 · Manual cards and duplicate merge [M1-20]
 - Context: M1-20 (P1) adds `createManualKnowledgeCard` and `mergeDuplicateCards` (05 §5.4) with their UI.
 - Decision:

@@ -1,3 +1,10 @@
+export {
+  CHUNK_OVERLAP_TOKENS,
+  CHUNK_TOKENS,
+  type ChunkPage,
+  chunkPages,
+  type SourceChunk,
+} from "./chunking";
 export { parseDocx } from "./docx";
 export {
   type ExtractedPage,

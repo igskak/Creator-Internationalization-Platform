@@ -9,6 +9,7 @@ import { CardWorkspace } from "@/components/knowledge/card-workspace";
 import { EvidencePanel } from "@/components/knowledge/evidence-panel";
 import { FlagBadges } from "@/components/knowledge/flag-badges";
 import { MergeIntoOriginal } from "@/components/knowledge/merge-into-original";
+import { SourceSearchPanel } from "@/components/knowledge/source-search-panel";
 import { format } from "@/lib/i18n/format";
 import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/server/auth/session";
@@ -117,6 +118,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
         />
         <aside className="flex min-w-0 flex-col gap-4">
           <EvidencePanel detail={detail} locale={locale} t={t} />
+          <SourceSearchPanel sourceAssetId={card.sourceAssetId} />
           <VersionHistory versions={detail.versions} locale={locale} t={t} />
           <UsedByIdeas ideas={detail.usedByIdeas} t={t} />
         </aside>
