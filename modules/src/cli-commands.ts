@@ -7,7 +7,8 @@ import { ValidationError } from "@rc/lib/errors";
 import type { CliCommands } from "./core/cli";
 import { runJobHandler } from "./core/job-runner";
 import { helloJob } from "./job-handlers";
-import { embedAndSuggest } from "./knowledge/embedding";
+import { embedAndSuggest, indexSourceChunks } from "./knowledge/embedding";
+import { canProcessWithAI } from "./knowledge/rights";
 import { completeSourceUpload, createSourceUpload } from "./knowledge/sources";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -59,6 +60,26 @@ export const cliCommands: CliCommands = {
       );
       for (const d of result.duplicates) {
         console.log(`  ${d.id} ~ ${d.duplicateOfId} (${d.similarity})`);
+      }
+    },
+  },
+  "index-chunks": {
+    description:
+      "Cut ready sources into chunks and embed them for source search (all sources, or one id)",
+    usage: "index-chunks [sourceAssetId]",
+    run: async (ctx, args) => {
+      const sources = (
+        await ctx.db
+          .select()
+          .from(schema.sourceAssets)
+          .where(eq(schema.sourceAssets.processingStatus, "READY"))
+      ).filter((s) => !s.archivedAt && (args[0] ? s.id === args[0] : canProcessWithAI(s)));
+      if (sources.length === 0) console.log("rc index-chunks: no ready source to index");
+      for (const source of sources) {
+        const result = await indexSourceChunks(ctx, source.id);
+        console.log(
+          `rc index-chunks: ${source.title}: ${result.chunks} chunks, ${result.embedded} embedded, ${result.reused} kept (model ${ctx.embeddings.model})`,
+        );
       }
     },
   },

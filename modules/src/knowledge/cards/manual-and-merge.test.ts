@@ -1,6 +1,6 @@
 import { schema } from "@rc/db";
 import type { RightsPolicy } from "@rc/db/json";
-import { asc, eq } from "@rc/db/orm";
+import { eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@rc/lib/errors";

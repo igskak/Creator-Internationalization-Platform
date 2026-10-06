@@ -7,11 +7,13 @@ import {
   createManualKnowledgeCard as createManualService,
   MergeDuplicatesInput,
   mergeDuplicateCards as mergeService,
+  searchSourceChunks,
   TransitionCardInput,
   transitionKnowledgeCard as transitionService,
   UpdateCardInput,
   updateKnowledgeCard as updateService,
 } from "@rc/modules/knowledge";
+import { z } from "zod";
 import { defineAction } from "./_define";
 
 // Plan 05 §5.4. The service enforces who may approve or restore (chef, owner) and archive an
@@ -60,4 +62,22 @@ export const mergeDuplicateCards = defineAction({
   input: MergeDuplicatesInput,
   roles: ["owner", "chef"],
   handler: (ctx, input) => mergeService(ctx, input),
+});
+
+const SearchSourcesInput = z.object({
+  query: z.string().trim().min(2).max(300),
+  sourceAssetId: z.uuid().optional(),
+});
+
+/** The "search sources" panel of the card editor (M1-21): semantic search over the raw text. */
+export const searchSources = defineAction({
+  name: "searchSources",
+  input: SearchSourcesInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) =>
+    searchSourceChunks(ctx, {
+      query: input.query,
+      ...(input.sourceAssetId ? { sourceAssetId: input.sourceAssetId } : {}),
+      limit: 8,
+    }),
 });

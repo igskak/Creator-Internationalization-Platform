@@ -310,6 +310,18 @@ export const en = {
       showText: "Text of this version",
       system: "System",
     },
+    sourceSearch: {
+      title: "Search sources",
+      hint: "Finds passages in your sources by meaning, not only by exact words.",
+      placeholder: "What are you looking for?",
+      button: "Search",
+      searching: "Searching…",
+      onlyThisSource: "Only in this source",
+      none: "Nothing found. Try other words, or the source may not be indexed yet.",
+      page: "p. {page}",
+      pages: "pp. {start}–{end}",
+      match: "{percent}% match",
+    },
     usedBy: {
       title: "Used by ideas",
       none: "No idea uses this card yet.",
