@@ -5,6 +5,7 @@ import { NotFoundError } from "@rc/lib/errors";
 import type { ServiceContext } from "../../core";
 import { locateQuote } from "../extraction";
 import type { CardStatus } from "./list";
+import { ideasUsingCards } from "./usage";
 
 // The data of the card review screen (plan 05 §5.4 `getCardWithEvidence`, 10 §10.2).
 
@@ -171,6 +172,6 @@ export async function getCardWithEvidence(ctx: ServiceContext, id: string): Prom
       : null,
     pages,
     duplicateOf: duplicate[0] ?? null,
-    usedByIdeas: [],
+    usedByIdeas: (await ideasUsingCards(ctx, [id])).get(id) ?? [],
   };
 }

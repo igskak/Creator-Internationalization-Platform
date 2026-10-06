@@ -4,6 +4,7 @@ import { ArchiveIcon, CheckIcon, RotateCcwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { FieldBlock, selectClass } from "@/components/knowledge/field-block";
 import { RowsEditor } from "@/components/settings/rows-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,37 +47,6 @@ export type CardWorkspaceCard = EditableCard & {
 };
 
 const ARCHIVE_REASONS = ["OUT_OF_SCOPE", "INACCURATE", "DUPLICATE", "OTHER"] as const;
-const selectClass = "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
-
-function FieldBlock({
-  label,
-  htmlFor,
-  error,
-  hint,
-  children,
-}: {
-  label: string;
-  htmlFor?: string;
-  error?: string | undefined;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-sm font-medium">
-        {label}
-      </label>
-      {children}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-      {error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
 /**
  * The editor of one card with the review actions (approve, archive, restore). Editing an approved
  * card asks first, because saving sends it back to review as the next version.

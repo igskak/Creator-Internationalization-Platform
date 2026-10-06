@@ -3,6 +3,10 @@
 import {
   BulkTransitionInput,
   bulkTransitionKnowledgeCards as bulkTransitionService,
+  CreateManualCardInput,
+  createManualKnowledgeCard as createManualService,
+  MergeDuplicatesInput,
+  mergeDuplicateCards as mergeService,
   TransitionCardInput,
   transitionKnowledgeCard as transitionService,
   UpdateCardInput,
@@ -39,4 +43,21 @@ export const updateKnowledgeCard = defineAction({
     const card = await updateService(ctx, input);
     return { id: card.id, status: card.status, version: card.version };
   },
+});
+
+export const createManualKnowledgeCard = defineAction({
+  name: "createManualKnowledgeCard",
+  input: CreateManualCardInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const card = await createManualService(ctx, input);
+    return { id: card.id };
+  },
+});
+
+export const mergeDuplicateCards = defineAction({
+  name: "mergeDuplicateCards",
+  input: MergeDuplicatesInput,
+  roles: ["owner", "chef"],
+  handler: (ctx, input) => mergeService(ctx, input),
 });

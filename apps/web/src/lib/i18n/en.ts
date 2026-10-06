@@ -151,6 +151,19 @@ export const en = {
     },
   },
 
+  newCard: {
+    button: "New card",
+    title: "New card",
+    subtitle: "Write a card by hand. It goes to review like every other card.",
+    back: "Knowledge Base",
+    language: "Language of the card",
+    languageHint: "The language the text is written in.",
+    category: "Category",
+    create: "Create card",
+    creating: "Creating…",
+    cancel: "Cancel",
+    created: "Card created. It is waiting for review.",
+  },
   card: {
     back: "Knowledge Base",
     untitled: "Untitled card",
@@ -165,6 +178,15 @@ export const en = {
     },
     archivedBecause: "Archived: {reason}",
     duplicateOf: "Possible duplicate of",
+    merge: {
+      button: "Merge into the original",
+      title: "Merge into the original",
+      body: "This card will be archived as a duplicate of “{title}”. The original stays as it is.",
+      confirm: "Merge",
+      cancel: "Cancel",
+      done: "Merged: the card is archived as a duplicate.",
+      onlyChef: "Only the chef or the owner can merge cards.",
+    },
     unsaved: "You have unsaved changes.",
     editor: {
       title: "Title",

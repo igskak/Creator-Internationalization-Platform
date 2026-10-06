@@ -13,6 +13,15 @@ Template:
 
 ---
 
+## 2026-10-06 · Manual cards and duplicate merge [M1-20]
+- Context: M1-20 (P1) adds `createManualKnowledgeCard` and `mergeDuplicateCards` (05 §5.4) with their UI.
+- Decision:
+  - **`createManualKnowledgeCard`** (`modules/src/knowledge/cards/create.ts`): origin MANUAL, status NEEDS_REVIEW, version 1, steps numbered by order, active category required. The language comes from the source when one is given, otherwise from the form (ru, en or uk). An optional source adds `source_asset_id` and, with a first page, a `source_reference` with an empty quote and `quoteVerified: true` (nothing to check in text written by hand; the note says "Entered by hand"), so the card can be approved without the unverified-quote override. `SAFETY_SENSITIVE` follows the author's choice, otherwise the keyword rules and a CORE temperature. The embedding is requested; audit `knowledge.created_manual`.
+  - **`mergeDuplicateCards`** (`merge.ts`): chef or owner; 1–20 duplicates archived in one transaction as DUPLICATE with `duplicate_of_id = keepId`, audit `knowledge.merged` per card. Refused (nothing changes) for a card merged into itself, unknown cards, an archived duplicate or an archived card that should stay, and for a duplicate used by an idea. The idea lookup is `ideasUsingCards` (`usage.ts`), empty until ideas exist (M2-06a); it also fills `usedByIdeas` of the card screen. The refusal is tested with the lookup replaced.
+  - **Screens:** `/knowledge/cards/new` (the editor fields of the card screen in an empty form, "New card" button on the list) and, on a card that was found to repeat another one, "Merge into the original" (chef or owner). The source picker of the new-card form waits for the sources screen (M1-04); the service already accepts a source. Merging an arbitrary pair of cards from the list is not built; the plan only needs the service and this path.
+- Evidence / links: `modules/src/knowledge/cards/manual-and-merge.test.ts`, `merge-used.test.ts`.
+- Impact on plan: M1-20 ticked. M2-13a also has to flag variants when a merged duplicate was approved and cited.
+
 ## 2026-10-06 · Direct database URL in development, idle timeouts [M1-18]
 - Context: on the owner's phone-hotspot network the Supabase transaction pooler (port 6543) stalled queued queries, so data pages hung in `next dev` and `next start`; the session pooler (5432) was fine.
 - Decision: `runtimeDatabaseUrl()` returns `DATABASE_DIRECT_URL` when `APP_ENV=development` and it is set, otherwise `DATABASE_URL`; the web and jobs runtimes use it. postgres.js gets `idle_timeout: 20` and `connect_timeout: 15` so connections dropped by NAT are not reused. Production keeps the pooled URL.
