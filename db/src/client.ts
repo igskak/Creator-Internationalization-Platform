@@ -25,7 +25,16 @@ export type DbHandle = {
 };
 
 export function createDb(url: string, { pooled, max = 5 }: CreateDbOptions): DbHandle {
-  const client = postgres(url, { prepare: !pooled, max, onnotice: () => {} });
+  const client = postgres(url, {
+    prepare: !pooled,
+    max,
+    onnotice: () => {},
+    // A connection that sat idle may have been dropped by a NAT, a phone hotspot or the pooler
+    // without telling us; a query on it would then hang for minutes. Close idle connections
+    // early so the next query opens a fresh one, and give up on a connection attempt that stalls.
+    idle_timeout: 20,
+    connect_timeout: 15,
+  });
   return {
     db: drizzle({ client, schema, casing: "snake_case" }),
     close: () => client.end({ timeout: 5 }),

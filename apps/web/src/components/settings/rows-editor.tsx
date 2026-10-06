@@ -24,6 +24,8 @@ export function RowsEditor<R extends Record<string, string>>({
   disabled,
   errorsForRow,
   addLabel,
+  emptyLabel = "None yet.",
+  removeLabel = "Remove row",
 }: {
   rows: R[];
   columns: RowColumn<R>[];
@@ -32,13 +34,17 @@ export function RowsEditor<R extends Record<string, string>>({
   disabled?: boolean;
   errorsForRow?: (index: number) => string[];
   addLabel: string;
+  /** Shown when there are no rows (default in English). */
+  emptyLabel?: string;
+  /** Accessible name of the remove button; the row number is added (default in English). */
+  removeLabel?: string;
 }) {
   const update = (index: number, key: keyof R, value: string) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, [key]: value } : row)));
 
   return (
     <div className="flex flex-col gap-2">
-      {rows.length === 0 && <p className="text-sm text-muted-foreground">None yet.</p>}
+      {rows.length === 0 && <p className="text-sm text-muted-foreground">{emptyLabel}</p>}
       {rows.map((row, index) => {
         const rowErrors = errorsForRow?.(index) ?? [];
         return (
@@ -92,7 +98,7 @@ export function RowsEditor<R extends Record<string, string>>({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label={`Remove row ${index + 1}`}
+                  aria-label={`${removeLabel} ${index + 1}`}
                   onClick={() => onChange(rows.filter((_, i) => i !== index))}
                 >
                   <Trash2Icon />

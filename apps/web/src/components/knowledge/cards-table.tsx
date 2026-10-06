@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangleIcon, CheckIcon, ShieldAlertIcon } from "lucide-react";
+import { AlertTriangleIcon, CheckIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,11 +24,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAction } from "@/hooks/use-action";
-import type { CardFlagValue } from "@/lib/cards-query";
 import { format, formatNumber, plural } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import { bulkTransitionKnowledgeCards } from "@/server/actions/knowledge";
+import { FlagBadges } from "./flag-badges";
 
 /** One list row as the browser needs it. */
 export type CardRowView = {
@@ -45,13 +45,6 @@ export type CardRowView = {
 };
 
 const ARCHIVE_REASONS = ["OUT_OF_SCOPE", "INACCURATE", "DUPLICATE", "OTHER"] as const;
-const FLAG_STYLE: Record<CardFlagValue, string> = {
-  SAFETY_SENSITIVE: "bg-destructive/10 text-destructive dark:bg-destructive/20",
-  QUOTE_UNVERIFIED: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  LOW_CONFIDENCE: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  DUPLICATE_SUSPECTED: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-};
-
 type BulkResult = { done: string[]; skipped: { id: string; reason: string }[] };
 
 /**
@@ -229,21 +222,7 @@ export function CardsTable({
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <div className="flex flex-wrap gap-1">
-                    {row.flags.map((flag) =>
-                      flag in FLAG_STYLE ? (
-                        <Badge
-                          key={flag}
-                          variant="ghost"
-                          title={t.flagHints[flag as CardFlagValue]}
-                          className={cn(FLAG_STYLE[flag as CardFlagValue])}
-                        >
-                          {flag === "SAFETY_SENSITIVE" ? (
-                            <ShieldAlertIcon aria-hidden="true" />
-                          ) : null}
-                          {t.flags[flag as CardFlagValue]}
-                        </Badge>
-                      ) : null,
-                    )}
+                    <FlagBadges flags={row.flags} />
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
