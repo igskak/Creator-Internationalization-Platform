@@ -27,6 +27,7 @@
     "@rc/db": "workspace:*",
     "@rc/lib": "workspace:*",
     "@rc/prompts": "workspace:*",
+    "@rc/templates": "workspace:*",
     "@trigger.dev/sdk": "4.6.4",
     "file-type": "^22.1.1",
     "iconv-lite": "^0.7.3",
