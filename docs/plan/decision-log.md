@@ -289,6 +289,15 @@ Template:
 - Evidence / links: `modules/src/knowledge/rights/*.test.ts` (full matrix: 3 permissions × 4 statuses × 3 gates).
 - Impact on plan: M1-03 / `completeSourceUpload` uses `canProcessWithAI` to choose QUEUED vs BLOCKED.
 
+## 2026-10-07 · Idea cards and recent PRIMARY lookup [M2-06a]
+- Context: M1-19 left `getIdeaCards(ideaId)` and the "PRIMARY in the last 30 days" lookup for the tables of 0003. `master_idea_knowledge` has no position column, so "link order" has to be defined.
+- Decision (`modules/src/knowledge/retrieval/service.ts`):
+  - **`getIdeaCards(ctx, ideaId)`** returns `IdeaCard[]` (the linked snapshot plus `role`, `id`, `version`) through `getApprovedSnapshots`: PRIMARY first, then SUPPORTING, each group by card id. That order is deterministic but not the order the generator listed the cards in; if a stage ever needs that order, `master_idea_knowledge` needs a `position` column in a later migration. Unknown idea → `NotFoundError`; a link whose version has no snapshot → `NotFoundError` from `getApprovedSnapshots`.
+  - **`recentPrimaryCardIds(ctx, { days = 30 })`** returns the distinct ids of cards linked as PRIMARY to ideas created in the window (`master_ideas.created_at`, time from `ctx.clock`). Ideas with status REJECTED do not count (their cards were not used); PROPOSED, ACCEPTED and ARCHIVED do; SUPPORTING never counts. Its result goes into `candidatePool({ recentlyUsedIds })`.
+  - `ideasUsingCards` (cards/usage.ts) stays a stub; filling `usedByIdeas` is M2-13a.
+- Evidence / links: `modules/src/knowledge/retrieval/retrieval.test.ts` (order, edited and archived card still returns the linked version, unknown idea, missing snapshot, 30-day window edges, rejected/archived, custom window, feeding `candidatePool`).
+- Impact on plan: none.
+
 ## 2026-10-07 · Content validators [M2-05]
 - Context: 07 §7.8 layer 3 lists the domain checks but not their codes, severities or which one blocks.
 - Decision (`modules/src/content/validation/`, exported from `@rc/modules/content`): pure functions `(draft, context) → ValidationIssue[]`, run in order by `validateDraft()` (structure, slots, citations, numeric fidelity, forbidden patterns, text rules), which returns `issues`, `blocking` (severity BLOCKER), `nonBlocking` and `flags`. The input is the stored shape (`Slide[]` with slot records), so the writer's `{ slot, text }[]` must be normalized first (M2-10). The context carries the locale, the market's forbidden patterns, the ids of the idea's cards and the `NumericReference` of the cited cards.
