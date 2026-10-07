@@ -7,3 +7,28 @@ export {
   UpdateMarketInput,
   updateMarket,
 } from "./markets";
+export {
+  checkNumericFidelity,
+  type ExtractedNumber,
+  extractNumbers,
+  findNumericMismatches,
+  type NumericIssue,
+  type NumericReference,
+  parseAmount,
+} from "./numeric-fidelity";
+export {
+  buildConversionTable,
+  type ConversionEntry,
+  convertTemperature,
+  displayQuantity,
+  formatNumber,
+  formatQuantity,
+  formatTiming,
+  type MarketUnits,
+  type MeasurementSystem,
+  type NumberLocale,
+  type Quantity,
+  toImperial,
+  toMetric,
+  type Unit,
+} from "./units";
