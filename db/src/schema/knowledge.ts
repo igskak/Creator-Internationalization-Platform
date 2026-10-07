@@ -205,7 +205,7 @@ export const sourceChunks = pgTable(
   ],
 ).enableRLS();
 
-/** Every model call [S§23 item 6]. master_idea_id and content_variant_id are added in 0003. */
+/** Every model call [S§23 item 6]. master_idea_id and content_variant_id come with 0003. */
 export const generationRuns = pgTable(
   "generation_runs",
   {
@@ -234,9 +234,15 @@ export const generationRuns = pgTable(
     parentRunId: uuid().references((): AnyPgColumn => generationRuns.id),
     triggerRunId: text(),
     sourceAssetId: uuid().references(() => sourceAssets.id),
+    /** FKs to master_ideas and content_variants are added in 0003 as custom SQL (no import cycle). */
+    masterIdeaId: uuid(),
+    contentVariantId: uuid(),
     createdAt: createdAt(),
   },
-  (t) => [index("generation_runs_stage_idx").on(t.stage, t.createdAt.desc())],
+  (t) => [
+    index("generation_runs_stage_idx").on(t.stage, t.createdAt.desc()),
+    index("generation_runs_variant_idx").on(t.contentVariantId),
+  ],
 ).enableRLS();
 
 export const knowledgeExtractionBatches = pgTable(
