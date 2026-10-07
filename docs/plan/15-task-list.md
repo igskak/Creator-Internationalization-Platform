@@ -319,7 +319,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `content/validation/*` (07 §7.8) returning `ValidationIssue[]` with severity; blocking classification.
   - **Done when:** pass/fail tests per validator.
 
-- [ ] **M2-06 · Idea generator prompt v1 and context builder** · P0 · M · deps: M1-19, M1-10
+- [x] **M2-06 · Idea generator prompt v1 and context builder** · P0 · M · deps: M1-19, M1-10
   - **Do:** prompt + schema; context (card digests from `candidatePool`, ideas of the last 60 days, offers by priority, market notes, optional performance memory); post-validation (IDs ⊆ pool, near-duplicate filter vs recent ideas, product exists).
   - **Done when:** fake-LLM tests; prompt snapshot.
   - **Refs:** 07 §7.6, §7.9.1.

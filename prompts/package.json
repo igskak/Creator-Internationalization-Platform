@@ -6,6 +6,7 @@
   "description": "Versioned prompt definitions and registry",
   "exports": {
     ".": "./src/index.ts",
+    "./fixtures/idea-generator": "./src/idea-generator/fixtures.ts",
     "./fixtures/knowledge-extractor": "./src/knowledge-extractor/fixtures.ts"
   },
   "scripts": {
