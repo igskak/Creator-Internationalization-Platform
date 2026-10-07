@@ -311,7 +311,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `templates/src/define-template.ts` + `registry.ts` with metadata for A–F (08 §8.2.1), no components yet; `validateSlideAgainstTemplate()`; compact catalog text for prompts.
   - **Done when:** tests for limits and required slots.
 
-- [ ] **M2-04 · Units and numeric fidelity** · P0 · M · deps: M0-01
+- [x] **M2-04 · Units and numeric fidelity** · P0 · M · deps: M0-01
   - **Do:** `localization/units.ts`, `numeric-fidelity.ts` (07 §7.9.3).
   - **Done when:** table-driven tests incl. es-ES and EN formatting, tolerances, ranges.
 
