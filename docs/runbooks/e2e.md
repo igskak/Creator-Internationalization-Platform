@@ -1,6 +1,6 @@
 # End-to-end tests (Playwright)
 
-Plan 13 §13.4. Spec 1 (add a source → cards appear → edit → approve as the chef) is in `apps/web/e2e/knowledge.e2e.ts`; the other specs arrive with their features (M2, M4, M5).
+Plan 13 §13.4. Spec 1 (add a source → cards appear → edit → approve as the chef) is in `apps/web/e2e/knowledge.e2e.ts`, spec 2 (generate ideas → accept one; write one by hand → reject it) in `apps/web/e2e/ideas.e2e.ts`; the other specs arrive with their features (M2, M4, M5).
 
 ## Run
 
@@ -23,7 +23,8 @@ E2E_REUSE_SERVER=1 pnpm exec playwright test
 
 - The production build with fakes: `AI_PROVIDER=fake` with a scripted model (`modules/src/ai/e2e-llm.ts`, used only when `E2E_TEST_AUTH_SECRET` is set, which production refuses), `STORAGE_PROVIDER=memory`, `JOBS_MODE=inline`. The values are set by `playwright.config.ts`, not by `.env`, so a `.env` with `AI_PROVIDER=live` is never used by the tests.
 - The database and Supabase Auth of `.env` (a dev project). The test signs in through `/auth/test-login` as `e2e-chef@regchef.test`, an active chef that the test creates if it is missing, and removes the source, cards, versions, batches and model runs it created (titles start with `E2E source`). The user and the audit events stay.
-- The source is added as pasted text: with memory storage a presigned browser upload has no bucket to go to.
+- Spec 2 seeds a source with two approved cards straight into the database (`seedApprovedCards`, titles start with `E2E source` / `E2E card`) and removes them, the ideas made from them and those ideas' model runs afterwards. The scripted model answers `idea-generator` with one idea built on the first `E2E card`.
+- In spec 1 the source is added as pasted text: with memory storage a presigned browser upload has no bucket to go to.
 - Timeouts are generous (the job waits up to two minutes): every database round trip counts on a slow network.
 
 ## Not in CI yet

@@ -328,6 +328,19 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-07 · Ideas UI [M2-08]
+- Context: 10 §10.2 lists `/content/ideas` and `/content/ideas/[id]`; 05 §5.6 has `updateIdea`, which has no screen in the catalog.
+- Decision (`apps/web/src/app/(app)/content/ideas/`, `components/ideas/`, messages `ideas.*` in `en.ts` and `ru.ts`):
+  - **`/content/ideas`:** tabs Proposed / Accepted / Rejected / Archived with counts, the tab and page in the address (`lib/ideas-query.ts`), a table (topic, core message, status, origin, card count, category · angle, offer, date), pagination, empty states, loading skeleton. "Generate ideas" opens a dialog (count, category and angle toggles, product, commercial intent, note) that calls `generateIdeas`, polls `getIdeasRequest` every 2.5 s and shows how many ideas were added, how many were left out as repeats or not saved because a card changed, or the failure reason; it stops waiting after 5 minutes and says where to look. "New idea" goes to `/content/ideas/new`.
+  - **`/content/ideas/new` and `/[id]/edit`:** one form (topic, category, angle, English core message, intent, product, cards). The card picker lists the newest approved cards and narrows them with a text search (`searchCardsForIdea`, at most 15, debounced); chosen cards get a role (the first is PRIMARY). The form checks "a primary card" and "product with intent" before sending; the edit form sends only the fields that changed. The edit page redirects to the idea when `canEdit` is false.
+  - **`/content/ideas/[id]`:** status, origin and offer badges, the rejection reason, the core message, the evidence summary and "why now", every linked card with the **approved text it had when the idea was built** (claim, explanation, verbatim quote, source and page, links to the card and the source), warnings when a card is no longer approved or a newer version is approved, the variants (badges and a link to the review screen), and the action bar: accept (disabled with a hint while a linked card is no longer approved), reject (dialog, reason required), archive (dialog), restore, edit.
+  - **"Generate ES + EN drafts"** is shown on accepted ideas but disabled with the hint "The draft pipeline is not built yet": `generateVariants` is M2-14, so the button is wired there.
+  - The unused `SCREENS.ideas/idea` placeholders stay in `screens.ts` (the sidebar uses them); only the pages are replaced.
+  - **E2E spec 2** (`apps/web/e2e/ideas.e2e.ts`): seeds a source with two approved cards, generates an idea (the scripted E2E model answers `idea-generator`), opens and accepts it, writes an idea by hand through the picker and rejects it with a reason; removes the seeded cards, ideas and their runs. Details in `docs/runbooks/e2e.md`.
+- Not done: the cards-per-market "used by ideas" list on the card screen (M2-13a); editing the idea from the review screen.
+- Evidence / links: `modules/src/content/ideas/queries.test.ts` (list, detail, picker, products), `apps/web/src/lib/ideas-query.test.ts`, the catalog parity test, E2E spec 2 with screenshots (`generate-done`, `ideas-list`, `idea-detail`, `idea-form`).
+- Impact on plan: none.
+
 ## 2026-10-07 · Ideas service and job [M2-07]
 - Context: 05 §5.6 and 06 J4 define the actions and the job; how the screen learns the result of a queued request, the idempotency of the job and the archive rule for rejected ideas were open.
 - Decision (`modules/src/content/ideas/`, exported from `@rc/modules/content`; thin web actions in `apps/web/src/server/actions/content.ts`; task `jobs/src/tasks/generate-ideas.ts`, queue `llm`):

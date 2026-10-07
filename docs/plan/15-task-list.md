@@ -334,7 +334,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** integration tests (manual idea with a non-approved card refused; generated ideas PROPOSED with links).
   - **Refs:** 05 §5.6.
 
-- [ ] **M2-08 · Ideas UI** · P0 · M · deps: M2-07
+- [x] **M2-08 · Ideas UI** · P0 · M · deps: M2-07
   - **Do:** `/content/ideas` (tabs, generate dialog), `/content/ideas/[id]` (detail, linked cards, actions, "Generate ES + EN drafts"), manual idea form with approved-card picker.
   - **Done when:** flows work in dev with fakes; screenshots.
 
