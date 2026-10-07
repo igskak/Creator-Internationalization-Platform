@@ -292,7 +292,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M2 · Content Engine → Gate G1
 
-- [ ] **M2-01 · Content schema (0003_content)** · P0 · M · deps: M1-01
+- [x] **M2-01 · Content schema (0003_content)** · P0 · M · deps: M1-01
   - **Do:** `products`, `offers`, `master_ideas`, `master_idea_knowledge`, `content_variants`, `voice_examples`; FKs on `generation_runs`; JSON types (`Slide`, `CtaSpec`, `UtmSpec`, `MarketBrief`, `CriticReport`, `DifferentiationReport`, `GenerationConfig`, `PipelineState`, `ValidationIssue`).
   - **Done when:** migration + round-trip tests; partial unique index test.
   - **Refs:** 04 §4.3 (0003).
