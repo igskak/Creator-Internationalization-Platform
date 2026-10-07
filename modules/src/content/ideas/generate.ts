@@ -23,6 +23,8 @@ export type IdeaDraftsResult = {
   /** Cards the model was allowed to cite, with the pool statistics. */
   context: {
     cardIds: string[];
+    /** Approved version of each card as the model saw it (what an idea is linked to). */
+    cardVersions: Record<string, number>;
     poolMatched: number;
     exclusionApplied: boolean;
     recentIdeaCount: number;
@@ -53,6 +55,7 @@ export async function generateIdeaDrafts(
   });
   const context = {
     cardIds,
+    cardVersions: Object.fromEntries(input.cards.map((c) => [c.id, c.version])),
     poolMatched: pool.matched,
     exclusionApplied: pool.exclusionApplied,
     recentIdeaCount: input.recentIdeas.length,
