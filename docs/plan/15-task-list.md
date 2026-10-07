@@ -329,7 +329,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests with a linked idea: snapshots in link order, an edited card still returns the linked version; recent-use lookup respects the 30-day window and PRIMARY only.
   - **Refs:** 07 §7.9.1, 04 §4.3.
 
-- [ ] **M2-07 · Ideas service and job** · P0 · M · deps: M2-06, M2-01
+- [x] **M2-07 · Ideas service and job** · P0 · M · deps: M2-06, M2-01
   - **Do:** `generate-ideas` handler + task; actions `generateIdeas`, `createManualIdea`, `updateIdea`, `transitionIdea`; links with approved versions; audit.
   - **Done when:** integration tests (manual idea with a non-approved card refused; generated ideas PROPOSED with links).
   - **Refs:** 05 §5.6.

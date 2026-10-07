@@ -1,5 +1,6 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
+import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
 import { defineJob } from "./core/job-runner";
 import { embedAndSuggest } from "./knowledge/embedding";
@@ -98,9 +99,20 @@ export const transcribePagesJob = defineJob({
   run: (ctx, payload) => transcribeSourcePages(ctx, payload),
 });
 
+/**
+ * J4 (plan 06 §6.2): asks the idea generator for ideas and stores them as PROPOSED with their
+ * card links. A failed request (no cards, unusable answer) is an outcome, not an exception; a
+ * second run with the same request id returns the stored outcome.
+ */
+export const generateIdeasJob = defineJob({
+  payload: GenerateIdeasPayload,
+  run: (ctx, payload) => runGenerateIdeas(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
+  "generate-ideas": generateIdeasJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,
