@@ -289,6 +289,18 @@ Template:
 - Evidence / links: `modules/src/knowledge/rights/*.test.ts` (full matrix: 3 permissions × 4 statuses × 3 gates).
 - Impact on plan: M1-03 / `completeSourceUpload` uses `canProcessWithAI` to choose QUEUED vs BLOCKED.
 
+## 2026-10-07 · Content validators [M2-05]
+- Context: 07 §7.8 layer 3 lists the domain checks but not their codes, severities or which one blocks.
+- Decision (`modules/src/content/validation/`, exported from `@rc/modules/content`): pure functions `(draft, context) → ValidationIssue[]`, run in order by `validateDraft()` (structure, slots, citations, numeric fidelity, forbidden patterns, text rules), which returns `issues`, `blocking` (severity BLOCKER), `nonBlocking` and `flags`. The input is the stored shape (`Slide[]` with slot records), so the writer's `{ slot, text }[]` must be normalized first (M2-10). The context carries the locale, the market's forbidden patterns, the ids of the idea's cards and the `NumericReference` of the cited cards.
+  - **Blocking (BLOCKER):** `SLIDE_COUNT` (not 5–10), `FIRST_SLIDE_NOT_HOOK`, `LAST_SLIDE_NOT_CTA` (unless CTA type NONE), `DUPLICATE_SLIDE_ID`, `HOOK_EMPTY`, `CAPTION_EMPTY`, the slot codes of M2-03 (`SLOT_OVERFLOW`, `SLOT_REQUIRED_MISSING`, `SLOT_UNKNOWN`, `IMAGE_SLOT_UNKNOWN`, `ROLE_NOT_ALLOWED`, `TEMPLATE_UNKNOWN`), `FACTUAL_SLIDE_UNCITED`, `CITATION_NOT_IN_IDEA`, `CLAIM_UNCITED`, `CHEF_ATTRIBUTION_UNCITED`, `NUMERIC_MISMATCH`, `FORBIDDEN_PATTERN`, `CAPTION_TOO_LONG` (> 2,200), `CTA_KEYWORD_MISSING` / `CTA_KEYWORD_INVALID` (`^[A-ZÁÉÍÓÚÑ0-9]{3,16}$`), `URL_IN_SLIDE`, `EMOJI_IN_SLIDE`. **Non-blocking:** `SLOT_LINES` (MAJOR), `HASHTAG_COUNT` (MAJOR, 3–5 is policy), `HASHTAG_FORMAT` (MAJOR), `HASHTAG_DUPLICATE` (MINOR).
+  - **Flags** for what is left after repair (`flagsForIssues`): `NUMERIC_MISMATCH`; `UNSUPPORTED_CLAIM` for uncited or foreign citations and chef attribution; `TEXT_OVERFLOW` for slot overflow or line estimate. Other codes raise no flag; they stay in the issue list.
+  - **Chef attribution** ([S§6.3]) is a heuristic phrase list in English and Spanish ("as a chef", "in my kitchen", "I always", "según el chef", "mi truco" …); on a slide it needs a cited card, in the hook or caption at least one slide must cite one. It will miss paraphrases; the critic is the second line.
+  - **Forbidden patterns:** phrases match as whole words (Unicode-aware, case-insensitive), regexes as stored; a stored regex that does not compile is skipped, not fatal. They are checked in the hook, slide slots, caption, CTA text and hashtags.
+  - `@rc/templates` is now a dependency of `@rc/modules`; the parity test (`validation.test.ts`) checks that its `SLIDE_ROLES` and `TEMPLATE_IDS` equal the ones in `@rc/db/json`.
+- Not here: the market-brief validators (07 §7.6.1 market adapter row) belong to M2-09 and the repair loop to M2-13; differentiation is M2-11.
+- Evidence / links: `modules/src/content/validation/validation.test.ts` (pass and fail case per validator, limits at the edges, es-ES numbers, classification and flag mapping).
+- Impact on plan: none.
+
 ## 2026-10-07 · Units and numeric fidelity [M2-04]
 - Context: 07 §7.9.3 fixes the °C/°F rounding and the tolerances but leaves the rest of the conversion table, the number formats and what counts as "a match" open.
 - Decision (`modules/src/localization/units.ts`, `numeric-fidelity.ts`, pure functions, exported from `@rc/modules/localization`):

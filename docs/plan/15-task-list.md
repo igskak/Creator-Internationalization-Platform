@@ -315,7 +315,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `localization/units.ts`, `numeric-fidelity.ts` (07 §7.9.3).
   - **Done when:** table-driven tests incl. es-ES and EN formatting, tolerances, ranges.
 
-- [ ] **M2-05 · Content validators** · P0 · M · deps: M2-03, M2-04
+- [x] **M2-05 · Content validators** · P0 · M · deps: M2-03, M2-04
   - **Do:** `content/validation/*` (07 §7.8) returning `ValidationIssue[]` with severity; blocking classification.
   - **Done when:** pass/fail tests per validator.
 
