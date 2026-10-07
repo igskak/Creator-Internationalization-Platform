@@ -307,7 +307,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests; UI works in dev.
   - **Refs:** 05 §5.5.
 
-- [ ] **M2-03 · Template catalog metadata** · P0 · S · deps: M0-01
+- [x] **M2-03 · Template catalog metadata** · P0 · S · deps: M0-01
   - **Do:** `templates/src/define-template.ts` + `registry.ts` with metadata for A–F (08 §8.2.1), no components yet; `validateSlideAgainstTemplate()`; compact catalog text for prompts.
   - **Done when:** tests for limits and required slots.
 
