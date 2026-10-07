@@ -1,3 +1,4 @@
+import { ideaGeneratorV1 } from "./idea-generator";
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
 import { knowledgeGlossV1 } from "./knowledge-gloss";
 import { pageTranscriberV1 } from "./page-transcriber";
@@ -21,6 +22,7 @@ export {
   renderSnapshot,
   type SystemBlock,
 } from "./define";
+export * as ideaGenerator from "./idea-generator";
 export * as knowledgeExtractor from "./knowledge-extractor";
 export * as knowledgeGloss from "./knowledge-gloss";
 export * as pageTranscriber from "./page-transcriber";
@@ -43,4 +45,5 @@ export const promptRegistry = createRegistry([
   postAnnotatorV1,
   pageTranscriberV1,
   knowledgeGlossV1,
+  ideaGeneratorV1,
 ]);

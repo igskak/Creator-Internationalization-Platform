@@ -59,6 +59,7 @@ describe("@rc/prompts", () => {
       "post-annotator@1",
       "page-transcriber@1",
       "knowledge-gloss@1",
+      "idea-generator@1",
     ]);
   });
 });
