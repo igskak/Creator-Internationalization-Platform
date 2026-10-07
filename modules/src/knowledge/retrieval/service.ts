@@ -1,6 +1,6 @@
 import { schema } from "@rc/db";
 import type { KnowledgeSnapshot } from "@rc/db/json";
-import { and, asc, cosineDistance, desc, eq, inArray, isNotNull, or } from "@rc/db/orm";
+import { and, asc, cosineDistance, desc, eq, gte, inArray, isNotNull, ne, or } from "@rc/db/orm";
 import { NotFoundError, ValidationError } from "@rc/lib/errors";
 import { embedTexts } from "@rc/lib/providers/embeddings";
 import type { ServiceContext } from "../../core";
@@ -196,8 +196,7 @@ export async function searchApproved(
 /**
  * The approved snapshots (`knowledge_item_versions`) of the given card versions: the exact text
  * an idea or a draft was built from, whatever happened to the card since. Throws NotFoundError
- * when a version does not exist. `getIdeaCards(ideaId)` (M2-06a) resolves an idea's links and
- * calls this.
+ * when a version does not exist. `getIdeaCards` resolves an idea's links and calls this.
  */
 export async function getApprovedSnapshots(
   ctx: ServiceContext,
@@ -226,4 +225,77 @@ export async function getApprovedSnapshots(
     const row = found.get(`${ref.knowledgeItemId}@${ref.version}`);
     return row ? [{ ...row.snapshot, id: ref.knowledgeItemId, version: ref.version }] : [];
   });
+}
+
+/** A card of an idea as the writing stages see it: the linked snapshot and the role it plays. */
+export type IdeaCard = KnowledgeSnapshot & {
+  id: string;
+  version: number;
+  role: "PRIMARY" | "SUPPORTING";
+};
+
+/**
+ * The approved snapshots of the cards linked to a Master Idea (PRIMARY first, then SUPPORTING;
+ * each group by card id, because `master_idea_knowledge` stores no position). The snapshot is the
+ * linked `knowledge_version`, so an edited or archived card still returns the text the idea was
+ * built from. NotFoundError for an unknown idea.
+ */
+export async function getIdeaCards(ctx: ServiceContext, ideaId: string): Promise<IdeaCard[]> {
+  const [idea] = await ctx.db
+    .select({ id: schema.masterIdeas.id })
+    .from(schema.masterIdeas)
+    .where(eq(schema.masterIdeas.id, ideaId));
+  if (!idea) throw new NotFoundError("Idea not found.", { details: { ideaId } });
+
+  const links = await ctx.db
+    .select({
+      knowledgeItemId: schema.masterIdeaKnowledge.knowledgeItemId,
+      version: schema.masterIdeaKnowledge.knowledgeVersion,
+      role: schema.masterIdeaKnowledge.role,
+    })
+    .from(schema.masterIdeaKnowledge)
+    .where(eq(schema.masterIdeaKnowledge.masterIdeaId, ideaId));
+  const ordered = [...links].sort(
+    (a, b) =>
+      Number(a.role === "SUPPORTING") - Number(b.role === "SUPPORTING") ||
+      a.knowledgeItemId.localeCompare(b.knowledgeItemId),
+  );
+  const snapshots = await getApprovedSnapshots(
+    ctx,
+    ordered.map((link) => ({ knowledgeItemId: link.knowledgeItemId, version: link.version })),
+  );
+  return snapshots.map((snapshot, i) => ({ ...snapshot, role: ordered[i]?.role ?? "SUPPORTING" }));
+}
+
+/** Window of the "do not repeat" rule for PRIMARY cards (plan 07 §7.9.1). */
+export const RECENT_PRIMARY_DAYS = 30;
+
+/**
+ * Ids of the cards used as PRIMARY in ideas created in the last 30 days, for
+ * `candidatePool({ recentlyUsedIds })`. Rejected ideas do not count: their cards were not used.
+ * Proposed, accepted and archived ideas do. SUPPORTING links never count.
+ */
+export async function recentPrimaryCardIds(
+  ctx: ServiceContext,
+  options: { days?: number } = {},
+): Promise<string[]> {
+  const since = new Date(
+    ctx.clock.now().getTime() - (options.days ?? RECENT_PRIMARY_DAYS) * 24 * 60 * 60 * 1000,
+  );
+  const rows = await ctx.db
+    .selectDistinct({ id: schema.masterIdeaKnowledge.knowledgeItemId })
+    .from(schema.masterIdeaKnowledge)
+    .innerJoin(
+      schema.masterIdeas,
+      eq(schema.masterIdeas.id, schema.masterIdeaKnowledge.masterIdeaId),
+    )
+    .where(
+      and(
+        eq(schema.masterIdeaKnowledge.role, "PRIMARY"),
+        ne(schema.masterIdeas.status, "REJECTED"),
+        gte(schema.masterIdeas.createdAt, since),
+      ),
+    )
+    .orderBy(asc(schema.masterIdeaKnowledge.knowledgeItemId));
+  return rows.map((row) => row.id);
 }

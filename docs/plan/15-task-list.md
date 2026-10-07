@@ -324,7 +324,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** fake-LLM tests; prompt snapshot.
   - **Refs:** 07 §7.6, §7.9.1.
 
-- [ ] **M2-06a · `getIdeaCards(ideaId)`** · P0 · S · deps: M2-01, M1-19
+- [x] **M2-06a · `getIdeaCards(ideaId)`** · P0 · S · deps: M2-01, M1-19
   - **Do:** in `knowledge/retrieval`: the approved snapshots of the cards linked to an idea through `master_idea_knowledge` (PRIMARY and SUPPORTING, with the linked `knowledge_version`), using `getApprovedSnapshots`; plus the "used as PRIMARY in the last 30 days" lookup that feeds `candidatePool({ recentlyUsedIds })`.
   - **Done when:** tests with a linked idea: snapshots in link order, an edited card still returns the linked version; recent-use lookup respects the 30-day window and PRIMARY only.
   - **Refs:** 07 §7.9.1, 04 §4.3.

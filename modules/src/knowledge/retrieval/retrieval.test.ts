@@ -7,10 +7,17 @@ import { NotFoundError, ValidationError } from "@rc/lib/errors";
 import { createLogger } from "@rc/lib/logging";
 import { createFakeEmbeddingProvider, EMBEDDING_DIMENSIONS } from "@rc/lib/providers/embeddings";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createServiceContext, type ServiceContext } from "../../core";
+import { createServiceContext, manualClock, type ServiceContext } from "../../core";
 import { cardEmbeddingText, embedKnowledgeItems } from "../embedding";
 import { selectMmr } from "./mmr";
-import { candidatePool, getApprovedSnapshots, searchApproved, truncateClaim } from "./service";
+import {
+  candidatePool,
+  getApprovedSnapshots,
+  getIdeaCards,
+  recentPrimaryCardIds,
+  searchApproved,
+  truncateClaim,
+} from "./service";
 
 const logger = createLogger({
   service: "web",
@@ -97,6 +104,7 @@ describe("truncateClaim", () => {
 describe("retrieval over approved cards", () => {
   let t: TestDb;
   let ctx: ServiceContext;
+  const clock = manualClock("2026-10-07T12:00:00Z");
   let brandId: string;
   let sourceId: string;
   let n = 0;
@@ -109,6 +117,7 @@ describe("retrieval over approved cards", () => {
       logger,
       actor: { type: "SYSTEM" },
       embeddings: createFakeEmbeddingProvider(),
+      clock,
     });
     const [brand] = await t.db.select().from(schema.brands);
     brandId = brand?.id ?? "";
@@ -403,6 +412,164 @@ describe("retrieval over approved cards", () => {
       expect((error as NotFoundError).details).toEqual({
         missing: [{ knowledgeItemId: id, version: 9 }],
       });
+    });
+  });
+
+  describe("getIdeaCards and recentPrimaryCardIds", () => {
+    const snapshot = (title: string): KnowledgeSnapshot => ({
+      title,
+      category: "TECHNIQUES",
+      subcategory: null,
+      claim: `Утверждение: ${title}`,
+      explanation: "",
+      procedure: [],
+      ingredients: [],
+      temperatures: [],
+      timings: [],
+      commonMistakes: [],
+      sourceReference: null,
+      language: "ru",
+      safetySensitive: false,
+      safetyNotes: null,
+      tags: [],
+    });
+
+    const addVersion = (knowledgeItemId: string, version: number, title: string) =>
+      t.db.insert(schema.knowledgeItemVersions).values({
+        knowledgeItemId,
+        version,
+        snapshot: snapshot(title),
+        status: "CHEF_APPROVED",
+      });
+
+    const addIdea = async (
+      over: Partial<typeof schema.masterIdeas.$inferInsert> = {},
+      links: { id: string; version: number; role: "PRIMARY" | "SUPPORTING" }[] = [],
+    ) => {
+      const [idea] = await t.db
+        .insert(schema.masterIdeas)
+        .values({
+          brandId,
+          topic: "Тема",
+          category: "TECHNIQUES",
+          angle: "COMMON_MISTAKE",
+          coreMessage: "Core message",
+          origin: "MANUAL",
+          ...over,
+        })
+        .returning();
+      const ideaId = idea?.id ?? "";
+      if (links.length > 0) {
+        await t.db.insert(schema.masterIdeaKnowledge).values(
+          links.map((l) => ({
+            masterIdeaId: ideaId,
+            knowledgeItemId: l.id,
+            knowledgeVersion: l.version,
+            role: l.role,
+          })),
+        );
+      }
+      return ideaId;
+    };
+
+    const daysAgo = (days: number) => new Date(clock.now().getTime() - days * 24 * 60 * 60 * 1000);
+
+    it("returns the linked snapshots, PRIMARY first, then SUPPORTING, each by card id", async () => {
+      const [a, b, c] = [await addCard(), await addCard(), await addCard()] as [
+        string,
+        string,
+        string,
+      ];
+      for (const id of [a, b, c]) await addVersion(id, 1, `Версия ${id.slice(0, 4)}`);
+      const ideaId = await addIdea({}, [
+        { id: c, version: 1, role: "SUPPORTING" },
+        { id: b, version: 1, role: "PRIMARY" },
+        { id: a, version: 1, role: "SUPPORTING" },
+      ]);
+      const cards = await getIdeaCards(ctx, ideaId);
+      const supporting = [a, c].sort();
+      expect(cards.map((card) => [card.id, card.role])).toEqual([
+        [b, "PRIMARY"],
+        [supporting[0], "SUPPORTING"],
+        [supporting[1], "SUPPORTING"],
+      ]);
+      expect(cards[0]).toMatchObject({ version: 1, claim: expect.stringContaining("Версия") });
+    });
+
+    it("returns the linked version even after the card was edited, re-approved or archived", async () => {
+      const id = await addCard({ title: "Текущий заголовок", approvedVersion: 3 });
+      await addVersion(id, 1, "Старая версия");
+      await addVersion(id, 3, "Новая версия");
+      const ideaId = await addIdea({}, [{ id, version: 1, role: "PRIMARY" }]);
+      await t.db
+        .update(schema.knowledgeItems)
+        .set({ reviewStatus: "ARCHIVED", title: "Совсем другой" })
+        .where(eq(schema.knowledgeItems.id, id));
+      const [card] = await getIdeaCards(ctx, ideaId);
+      expect(card).toMatchObject({ id, version: 1, title: "Старая версия", role: "PRIMARY" });
+    });
+
+    it("returns nothing for an idea without links and fails for an unknown idea", async () => {
+      expect(await getIdeaCards(ctx, await addIdea())).toEqual([]);
+      await expect(
+        getIdeaCards(ctx, "00000000-0000-4000-8000-000000000000"),
+      ).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it("fails when a linked version has no snapshot", async () => {
+      const id = await addCard();
+      const ideaId = await addIdea({}, [{ id, version: 4, role: "PRIMARY" }]);
+      await expect(getIdeaCards(ctx, ideaId)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it("lists PRIMARY cards of ideas from the last 30 days, once each", async () => {
+      const [a, b, c, d] = [await addCard(), await addCard(), await addCard(), await addCard()] as [
+        string,
+        string,
+        string,
+        string,
+      ];
+      await addIdea({ createdAt: daysAgo(2) }, [
+        { id: a, version: 1, role: "PRIMARY" },
+        { id: b, version: 1, role: "SUPPORTING" },
+      ]);
+      await addIdea({ createdAt: daysAgo(10) }, [{ id: a, version: 1, role: "PRIMARY" }]);
+      await addIdea({ createdAt: daysAgo(29.5), status: "ACCEPTED" }, [
+        { id: c, version: 1, role: "PRIMARY" },
+      ]);
+      await addIdea({ createdAt: daysAgo(31) }, [{ id: d, version: 1, role: "PRIMARY" }]);
+      expect(await recentPrimaryCardIds(ctx)).toEqual([a, c].sort());
+    });
+
+    it("ignores rejected ideas, keeps archived ones and honors a custom window", async () => {
+      const [a, b, c] = [await addCard(), await addCard(), await addCard()] as [
+        string,
+        string,
+        string,
+      ];
+      await addIdea({ createdAt: daysAgo(1), status: "REJECTED" }, [
+        { id: a, version: 1, role: "PRIMARY" },
+      ]);
+      await addIdea({ createdAt: daysAgo(1), status: "ARCHIVED" }, [
+        { id: b, version: 1, role: "PRIMARY" },
+      ]);
+      await addIdea({ createdAt: daysAgo(10) }, [{ id: c, version: 1, role: "PRIMARY" }]);
+      expect(await recentPrimaryCardIds(ctx)).toEqual([b, c].sort());
+      expect(await recentPrimaryCardIds(ctx, { days: 5 })).toEqual([b]);
+      expect(await recentPrimaryCardIds(ctx, { days: 0 })).toEqual([]);
+    });
+
+    it("feeds candidatePool so recently used cards drop out", async () => {
+      const ids: string[] = [];
+      for (let i = 0; i < 4; i += 1) ids.push(await addCard());
+      await addIdea({ createdAt: daysAgo(3) }, [{ id: ids[0] ?? "", version: 1, role: "PRIMARY" }]);
+      const pool = await candidatePool(ctx, {
+        recentlyUsedIds: await recentPrimaryCardIds(ctx),
+        minPool: 2,
+      });
+      expect(pool.exclusionApplied).toBe(true);
+      expect(pool.cards.map((c) => c.id)).not.toContain(ids[0]);
+      expect(pool.cards).toHaveLength(3);
     });
   });
 });
