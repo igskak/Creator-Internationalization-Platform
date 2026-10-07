@@ -337,6 +337,97 @@ describe("source upload services", () => {
       expect(event?.data).toEqual({ reason: "wrong file" });
     });
 
+    describe("idea-usage guard", () => {
+      const withCardAndIdea = async (
+        card: Partial<typeof schema.knowledgeItems.$inferInsert> = {},
+        idea: Partial<typeof schema.masterIdeas.$inferInsert> = {},
+      ) => {
+        const { sourceAssetId } = await createSourceUpload(ctx, upload({ rights: unknown }));
+        const [brand] = await t.db.select().from(schema.brands);
+        const brandId = brand?.id ?? "";
+        const [item] = await t.db
+          .insert(schema.knowledgeItems)
+          .values({
+            brandId,
+            title: "Карточка",
+            category: "TECHNIQUES",
+            claim: "Утверждение",
+            language: "ru",
+            origin: "SOURCE_EXTRACTED",
+            reviewStatus: "CHEF_APPROVED",
+            approvedVersion: 1,
+            sourceAssetId,
+            ...card,
+          })
+          .returning();
+        const [created] = await t.db
+          .insert(schema.masterIdeas)
+          .values({
+            brandId,
+            topic: "Идея про рис",
+            category: "TECHNIQUES",
+            angle: "COMMON_MISTAKE",
+            coreMessage: "Core",
+            origin: "MANUAL",
+            ...idea,
+          })
+          .returning();
+        await t.db.insert(schema.masterIdeaKnowledge).values({
+          masterIdeaId: created?.id ?? "",
+          knowledgeItemId: item?.id ?? "",
+          knowledgeVersion: 1,
+          role: "SUPPORTING",
+        });
+        return { sourceAssetId, ideaId: created?.id ?? "" };
+      };
+
+      it("refuses and lists the ideas while an approved card is linked to a non-archived idea", async () => {
+        const { sourceAssetId, ideaId } = await withCardAndIdea();
+        const error = await archiveSource(ctx, { sourceAssetId, reason: "x" }).catch(
+          (e: unknown) => e,
+        );
+        expect(error).toBeInstanceOf(InvalidStateError);
+        expect((error as InvalidStateError).details).toEqual({
+          ideas: [{ id: ideaId, topic: "Идея про рис", status: "PROPOSED" }],
+        });
+        expect((await source(sourceAssetId)).archivedAt).toBeNull();
+        expect(await audits()).toEqual([]);
+      });
+
+      it("also blocks for accepted and rejected ideas, as the contract says non-archived", async () => {
+        for (const status of ["ACCEPTED", "REJECTED"] as const) {
+          const { sourceAssetId } = await withCardAndIdea({}, { status });
+          await expect(archiveSource(ctx, { sourceAssetId, reason: "x" })).rejects.toBeInstanceOf(
+            InvalidStateError,
+          );
+        }
+      });
+
+      it("allows archiving after the idea is archived", async () => {
+        const { sourceAssetId, ideaId } = await withCardAndIdea();
+        await t.db
+          .update(schema.masterIdeas)
+          .set({ status: "ARCHIVED" })
+          .where(eq(schema.masterIdeas.id, ideaId));
+        await archiveSource(ctx, { sourceAssetId, reason: "done" });
+        expect((await source(sourceAssetId)).archivedAt).toEqual(clock.now());
+      });
+
+      it("ignores cards that are not approved", async () => {
+        const { sourceAssetId } = await withCardAndIdea({ reviewStatus: "ARCHIVED" });
+        await archiveSource(ctx, { sourceAssetId, reason: "x" });
+        expect((await source(sourceAssetId)).archivedAt).toEqual(clock.now());
+      });
+
+      it("ignores ideas that use cards of other sources", async () => {
+        const other = await withCardAndIdea();
+        const { sourceAssetId } = await createSourceUpload(ctx, upload({ rights: unknown }));
+        await archiveSource(ctx, { sourceAssetId, reason: "x" });
+        expect((await source(sourceAssetId)).archivedAt).toEqual(clock.now());
+        expect((await source(other.sourceAssetId)).archivedAt).toBeNull();
+      });
+    });
+
     it("refuses while the source is queued or processing, and for non-owners", async () => {
       const { sourceAssetId } = await createSourceUpload(ctx, upload());
       await put((await source(sourceAssetId)).fileKey ?? "", 1000);

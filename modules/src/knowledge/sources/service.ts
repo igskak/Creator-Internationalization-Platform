@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
 import { RightsPolicy, SOURCE_TYPES, type SourceType } from "@rc/db/json";
-import { eq } from "@rc/db/orm";
+import { and, asc, eq, ne } from "@rc/db/orm";
 import { ForbiddenError, InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
 import { PRESIGN_TTL, storageKeys } from "@rc/lib/providers/storage";
 import { z } from "zod";
@@ -237,9 +237,40 @@ export async function updateSourceRights(
   return updated;
 }
 
+/** Ideas that are not archived and are linked to a CHEF_APPROVED card of the source. */
+async function ideasUsingApprovedCardsOf(
+  ctx: ServiceContext,
+  sourceAssetId: string,
+): Promise<{ id: string; topic: string; status: string }[]> {
+  return ctx.db
+    .selectDistinct({
+      id: schema.masterIdeas.id,
+      topic: schema.masterIdeas.topic,
+      status: schema.masterIdeas.status,
+    })
+    .from(schema.masterIdeaKnowledge)
+    .innerJoin(
+      schema.knowledgeItems,
+      eq(schema.knowledgeItems.id, schema.masterIdeaKnowledge.knowledgeItemId),
+    )
+    .innerJoin(
+      schema.masterIdeas,
+      eq(schema.masterIdeas.id, schema.masterIdeaKnowledge.masterIdeaId),
+    )
+    .where(
+      and(
+        eq(schema.knowledgeItems.sourceAssetId, sourceAssetId),
+        eq(schema.knowledgeItems.reviewStatus, "CHEF_APPROVED"),
+        ne(schema.masterIdeas.status, "ARCHIVED"),
+      ),
+    )
+    .orderBy(asc(schema.masterIdeas.topic), asc(schema.masterIdeas.id));
+}
+
 /**
  * `archiveSource` (owner): hides the source and keeps its lineage. A source being processed
- * cannot be archived. TODO(M2-01a): refuse while an approved card is used by a live idea.
+ * cannot be archived, nor one whose approved card is linked to an idea that is not archived
+ * (the error lists the ideas).
  */
 export async function archiveSource(
   ctx: ServiceContext,
@@ -251,6 +282,13 @@ export async function archiveSource(
   if (source.archivedAt) return { ok: true };
   if (source.processingStatus === "PROCESSING" || source.processingStatus === "QUEUED") {
     throw new InvalidStateError("Wait until processing finishes before archiving this source.");
+  }
+  const usedBy = await ideasUsingApprovedCardsOf(ctx, source.id);
+  if (usedBy.length > 0) {
+    throw new InvalidStateError(
+      "Archive or replace the ideas built from this source's approved cards first.",
+      { details: { ideas: usedBy } },
+    );
   }
   await withTransaction(ctx, async (tx) => {
     await tx.db

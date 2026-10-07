@@ -297,7 +297,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** migration + round-trip tests; partial unique index test.
   - **Refs:** 04 §4.3 (0003).
 
-- [ ] **M2-01a · archiveSource idea-usage guard** · P1 · S · deps: M2-01, M1-03
+- [x] **M2-01a · archiveSource idea-usage guard** · P1 · S · deps: M2-01, M1-03
   - **Do:** in `archiveSource` (`modules/src/knowledge/sources/service.ts`, TODO marker) refuse with `InvalidStateError` listing the ideas when an approved card of the source is linked through `master_idea_knowledge` to a non-archived idea [05 §5.3].
   - **Done when:** test with a linked idea (refused) and after the idea is archived (allowed).
   - **Refs:** 05 §5.3.
