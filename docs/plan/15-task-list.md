@@ -277,9 +277,13 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `page-transcriber@1` + J19 (pages without text layer → text, then re-verify quotes); `knowledge-gloss@1` + `requestCardGloss` (UI label "not approved text").
   - **Done when:** fake tests; the gloss never appears as approved content.
 
-- [ ] **M1-25 · M1 acceptance** · P0 · S · deps: M1-18, M1-19
+- [x] **M1-25 · M1 acceptance** · P0 · S · deps: M1-18, M1-19 — _done except the real ≥ 100-page PDF, the DOCX and the 20-card spot check: see M1-25a_
   - **Do:** E2E spec 1 (13 §13.4) with fakes; manual run on one real book and one DOCX in dev; record pages, cards, % verified quotes, cost, time, top issues in `decision-log.md`.
   - **Done when:** M1 DoD (14 §14.2) checked.
+
+- [ ] **M1-25a · M1 acceptance with real files and Sergey's check** · P0 · S · deps: M1-25, B-05
+  - **Do:** upload a real PDF of ≥ 100 pages and a real DOCX on `/knowledge/sources`; run `pnpm rc source-report <id>` for each and add the numbers to `decision-log.md`; Sergey spot-checks 20 random approved or reviewed cards for accuracy (record the result). Put the E2E specs into CI once a test Supabase project exists (B-02, `docs/runbooks/e2e.md`).
+  - **Done when:** the M1 DoD (14 §14.2) is fully checked with real files.
 
 - [ ] **I18N-01 · Russian interface for the remaining screens** · P1 · M · deps: M1-17
   - **Do:** move the hard-coded English strings of the other screens into `apps/web/src/lib/i18n` (`en.ts`, `ru.ts`): settings forms (brand, visual system, taxonomy, markets), placeholders, banners, the `useAction` fallback error, field errors, dates and the market time zones; translate the taxonomy and category labels shown in the UI (they come from `taxonomy_terms`, so either a per-locale label column or a code → label table in the catalogs). Every new screen from now on adds `en` and `ru` together.

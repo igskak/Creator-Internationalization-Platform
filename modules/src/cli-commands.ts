@@ -9,7 +9,7 @@ import { runJobHandler } from "./core/job-runner";
 import { helloJob } from "./job-handlers";
 import { embedAndSuggest, indexSourceChunks } from "./knowledge/embedding";
 import { canProcessWithAI } from "./knowledge/rights";
-import { completeSourceUpload, createSourceUpload } from "./knowledge/sources";
+import { completeSourceUpload, createSourceUpload, getSourceReport } from "./knowledge/sources";
 import { transcribeSourcePages } from "./knowledge/transcription";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -101,6 +101,23 @@ export const cliCommands: CliCommands = {
         console.log(
           `rc transcribe-pages: ${source.title}: ${result.transcribed} pages transcribed, ${result.quotesVerified} quotes now verified, ${result.illegible.length} not fully legible, ${result.failed.length} failed`,
         );
+      }
+    },
+  },
+  "source-report": {
+    description:
+      "Print the M1 acceptance numbers of a source: pages, cards, verified quotes, model cost and time (all ready sources, or one id)",
+    usage: "source-report [sourceAssetId]",
+    run: async (ctx, args) => {
+      const sources = (
+        await ctx.db
+          .select({ id: schema.sourceAssets.id })
+          .from(schema.sourceAssets)
+          .where(eq(schema.sourceAssets.processingStatus, "READY"))
+      ).filter((s) => !args[0] || s.id === args[0]);
+      if (sources.length === 0) console.log("rc source-report: no ready source");
+      for (const { id } of sources) {
+        console.log(JSON.stringify({ id, ...(await getSourceReport(ctx, id)) }, null, 2));
       }
     },
   },

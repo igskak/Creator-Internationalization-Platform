@@ -17,3 +17,7 @@ evals/results/
 
 # Trigger.dev CLI build output (pnpm jobs:dev)
 .trigger/
+
+# Playwright output (pnpm e2e)
+test-results/
+playwright-report/
