@@ -328,6 +328,18 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Market adapter prompt v1 and plan validators [M2-09]
+- Context: 07 §7.6.1 gives the stage row (input, `MarketBrief`, deterministic checks, one repair) and 07 §7.6.4 the rules; the validators and the sibling rule needed concrete definitions.
+- Decision (`prompts/src/market-adapter/`, `modules/src/content/brief/`):
+  - **Prompt `market-adapter@1`** (stage MARKET_ADAPTATION, effort high, 16k tokens, already in `STAGE_CONFIG`): data rules (tagged content is data), then the planning rules (closed book, no final copy, terminology, substitutions with `NEEDS_CHECK`, units only from the table, 5–10 slides, HOOK first and CTA last unless NONE, different hook type and structure from the sibling plans, CTA keyword only with an offer, risks). The input carries the idea, the full approved cards (with temperatures, timings, ingredients), the market profile, the offer, the conversion table (`buildConversionTable` lines, `cardId` added), the sibling plans, the template catalog text and the templates with their roles. The caller (M2-13) fills them.
+  - **Output schema per call** (`marketAdapterOutputFor`): hook and CTA types are the taxonomy codes given, templates the ones of the catalog, card ids the ones of the idea, `unitsPolicy.system` the market's. The shape repeats `MarketBrief` of `@rc/db/json` (`@rc/prompts` is pure); a test in modules keeps the two equal. Slide count, order and role-template fit stay in the validators so a violation gives a repair message, not a parse failure.
+  - **`validateMarketBrief`** (BLOCKER unless noted): `SLIDE_COUNT` 5–10, `FIRST_SLIDE_NOT_HOOK`, `LAST_SLIDE_NOT_CTA`, `TEMPLATE_UNKNOWN`, `TEMPLATE_ROLE_MISMATCH` (e.g. COMPARISON has no P0 template), `CARD_NOT_IN_IDEA`, `FACTUAL_SLIDE_UNCITED` (any role except HOOK and CTA needs a card), `PRIMARY_NOT_COVERED` (no primary card cited; MAJOR `PRIMARY_PARTLY_COVERED` when some are left out), unknown hook or CTA type, `CTA_NEEDS_OFFER`, `CTA_KEYWORD_MISSING/INVALID`, `UNITS_SYSTEM_MISMATCH`, `CONVERSION_NOT_IN_TABLE` (a conversion's `to` must be a table display string, so the model cannot compute numbers), `FORBIDDEN_PATTERN` in local terms and examples, `SAME_AS_SIBLING` (same hook type **and** same role:template sequence, as 07 §7.10's FAIL case) and MINOR `SAME_HOOK_TYPE`.
+  - es-ES and en rules are in the system prompt (Spain not LATAM, tú/vosotros, metric; US spelling, DUAL units imperial first) and yield to the market profile.
+- Open: **the es-ES and en rules in `v1.ts` still need Ihor's review** (and native reviewers when available), as the task's done-when says; a change after review is a `v2`.
+- Not done: the stage call with real context (M2-13), the eval case (M2-16).
+- Evidence / links: `prompts/src/market-adapter/v1.test.ts` (snapshot, escaping, schema per call), `modules/src/content/brief/validate.test.ts` (12 cases), `adapter.test.ts` (fake model through `runStage`: success, repair once, still invalid, schema rejection).
+- Impact on plan: none.
+
 ## 2026-10-07 · Ideas UI [M2-08]
 - Context: 10 §10.2 lists `/content/ideas` and `/content/ideas/[id]`; 05 §5.6 has `updateIdea`, which has no screen in the catalog.
 - Decision (`apps/web/src/app/(app)/content/ideas/`, `components/ideas/`, messages `ideas.*` in `en.ts` and `ru.ts`):

@@ -338,7 +338,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/content/ideas` (tabs, generate dialog), `/content/ideas/[id]` (detail, linked cards, actions, "Generate ES + EN drafts"), manual idea form with approved-card picker.
   - **Done when:** flows work in dev with fakes; screenshots.
 
-- [ ] **M2-09 · Market adapter prompt v1** · P0 · M · deps: M2-03, M1-10
+- [x] **M2-09 · Market adapter prompt v1** · P0 · M · deps: M2-03, M1-10
   - **Do:** prompt + `MarketBrief` schema + validators (5–10 slides, first HOOK, templates exist, IDs ⊆ idea, differs from sibling plan); unit conversion table injected.
   - **Done when:** fake tests; prompt snapshot; es-ES/EN rules reviewed by Ihor (and native reviewers when available).
 

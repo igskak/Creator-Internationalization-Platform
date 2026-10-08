@@ -60,6 +60,7 @@ describe("@rc/prompts", () => {
       "page-transcriber@1",
       "knowledge-gloss@1",
       "idea-generator@1",
+      "market-adapter@1",
     ]);
   });
 });
