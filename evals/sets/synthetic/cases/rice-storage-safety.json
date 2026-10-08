@@ -1,0 +1,32 @@
+{
+  "id": "rice-storage-safety",
+  "description": "A safety-sensitive card with temperatures: the draft must carry SAFETY_REVIEW and keep every number as the card states it.",
+  "idea": {
+    "topic": "Cooked rice does not wait on the counter",
+    "category": "STORAGE_SAFETY",
+    "angle": "COMMON_MISTAKE",
+    "coreMessage": "Cooked rice should go into the fridge within two hours."
+  },
+  "cards": [
+    {
+      "key": "storage",
+      "role": "PRIMARY",
+      "title": "Рис: охлаждение и хранение",
+      "category": "STORAGE_SAFETY",
+      "claim": "Сваренный рис нельзя оставлять при комнатной температуре дольше двух часов.",
+      "explanation": "Остывший рис хранят в холодильнике и съедают в течение суток.",
+      "temperatures": [{ "value": 4, "unit": "C", "target": "FRIDGE", "context": "хранение риса" }],
+      "timings": [{ "value": 2, "unit": "h", "context": "максимум при комнатной температуре" }],
+      "safetySensitive": true,
+      "safetyNotes": "Food safety: time at room temperature."
+    }
+  ],
+  "marketNotes": {
+    "es-ES": { "toneNotes": "Cercano, tuteo." },
+    "en": { "toneNotes": "US spelling; temperatures in °F first." }
+  },
+  "expect": {
+    "mustCite": ["storage"],
+    "hookTypesDiffer": true
+  }
+}

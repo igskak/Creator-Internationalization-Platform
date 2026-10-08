@@ -1,0 +1,38 @@
+{
+  "id": "buckwheat-lid",
+  "description": "A technique with exact numbers (ratio and times) that must not drift when localized.",
+  "idea": {
+    "topic": "Do not lift the lid on buckwheat",
+    "category": "GRAINS_RICE_PASTA",
+    "angle": "TECHNIQUE_HOW_TO",
+    "coreMessage": "Buckwheat finishes in its own steam, so lifting the lid spoils it."
+  },
+  "cards": [
+    {
+      "key": "lid",
+      "role": "PRIMARY",
+      "title": "Гречка: не открывать крышку",
+      "category": "GRAINS_RICE_PASTA",
+      "claim": "Гречку варят под закрытой крышкой: пар доводит крупу до готовности.",
+      "explanation": "Если открыть крышку, пар уходит и крупа остаётся жёсткой.",
+      "procedure": [
+        { "n": 1, "text": "Залейте крупу водой в соотношении 1:2." },
+        { "n": 2, "text": "Варите 15 минут на слабом огне под крышкой." },
+        { "n": 3, "text": "Снимите с огня и оставьте на 10 минут." }
+      ],
+      "timings": [
+        { "value": 15, "unit": "min", "context": "варка на слабом огне" },
+        { "value": 10, "unit": "min", "context": "отдых без огня" }
+      ]
+    }
+  ],
+  "marketNotes": {
+    "es-ES": { "toneNotes": "Cercano, tuteo." },
+    "en": { "toneNotes": "US spelling." }
+  },
+  "expect": {
+    "mustCite": ["lid"],
+    "forbiddenPhrases": [{ "phrases": ["always", "siempre"] }],
+    "hookTypesDiffer": true
+  }
+}

@@ -63,6 +63,7 @@ describe("@rc/prompts", () => {
       "market-adapter@1",
       "content-writer@1",
       "critic@1",
+      "eval-judge@1",
     ]);
   });
 });
