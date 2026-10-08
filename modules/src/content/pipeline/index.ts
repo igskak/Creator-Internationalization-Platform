@@ -18,9 +18,12 @@ export {
   GenerateContentPayload,
   GenerateVariantsInput,
   MAX_VARIANTS_PER_RUN,
+  RegenerateAllInput,
   RegenerateVariantInput,
+  requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
   type VariantsRequest,
 } from "./request";
+export { getReviewBundle, type ReviewBundle, type VariantView } from "./review";
 export { draftFieldPaths, validateCriticOutput } from "./validate-critic";

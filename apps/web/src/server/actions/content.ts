@@ -7,7 +7,9 @@ import {
   GenerateVariantsInput,
   generateIdeas as generateService,
   getIdeasRequestStatus,
+  RegenerateAllInput,
   RegenerateVariantInput,
+  requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
   SearchCardsInput,
@@ -89,4 +91,11 @@ export const regenerateVariant = defineAction({
   input: RegenerateVariantInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => requestVariantRegeneration(ctx, input),
+});
+
+export const regenerateAllVariants = defineAction({
+  name: "regenerateAllVariants",
+  input: RegenerateAllInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestIdeaRegeneration(ctx, input),
 });

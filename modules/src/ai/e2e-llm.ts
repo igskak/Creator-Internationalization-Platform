@@ -1,9 +1,11 @@
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
+import { scriptedBrief, scriptedDraft, scriptedReview } from "./scripted-answers";
 
 // The fake model of the E2E server (plan 13 §13.4: `AI_PROVIDER=fake`). It answers the knowledge
 // extractor from the pages it is given, so a pasted text becomes cards whose quotes really are in
 // the text, and the idea generator from the cards it is given (the first card whose title starts
-// with "E2E card", else the first card); every other prompt is refused. Only the web runtime uses it, and only when
+// with "E2E card", else the first card), and the market adapter, the writer and the critic with
+// a valid plan, draft and review built on the cards of the request; every other prompt is refused. Only the web runtime uses it, and only when
 // E2E_TEST_AUTH_SECRET is set (which production refuses).
 
 const unescapeXml = (text: string) =>
@@ -50,20 +52,46 @@ function answerIdeaGenerator(text: string) {
   };
 }
 
+/** The ids of the cards of a request, in the order they appear, and the market it is about. */
+function pipelineRequest(text: string) {
+  const ids = [...text.matchAll(/<card id="([^"]+)"/gu)].map((m) => m[1] ?? "");
+  const market = /<market_profile code="([^"]+)"/u.exec(text)?.[1] ?? "";
+  // The idea may rest on one card only: the second slot of the plans then cites the same card.
+  const cards: [string, string] = [ids[0] ?? "", ids[1] ?? ids[0] ?? ""];
+  return { cards, market };
+}
+
 export function createE2eLlm() {
   return createFakeLLMProvider({
     handler: (request) => {
-      if (
-        request.meta.promptId !== "knowledge-extractor" &&
-        request.meta.promptId !== "idea-generator"
-      ) {
-        throw new Error(`The E2E model has no answer for ${request.meta.promptId}.`);
-      }
       const text = request.messages
         .flatMap((m) => m.content)
         .map((c) => (c.type === "text" ? c.text : ""))
         .join("\n");
-      if (request.meta.promptId === "idea-generator") return answerIdeaGenerator(text);
+      const { promptId } = request.meta;
+      if (promptId === "market-adapter" || promptId === "content-writer" || promptId === "critic") {
+        const { cards, market } = pipelineRequest(text);
+        if (promptId === "market-adapter") return scriptedBrief(market, cards);
+        if (promptId === "content-writer") return scriptedDraft(market, cards);
+        // The English draft gets a small note, so the review screen has something to show.
+        return market === "es-ES"
+          ? scriptedReview()
+          : scriptedReview({
+              issues: [
+                {
+                  severity: "MINOR",
+                  category: "LOCALIZATION",
+                  fieldPath: "slides.1.slots.body",
+                  explanation: "Scripted note of the E2E model.",
+                  suggestedFix: "",
+                },
+              ],
+            });
+      }
+      if (promptId !== "knowledge-extractor" && promptId !== "idea-generator") {
+        throw new Error(`The E2E model has no answer for ${promptId}.`);
+      }
+      if (promptId === "idea-generator") return answerIdeaGenerator(text);
       const pages = [...text.matchAll(/<page n="(\d+)"[^>]*>([\s\S]*?)<\/page>/gu)].map((m) => ({
         number: Number(m[1]),
         text: unescapeXml(m[2] ?? ""),

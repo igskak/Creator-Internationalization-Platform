@@ -368,7 +368,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** inline integration test from action to READY_FOR_REVIEW.
   - **Refs:** 06 J5.
 
-- [ ] **M2-15 · Draft viewer v0** · P0 · M · deps: M2-14, M2-08
+- [x] **M2-15 · Draft viewer v0** · P0 · M · deps: M2-14, M2-08
   - **Do:** `/content/review/[ideaId]` read-only: idea + cards; per market: hook, slides as text cards (template, role, cited cards), caption, CTA, hashtags, critic verdict/scores/issues, flags; differentiation panel; "Regenerate all".
   - **Done when:** usable for G1 review in dev; screenshots.
 
