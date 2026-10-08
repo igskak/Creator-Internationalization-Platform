@@ -328,6 +328,18 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Cross-market differentiation checker [M2-11]
+- Context: 07 §7.10 gives the three scores, the FAIL and WARN rules and placeholder thresholds (A-18); the code shape, the order of a pair and the rounding were open.
+- Decision (`modules/src/localization/differentiation.ts`):
+  - **Scores** exactly as 07 §7.10: `hookSimilarity` (cosine of the hooks), `slideTextSimilarity` (symmetric mean of the best-match cosine between the slide texts; a slide's text is its slot texts joined in slot order, blank slides are skipped), `templateSequenceSimilarity` (1 − Levenshtein / longer length over the template ids; two empty sequences count as 1), `sameHookType`. All in 0–1 (negative cosines count as 0), rounded to four decimals.
+  - **Verdict:** FAIL when hook ≥ 0.90, slide text ≥ 0.88, or the template sequence is identical **and** the hook type is the same; WARN when hook ≥ 0.85, slide text ≥ 0.82 or the sequence similarity ≥ 0.8; otherwise OK. `reasons` lists each finding in words; the worst verdict wins.
+  - **Visual prompts** are compared the same way when both variants have image prompts and give only a WARN at ≥ 0.90 (the plan names no threshold; there is no data before M3).
+  - **Thresholds are a config object** (`DIFFERENTIATION_THRESHOLDS`, version `d1-placeholder`) passed to every function and recorded as `thresholdsVersion` in each report, so Gate G1 can recalibrate by changing one object and its version.
+  - **API:** `differentiateVariants(embeddings, variants)` embeds every hook, slide text and image prompt in **one** provider call and returns a report per pair (`a`, `b`, `report`); callers pass the markets in generation order, so `b` is the one generated later and is the one the policy of M2-12 asks to change on a FAIL (07 §7.6.3). `scoreDifferentiation` works on ready vectors (pure), `worstReport` picks the worst pair for a variant with several siblings.
+- Not done: storing the report on `content_variants` and the repair loop (M2-13), the policy that turns FAIL into REQUEST_REWRITE (M2-12), calibration on labelled pairs (G1).
+- Evidence / links: `modules/src/localization/differentiation.test.ts` (19 cases: boundaries of every threshold on controlled vectors, a translation forced similar with the fake provider → FAIL, a true localization → OK, same hook type and templates with different words → FAIL, template sequence distance, one embedding call, pairs, visual prompts).
+- Impact on plan: none.
+
 ## 2026-10-08 · Content writer prompt v1 [M2-10]
 - Context: 07 §7.6.1 and §7.6.4 define the writer stage (input, draft shape, validators 7.8, one repair); how slots, plan deviations and the rewrite and exemplar inputs work was open.
 - Decision (`prompts/src/content-writer/`, `modules/src/content/draft/`):
