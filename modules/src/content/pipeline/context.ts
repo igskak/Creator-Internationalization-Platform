@@ -4,6 +4,7 @@ import { InvalidStateError, NotFoundError } from "@rc/lib/errors";
 import { registry, type TemplateDefinition } from "@rc/templates";
 import type { ServiceContext } from "../../core";
 import { getIdeaCards, type IdeaCard } from "../../knowledge/retrieval";
+import { type Exemplar, selectExemplars } from "../voice";
 
 // What the generation pipeline reads before it starts (plan 07 §7.6.2, §7.9.2): the idea, the
 // exact approved card versions it links, the markets, the offers, the taxonomy and the templates.
@@ -27,6 +28,8 @@ export type PipelineContext = {
   markets: Map<string, PipelineMarket>;
   /** Highest-priority ACTIVE offer of the idea's product per market id. */
   offers: Map<string, PipelineOffer>;
+  /** What the writer learns each market's voice from (M2-17), by market id. */
+  exemplars: Map<string, Exemplar[]>;
   hookTypes: TaxonomyTerm[];
   ctaTypes: TaxonomyTerm[];
   /** P0 templates: the only ones a plan may use. */
@@ -131,6 +134,11 @@ export async function loadPipelineContext(
     others,
     markets: new Map(marketRows.map((m) => [m.id, m])),
     offers,
+    exemplars: new Map(
+      await Promise.all(
+        marketIds.map(async (id) => [id, await selectExemplars(ctx, id)] as [string, Exemplar[]]),
+      ),
+    ),
     hookTypes: terms(taxonomy.filter((t) => t.kind === "hook_type")),
     ctaTypes: terms(taxonomy.filter((t) => t.kind === "cta_type")),
     templates: p0Templates(),

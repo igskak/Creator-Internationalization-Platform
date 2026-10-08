@@ -328,6 +328,19 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Voice examples and few-shot v1 [M2-17]
+- Context: 07 §7.11 v1 says the writer gets up to three approved variants, the last ten hook edits as before → after pairs with reasons, and Sergey's seed examples, minus anything built on a source with `improvePrompts = DENIED`; the `voice_examples` table exists (M2-01) but nothing used it.
+- Decision (`modules/src/content/voice/`, `pipeline/context.ts`, `pipeline/inputs.ts`, CLI `pnpm rc voice-import`):
+  - **Kinds:** `EXEMPLAR` (an approved text, in `after_text`), `EDIT_PAIR` (`before_text` ≠ `after_text`, `note` = reason code or comment), `RULE` (the instruction in `note`, no texts); each kind is checked field by field. `marketId` null = every market, `language` null = any.
+  - **CRUD** (owners and editors): create (source SEED), update (merged result re-validated; a REVIEW_EVENT row is read-only), switch on/off (any source), delete (SEED only), list by market (with the all-market rows) and kind. Audit `voice_example.*`.
+  - **Seed import** (`importVoiceExamples`, `pnpm rc voice-import <file.json|file.csv>`, ≤ 500 rows): market by code, every row checked first and one bad row refuses the file with the row numbers; rows already there (same market, kind, texts) are skipped, so a second import changes nothing. A small CSV reader handles quotes and line breaks.
+  - **Selection** (`selectExemplars(ctx, marketId)`), in reading order: the market's active **rules** and **seed examples** (≤ 10 each, newest first), up to **3 approved drafts** of the market (status APPROVED, SCHEDULED, PUBLISHING or PUBLISHED, newest status change first, rendered as hook, slides and caption, ≤ 1,500 characters) and the **10 newest edit pairs**. Only rows of that market or of all markets, in the market's language or any, and active. A draft is left out when a card it cites comes from a source whose rights say `improvePrompts = DENIED` (UNKNOWN is allowed, as 07 §7.11 says).
+  - **"At most two edits" is a proxy for now:** there are no review events before M4, so a draft's edits are counted as `lock_version − 1` (the generation adds one, every later change one more); M4 replaces it with the real count.
+  - **The pipeline** loads the examples of each market once (`PipelineContext.exemplars`) and gives them to the writer (`<examples>` block, the kinds rendered as in `content-writer@1`).
+- Not done: a screen for the examples (not in the screen catalog), choosing approved drafts by D7 save rate (needs analytics, M7), review-event rows (M4).
+- Evidence / links: `modules/src/content/voice/voice.test.ts` (12 cases: every kind and its refusals, roles, update and read-only rows, listing, import with skip and whole-file refusal, CSV, the selection by market and language with the newest ten pairs, the three newest approved drafts with the edit limit, the rights exclusion, and the writer's prompt carrying the right examples per market).
+- Impact on plan: none.
+
 ## 2026-10-08 · Eval harness v1 [M2-16]
 - Context: 07 §7.12 lists sets, metrics, the judge and the blind export; how a run is isolated, what the fake model is and how a live run is guarded were open.
 - Decision (`evals/`, `prompts/src/eval-judge/`, root script `pnpm eval`, `docs/runbooks/evals.md`):
