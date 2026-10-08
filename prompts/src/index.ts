@@ -1,5 +1,6 @@
 import { contentWriterV1 } from "./content-writer";
 import { criticV1 } from "./critic";
+import { evalJudgeV1 } from "./eval-judge";
 import { ideaGeneratorV1 } from "./idea-generator";
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
 import { knowledgeGlossV1 } from "./knowledge-gloss";
@@ -27,6 +28,7 @@ export {
   renderSnapshot,
   type SystemBlock,
 } from "./define";
+export * as evalJudge from "./eval-judge";
 export * as ideaGenerator from "./idea-generator";
 export * as knowledgeExtractor from "./knowledge-extractor";
 export * as knowledgeGloss from "./knowledge-gloss";
@@ -55,4 +57,5 @@ export const promptRegistry = createRegistry([
   marketAdapterV1,
   contentWriterV1,
   criticV1,
+  evalJudgeV1,
 ]);

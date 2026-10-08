@@ -372,7 +372,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/content/review/[ideaId]` read-only: idea + cards; per market: hook, slides as text cards (template, role, cited cards), caption, CTA, hashtags, critic verdict/scores/issues, flags; differentiation panel; "Regenerate all".
   - **Done when:** usable for G1 review in dev; screenshots.
 
-- [ ] **M2-16 · Eval harness v1** · P0 · M · deps: M2-13
+- [x] **M2-16 · Eval harness v1** · P0 · M · deps: M2-13
   - **Do:** `evals/`: case format, runner (`pnpm eval`), metrics (07 §7.12), `eval-judge@1`, cost preview + confirmation, results JSON, blind pair export (CSV/Markdown); synthetic sample set.
   - **Done when:** runs with the fake provider in CI (smoke) and with the real provider manually.
 

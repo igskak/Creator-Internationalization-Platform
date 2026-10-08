@@ -9,6 +9,14 @@
   },
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "tsx --env-file-if-exists=../.env src/cli.ts"
+  },
+  "dependencies": {
+    "@rc/db": "workspace:*",
+    "@rc/lib": "workspace:*",
+    "@rc/modules": "workspace:*",
+    "@rc/prompts": "workspace:*",
+    "zod": "^4.6.5"
   }
 }

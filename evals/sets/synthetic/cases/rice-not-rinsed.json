@@ -1,0 +1,46 @@
+{
+  "id": "rice-not-rinsed",
+  "description": "A myth that two markets can tell differently: rinsing risotto rice. One number (a time) the drafts may use.",
+  "idea": {
+    "topic": "Why risotto rice is never rinsed",
+    "category": "GRAINS_RICE_PASTA",
+    "angle": "COMMON_MISTAKE",
+    "coreMessage": "Rinsing risotto rice washes away the surface starch that makes it creamy."
+  },
+  "cards": [
+    {
+      "key": "starch",
+      "role": "PRIMARY",
+      "title": "Промывка риса для ризотто",
+      "category": "GRAINS_RICE_PASTA",
+      "claim": "Рис для ризотто не промывают: крахмал на поверхности зерна делает блюдо кремовым.",
+      "explanation": "Крахмал переходит в бульон и загущает его.",
+      "timings": [{ "value": 18, "valueMax": 20, "unit": "min", "context": "варка риса" }]
+    },
+    {
+      "key": "ratio",
+      "role": "SUPPORTING",
+      "title": "Вода для рассыпчатого риса",
+      "category": "GRAINS_RICE_PASTA",
+      "claim": "Для рассыпчатого длиннозёрного риса берут две части воды на одну часть крупы."
+    }
+  ],
+  "marketNotes": {
+    "es-ES": {
+      "toneNotes": "Cercano, tuteo, sin tecnicismos.",
+      "preferredVocabulary": [{ "concept": "shrimp", "preferred": "gamba", "avoid": ["camarón"] }],
+      "forbiddenPatterns": [
+        { "pattern": "\\bcamar[oó]n\\b", "kind": "REGEX", "reason": "Latin American term" }
+      ]
+    },
+    "en": { "toneNotes": "US spelling, friendly and direct." }
+  },
+  "expect": {
+    "mustCite": ["starch"],
+    "forbiddenPhrases": [
+      { "market": "es-ES", "phrases": ["camarón"] },
+      { "phrases": ["as seen on TV"] }
+    ],
+    "hookTypesDiffer": true
+  }
+}

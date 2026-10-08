@@ -316,7 +316,23 @@ importers:
         specifier: 0.31.11
         version: 0.31.11
 
-  evals: {}
+  evals:
+    dependencies:
+      '@rc/db':
+        specifier: workspace:*
+        version: link:../db
+      '@rc/lib':
+        specifier: workspace:*
+        version: link:../lib
+      '@rc/modules':
+        specifier: workspace:*
+        version: link:../modules
+      '@rc/prompts':
+        specifier: workspace:*
+        version: link:../prompts
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   jobs:
     dependencies:
