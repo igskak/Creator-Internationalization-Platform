@@ -4,6 +4,7 @@ import { schema } from "@rc/db";
 import { SOURCE_TYPES, type SourceType } from "@rc/db/json";
 import { eq, sql } from "@rc/db/orm";
 import { ValidationError } from "@rc/lib/errors";
+import { importVoiceExamples, parseCsv } from "./content/voice";
 import type { CliCommands } from "./core/cli";
 import { runJobHandler } from "./core/job-runner";
 import { helloJob } from "./job-handlers";
@@ -49,6 +50,20 @@ export const cliCommands: CliCommands = {
         auditEventId: number;
       };
       console.log(`rc hello: wrote audit event ${result.auditEventId}`);
+    },
+  },
+  "voice-import": {
+    description:
+      "Import voice examples (Sergey's edits, rules, examples) from a .json array or a .csv file",
+    usage: "voice-import <file>",
+    run: async (ctx, args) => {
+      const file = args[0];
+      if (!file) throw new ValidationError("Usage: voice-import <file.json|file.csv>");
+      const text = await readFile(file, "utf8");
+      const rows =
+        extname(file).toLowerCase() === ".csv" ? parseCsv(text) : (JSON.parse(text) as unknown[]);
+      const result = await importVoiceExamples(ctx, rows);
+      console.log(`rc voice-import: ${result.created} created, ${result.skipped} already there`);
     },
   },
   embed: {

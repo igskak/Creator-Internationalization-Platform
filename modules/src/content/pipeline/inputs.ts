@@ -233,8 +233,7 @@ export function writerInput(
       : {}),
     templates: templatesForPrompt(c),
     siblingSummary: [...siblings],
-    // Exemplars and edit pairs arrive with M2-17; until then the writer works from the voice guide.
-    exemplars: [],
+    exemplars: c.exemplars.get(market.id) ?? [],
     taxonomy: {
       hookTypes: c.hookTypes.map(({ code, label }) => ({ code, label })),
       ctaTypes: c.ctaTypes.map(({ code, label }) => ({ code, label })),

@@ -376,7 +376,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `evals/`: case format, runner (`pnpm eval`), metrics (07 §7.12), `eval-judge@1`, cost preview + confirmation, results JSON, blind pair export (CSV/Markdown); synthetic sample set.
   - **Done when:** runs with the fake provider in CI (smoke) and with the real provider manually.
 
-- [ ] **M2-17 · Voice examples and few-shot v1** · P1 · S · deps: M2-01, M2-10
+- [x] **M2-17 · Voice examples and few-shot v1** · P1 · S · deps: M2-01, M2-10
   - **Do:** `voice_examples` CRUD + seed import (Sergey's edits), exemplar selection (07 §7.11 v1) incl. rights exclusion.
   - **Done when:** selection tests; the writer receives examples.
 
