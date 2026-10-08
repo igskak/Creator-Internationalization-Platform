@@ -5,6 +5,7 @@ import { ForbiddenError, InvalidStateError, NotFoundError, ValidationError } fro
 import { z } from "zod";
 import { type ServiceContext, transition, withTransaction } from "../../core";
 import { requestEmbedding } from "../embedding";
+import { clearKnowledgeFlags, flagVariantsCiting } from "./variant-flags";
 
 // Card review transitions (plan 10 §10.4.1, 05 §5.4): approve with a version snapshot, archive with
 // a reason, restore. Bulk variants never override an unverified quote.
@@ -122,17 +123,33 @@ export async function transitionKnowledgeCard(
     }
     const snapshot = snapshotOf(card);
     const updated = await withTransaction(ctx, async (tx) => {
-      await tx.db.insert(schema.knowledgeItemVersions).values({
+      const versionRow = {
         knowledgeItemId: card.id,
         version: card.version,
         snapshot,
-        status: "CHEF_APPROVED",
+        status: "CHEF_APPROVED" as const,
         changedBy: actorId,
         changeNote: !quoteIsVerified(card)
           ? `Approved with an unverified quote: ${input.note}`
           : (input.note ?? null),
-      });
-      return transition(tx, {
+      };
+      // A card archived and restored without an edit is approved again at the same version.
+      await tx.db
+        .insert(schema.knowledgeItemVersions)
+        .values(versionRow)
+        .onConflictDoUpdate({
+          target: [
+            schema.knowledgeItemVersions.knowledgeItemId,
+            schema.knowledgeItemVersions.version,
+          ],
+          set: {
+            snapshot: versionRow.snapshot,
+            status: versionRow.status,
+            changedBy: versionRow.changedBy,
+            changeNote: versionRow.changeNote,
+          },
+        });
+      const approved = await transition(tx, {
         table: schema.knowledgeItems,
         statusKey: "reviewStatus",
         id: card.id,
@@ -148,6 +165,9 @@ export async function transitionKnowledgeCard(
           },
         },
       });
+      // Drafts that were flagged because the card changed or was archived are clear again.
+      await clearKnowledgeFlags(tx, [card.id]);
+      return approved;
     });
     // The vector is what retrieval searches; the job skips it when it is already current.
     await requestEmbedding(ctx, [card.id]).catch((error: unknown) =>
@@ -169,22 +189,28 @@ export async function transitionKnowledgeCard(
       throw new ForbiddenError("Only the chef or the owner can archive an approved card.");
     }
     if (card.reviewStatus === "ARCHIVED") throw invalid();
-    return transition(ctx, {
-      table: schema.knowledgeItems,
-      statusKey: "reviewStatus",
-      id: card.id,
-      from: ["EXTRACTED", "NEEDS_REVIEW", "CHEF_APPROVED"],
-      to: "ARCHIVED",
-      set: { archiveReason: input.archiveReason },
-      audit: {
-        action: "knowledge.archived",
-        entityType: "knowledge_item",
-        data: {
-          reason: input.archiveReason,
-          wasApproved: card.reviewStatus === "CHEF_APPROVED",
-          ...(input.note ? { note: input.note } : {}),
+    const { archiveReason } = input;
+    return withTransaction(ctx, async (tx) => {
+      const archived = await transition(tx, {
+        table: schema.knowledgeItems,
+        statusKey: "reviewStatus",
+        id: card.id,
+        from: ["EXTRACTED", "NEEDS_REVIEW", "CHEF_APPROVED"],
+        to: "ARCHIVED",
+        set: { archiveReason },
+        audit: {
+          action: "knowledge.archived",
+          entityType: "knowledge_item",
+          data: {
+            reason: archiveReason,
+            wasApproved: card.reviewStatus === "CHEF_APPROVED",
+            ...(input.note ? { note: input.note } : {}),
+          },
         },
-      },
+      });
+      // A draft that cites the card now rests on knowledge that was withdrawn: approval is blocked.
+      await flagVariantsCiting(tx, [card.id], "KNOWLEDGE_ARCHIVED");
+      return archived;
     });
   }
 

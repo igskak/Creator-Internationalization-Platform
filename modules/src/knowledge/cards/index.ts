@@ -38,3 +38,4 @@ export {
 } from "./transition";
 export { KnowledgeCardPatch, UpdateCardInput, updateKnowledgeCard } from "./update";
 export { ideasUsingCards } from "./usage";
+export { clearKnowledgeFlags, flagVariantsCiting } from "./variant-flags";
