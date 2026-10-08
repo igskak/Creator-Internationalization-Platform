@@ -1,6 +1,6 @@
 # End-to-end tests (Playwright)
 
-Plan 13 §13.4. Spec 1 (add a source → cards appear → edit → approve as the chef) is in `apps/web/e2e/knowledge.e2e.ts`, spec 2 (generate ideas → accept one; write one by hand → reject it) in `apps/web/e2e/ideas.e2e.ts`; the other specs arrive with their features (M2, M4, M5).
+Plan 13 §13.4. Spec 1 (add a source → cards appear → edit → approve as the chef) is in `apps/web/e2e/knowledge.e2e.ts`, spec 2 (generate ideas → accept one; write one by hand → reject it) in `apps/web/e2e/ideas.e2e.ts`; spec for products and offers (M2-02: an editor adds a product and an offer, a chef reads only) in `apps/web/e2e/offers.e2e.ts`; the other specs arrive with their features (M2, M4, M5).
 
 ## Run
 

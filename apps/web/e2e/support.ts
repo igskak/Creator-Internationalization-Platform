@@ -19,23 +19,28 @@ export function openDb() {
   return createDb(url, { pooled: isPoolerUrl(url), max: 1 });
 }
 
-/** An active chef the tests sign in as (the magic-link allowlist is the `app_users` table). */
-export async function ensureE2eUser(): Promise<void> {
+export const E2E_EDITOR_EMAIL = "e2e-editor@regchef.test";
+
+/** An active user the tests sign in as (the magic-link allowlist is the `app_users` table); a chef by default. */
+export async function ensureE2eUser(
+  email: string = E2E_EMAIL,
+  role: "chef" | "editor" = "chef",
+): Promise<void> {
   const { db, close } = openDb();
   try {
     const [existing] = await db
       .select({ id: schema.appUsers.id })
       .from(schema.appUsers)
-      .where(eq(schema.appUsers.email, E2E_EMAIL));
+      .where(eq(schema.appUsers.email, email));
     if (existing) {
       await db
         .update(schema.appUsers)
-        .set({ role: "chef", isActive: true })
+        .set({ role, isActive: true })
         .where(eq(schema.appUsers.id, existing.id));
     } else {
       await db
         .insert(schema.appUsers)
-        .values({ email: E2E_EMAIL, displayName: "E2E chef", role: "chef", isActive: true });
+        .values({ email, displayName: `E2E ${role}`, role, isActive: true });
     }
   } finally {
     await close();
@@ -200,6 +205,22 @@ export async function removeIdeasOfSource(sourceTitle: string): Promise<void> {
     if (runIds.length > 0) {
       await db.delete(schema.generationRuns).where(inArray(schema.generationRuns.id, runIds));
     }
+  } finally {
+    await close();
+  }
+}
+
+/** Removes the products a test created (their code starts with the prefix) with their offers. */
+export async function removeProductsByCodePrefix(prefix: string): Promise<void> {
+  const { db, close } = openDb();
+  try {
+    const products = await db
+      .select({ id: schema.products.id, code: schema.products.code })
+      .from(schema.products);
+    const ids = products.filter((p) => p.code.startsWith(prefix)).map((p) => p.id);
+    if (ids.length === 0) return;
+    await db.delete(schema.offers).where(inArray(schema.offers.productId, ids));
+    await db.delete(schema.products).where(inArray(schema.products.id, ids));
   } finally {
     await close();
   }
