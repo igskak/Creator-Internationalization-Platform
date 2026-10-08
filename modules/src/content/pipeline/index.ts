@@ -1,4 +1,11 @@
 export {
+  type GenerateVariantsInput,
+  type GenerateVariantsResult,
+  generateVariants,
+  shuffled,
+  type VariantOutcome,
+} from "./generate-variants";
+export {
   buildCriticReport,
   decideVerdict,
   MAX_REWRITES,
