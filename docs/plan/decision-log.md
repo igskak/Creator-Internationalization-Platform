@@ -328,6 +328,17 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Content writer prompt v1 [M2-10]
+- Context: 07 §7.6.1 and §7.6.4 define the writer stage (input, draft shape, validators 7.8, one repair); how slots, plan deviations and the rewrite and exemplar inputs work was open.
+- Decision (`prompts/src/content-writer/`, `modules/src/content/draft/`):
+  - **Prompt `content-writer@1`** (stage CONTENT_WRITING, effort high, 16k tokens, already in `STAGE_CONFIG`): closed book, numbers only from the cards or the conversion table (display strings copied exactly), citations per slide and `claimsUsed`, chef attribution only for cited claims, one slide per plan entry, slot limits, caption ≤ 2200 and 3–5 hashtags, CTA keyword rule, es-ES and en rules (same as the adapter, the market profile wins), no copying of siblings or examples.
+  - **Input:** brand voice, idea, the approved cards (no numeric detail: those come through the conversion table), market profile, the market brief, conversions, offer, templates with their text-slot limits (rendered as `<slot_limits>`, from the registry), sibling summary (hook and gist), exemplars (`EXEMPLAR`, `EDIT_PAIR` as before → after with the reason code, `RULE`), taxonomy, and an optional `rewrite` (previous draft and the reviewer's instructions) so the critic loop of M2-13 needs no new version.
+  - **Output** as in 07 §7.7 with slots as `{ slot, text }[]`; per-call schema fixes card ids, templates, slot names (all slot names of the templates offered), hook and CTA types. Limits, counts and slot fit stay in the validators.
+  - **`toDraftContent` and `validateWriterOutput`:** the model's answer becomes the stored shape (slot record, validation ids `s1…`) and goes through `validateDraft` of M2-05; field paths of slides are rewritten to the answer's own index (`slides.2.slots.body`) so the repair message points at something the model can see. Added checks against the plan: `PLAN_DEVIATION` (MAJOR: roles and templates differ from the plan), `HOOK_TYPE_CHANGED` and `CTA_TYPE_CHANGED` (MINOR). Stored slides get their own stable ids in M2-13.
+- Not done: building the real input and calling the stage (M2-13), exemplar selection (M2-17), the writer eval case (M2-16). The writer's es-ES and en wording rules share the pending review of the adapter's (M2-09).
+- Evidence / links: `prompts/src/content-writer/v1.test.ts` (snapshot, exemplar and slot rendering, escaping, schema per call), `modules/src/content/draft/writer.test.ts` (fixture slot limits equal the real templates; validators; fake model through `runStage`: success, repair after slot overflow with the field path in the repair prompt, still over the limit, notes do not trigger a repair).
+- Impact on plan: none.
+
 ## 2026-10-08 · Market adapter prompt v1 and plan validators [M2-09]
 - Context: 07 §7.6.1 gives the stage row (input, `MarketBrief`, deterministic checks, one repair) and 07 §7.6.4 the rules; the validators and the sibling rule needed concrete definitions.
 - Decision (`prompts/src/market-adapter/`, `modules/src/content/brief/`):

@@ -342,7 +342,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** prompt + `MarketBrief` schema + validators (5–10 slides, first HOOK, templates exist, IDs ⊆ idea, differs from sibling plan); unit conversion table injected.
   - **Done when:** fake tests; prompt snapshot; es-ES/EN rules reviewed by Ihor (and native reviewers when available).
 
-- [ ] **M2-10 · Content writer prompt v1** · P0 · M · deps: M2-05, M2-09
+- [x] **M2-10 · Content writer prompt v1** · P0 · M · deps: M2-05, M2-09
   - **Do:** prompt + schema (slots as `{ slot, text }[]`), slot limits and exemplar block rendering, repair via `runStage`.
   - **Done when:** fake tests incl. repair after slot overflow.
 
