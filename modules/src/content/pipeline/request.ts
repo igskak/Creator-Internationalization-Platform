@@ -140,6 +140,24 @@ export async function requestVariants(
   return { variantIds, jobRunId, pipelineRunId };
 }
 
+async function assertReasonCode(ctx: ServiceContext, reasonCode: string): Promise<void> {
+  const [reason] = await ctx.db
+    .select({ code: schema.taxonomyTerms.code })
+    .from(schema.taxonomyTerms)
+    .where(
+      and(
+        eq(schema.taxonomyTerms.kind, "reason_code"),
+        eq(schema.taxonomyTerms.code, reasonCode),
+        eq(schema.taxonomyTerms.isActive, true),
+      ),
+    );
+  if (!reason) {
+    throw new ValidationError(`"${reasonCode}" is not a reason code.`, {
+      fieldErrors: { reasonCode: [`"${reasonCode}" is not a reason code.`] },
+    });
+  }
+}
+
 /**
  * Redoes the whole pipeline for one market's variant (plan 05 §5.7); its sibling stays as a
  * constraint. DRAFT, READY_FOR_REVIEW and CHANGES_REQUESTED variants only: an approved or
@@ -160,21 +178,7 @@ export async function requestVariantRegeneration(
       details: { variantId, status: variant.status },
     });
   }
-  const [reason] = await ctx.db
-    .select({ code: schema.taxonomyTerms.code })
-    .from(schema.taxonomyTerms)
-    .where(
-      and(
-        eq(schema.taxonomyTerms.kind, "reason_code"),
-        eq(schema.taxonomyTerms.code, reasonCode),
-        eq(schema.taxonomyTerms.isActive, true),
-      ),
-    );
-  if (!reason) {
-    throw new ValidationError(`"${reasonCode}" is not a reason code.`, {
-      fieldErrors: { reasonCode: [`"${reasonCode}" is not a reason code.`] },
-    });
-  }
+  await assertReasonCode(ctx, reasonCode);
   const [idea] = await ctx.db
     .select({ status: schema.masterIdeas.status })
     .from(schema.masterIdeas)
@@ -198,4 +202,69 @@ export async function requestVariantRegeneration(
     ...(instruction ? { instruction } : {}),
   });
   return { jobRunId, pipelineRunId };
+}
+
+export const RegenerateAllInput = z.object({
+  masterIdeaId: z.uuid(),
+  instruction: z.string().trim().max(500).optional(),
+  reasonCode: z.string().trim().min(1).max(60),
+});
+
+/**
+ * "Regenerate all" of the review screen: one pipeline run for every live variant of the idea, so
+ * the markets are planned together again and still differ from each other. Every live variant
+ * must be DRAFT, READY_FOR_REVIEW or CHANGES_REQUESTED; an approved or scheduled one is
+ * un-approved first.
+ */
+export async function requestIdeaRegeneration(
+  ctx: ServiceContext,
+  raw: z.input<typeof RegenerateAllInput>,
+): Promise<VariantsRequest> {
+  const { masterIdeaId, instruction, reasonCode } = parse(RegenerateAllInput, raw);
+  const [idea] = await ctx.db
+    .select({ status: schema.masterIdeas.status })
+    .from(schema.masterIdeas)
+    .where(eq(schema.masterIdeas.id, masterIdeaId));
+  if (!idea) throw new NotFoundError("Idea not found.", { details: { masterIdeaId } });
+  if (idea.status !== "ACCEPTED") {
+    throw new InvalidStateError(`The idea is ${idea.status}, not ACCEPTED.`);
+  }
+  await assertReasonCode(ctx, reasonCode);
+
+  const live = await ctx.db
+    .select({ id: schema.contentVariants.id, status: schema.contentVariants.status })
+    .from(schema.contentVariants)
+    .where(
+      and(
+        eq(schema.contentVariants.masterIdeaId, masterIdeaId),
+        ne(schema.contentVariants.status, "REJECTED"),
+      ),
+    );
+  if (live.length === 0) {
+    throw new InvalidStateError("There are no drafts to regenerate. Generate them first.");
+  }
+  const blocked = live.filter(
+    (v) => !["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"].includes(v.status),
+  );
+  if (blocked.length > 0) {
+    throw new InvalidStateError("Some drafts are approved, scheduled or being worked on.", {
+      details: { variants: blocked },
+    });
+  }
+
+  const variantIds = live.map((v) => v.id);
+  const pipelineRunId = randomUUID();
+  await audit(ctx, {
+    action: "variants.regeneration_requested",
+    entityType: "master_idea",
+    entityId: masterIdeaId,
+    data: { pipelineRunId, reasonCode, variantIds, hasInstruction: Boolean(instruction) },
+  });
+  const { jobRunId } = await queue(ctx, {
+    masterIdeaId,
+    variantIds,
+    pipelineRunId,
+    ...(instruction ? { instruction } : {}),
+  });
+  return { variantIds, jobRunId, pipelineRunId };
 }

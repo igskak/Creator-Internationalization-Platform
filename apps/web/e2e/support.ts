@@ -198,6 +198,13 @@ export async function removeIdeasOfSource(sourceTitle: string): Promise<void> {
       .from(schema.masterIdeas)
       .where(inArray(schema.masterIdeas.id, ideaIds));
     const runIds = ideas.flatMap((i) => (i.runId ? [i.runId] : []));
+    // Drafts of the ideas and every model run of their pipelines (linked to the idea and the variant).
+    await db
+      .delete(schema.generationRuns)
+      .where(inArray(schema.generationRuns.masterIdeaId, ideaIds));
+    await db
+      .delete(schema.contentVariants)
+      .where(inArray(schema.contentVariants.masterIdeaId, ideaIds));
     await db
       .delete(schema.masterIdeaKnowledge)
       .where(inArray(schema.masterIdeaKnowledge.masterIdeaId, ideaIds));

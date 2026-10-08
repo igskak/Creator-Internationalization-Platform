@@ -328,6 +328,19 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Draft viewer v0 [M2-15]
+- Context: 10 §10.3 describes the primary review screen; M2-15 builds its read-only first version (editing, approval and scheduling are M4-05).
+- Decision (`modules/src/content/pipeline/review.ts`, `request.ts`, `apps/web/src/app/(app)/content/review/[ideaId]/page.tsx`, `components/review/`, messages `review.*`):
+  - **`getReviewBundle`** (05 §5.7, read side): the idea detail (approved card texts, source and page), every live variant of the idea in market order as a `VariantView` (hook, slides with slots in the **template's order** (jsonb loses key order), caption, CTA, hashtags, plan, critic report, flags, the comparison with the other markets, offer, generation version and config, last error, `lockVersion`), and the model cost of the idea's pipeline runs (null when nothing is priced). REJECTED variants are left out.
+  - **Screen:** a sticky idea column (core message, evidence, the approved cards with their source, offer, comparison verdict with the thresholds version, generation version and cost) and one column per market: status and quality score, flags (blocking ones in red), hook and hook type, each slide as a text card (role, template, slots, cited cards by title), caption with its length, CTA with keyword and offer, hashtags, the critic panel (verdict, rewrites, eight scores, unsupported claims, issues, the code's own checks, the note for a person), the comparison with the other market, the plan (audience, risks) and the generation version. Failed, queued and writing drafts show their state; an idea with no drafts offers "Generate drafts"; an idea that is not ACCEPTED explains it.
+  - **Polling:** while a draft is writing or waiting for the job (`GENERATING`, or `DRAFT` without content and without an error) the page polls `getStatuses` every 3 s and refreshes when a status changes.
+  - **"Regenerate all"** (`requestIdeaRegeneration`, action `regenerateAllVariants`): one new pipeline run for every live variant of the idea, so the markets are planned together again and still differ; instruction ≤ 500 and a reason code from the taxonomy; refused when there are no drafts or one is approved, scheduled or being worked on (un-approve it first). The button is disabled in those cases.
+  - **Scripted model for the E2E server:** the builders of valid answers moved from the pipeline tests to `modules/src/ai/scripted-answers.ts`; the fake model of the E2E server answers `market-adapter`, `content-writer` and `critic` from the cards of the request (Spain plans from the mistake, the other market from the myth; the English review carries one minor note).
+  - **E2E spec 3** (`apps/web/e2e/drafts.e2e.ts`): generate an idea → accept → generate ES + EN drafts → both columns "Ready for review" with 5 and 6 slides, quality 4.42, the critic panel and the comparison → regenerate all with an instruction. The helper that removes a test's ideas now removes their variants and model runs too. Passed against the dev project (13.6 s); screenshot `review.png`.
+- Not done: editing, regeneration of fields, approval, the rendered carousel preview (M3, M4), keyboard shortcuts (P1).
+- Evidence / links: `modules/src/content/pipeline/review.test.ts` (5 cases), E2E spec 3, the i18n parity test.
+- Impact on plan: none.
+
 ## 2026-10-08 · Flags on variants when a cited card changes [M2-13a]
 - Context: 05 §5.4 and 10 §10.4.1 say editing an approved card flags the unpublished variants that cite it, and the card screen lists the ideas that use it; M1-18 left both open (`ideasUsingCards` returned nothing).
 - Decision (`modules/src/knowledge/cards/{variant-flags,usage,update,transition}.ts`):
