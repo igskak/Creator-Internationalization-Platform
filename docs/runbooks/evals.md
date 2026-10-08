@@ -6,7 +6,7 @@ Plan 07 §7.12, task M2-16. The harness runs **cases** through the real variant 
 
 ```bash
 pnpm eval                                   # synthetic set, scripted fake model: free, proves the harness
-pnpm eval --judge --blind                   # also score with eval-judge@1 and write the blind review sheet
+pnpm eval --judge --blind --g1              # also score with eval-judge@1 and write the blind review sheet
 pnpm eval --provider live --judge           # the real model of .env (AI_PROVIDER=live): prints an estimate and asks
 pnpm eval --provider live --yes --set /path/to/private/set --cases a,b
 ```
@@ -20,6 +20,10 @@ An idea, the approved cards it rests on (`key`, role, claim, numbers), the marke
 ## Metrics
 
 Completion rate, schema-valid rate of the model runs (and how many needed the repair), citation coverage of factual slides, numeric fidelity, unsupported claims (critic and judge), critic quality score, judge scores (factual fidelity, localization, voice), the worst cross-market comparison, rewrites, flags, cost and time per idea, and whether each case meets its expectations. The exit code is 1 when a case does not.
+
+## Gate G1
+
+`--g1` prints the part of Gate G1 that numbers can decide (grounding, numeric fidelity, differentiation, time and cost; it fails a fake run on purpose). The reviewers' criteria stay open. The record and the steps are in `docs/decisions/G1.md`.
 
 ## Blind review (Gate G1)
 

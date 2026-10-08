@@ -328,6 +328,13 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · G1 kit and the state of Phase 2 [M2-18 prepared, not run]
+- Context: M2-18 is the gate itself: 10 ideas × 2 markets on real approved cards, native reviewers, and the verdict of Ihor and Sergey. It cannot be done by the software or by Claude: the real cards (≥ 30 approved by the chef), B-08 (English voice guide, market notes, Sergey's edits), B-09 (native reviewers), a live API key and budget are missing.
+- Decision: everything the gate needs from the software is built, and M2-18 stays **unchecked** in the task list. Added: `pnpm eval --g1` (`evals/src/g1.ts`) prints the machine-checkable conditions of 14 §14.3 (input size, 100 % citation of factual slides, no numeric mismatch, no unsupported claim by critic or judge, no differentiation FAIL, ≤ 10 min per idea, ≤ $2 per idea) and leaves 2, 3b and 4 as HUMAN; a fake run or fewer than 10 ideas fails on purpose. `docs/decisions/G1.md` is the record with the needs, the steps and an empty result table; `docs/runbooks/evals.md` points to it.
+- What the human run does: put the 10 cases outside git, run `pnpm eval --provider live --set <path> --judge --blind --g1` (it prints the cost and asks), hand the blind Markdown and CSV to the reviewers (not the key), rate the drafts on `/content/review/[ideaId]`, fill the table and write the decision.
+- Evidence / links: `evals/src/eval.test.ts` (Gate G1 check: passes what numbers decide, fails each condition it sees failing, does not accept a fake run).
+- Impact on plan: none.
+
 ## 2026-10-08 · Voice examples and few-shot v1 [M2-17]
 - Context: 07 §7.11 v1 says the writer gets up to three approved variants, the last ten hook edits as before → after pairs with reasons, and Sergey's seed examples, minus anything built on a source with `improvePrompts = DENIED`; the `voice_examples` table exists (M2-01) but nothing used it.
 - Decision (`modules/src/content/voice/`, `pipeline/context.ts`, `pipeline/inputs.ts`, CLI `pnpm rc voice-import`):
