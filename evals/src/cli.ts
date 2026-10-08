@@ -11,6 +11,7 @@ import { exportBlind } from "./blind";
 import { loadCases } from "./case";
 import { describeEstimate, estimateRun } from "./cost";
 import { createFakeEvalEmbeddings, createFakeEvalModel } from "./fake-model";
+import { formatG1, g1Check } from "./g1";
 import { buildReport, summarize, writeReport } from "./report";
 import { type CaseOutcome, runCase } from "./runner";
 
@@ -25,6 +26,7 @@ const HELP = `pnpm eval [options]
   --judge               also score every draft with eval-judge@1
   --cases a,b           only these case ids
   --yes                 do not ask for confirmation before a live run
+  --g1                  also print the machine-checkable conditions of Gate G1
   --blind               also write the blind review sheet (Markdown + CSV) and its key
   --out <dir>           where results go (default: evals/results, not in git)
   --help`;
@@ -36,6 +38,7 @@ function parse(argv: string[]) {
     judge: false,
     yes: false,
     blind: false,
+    g1: false,
     cases: [] as string[],
     out: "",
   };
@@ -47,6 +50,7 @@ function parse(argv: string[]) {
     else if (arg === "--judge") args.judge = true;
     else if (arg === "--yes") args.yes = true;
     else if (arg === "--blind") args.blind = true;
+    else if (arg === "--g1") args.g1 = true;
     else if (arg === "--cases") args.cases = value().split(",").filter(Boolean);
     else if (arg === "--out") args.out = value();
     else if (arg === "--help" || arg === "-h") {
@@ -136,7 +140,9 @@ const report = buildReport(outcomes, {
 });
 const resultsDir = args.out ? resolve(args.out) : join(root, "results");
 const file = await writeReport(report, resultsDir);
-console.log(`\n${summarize(report)}\n\nResults: ${file}`);
+console.log(
+  `\n${summarize(report)}\n${args.g1 ? `\n${formatG1(g1Check(report))}\n` : ""}\nResults: ${file}`,
+);
 
 if (args.blind) {
   const sheet = exportBlind(outcomes);

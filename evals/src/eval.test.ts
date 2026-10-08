@@ -7,9 +7,10 @@ import { exportBlind } from "./blind";
 import { EvalCase, loadCases } from "./case";
 import { describeEstimate, estimateRun } from "./cost";
 import { createFakeEvalEmbeddings, createFakeEvalModel } from "./fake-model";
+import { formatG1, g1Check } from "./g1";
 import { PACKAGE_NAME } from "./index";
 import { aggregate, computeMetrics, expectationsMet } from "./metrics";
-import { buildReport, summarize, writeReport } from "./report";
+import { buildReport, type EvalReport, summarize, writeReport } from "./report";
 import { type CaseOutcome, runCase } from "./runner";
 
 // The eval harness (M2-16): the case format, the metrics, the blind export and a whole run with the
@@ -238,4 +239,91 @@ describe("blind export", () => {
     const one = { ...outcome, variants: outcome.variants.slice(0, 1) };
     expect(exportBlind([one]).key).toEqual({});
   }, 60_000);
+});
+
+describe("Gate G1 check", () => {
+  const baseReport = (
+    over: Partial<EvalReport["totals"]> = {},
+    provider: "fake" | "live" = "live",
+  ): EvalReport => ({
+    set: "g1",
+    startedAt: "2026-10-08T00:00:00.000Z",
+    provider,
+    model: "m",
+    judge: true,
+    pipelineVersion: "p1.0.0",
+    totals: {
+      cases: 10,
+      casesMeetingExpectations: 10,
+      completionRate: 1,
+      schemaValidRate: 1,
+      citationCoverage: 1,
+      numericFidelityRate: 1,
+      differentiationFails: 0,
+      meanQualityScore: 4.2,
+      judge: { factualFidelity: 4.5, localization: 4.1, voice: 4 },
+      judgeUnsupportedClaims: 0,
+      costPerIdeaUsd: 1.4,
+      meanPipelineMs: 200_000,
+      ...over,
+    },
+    cases: Array.from({ length: 10 }, (_, i) => ({
+      id: `c${i}`,
+      description: "",
+      meetsExpectations: true,
+      failed: [],
+      metrics: { criticUnsupportedClaims: 0, pipelineMs: 180_000 } as never,
+      variants: [
+        {
+          market: "es-ES",
+          status: "READY_FOR_REVIEW",
+          qualityScore: 4,
+          hook: "h",
+          hookType: "A",
+          flags: [],
+          criticVerdict: "PASS",
+          judge: null,
+        },
+        {
+          market: "en",
+          status: "READY_FOR_REVIEW",
+          qualityScore: 4,
+          hook: "h",
+          hookType: "B",
+          flags: [],
+          criticVerdict: "PASS",
+          judge: null,
+        },
+      ],
+    })),
+  });
+  const statusOf = (rows: ReturnType<typeof g1Check>, start: string) =>
+    rows.find((r) => r.criterion.startsWith(start))?.status;
+
+  it("passes what numbers can decide and leaves the reviewers' criteria open", () => {
+    const rows = g1Check(baseReport());
+    for (const prefix of ["Input", "1a", "1b", "1c", "3a", "5a", "5b"])
+      expect(statusOf(rows, prefix)).toBe("PASS");
+    for (const prefix of ["2.", "3b", "4."]) expect(statusOf(rows, prefix)).toBe("HUMAN");
+    expect(rows.some((r) => r.status === "FAIL")).toBe(false);
+    expect(formatG1(rows)).toContain("PASS  1a. Every factual slide cites an approved card");
+  });
+
+  it("fails each condition it can see failing", () => {
+    expect(statusOf(g1Check(baseReport({ citationCoverage: 0.95 })), "1a")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ numericFidelityRate: 0.9 })), "1b")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ judgeUnsupportedClaims: 2 })), "1c")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ differentiationFails: 1 })), "3a")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ costPerIdeaUsd: 2.5 })), "5b")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ costPerIdeaUsd: null })), "5b")).toBe("FAIL");
+    expect(statusOf(g1Check(baseReport({ cases: 3 })), "Input")).toBe("FAIL");
+    const slow = baseReport();
+    (slow.cases[0] as { metrics: { pipelineMs: number } }).metrics.pipelineMs = 11 * 60_000;
+    expect(statusOf(g1Check(slow), "5a")).toBe("FAIL");
+  });
+
+  it("does not take a fake run for proof", () => {
+    const rows = g1Check(baseReport({}, "fake"));
+    expect(statusOf(rows, "Provider")).toBe("FAIL");
+  });
 });
