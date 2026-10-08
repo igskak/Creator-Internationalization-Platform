@@ -1,4 +1,19 @@
 export {
+  bestMatchSimilarity,
+  cosine,
+  DIFFERENTIATION_THRESHOLDS,
+  type DifferentiationThresholds,
+  type DifferentiationVariant,
+  differentiateVariants,
+  type EmbeddedVariant,
+  levenshtein,
+  type PairReport,
+  scoreDifferentiation,
+  sequenceSimilarity,
+  slideText,
+  worstReport,
+} from "./differentiation";
+export {
   getMarketByCode,
   getMarketProfile,
   listMarkets,

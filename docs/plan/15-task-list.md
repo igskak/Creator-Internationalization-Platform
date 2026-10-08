@@ -346,7 +346,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** prompt + schema (slots as `{ slot, text }[]`), slot limits and exemplar block rendering, repair via `runStage`.
   - **Done when:** fake tests incl. repair after slot overflow.
 
-- [ ] **M2-11 · Cross-market differentiation checker** · P0 · M · deps: M1-11
+- [x] **M2-11 · Cross-market differentiation checker** · P0 · M · deps: M1-11
   - **Do:** `localization/differentiation.ts` (07 §7.10) with thresholds config + version.
   - **Done when:** tests with forced-similar fake embeddings; template-sequence distance tests.
 
