@@ -1,4 +1,5 @@
 import { contentWriterV1 } from "./content-writer";
+import { criticV1 } from "./critic";
 import { ideaGeneratorV1 } from "./idea-generator";
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
 import { knowledgeGlossV1 } from "./knowledge-gloss";
@@ -10,6 +11,7 @@ import { createRegistry } from "./registry";
 export const PACKAGE_NAME = "@rc/prompts";
 
 export * as contentWriter from "./content-writer";
+export * as critic from "./critic";
 export {
   type AnyPrompt,
   definePrompt,
@@ -52,4 +54,5 @@ export const promptRegistry = createRegistry([
   ideaGeneratorV1,
   marketAdapterV1,
   contentWriterV1,
+  criticV1,
 ]);

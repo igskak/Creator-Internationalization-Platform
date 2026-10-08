@@ -350,7 +350,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `localization/differentiation.ts` (07 §7.10) with thresholds config + version.
   - **Done when:** tests with forced-similar fake embeddings; template-sequence distance tests.
 
-- [ ] **M2-12 · Critic prompt v1 and verdict policy** · P0 · M · deps: M2-05, M2-11
+- [x] **M2-12 · Critic prompt v1 and verdict policy** · P0 · M · deps: M2-05, M2-11
   - **Do:** prompt + schema; `content/pipeline/policy.ts` (07 §7.6.3); quality score.
   - **Done when:** policy table tests; fake critic tests.
 
