@@ -363,7 +363,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests with a linked idea and variants in several statuses (flag set on the unpublished ones only, cleared when the card is approved again).
   - **Refs:** 05 §5.4, 10 §10.4.1, 04 §4.4 `VariantFlag`.
 
-- [ ] **M2-14 · `generate-content` job and actions** · P0 · M · deps: M2-13, M0-14
+- [x] **M2-14 · `generate-content` job and actions** · P0 · M · deps: M2-13, M0-14
   - **Do:** J5 handler + task; actions `generateVariants`, `regenerateVariant`; `getStatuses` for variants (stage from `pipeline_state`).
   - **Done when:** inline integration test from action to READY_FOR_REVIEW.
   - **Refs:** 06 J5.

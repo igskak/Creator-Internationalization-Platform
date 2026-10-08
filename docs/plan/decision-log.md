@@ -328,6 +328,18 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · generate-content job and actions [M2-14]
+- Context: 05 §5.6–5.7 define `generateVariants` and `regenerateVariant`, 06 J5 the job; the web button of M2-08 waited for them.
+- Decision (`modules/src/content/pipeline/request.ts`, `job-handlers.ts`, `jobs/src/tasks/generate-content.ts`, `core/statuses.ts`, `apps/web/src/server/actions/content.ts`):
+  - **`requestVariants`** (action `generateVariants`; service name differs because the pipeline function is already `generateVariants`): the idea must be ACCEPTED, the markets active (default all active; an inactive or unknown one is a field error). It creates a DRAFT variant for every market that has none and queues J5 with `pipelineRunId` (a new UUID) and key `gen:{pipelineRunId}`. A market whose live variant is a DRAFT (a failed or never-started one) is reused, so "retry" makes no duplicate; one that is READY_FOR_REVIEW or further is refused with a pointer to Regenerate.
+  - **`requestVariantRegeneration`** (action `regenerateVariant`): DRAFT, READY_FOR_REVIEW or CHANGES_REQUESTED variants of an ACCEPTED idea; `reasonCode` must be an active `reason_code` term; `instruction` ≤ 500 characters goes to the writer as the first rewrite instruction. Audit `variant.regeneration_requested` carries the reason (the `review_events` table comes in 0005, M4).
+  - **J5 `generate-content`:** payload `{ masterIdeaId, variantIds[1–10], pipelineRunId, instruction? }`, handler = `generateVariants` of M2-13, Trigger.dev task on the `llm` queue with `maxDuration` 30 minutes. A variant that failed is in the result, not an exception.
+  - **`getStatuses`** now answers `variantIds`: `status`, `flags`, `error` (the `last_error` message) and `stage` (from `pipeline_state`, only while GENERATING; the screen shows "Writing…" and so on). A new `stage` field on `StatusEntry`.
+  - **Web:** actions `generateVariants` and `regenerateVariant` (owner, editor, chef); the "Generate ES + EN drafts" button on an accepted idea is live (toast, refresh; the drafts show in the idea's list, the viewer is M2-15). `generateDraftsSoon` is replaced by `draftsQueued` in both languages; the idea E2E now expects the button enabled but does not press it (the E2E model has no answers for the new prompts yet, see M2-15).
+  - The scripted model of the pipeline tests moved to `pipeline/scripted-model.ts` so M2-13 and M2-14 share it.
+- Evidence / links: `modules/src/content/pipeline/request.test.ts` (8 cases: action → inline J5 → READY_FOR_REVIEW for both markets with the queued payload and key, a market subset, queue-only mode leaving DRAFTs, retry without duplicates, refusals, regenerate one market with the instruction and the other untouched, status and reason checks, `getStatuses` for variants).
+- Impact on plan: none.
+
 ## 2026-10-08 · Variant generation pipeline [M2-13]
 - Context: 07 §7.6.2 gives the flow, 06 J5 the locking and failure rules; resume, the rewrite loop, the order of the markets and the failure cases needed concrete definitions. The `generate-content` job and the actions are M2-14; this task is the pipeline function.
 - Decision (`modules/src/content/pipeline/{generate-variants,context,inputs}.ts`): `generateVariants(ctx, { masterIdeaId, variantIds, pipelineRunId, instruction? })`.

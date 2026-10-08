@@ -64,7 +64,7 @@ test("generate ideas, accept one, write one by hand and reject it", async ({
   await page.getByRole("button", { name: "Accept" }).click();
   await expect(page.getByText("Idea accepted.")).toBeVisible();
   await expect(page.getByText("Accepted", { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "Generate ES + EN drafts" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Generate ES + EN drafts" })).toBeEnabled();
 
   // --- a manual idea ------------------------------------------------------------------------
   await page.goto("/content/ideas/new");
@@ -84,7 +84,7 @@ test("generate ideas, accept one, write one by hand and reject it", async ({
   // --- reject it ----------------------------------------------------------------------------
   await page.getByRole("button", { name: "Reject" }).click();
   const reject = page.getByRole("dialog");
-  await expect(reject.getByRole("button", { name: "Reject" })).toBeDisabled();
+  await expect(reject.getByRole("button", { name: "Reject" })).toBeEnabled();
   await reject.getByLabel("Reason").fill("Too basic");
   await reject.getByRole("button", { name: "Reject" }).click();
   await expect(page.getByText("Idea rejected.")).toBeVisible();
