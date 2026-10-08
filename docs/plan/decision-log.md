@@ -328,6 +328,18 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Products and offers [M2-02]
+- Context: 05 §5.5 gives `upsertProduct` and `upsertOffer`; 10 §10.2 lists `/knowledge/offers`. Open: what "currency check" blocks, who may edit, and how the screen words service warnings in two languages.
+- Decision (`modules/src/offers/service.ts`, `apps/web/src/server/actions/offers.ts`, `components/offers/`, messages `offers.*`):
+  - **Roles:** owners and editors edit; the chef sees the screen read-only (10 §10.6).
+  - **`upsertProduct`:** `code` is unique (also on edit, reported on the field); `sourceAssetId` must be a `PRODUCT_MATERIAL` source; blank description is stored as null; an edit that changes nothing writes no audit row, otherwise `product.updated` lists the changed fields.
+  - **`upsertOffer`:** the landing URL must be `https://`; a `PAID_PRODUCT` needs a price (a lead magnet may be free); the keyword is one word; price has at most two decimals. A currency that differs from the market's is **saved with a warning**, as 05 §5.5 says, and so is an ACTIVE offer without a landing page. Warnings are codes (`CURRENCY_MISMATCH`, `NO_LANDING_URL`), so the screen words them in the interface language; the table marks a mismatched price with ⚠.
+  - **Screen:** one card per product with its offers in a table (market, price, keyword, priority, status, landing page); dialogs add or edit a product or an offer; choosing a market in the offer dialog suggests its currency; only active markets can get an offer. The idea generator and the idea form read the same tables (`listActiveProducts`, idea context offers), so an INACTIVE product disappears from them without deleting anything.
+  - Products and offers are never deleted: INACTIVE and RETIRED are the end states (ideas and campaigns keep their references).
+- Not done: stopping an INACTIVE product's ideas in flight (ideas keep their product link); offers for markets that are switched off.
+- Evidence / links: `modules/src/offers/service.test.ts` (12 cases: create, edit, audit, unique code, currency warning, https, price, keyword, unknown market/product/offer, overview); `apps/web/e2e/offers.e2e.ts` (editor adds a product and an offer, https and currency checks, chef read-only; passed against the dev project, screenshot `offers.png`). In a worktree the E2E server needs `.env` symlinked in the repository root **and** in `apps/web`.
+- Impact on plan: none. Unblocks M4-11 (campaign IDs read offers) and B-07 (list of products).
+
 ## 2026-10-07 · Ideas UI [M2-08]
 - Context: 10 §10.2 lists `/content/ideas` and `/content/ideas/[id]`; 05 §5.6 has `updateIdea`, which has no screen in the catalog.
 - Decision (`apps/web/src/app/(app)/content/ideas/`, `components/ideas/`, messages `ideas.*` in `en.ts` and `ru.ts`):
