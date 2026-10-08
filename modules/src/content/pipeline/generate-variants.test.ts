@@ -1,0 +1,621 @@
+import { schema } from "@rc/db";
+import type { MarketBrief, RightsPolicy } from "@rc/db/json";
+import { asc, eq } from "@rc/db/orm";
+import { seedDatabase } from "@rc/db/seed";
+import { createTestDb, type TestDb } from "@rc/db/test-db";
+import { InvalidStateError, TransientError } from "@rc/lib/errors";
+import { createLogger } from "@rc/lib/logging";
+import { createFakeEmbeddingProvider, EMBEDDING_DIMENSIONS } from "@rc/lib/providers/embeddings";
+import { createFakeLLMProvider, type StructuredRequest } from "@rc/lib/providers/llm";
+import type { contentWriter, critic } from "@rc/prompts";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createServiceContext, manualClock, type ServiceContext } from "../../core";
+import { generateVariants, shuffled } from "./generate-variants";
+
+// Integration tests of the variant pipeline (07 §7.6.2, M2-13) with a scripted model: one answer
+// per prompt and market, so each test can change one thing. Synthetic content only.
+
+type Draft = contentWriter.ContentWriterOutput;
+type Review = critic.CriticOutput;
+
+const logger = createLogger({
+  service: "jobs",
+  env: "test",
+  level: "fatal",
+  destination: { write: () => {} },
+});
+const rights: RightsPolicy = {
+  use: "ALLOWED",
+  translate: "ALLOWED",
+  adapt: "ALLOWED",
+  visuallyTransform: "UNKNOWN",
+  sell: "UNKNOWN",
+  aiProcessing: "ALLOWED",
+  improvePrompts: "UNKNOWN",
+};
+const axis = (i: number) => {
+  const v = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
+  v[i % EMBEDDING_DIMENSIONS] = 1;
+  return v;
+};
+const snapshot = (title: string, claim: string) => ({
+  title,
+  category: "GRAINS_RICE_PASTA",
+  subcategory: null,
+  claim,
+  explanation: "",
+  procedure: [],
+  ingredients: [],
+  temperatures: [],
+  timings: [],
+  commonMistakes: [],
+  sourceReference: null,
+  language: "ru",
+  safetySensitive: false,
+  safetyNotes: null,
+  tags: [],
+});
+
+/** The market a rendered request is about. */
+const marketOf = (request: StructuredRequest<unknown>): string => {
+  const text = request.messages
+    .flatMap((m) => m.content)
+    .map((c) => (c.type === "text" ? c.text : ""))
+    .join("\n");
+  return /<market_profile code="([^"]+)"/.exec(text)?.[1] ?? "";
+};
+const textOf = (request: StructuredRequest<unknown>) =>
+  request.messages
+    .flatMap((m) => m.content)
+    .map((c) => (c.type === "text" ? c.text : ""))
+    .join("\n");
+
+describe("generateVariants", () => {
+  let t: TestDb;
+  let ctx: ServiceContext;
+  let brandId: string;
+  let card1: string;
+  let card2: string;
+  let ideaId: string;
+  let variants: Record<string, string>;
+  let llm: ReturnType<typeof createFakeLLMProvider>;
+  /** Overrides per `promptId:market:callNumberForThatPair`; return undefined to use the default. */
+  let script: (
+    promptId: string,
+    market: string,
+    n: number,
+    request: StructuredRequest<unknown>,
+  ) => unknown;
+  const seen = new Map<string, number>();
+  let similar: string[][] = [];
+  const clock = manualClock("2026-10-08T12:00:00Z");
+
+  const brief = (market: string): MarketBrief => {
+    const es = market === "es-ES";
+    const plan = es
+      ? ([
+          ["HOOK", "A", []],
+          ["MISTAKE", "E", [card1]],
+          ["EXPLANATION", "B", [card1]],
+          ["FACT", "B", [card2]],
+          ["CTA", "F", []],
+        ] as const)
+      : ([
+          ["HOOK", "A", []],
+          ["FACT", "B", [card1]],
+          ["EXPLANATION", "B", [card1]],
+          ["STEP", "B", [card2]],
+          ["SUMMARY", "B", [card2]],
+          ["CTA", "F", []],
+        ] as const);
+    return {
+      audienceFraming: es ? "Spanish home cooks." : "US home cooks.",
+      terminology: [],
+      substitutions: [],
+      unitsPolicy: { system: es ? "METRIC" : "DUAL", conversions: [] },
+      culturalHooks: [es ? "Arroz del domingo" : "Weeknight rice"],
+      examples: [],
+      tone: "Warm.",
+      hookType: es ? "MISTAKE_CALLOUT" : "MYTH_BUST",
+      slidePlan: plan.map(([role, templateId, knowledgeIds]) => ({
+        role,
+        templateId,
+        purpose: `${role} slide`,
+        knowledgeIds: [...knowledgeIds],
+      })),
+      ctaApproach: { ctaType: "SAVE" },
+      risks: [],
+      differentiationNotes: es ? "Mistake first." : "Myth first.",
+    };
+  };
+
+  const draft = (market: string, tag = ""): Draft => {
+    const es = market === "es-ES";
+    const b = brief(market);
+    const text = (kind: string) => (es ? `Texto ${kind} ${tag}` : `Copy ${kind} ${tag}`).trim();
+    const slotsFor = (templateId: string): { slot: string; text: string }[] =>
+      templateId === "A"
+        ? [{ slot: "headline", text: text("hook") }]
+        : templateId === "E"
+          ? [
+              { slot: "mistakeTitle", text: text("error") },
+              { slot: "mistakeText", text: text("mistake") },
+              { slot: "correctTitle", text: text("fix") },
+              { slot: "correctText", text: text("correct") },
+            ]
+          : templateId === "F"
+            ? [
+                { slot: "headline", text: text("cta") },
+                { slot: "body", text: text("save it") },
+              ]
+            : [{ slot: "body", text: text("body") }];
+    return {
+      hook: text("hook"),
+      hookType: b.hookType,
+      slides: b.slidePlan.map((s) => ({
+        role: s.role,
+        templateId: s.templateId,
+        slots: slotsFor(s.templateId),
+        knowledgeIds: s.knowledgeIds,
+        factual: s.knowledgeIds.length > 0,
+        altText: "Rice.",
+      })),
+      caption: `${text("caption")}.`,
+      cta: { type: "SAVE", text: text("save") },
+      hashtags: ["#arroz", "#cocina", "#tecnica"],
+      claimsUsed: [{ text: "A claim.", knowledgeIds: [card1] }],
+    };
+  };
+
+  const review = (over: Partial<Review> = {}): Review => ({
+    verdict: "PASS",
+    scores: {
+      factualFidelity: 5,
+      sourceCoverage: 4,
+      localization: 4,
+      originality: 5,
+      brandVoice: 4,
+      structure: 5,
+      cta: 4,
+      overall: 4,
+    },
+    unsupportedClaims: [],
+    issues: [],
+    rewriteInstructions: "",
+    humanAttention: "",
+    ...over,
+  });
+  const badReview = (): Review =>
+    review({
+      verdict: "REQUEST_REWRITE",
+      scores: { ...review().scores, factualFidelity: 2 },
+      unsupportedClaims: [
+        { fieldPath: "slides.2.slots.body", text: "Cures colds.", reason: "No card says it." },
+      ],
+      rewriteInstructions: "Remove the health claim.",
+    });
+
+  const makeCtx = () =>
+    createServiceContext({
+      db: t.db,
+      logger,
+      clock,
+      llm,
+      embeddings: createFakeEmbeddingProvider({ similar }),
+      actor: { type: "SYSTEM" },
+    });
+
+  const calls = (promptId: string, market?: string) =>
+    llm.calls.filter((r) => r.meta.promptId === promptId && (!market || marketOf(r) === market));
+  const run = (id = "run-1", extra: { instruction?: string } = {}) =>
+    generateVariants(ctx, {
+      masterIdeaId: ideaId,
+      variantIds: Object.values(variants),
+      pipelineRunId: id,
+      ...extra,
+    });
+  const variantRow = async (market: string) => {
+    const [row] = await t.db
+      .select()
+      .from(schema.contentVariants)
+      .where(eq(schema.contentVariants.id, variants[market] as string));
+    return row as typeof schema.contentVariants.$inferSelect;
+  };
+
+  beforeEach(async () => {
+    t = await createTestDb();
+    await seedDatabase(t.db, { ownerEmails: ["owner@example.com"] });
+    const [brand] = await t.db.select().from(schema.brands);
+    brandId = brand?.id ?? "";
+    await t.db.update(schema.brands).set({ brandVoice: "Warm and precise." });
+    const [source] = await t.db
+      .insert(schema.sourceAssets)
+      .values({ brandId, type: "GUIDE", title: "g", originalLanguage: "ru", rights })
+      .returning();
+    const cards: string[] = [];
+    for (const [i, claim] of ["Рис не промывают.", "Две части воды на одну."].entries()) {
+      const [row] = await t.db
+        .insert(schema.knowledgeItems)
+        .values({
+          brandId,
+          title: `Карточка ${i + 1}`,
+          category: "GRAINS_RICE_PASTA",
+          claim,
+          language: "ru",
+          origin: "SOURCE_EXTRACTED",
+          reviewStatus: "CHEF_APPROVED",
+          version: 1,
+          approvedVersion: 1,
+          approvedAt: new Date(),
+          sourceAssetId: source?.id ?? null,
+          embedding: axis(i + 1),
+          embeddingModel: "fake-embedding",
+        })
+        .returning();
+      await t.db.insert(schema.knowledgeItemVersions).values({
+        knowledgeItemId: row?.id ?? "",
+        version: 1,
+        status: "CHEF_APPROVED",
+        snapshot: snapshot(`Карточка ${i + 1}`, claim),
+      });
+      cards.push(row?.id ?? "");
+    }
+    [card1, card2] = cards as [string, string];
+    const [idea] = await t.db
+      .insert(schema.masterIdeas)
+      .values({
+        brandId,
+        topic: "Rice",
+        category: "GRAINS_RICE_PASTA",
+        angle: "COMMON_MISTAKE",
+        coreMessage: "Do not rinse risotto rice.",
+        status: "ACCEPTED",
+        origin: "MANUAL",
+      })
+      .returning();
+    ideaId = idea?.id ?? "";
+    await t.db.insert(schema.masterIdeaKnowledge).values([
+      { masterIdeaId: ideaId, knowledgeItemId: card1, knowledgeVersion: 1, role: "PRIMARY" },
+      { masterIdeaId: ideaId, knowledgeItemId: card2, knowledgeVersion: 1, role: "SUPPORTING" },
+    ]);
+    const markets = await t.db.select().from(schema.markets).orderBy(asc(schema.markets.sortOrder));
+    variants = {};
+    for (const market of markets.filter((m) => m.isActive)) {
+      const [row] = await t.db
+        .insert(schema.contentVariants)
+        .values({ masterIdeaId: ideaId, marketId: market.id })
+        .returning();
+      variants[market.code] = row?.id ?? "";
+    }
+    seen.clear();
+    similar = [];
+    script = () => undefined;
+    llm = createFakeLLMProvider({
+      handler: (request) => {
+        const market = marketOf(request);
+        const key = `${request.meta.promptId}:${market}`;
+        const n = seen.get(key) ?? 0;
+        seen.set(key, n + 1);
+        const scripted = script(request.meta.promptId, market, n, request);
+        if (scripted !== undefined) return scripted;
+        if (request.meta.promptId === "market-adapter") return brief(market);
+        if (request.meta.promptId === "content-writer") return draft(market, n > 0 ? `v${n}` : "");
+        return review();
+      },
+    });
+    ctx = makeCtx();
+  });
+  afterEach(async () => {
+    await t.close();
+  });
+
+  it("generates every market: plans in turn, drafts, reviews, then READY_FOR_REVIEW", async () => {
+    const result = await run();
+    expect(
+      result.outcomes.map((o) => [o.marketCode, o.status, o.verdict, o.rewrites]).sort(),
+    ).toEqual([
+      ["en", "READY_FOR_REVIEW", "PASS", 0],
+      ["es-ES", "READY_FOR_REVIEW", "PASS", 0],
+    ]);
+    expect(result.costUsd).not.toBeNull();
+
+    const es = await variantRow("es-ES");
+    expect(es).toMatchObject({
+      status: "READY_FOR_REVIEW",
+      hook: "Texto hook",
+      hookType: "MISTAKE_CALLOUT",
+      ctaType: "SAVE",
+      criticVerdict: "PASS",
+      generationVersion: "p1.0.0",
+      lockVersion: 1,
+      flags: [],
+      lastError: null,
+      templateSequence: ["A", "E", "B", "B", "F"],
+    });
+    expect(es.qualityScore).toBe("4.42");
+    expect(es.slidesJson).toHaveLength(5);
+    expect(new Set(es.slidesJson.map((s) => s.id)).size).toBe(5);
+    expect(es.slidesJson[1]).toMatchObject({
+      role: "MISTAKE",
+      knowledgeIds: [card1],
+      factual: true,
+    });
+    expect(es.contentLength).toMatchObject({ slides: 5, captionChars: es.caption?.length });
+    expect(es.marketBriefJson).toMatchObject({ hookType: "MISTAKE_CALLOUT" });
+    expect(es.differentiationReport).toMatchObject({
+      verdict: "OK",
+      thresholdsVersion: "d1-placeholder",
+    });
+    expect(es.generationConfig).toMatchObject({
+      pipelineVersion: "1.0.0",
+      embeddingModel: "fake-embedding",
+      stages: {
+        MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 1 },
+        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 1 },
+        CRITIC: { promptId: "critic", promptVersion: 1 },
+      },
+    });
+    expect(es.pipelineState).toMatchObject({ pipelineRunId: "run-1", stage: "DONE" });
+    expect(Object.keys(es.pipelineState?.runIds ?? {}).sort()).toEqual([
+      "ADAPT",
+      "CRITIC:0",
+      "WRITE:0",
+    ]);
+
+    const runs = await t.db.select().from(schema.generationRuns);
+    expect(runs).toHaveLength(6);
+    expect(runs.every((r) => r.masterIdeaId === ideaId && r.contentVariantId !== null)).toBe(true);
+    const audits = (await t.db.select().from(schema.auditEvents)).map((a) => a.action);
+    expect(audits.filter((a) => a === "variant.generation_started")).toHaveLength(2);
+    expect(audits.filter((a) => a === "variant.generated")).toHaveLength(2);
+  });
+
+  it("plans the markets one after another: the later plan sees the earlier one as a sibling", async () => {
+    await run();
+    const [first, second] = calls("market-adapter");
+    expect(textOf(first as StructuredRequest<unknown>)).not.toContain("<plan market=");
+    expect(textOf(second as StructuredRequest<unknown>)).toContain("<plan market=");
+    expect(marketOf(first as StructuredRequest<unknown>)).not.toBe(
+      marketOf(second as StructuredRequest<unknown>),
+    );
+  });
+
+  it("orders the markets by the run id: same id, same order; the shuffle is stable", () => {
+    expect(shuffled([1, 2, 3, 4, 5, 6], "a")).toEqual(shuffled([1, 2, 3, 4, 5, 6], "a"));
+    const orders = new Set(
+      ["a", "b", "c", "d", "e", "f", "g"].map((s) => shuffled([1, 2, 3, 4, 5], s).join()),
+    );
+    expect(orders.size).toBeGreaterThan(1);
+    expect(shuffled([1, 2, 3], "a").sort()).toEqual([1, 2, 3]);
+  });
+
+  it("rewrites once when the critic finds an unsupported claim, then passes", async () => {
+    script = (promptId, market, n) =>
+      promptId === "critic" && market === "es-ES" && n === 0 ? badReview() : undefined;
+    const result = await run();
+    const es = result.outcomes.find((o) => o.marketCode === "es-ES");
+    expect(es).toMatchObject({ status: "READY_FOR_REVIEW", verdict: "PASS", rewrites: 1 });
+    expect(calls("content-writer", "es-ES")).toHaveLength(2);
+    expect(calls("critic", "es-ES")).toHaveLength(2);
+    const rewrite = textOf(calls("content-writer", "es-ES")[1] as StructuredRequest<unknown>);
+    expect(rewrite).toContain("<rewrite>");
+    expect(rewrite).toContain("Remove the health claim.");
+    expect(rewrite).toContain("remove or rewrite");
+    expect((await variantRow("es-ES")).hook).toBe("Texto hook v1");
+    expect(Object.keys((await variantRow("es-ES")).pipelineState?.runIds ?? {}).sort()).toEqual([
+      "ADAPT",
+      "CRITIC:0",
+      "CRITIC:1",
+      "WRITE:0",
+      "WRITE:1",
+    ]);
+    // The other market was not asked again.
+    expect(calls("content-writer", "en")).toHaveLength(1);
+  });
+
+  it("flags for a person after two rewrites that did not help, keeping the unresolved claim", async () => {
+    script = (promptId, market) =>
+      promptId === "critic" && market === "en" ? badReview() : undefined;
+    const result = await run();
+    const en = result.outcomes.find((o) => o.marketCode === "en");
+    expect(en).toMatchObject({
+      status: "READY_FOR_REVIEW",
+      verdict: "FLAG_FOR_HUMAN",
+      rewrites: 2,
+    });
+    expect(en?.flags).toContain("UNSUPPORTED_CLAIM");
+    expect(calls("content-writer", "en")).toHaveLength(3);
+    expect(calls("critic", "en")).toHaveLength(3);
+    const row = await variantRow("en");
+    expect(row).toMatchObject({ status: "READY_FOR_REVIEW", criticVerdict: "FLAG_FOR_HUMAN" });
+    expect(row.flags).toContain("UNSUPPORTED_CLAIM");
+    expect(row.criticReport?.humanAttention).toContain("Still unresolved after 2 rewrites.");
+    // Field paths of the report use the stored slide ids, not the draft's indexes.
+    const claim = row.criticReport?.unsupportedClaims[0];
+    expect(claim?.fieldPath).toBe(`slides.${row.slidesJson[2]?.id}.slots.body`);
+  });
+
+  it("fails the variant whose plan copies its sibling's hook type and structure", async () => {
+    script = (promptId, market) =>
+      promptId === "market-adapter"
+        ? {
+            ...brief("es-ES"),
+            unitsPolicy: { system: market === "es-ES" ? "METRIC" : "DUAL", conversions: [] },
+          }
+        : undefined;
+    const result = await run();
+    // The plan planned second breaks the sibling rule on both tries, so that variant is out.
+    const failed = result.outcomes.filter((o) => o.status === "FAILED");
+    expect(failed).toHaveLength(1);
+    expect(failed[0]?.error?.code).toBe("INVALID_OUTPUT");
+    expect(result.outcomes.filter((o) => o.status === "READY_FOR_REVIEW")).toHaveLength(1);
+  });
+
+  it("asks only the market generated later to rewrite when the hooks are the same post", async () => {
+    similar = [["Texto hook", "Copy hook"]];
+    ctx = makeCtx();
+    const result = await run();
+    const rewritten = result.outcomes.filter((o) => o.rewrites === 1);
+    expect(rewritten).toHaveLength(1);
+    const later = rewritten[0]?.marketCode as string;
+    const earlier = later === "en" ? "es-ES" : "en";
+    expect(calls("content-writer", later)).toHaveLength(2);
+    expect(calls("content-writer", earlier)).toHaveLength(1);
+    const instruction = textOf(calls("content-writer", later)[1] as StructuredRequest<unknown>);
+    expect(instruction).toContain("Change the hook type and the slide structure; keep the facts.");
+    // After the rewrite the pair is no longer alike.
+    expect((await variantRow(later)).differentiationReport?.verdict).toBe("OK");
+    expect((await variantRow(later)).criticVerdict).toBe("PASS");
+    // The earlier market still carries the first report, which named the risk.
+    expect((await variantRow(earlier)).flags).toEqual([]);
+  });
+
+  it("resumes with the same run id after a crash and repeats no finished model call", async () => {
+    let crash = true;
+    script = (promptId, market) => {
+      if (promptId === "critic" && market === "en" && crash) {
+        throw new TransientError("The provider is down.");
+      }
+      return undefined;
+    };
+    await expect(run("run-7")).rejects.toBeInstanceOf(TransientError);
+    // Mid-run state: both variants still GENERATING with their progress recorded.
+    const mid = await variantRow("en");
+    expect(mid.status).toBe("GENERATING");
+    expect(mid.pipelineState?.completedStages).toEqual(["ADAPT", "WRITE:0"]);
+    const before = {
+      adapters: calls("market-adapter").length,
+      writers: calls("content-writer").length,
+    };
+
+    crash = false;
+    const result = await run("run-7");
+    expect(result.outcomes.map((o) => o.status)).toEqual(["READY_FOR_REVIEW", "READY_FOR_REVIEW"]);
+    expect(calls("market-adapter")).toHaveLength(before.adapters);
+    expect(calls("content-writer")).toHaveLength(before.writers);
+    expect(calls("critic")).toHaveLength(3); // es-ES once, en twice (the crashed call and the retry)
+    expect((await variantRow("en")).status).toBe("READY_FOR_REVIEW");
+    expect(Object.keys((await variantRow("en")).pipelineState?.runIds ?? {}).sort()).toEqual([
+      "ADAPT",
+      "CRITIC:0",
+      "WRITE:0",
+    ]);
+  });
+
+  it("returns a failed variant to DRAFT with GENERATION_FAILED while the other market finishes", async () => {
+    script = (promptId, market) => {
+      if (promptId !== "content-writer" || market !== "en") return undefined;
+      const bad = draft("en");
+      // A slot far over its limit, every time: the repair cannot fix what the model repeats.
+      const slide = bad.slides[1] as Draft["slides"][number];
+      return {
+        ...bad,
+        slides: [
+          bad.slides[0],
+          { ...slide, slots: [{ slot: "body", text: "x".repeat(400) }] },
+          ...bad.slides.slice(2),
+        ],
+      };
+    };
+    const result = await run();
+    expect(result.outcomes.map((o) => [o.marketCode, o.status]).sort()).toEqual([
+      ["en", "FAILED"],
+      ["es-ES", "READY_FOR_REVIEW"],
+    ]);
+    const en = await variantRow("en");
+    expect(en).toMatchObject({
+      status: "DRAFT",
+      flags: ["GENERATION_FAILED"],
+      pipelineState: null,
+    });
+    expect(en.lastError).toMatchObject({ code: "INVALID_OUTPUT", details: { stage: "WRITE:0" } });
+    expect(calls("content-writer", "en")).toHaveLength(2); // the first answer and the repair
+    expect(calls("critic", "en")).toHaveLength(0);
+    expect((await t.db.select().from(schema.auditEvents)).map((a) => a.action)).toContain(
+      "variant.generation_failed",
+    );
+    // A new run starts clean and clears the failure.
+    script = () => undefined;
+    const retry = await generateVariants(ctx, {
+      masterIdeaId: ideaId,
+      variantIds: [variants.en as string],
+      pipelineRunId: "run-2",
+    });
+    expect(retry.outcomes[0]).toMatchObject({ status: "READY_FOR_REVIEW" });
+    expect(await variantRow("en")).toMatchObject({ flags: [], lastError: null });
+  });
+
+  it("fails the variants of a run that dies of a permanent error and rethrows", async () => {
+    script = (promptId) => {
+      if (promptId === "content-writer") throw new Error("boom");
+      return undefined;
+    };
+    await expect(run()).rejects.toThrow("boom");
+    expect((await variantRow("es-ES")).status).toBe("DRAFT");
+    expect((await variantRow("es-ES")).flags).toEqual(["GENERATION_FAILED"]);
+  });
+
+  it("hands the draft to a person when the critic cannot be used", async () => {
+    script = (promptId, market) =>
+      promptId === "critic" && market === "es-ES"
+        ? review({ scores: { ...review().scores, overall: 9 } })
+        : undefined;
+    const result = await run();
+    const es = result.outcomes.find((o) => o.marketCode === "es-ES");
+    expect(es).toMatchObject({ status: "READY_FOR_REVIEW", verdict: "FLAG_FOR_HUMAN" });
+    const row = await variantRow("es-ES");
+    expect(row.qualityScore).toBeNull();
+    expect(row.criticReport).toBeNull();
+    expect(row.status).toBe("READY_FOR_REVIEW");
+  });
+
+  it("sends a person's instruction to the writer", async () => {
+    await run("run-1", { instruction: "Open with a question." });
+    const first = textOf(calls("content-writer", "es-ES")[0] as StructuredRequest<unknown>);
+    expect(first).toContain("<rewrite>");
+    expect(first).toContain("Open with a question.");
+    expect(first).toContain("No previous draft.");
+  });
+
+  describe("locking", () => {
+    it("stops before touching anything when another run holds a variant", async () => {
+      await t.db
+        .update(schema.contentVariants)
+        .set({
+          status: "GENERATING",
+          pipelineState: {
+            pipelineRunId: "other",
+            stage: "WRITE:0",
+            startedAt: "x",
+            completedStages: [],
+            runIds: {},
+          },
+        })
+        .where(eq(schema.contentVariants.id, variants["es-ES"] as string));
+      await expect(run()).rejects.toBeInstanceOf(InvalidStateError);
+      expect((await variantRow("en")).status).toBe("DRAFT");
+      expect(llm.calls).toHaveLength(0);
+    });
+
+    it("needs an ACCEPTED idea and variants of that idea", async () => {
+      await t.db.update(schema.masterIdeas).set({ status: "PROPOSED" });
+      await expect(run()).rejects.toBeInstanceOf(InvalidStateError);
+      await t.db.update(schema.masterIdeas).set({ status: "ACCEPTED" });
+      await expect(
+        generateVariants(ctx, {
+          masterIdeaId: ideaId,
+          variantIds: [crypto.randomUUID()],
+          pipelineRunId: "x",
+        }),
+      ).rejects.toThrow("Some variants do not belong to this idea.");
+    });
+
+    it("does not take a variant that is APPROVED", async () => {
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "APPROVED" })
+        .where(eq(schema.contentVariants.id, variants.en as string));
+      await expect(run()).rejects.toBeInstanceOf(InvalidStateError);
+    });
+  });
+});

@@ -354,7 +354,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** prompt + schema; `content/pipeline/policy.ts` (07 §7.6.3); quality score.
   - **Done when:** policy table tests; fake critic tests.
 
-- [ ] **M2-13 · Variant generation pipeline** · P0 · L · deps: M2-10, M2-11, M2-12
+- [x] **M2-13 · Variant generation pipeline** · P0 · L · deps: M2-10, M2-11, M2-12
   - **Do:** `content/pipeline/generate-variants.ts` (07 §7.6.2): locking, shuffled sequential adapters, parallel writers, validation + repair, critic loop (≤ 2 rewrites), persistence of fields/flags/config/`template_sequence`/`content_length`, `pipeline_state` resume, failure handling.
   - **Done when:** integration tests: happy, rewrite, flag, resume after simulated crash, failure → DRAFT + `GENERATION_FAILED`.
 

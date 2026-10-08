@@ -122,7 +122,10 @@ export function decideVerdict(input: PolicyInput): PolicyDecision {
       reasons: [`Still unresolved after ${rewritesDone} rewrites.`, ...rewriteReasons],
       flags: [...flags],
       rewriteInstructions: "",
-      humanAttention: humanAttention(input, rewriteReasons),
+      humanAttention: humanAttention(input, [
+        `Still unresolved after ${rewritesDone} rewrites.`,
+        ...rewriteReasons,
+      ]),
     };
   }
   // Rule 4: the critic is unsure.
