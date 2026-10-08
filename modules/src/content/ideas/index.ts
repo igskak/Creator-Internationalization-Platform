@@ -8,6 +8,23 @@ export {
 export { generateIdeaDrafts, type IdeaDraftsResult } from "./generate";
 export { CreateManualIdeaInput, createManualIdea, UpdateIdeaInput, updateIdea } from "./manual";
 export {
+  type CardChoice,
+  DEFAULT_IDEAS_PAGE_SIZE,
+  getIdeaDetail,
+  getIdeaForEdit,
+  IDEA_STATUSES,
+  type IdeaDetail,
+  type IdeaDetailCard,
+  type IdeaList,
+  type IdeaListRow,
+  type IdeaStatus,
+  ListIdeasInput,
+  listActiveProducts,
+  listIdeas,
+  SearchCardsInput,
+  searchCardsForIdea,
+} from "./queries";
+export {
   GenerateIdeasInput,
   GenerateIdeasPayload,
   generateIdeas,

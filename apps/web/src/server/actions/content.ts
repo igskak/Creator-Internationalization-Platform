@@ -6,6 +6,8 @@ import {
   GenerateIdeasInput,
   generateIdeas as generateService,
   getIdeasRequestStatus,
+  SearchCardsInput,
+  searchCardsForIdea,
   TransitionIdeaInput,
   transitionIdea as transitionService,
   UpdateIdeaInput,
@@ -59,4 +61,12 @@ export const transitionIdea = defineAction({
     const idea = await transitionService(ctx, input);
     return { id: idea.id, status: idea.status };
   },
+});
+
+/** The card picker of the idea form: approved cards, newest first, filtered by a text search. */
+export const searchIdeaCards = defineAction({
+  name: "searchIdeaCards",
+  input: SearchCardsInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => searchCardsForIdea(ctx, input),
 });
