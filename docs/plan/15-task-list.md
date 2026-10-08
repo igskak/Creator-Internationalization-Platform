@@ -302,7 +302,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** test with a linked idea (refused) and after the idea is archived (allowed).
   - **Refs:** 05 §5.3.
 
-- [ ] **M2-02 · Products and offers** · P0 · M · deps: M2-01, M0-17
+- [x] **M2-02 · Products and offers** · P0 · M · deps: M2-01, M0-17
   - **Do:** services, actions, `/knowledge/offers` UI (products; offers per market with currency check, priority, default keyword, landing URL).
   - **Done when:** tests; UI works in dev.
   - **Refs:** 05 §5.5.
