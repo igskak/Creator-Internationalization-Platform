@@ -358,7 +358,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `content/pipeline/generate-variants.ts` (07 §7.6.2): locking, shuffled sequential adapters, parallel writers, validation + repair, critic loop (≤ 2 rewrites), persistence of fields/flags/config/`template_sequence`/`content_length`, `pipeline_state` resume, failure handling.
   - **Done when:** integration tests: happy, rewrite, flag, resume after simulated crash, failure → DRAFT + `GENERATION_FAILED`.
 
-- [ ] **M2-13a · Flag variants when a card they cite changes** · P0 · S · deps: M2-01, M1-18
+- [x] **M2-13a · Flag variants when a card they cite changes** · P0 · S · deps: M2-01, M1-18
   - **Do:** the hook of 05 §5.4 that M1-18 left open: when a CHEF_APPROVED card is edited (`updateKnowledgeCard`, back to NEEDS_REVIEW as version + 1) every unpublished variant that cites it gets flag `KNOWLEDGE_CHANGED` (a warning); when an approved card is archived (`transitionKnowledgeCard`) they get `KNOWLEDGE_ARCHIVED` (blocks approval). Published variants are never touched. Fill `usedByIdeas` in `getCardWithEvidence` (M2-06a lookup).
   - **Done when:** tests with a linked idea and variants in several statuses (flag set on the unpublished ones only, cleared when the card is approved again).
   - **Refs:** 05 §5.4, 10 §10.4.1, 04 §4.4 `VariantFlag`.

@@ -15,6 +15,7 @@ import { LOW_CONFIDENCE_THRESHOLD } from "../extraction/assess";
 import { safetyReasons } from "../extraction/safety";
 import { verifyNumbers } from "../extraction/verify-quote";
 import { loadEvidencePages, toCardView } from "./detail";
+import { flagVariantsCiting } from "./variant-flags";
 
 // Editing a card (plan 05 §5.4 `updateKnowledgeCard`, 10 §10.4.1): optimistic lock on `version`;
 // editing an approved card sends it back to review as the next version.
@@ -192,6 +193,8 @@ export async function updateKnowledgeCard(
         ...(wasApproved ? { status: { from: "CHEF_APPROVED", to: "NEEDS_REVIEW" } } : {}),
       },
     });
+    // Drafts built on the approved text are now built on text that is under review again.
+    if (wasApproved) await flagVariantsCiting(tx, [id], "KNOWLEDGE_CHANGED");
     return row;
   });
 

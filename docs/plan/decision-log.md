@@ -328,6 +328,17 @@ Template:
 - Evidence / links: `templates/src/templates.test.ts` (limits vs the plan table, role coverage, validator codes, catalog snapshot).
 - Impact on plan: 08 §8.2.1 table (B gets PROBLEM; COMPARISON has no P0 template); M2-09 must plan only roles that have a P0 template.
 
+## 2026-10-08 · Flags on variants when a cited card changes [M2-13a]
+- Context: 05 §5.4 and 10 §10.4.1 say editing an approved card flags the unpublished variants that cite it, and the card screen lists the ideas that use it; M1-18 left both open (`ideasUsingCards` returned nothing).
+- Decision (`modules/src/knowledge/cards/{variant-flags,usage,update,transition}.ts`):
+  - **Which variants:** those whose slides cite the card (`slides_json[].knowledgeIds`), in any status except PUBLISHING, PUBLISHED and REJECTED (a variant being published or out in the world is never touched; FAILED and SCHEDULED ones are flagged, they can still go out).
+  - **Edit:** editing a CHEF_APPROVED card (back to NEEDS_REVIEW, version + 1) adds `KNOWLEDGE_CHANGED` in the same transaction as the edit. **Archive:** archiving a card (from any status, not only an approved one) adds `KNOWLEDGE_ARCHIVED`, which blocks approval, in the transaction of the archive. Audit `variant.flagged` per variant (flag, cards).
+  - **Clearing:** approving a card (again) removes `KNOWLEDGE_CHANGED` from the variants that cite it when **every** card they cite is approved, and `KNOWLEDGE_ARCHIVED` when **none** of them is archived; a variant that still cites another card under review keeps its flag. Audit `variant.flag_cleared`.
+  - **`ideasUsingCards`** now returns, per card, the non-archived ideas linked through `master_idea_knowledge` (id, topic); `getCardWithEvidence.usedByIdeas` and the merge refusal use it.
+  - **Bug found by the tests (M1-18):** approving a card again after archive and restore without an edit inserted a second `knowledge_item_versions` row for the same version (unique violation). The approval now updates the existing version row instead (upsert on `knowledge_item_id, version`).
+- Evidence / links: `modules/src/knowledge/cards/variant-flags.test.ts` (variants in eight statuses with only the unpublished ones flagged, no flag for unapproved edits or other cards, no duplicates, clearing, two cards, archive and restore, both flags apart, `ideasUsingCards`, `usedByIdeas`).
+- Impact on plan: none.
+
 ## 2026-10-08 · generate-content job and actions [M2-14]
 - Context: 05 §5.6–5.7 define `generateVariants` and `regenerateVariant`, 06 J5 the job; the web button of M2-08 waited for them.
 - Decision (`modules/src/content/pipeline/request.ts`, `job-handlers.ts`, `jobs/src/tasks/generate-content.ts`, `core/statuses.ts`, `apps/web/src/server/actions/content.ts`):
