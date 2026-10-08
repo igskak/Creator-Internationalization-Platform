@@ -1,9 +1,9 @@
 export {
-  type GenerateVariantsInput,
   type GenerateVariantsResult,
   generateVariants,
   shuffled,
   type VariantOutcome,
+  type VariantPipelineInput,
 } from "./generate-variants";
 export {
   buildCriticReport,
@@ -14,4 +14,13 @@ export {
   qualityScore,
   SCORE_WEIGHTS,
 } from "./policy";
+export {
+  GenerateContentPayload,
+  GenerateVariantsInput,
+  MAX_VARIANTS_PER_RUN,
+  RegenerateVariantInput,
+  requestVariantRegeneration,
+  requestVariants,
+  type VariantsRequest,
+} from "./request";
 export { draftFieldPaths, validateCriticOutput } from "./validate-critic";

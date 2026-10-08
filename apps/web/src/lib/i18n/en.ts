@@ -803,7 +803,8 @@ export const en = {
       archive: "Archive",
       restore: "Restore",
       generateDrafts: "Generate ES + EN drafts",
-      generateDraftsSoon: "The draft pipeline is not built yet.",
+      draftsQueued:
+        "Drafts are being written. This takes a few minutes; refresh to see them below.",
       acceptNeedsCards: "Accepting needs every linked card to be approved.",
       accepted: "Idea accepted.",
       rejected: "Idea rejected.",

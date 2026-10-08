@@ -10,7 +10,7 @@ import type {
   ValidationIssue,
   VariantFlag,
 } from "@rc/db/json";
-import { and, eq, inArray, sql } from "@rc/db/orm";
+import { eq, inArray, sql } from "@rc/db/orm";
 import { InvalidStateError, TransientError } from "@rc/lib/errors";
 import type { contentWriter, critic } from "@rc/prompts";
 import { countChars, registry } from "@rc/templates";
@@ -24,7 +24,7 @@ import {
   worstReport,
 } from "../../localization";
 import { validateMarketBrief } from "../brief";
-import { toDraftContent, validateWriterOutput } from "../draft";
+import { validateWriterOutput } from "../draft";
 import {
   loadPipelineContext,
   type PipelineContext,
@@ -55,14 +55,14 @@ type Brief = MarketBrief;
 type Draft = contentWriter.ContentWriterOutput;
 type CriticOutput = critic.CriticOutput;
 
-export type GenerateVariantsInput = {
+export type VariantPipelineInput = {
   masterIdeaId: string;
   /** DRAFT, READY_FOR_REVIEW or CHANGES_REQUESTED variants of the idea, or ones of this run. */
   variantIds: readonly string[];
   /** Identifies the run: the same id resumes, a new one starts over. */
   pipelineRunId: string;
   /** A person's note for the writer (regenerate with instruction). */
-  instruction?: string;
+  instruction?: string | undefined;
 };
 
 export type VariantOutcome = {
@@ -126,7 +126,7 @@ const jsonOf = (value: unknown) => JSON.stringify(value);
 
 export async function generateVariants(
   ctx: ServiceContext,
-  input: GenerateVariantsInput,
+  input: VariantPipelineInput,
 ): Promise<GenerateVariantsResult> {
   const { masterIdeaId, pipelineRunId } = input;
   const c = await loadPipelineContext(ctx, masterIdeaId, input.variantIds);

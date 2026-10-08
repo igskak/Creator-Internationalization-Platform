@@ -1,5 +1,6 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
+import { GenerateContentPayload, generateVariants } from "./content";
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
 import { defineJob } from "./core/job-runner";
@@ -109,10 +110,21 @@ export const generateIdeasJob = defineJob({
   run: (ctx, payload) => runGenerateIdeas(ctx, payload),
 });
 
+/**
+ * J5 (plan 06 §6.3): runs the variant pipeline for the given variants (07 §7.6.2). A variant the
+ * pipeline could not finish is DRAFT with `GENERATION_FAILED` in the result, not an exception;
+ * transient errors are rethrown and the run resumes with the same `pipelineRunId`.
+ */
+export const generateContentJob = defineJob({
+  payload: GenerateContentPayload,
+  run: (ctx, payload) => generateVariants(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
   "generate-ideas": generateIdeasJob,
+  "generate-content": generateContentJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

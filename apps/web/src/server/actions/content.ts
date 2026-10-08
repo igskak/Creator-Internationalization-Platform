@@ -4,8 +4,12 @@ import {
   CreateManualIdeaInput,
   createManualIdea as createManualService,
   GenerateIdeasInput,
+  GenerateVariantsInput,
   generateIdeas as generateService,
   getIdeasRequestStatus,
+  RegenerateVariantInput,
+  requestVariantRegeneration,
+  requestVariants,
   SearchCardsInput,
   searchCardsForIdea,
   TransitionIdeaInput,
@@ -69,4 +73,20 @@ export const searchIdeaCards = defineAction({
   input: SearchCardsInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => searchCardsForIdea(ctx, input),
+});
+
+// Plan 05 §5.6, §5.7: the pipeline runs as the job J5; the actions only queue it.
+
+export const generateVariants = defineAction({
+  name: "generateVariants",
+  input: GenerateVariantsInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestVariants(ctx, input),
+});
+
+export const regenerateVariant = defineAction({
+  name: "regenerateVariant",
+  input: RegenerateVariantInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestVariantRegeneration(ctx, input),
 });

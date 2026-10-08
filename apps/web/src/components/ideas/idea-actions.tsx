@@ -17,7 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAction } from "@/hooks/use-action";
 import { useI18n } from "@/lib/i18n/provider";
-import { transitionIdea } from "@/server/actions/content";
+import { generateVariants, transitionIdea } from "@/server/actions/content";
 
 type To = "ACCEPTED" | "REJECTED" | "ARCHIVED" | "PROPOSED";
 
@@ -45,6 +45,12 @@ export function IdeaActions({
       router.refresh();
     },
   });
+  const drafts = useAction(generateVariants, {
+    onSuccess: () => {
+      toast.success(t.draftsQueued);
+      router.refresh();
+    },
+  });
   const go = (to: To, message: string, extra: { reason?: string } = {}) => {
     void move.run({ id: ideaId, to, ...extra }).then((result) => {
       if (result.ok) toast.success(message);
@@ -68,11 +74,13 @@ export function IdeaActions({
         </>
       ) : null}
       {status === "ACCEPTED" ? (
-        <span title={t.generateDraftsSoon}>
-          <Button variant="outline" disabled>
-            <SparklesIcon /> {t.generateDrafts}
-          </Button>
-        </span>
+        <Button
+          variant="outline"
+          disabled={drafts.pending}
+          onClick={() => void drafts.run({ masterIdeaId: ideaId })}
+        >
+          <SparklesIcon /> {t.generateDrafts}
+        </Button>
       ) : null}
       {status === "REJECTED" || status === "ARCHIVED" ? (
         <Button

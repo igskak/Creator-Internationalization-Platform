@@ -1,16 +1,24 @@
 import { schema } from "@rc/db";
-import type { MarketBrief, RightsPolicy } from "@rc/db/json";
+import type { MarketBrief } from "@rc/db/json";
 import { asc, eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { InvalidStateError, TransientError } from "@rc/lib/errors";
 import { createLogger } from "@rc/lib/logging";
-import { createFakeEmbeddingProvider, EMBEDDING_DIMENSIONS } from "@rc/lib/providers/embeddings";
+import { createFakeEmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createFakeLLMProvider, type StructuredRequest } from "@rc/lib/providers/llm";
 import type { contentWriter, critic } from "@rc/prompts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext, manualClock, type ServiceContext } from "../../core";
 import { generateVariants, shuffled } from "./generate-variants";
+import {
+  marketOfRequest as marketOf,
+  scriptedBrief,
+  scriptedDraft,
+  scriptedReview,
+  seedAcceptedIdea,
+  textOfRequest as textOf,
+} from "./scripted-model";
 
 // Integration tests of the variant pipeline (07 §7.6.2, M2-13) with a scripted model: one answer
 // per prompt and market, so each test can change one thing. Synthetic content only.
@@ -24,56 +32,10 @@ const logger = createLogger({
   level: "fatal",
   destination: { write: () => {} },
 });
-const rights: RightsPolicy = {
-  use: "ALLOWED",
-  translate: "ALLOWED",
-  adapt: "ALLOWED",
-  visuallyTransform: "UNKNOWN",
-  sell: "UNKNOWN",
-  aiProcessing: "ALLOWED",
-  improvePrompts: "UNKNOWN",
-};
-const axis = (i: number) => {
-  const v = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
-  v[i % EMBEDDING_DIMENSIONS] = 1;
-  return v;
-};
-const snapshot = (title: string, claim: string) => ({
-  title,
-  category: "GRAINS_RICE_PASTA",
-  subcategory: null,
-  claim,
-  explanation: "",
-  procedure: [],
-  ingredients: [],
-  temperatures: [],
-  timings: [],
-  commonMistakes: [],
-  sourceReference: null,
-  language: "ru",
-  safetySensitive: false,
-  safetyNotes: null,
-  tags: [],
-});
-
-/** The market a rendered request is about. */
-const marketOf = (request: StructuredRequest<unknown>): string => {
-  const text = request.messages
-    .flatMap((m) => m.content)
-    .map((c) => (c.type === "text" ? c.text : ""))
-    .join("\n");
-  return /<market_profile code="([^"]+)"/.exec(text)?.[1] ?? "";
-};
-const textOf = (request: StructuredRequest<unknown>) =>
-  request.messages
-    .flatMap((m) => m.content)
-    .map((c) => (c.type === "text" ? c.text : ""))
-    .join("\n");
-
 describe("generateVariants", () => {
   let t: TestDb;
   let ctx: ServiceContext;
-  let brandId: string;
+  let _brandId: string;
   let card1: string;
   let card2: string;
   let ideaId: string;
@@ -90,101 +52,10 @@ describe("generateVariants", () => {
   let similar: string[][] = [];
   const clock = manualClock("2026-10-08T12:00:00Z");
 
-  const brief = (market: string): MarketBrief => {
-    const es = market === "es-ES";
-    const plan = es
-      ? ([
-          ["HOOK", "A", []],
-          ["MISTAKE", "E", [card1]],
-          ["EXPLANATION", "B", [card1]],
-          ["FACT", "B", [card2]],
-          ["CTA", "F", []],
-        ] as const)
-      : ([
-          ["HOOK", "A", []],
-          ["FACT", "B", [card1]],
-          ["EXPLANATION", "B", [card1]],
-          ["STEP", "B", [card2]],
-          ["SUMMARY", "B", [card2]],
-          ["CTA", "F", []],
-        ] as const);
-    return {
-      audienceFraming: es ? "Spanish home cooks." : "US home cooks.",
-      terminology: [],
-      substitutions: [],
-      unitsPolicy: { system: es ? "METRIC" : "DUAL", conversions: [] },
-      culturalHooks: [es ? "Arroz del domingo" : "Weeknight rice"],
-      examples: [],
-      tone: "Warm.",
-      hookType: es ? "MISTAKE_CALLOUT" : "MYTH_BUST",
-      slidePlan: plan.map(([role, templateId, knowledgeIds]) => ({
-        role,
-        templateId,
-        purpose: `${role} slide`,
-        knowledgeIds: [...knowledgeIds],
-      })),
-      ctaApproach: { ctaType: "SAVE" },
-      risks: [],
-      differentiationNotes: es ? "Mistake first." : "Myth first.",
-    };
-  };
-
-  const draft = (market: string, tag = ""): Draft => {
-    const es = market === "es-ES";
-    const b = brief(market);
-    const text = (kind: string) => (es ? `Texto ${kind} ${tag}` : `Copy ${kind} ${tag}`).trim();
-    const slotsFor = (templateId: string): { slot: string; text: string }[] =>
-      templateId === "A"
-        ? [{ slot: "headline", text: text("hook") }]
-        : templateId === "E"
-          ? [
-              { slot: "mistakeTitle", text: text("error") },
-              { slot: "mistakeText", text: text("mistake") },
-              { slot: "correctTitle", text: text("fix") },
-              { slot: "correctText", text: text("correct") },
-            ]
-          : templateId === "F"
-            ? [
-                { slot: "headline", text: text("cta") },
-                { slot: "body", text: text("save it") },
-              ]
-            : [{ slot: "body", text: text("body") }];
-    return {
-      hook: text("hook"),
-      hookType: b.hookType,
-      slides: b.slidePlan.map((s) => ({
-        role: s.role,
-        templateId: s.templateId,
-        slots: slotsFor(s.templateId),
-        knowledgeIds: s.knowledgeIds,
-        factual: s.knowledgeIds.length > 0,
-        altText: "Rice.",
-      })),
-      caption: `${text("caption")}.`,
-      cta: { type: "SAVE", text: text("save") },
-      hashtags: ["#arroz", "#cocina", "#tecnica"],
-      claimsUsed: [{ text: "A claim.", knowledgeIds: [card1] }],
-    };
-  };
-
-  const review = (over: Partial<Review> = {}): Review => ({
-    verdict: "PASS",
-    scores: {
-      factualFidelity: 5,
-      sourceCoverage: 4,
-      localization: 4,
-      originality: 5,
-      brandVoice: 4,
-      structure: 5,
-      cta: 4,
-      overall: 4,
-    },
-    unsupportedClaims: [],
-    issues: [],
-    rewriteInstructions: "",
-    humanAttention: "",
-    ...over,
-  });
+  const cardIds = (): [string, string] => [card1, card2];
+  const brief = (market: string): MarketBrief => scriptedBrief(market, cardIds());
+  const draft = (market: string, tag = ""): Draft => scriptedDraft(market, cardIds(), tag);
+  const review = scriptedReview;
   const badReview = (): Review =>
     review({
       verdict: "REQUEST_REWRITE",
@@ -225,59 +96,8 @@ describe("generateVariants", () => {
   beforeEach(async () => {
     t = await createTestDb();
     await seedDatabase(t.db, { ownerEmails: ["owner@example.com"] });
-    const [brand] = await t.db.select().from(schema.brands);
-    brandId = brand?.id ?? "";
-    await t.db.update(schema.brands).set({ brandVoice: "Warm and precise." });
-    const [source] = await t.db
-      .insert(schema.sourceAssets)
-      .values({ brandId, type: "GUIDE", title: "g", originalLanguage: "ru", rights })
-      .returning();
-    const cards: string[] = [];
-    for (const [i, claim] of ["Рис не промывают.", "Две части воды на одну."].entries()) {
-      const [row] = await t.db
-        .insert(schema.knowledgeItems)
-        .values({
-          brandId,
-          title: `Карточка ${i + 1}`,
-          category: "GRAINS_RICE_PASTA",
-          claim,
-          language: "ru",
-          origin: "SOURCE_EXTRACTED",
-          reviewStatus: "CHEF_APPROVED",
-          version: 1,
-          approvedVersion: 1,
-          approvedAt: new Date(),
-          sourceAssetId: source?.id ?? null,
-          embedding: axis(i + 1),
-          embeddingModel: "fake-embedding",
-        })
-        .returning();
-      await t.db.insert(schema.knowledgeItemVersions).values({
-        knowledgeItemId: row?.id ?? "",
-        version: 1,
-        status: "CHEF_APPROVED",
-        snapshot: snapshot(`Карточка ${i + 1}`, claim),
-      });
-      cards.push(row?.id ?? "");
-    }
-    [card1, card2] = cards as [string, string];
-    const [idea] = await t.db
-      .insert(schema.masterIdeas)
-      .values({
-        brandId,
-        topic: "Rice",
-        category: "GRAINS_RICE_PASTA",
-        angle: "COMMON_MISTAKE",
-        coreMessage: "Do not rinse risotto rice.",
-        status: "ACCEPTED",
-        origin: "MANUAL",
-      })
-      .returning();
-    ideaId = idea?.id ?? "";
-    await t.db.insert(schema.masterIdeaKnowledge).values([
-      { masterIdeaId: ideaId, knowledgeItemId: card1, knowledgeVersion: 1, role: "PRIMARY" },
-      { masterIdeaId: ideaId, knowledgeItemId: card2, knowledgeVersion: 1, role: "SUPPORTING" },
-    ]);
+    const seeded = await seedAcceptedIdea(t.db);
+    ({ card1, card2, ideaId } = seeded);
     const markets = await t.db.select().from(schema.markets).orderBy(asc(schema.markets.sortOrder));
     variants = {};
     for (const market of markets.filter((m) => m.isActive)) {
