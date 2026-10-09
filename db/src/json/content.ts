@@ -254,3 +254,18 @@ export const BLOCKING_VARIANT_FLAGS: readonly VariantFlag[] = [
   "VISUAL_MISSING",
   "KNOWLEDGE_ARCHIVED",
 ];
+
+/** carousel_renders.qa_report (plan 04 §4.4, 08 §8.7). */
+export const QaReport = z.object({
+  overflow: z.array(
+    z.object({ slideId: z.string(), slot: z.string(), fontPxUsed: z.number().nonnegative() }),
+  ),
+  missingGlyphs: z.array(
+    z.object({ slideId: z.string(), slot: z.string(), chars: z.array(z.string()) }),
+  ),
+  dimensionsOk: z.boolean(),
+  logoPlacementOk: z.boolean(),
+  fileSizes: z.array(z.number().int().nonnegative()),
+  durationMs: z.number().nonnegative(),
+});
+export type QaReport = z.infer<typeof QaReport>;

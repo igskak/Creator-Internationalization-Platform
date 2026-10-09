@@ -14,6 +14,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import type {
   ContentLength,
@@ -28,6 +29,7 @@ import type {
   VisualBrief,
 } from "../json/content";
 import { appUsers, brands, markets } from "./core";
+import { carouselRenders } from "./creative";
 import { contentFormat, generationRuns, knowledgeItems, sourceAssets } from "./knowledge";
 
 // 0003_content (plan 04 §4.3). RLS on every table, no policies (04 §4.1).
@@ -213,6 +215,8 @@ export const contentVariants = pgTable(
     marketBriefJson: jsonb().$type<MarketBrief>(),
     /** Taxonomy visual_style code. */
     visualStyle: text(),
+    /** The render the review screen shows; set by the render job (M3-12). */
+    currentRenderId: uuid().references((): AnyPgColumn => carouselRenders.id),
     /** Derived; used by analytics and originality checks. */
     templateSequence: text().array().notNull().default(sql`'{}'::text[]`),
     /** Must belong to the same market (checked in code). */

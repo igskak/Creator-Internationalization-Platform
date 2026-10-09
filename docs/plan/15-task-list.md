@@ -394,7 +394,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M3 · Creative Engine
 
-- [ ] **M3-01 · Creative schema (0004_creative)** · P0 · S · deps: M2-01
+- [x] **M3-01 · Creative schema (0004_creative)** · P0 · S · deps: M2-01
   - **Do:** `visual_assets`, `carousel_renders`, `rendered_slides`, `content_variants.current_render_id`; `QaReport` type.
   - **Done when:** migration + tests.
 
