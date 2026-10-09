@@ -5,10 +5,17 @@
   "type": "module",
   "description": "Carousel slide templates and HTML rendering",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./render": "./src/render.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "fontkit": "^2.0.4"
+  },
+  "devDependencies": {
+    "@types/fontkit": "^2.0.9"
   }
 }

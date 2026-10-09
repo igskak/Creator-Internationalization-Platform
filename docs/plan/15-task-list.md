@@ -416,7 +416,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** integration test with fakes; idempotent rerun creates no duplicates.
   - **Refs:** 06 J7.
 
-- [ ] **M3-06 · Fonts, theme tokens and glyph checks** · P0 · M · deps: M2-03, B-10
+- [x] **M3-06 · Fonts, theme tokens and glyph checks** · P0 · M · deps: M2-03, B-10
   - **Do:** bundle fonts (WOFF2 + TTF) in `templates/assets/fonts` (brand fonts if licensed, else OFL fallback); theme tokens from `brands.visual_system` + market variant → CSS variables; `glyphs.ts` with fontkit.
   - **Done when:** tests: Spanish/French characters covered; emoji or unsupported char reported.
   - **Refs:** 08 §8.3, §8.6.
