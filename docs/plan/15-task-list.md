@@ -403,7 +403,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** fake tests; pipeline test includes the visual step.
   - **Refs:** 07 §7.6.4.
 
-- [ ] **M3-03 · Image provider (OpenAI) and fake** · P0 · M · deps: M0-04 · ⚠ V-19
+- [x] **M3-03 · Image provider (OpenAI) and fake** · P0 · M · deps: M0-04 · ⚠ V-19
   - **Do:** `ImageProvider` interface, OpenAI Images adapter (current gpt-image model, portrait size, quality), fake (gradient PNG with slot label), cost per image.
   - **Done when:** MSW contract test; fake test.
 
