@@ -434,7 +434,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** as M3-08 (B with and without `number`).
   - **Done when:** as M3-08.
 
-- [ ] **M3-10 · Templates C and D** · P1 · M · deps: M3-07
+- [x] **M3-10 · Templates C and D** · P1 · M · deps: M3-07
   - **Do:** as M3-08; D uses an icon set in `templates/assets/icons`.
   - **Done when:** as M3-08.
 

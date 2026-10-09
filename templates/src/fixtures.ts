@@ -170,4 +170,88 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
       }),
     ),
   ]),
+  C: Object.fromEntries([
+    fixture(
+      "es-long",
+      slide("C", "COMPARISON", {
+        beforeLabel: "Sin remojar",
+        afterLabel: "Tras 30 minutos",
+        caption:
+          "El grano remojado se cuece de forma pareja y no se abre; el otro queda duro por dentro.",
+      }),
+    ),
+    fixture(
+      "en-short",
+      slide("C", "COMPARISON", {
+        beforeLabel: "Before",
+        afterLabel: "After",
+        caption: "Same rice, ten minutes apart.",
+      }),
+    ),
+    fixture(
+      "max-length",
+      slide("C", "COMPARISON", {
+        beforeLabel: repeat("Antes ", 20),
+        afterLabel: repeat("Después ", 20),
+        caption: repeat("Pie de foto con el máximo de caracteres permitido. ", 140),
+      }),
+    ),
+    fixture(
+      "special-chars",
+      slide("C", "COMPARISON", {
+        beforeLabel: "¡Crudo!",
+        afterLabel: "A 180 °C",
+        caption: "½ hora – la diferencia es “enorme”: café, crème, naïve.",
+      }),
+    ),
+    fixture(
+      "no-optionals",
+      slide("C", "COMPARISON", {
+        beforeLabel: "Antes",
+        afterLabel: "Después",
+        caption: "Una diferencia clara.",
+      }),
+    ),
+  ]),
+  D: Object.fromEntries([
+    fixture(
+      "es-long",
+      slide("D", "STEP", {
+        title: "Cómo se cuece el arroz paso a paso",
+        step1: "Mide el agua: dos partes por una",
+        step2: "Lleva a ebullición y baja el fuego",
+        step3: "Tapa y cuenta quince minutos",
+        step4: "Mezcla con un tenedor",
+        step5: "Deja reposar con la tapa puesta",
+      }),
+    ),
+    fixture(
+      "en-short",
+      slide("D", "STEP", { title: "Three steps", step1: "Boil", step2: "Cover", step3: "Rest" }),
+    ),
+    fixture(
+      "max-length",
+      slide("D", "STEP", {
+        title: repeat("Título del diagrama largo ", 60),
+        step1: repeat("Paso uno largo ", 60),
+        step2: repeat("Paso dos largo ", 60),
+        step3: repeat("Paso tres largo ", 60),
+        step4: repeat("Paso cuatro largo ", 60),
+        step5: repeat("Paso cinco largo ", 60),
+      }),
+    ),
+    fixture(
+      "special-chars",
+      slide("D", "STEP", {
+        title: "¿Qué pasa a 180 °C?",
+        step1: "Calienta ½ taza – sin prisa",
+        step2: "Añade “sal” y café",
+        step3: "¡Listo! crème, naïve",
+      }),
+    ),
+    fixture(
+      "no-optionals",
+      slide("D", "STEP", { title: "Tres pasos", step1: "Uno", step2: "Dos", step3: "Tres" }),
+    ),
+  ]),
 };
