@@ -10,7 +10,6 @@ export {
 } from "./html";
 export {
   type RenderSlideInput,
-  registerRenderer,
   renderSlideHtml,
   TEMPLATE_RENDERERS,
 } from "./slide-document";

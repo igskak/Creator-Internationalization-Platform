@@ -1,3 +1,5 @@
+import { rendererA } from "../carousel-a/render";
+import { rendererF } from "../carousel-f/render";
 import type { TemplateDefinition } from "../define-template";
 import { fontFaceCss } from "../fonts";
 import { registry } from "../registry";
@@ -11,12 +13,10 @@ import type { RenderAssets, RenderContext, SlideData, TemplateRenderer } from ".
 // and the live preview route (M3-13) both build their pages with `renderSlideHtml`, so what the
 // person sees is what is exported.
 
-/** Template id → renderer. M3-08 … M3-10 add them. */
-export const TEMPLATE_RENDERERS: Record<string, TemplateRenderer> = {};
-
-/** Registers a renderer (called by each template's module). */
-export const registerRenderer = (templateId: string, renderer: TemplateRenderer): void => {
-  TEMPLATE_RENDERERS[templateId] = renderer;
+/** Template id → renderer. M3-09 and M3-10 add B, E, C and D. */
+export const TEMPLATE_RENDERERS: Readonly<Record<string, TemplateRenderer>> = {
+  A: rendererA,
+  F: rendererF,
 };
 
 export type RenderSlideInput = {

@@ -18,7 +18,6 @@ export {
   type RenderAssets,
   type RenderContext,
   type RenderSlideInput,
-  registerRenderer,
   renderSlideHtml,
   type SlideData,
   slotBoxHeightPx,

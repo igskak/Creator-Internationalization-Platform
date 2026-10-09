@@ -426,7 +426,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** HTML snapshot test for a fixture slide.
   - **Refs:** 08 §8.2, §8.6.
 
-- [ ] **M3-08 · Templates A and F** · P0 · M · deps: M3-07
+- [x] **M3-08 · Templates A and F** · P0 · M · deps: M3-07
   - **Do:** components + styles + fixtures (ES long, EN short, max-length, special characters).
   - **Done when:** fixtures render without overflow in the renderer (after M3-11) — until then HTML snapshots.
 

@@ -91,12 +91,12 @@ describe("slot helpers", () => {
     page: { index: 1, count: 6 },
   };
 
-  it("sizes the box from the template's limits and marks the slot for fit-text", () => {
+  it("limits the box from the template's limits and marks the slot for fit-text", () => {
     const html = textSlot(context, "headline", "h");
     // headline: 3 lines × 96 px × 1.12
     expect(slotBoxHeightPx(context.template.textSlots.headline as never)).toBe(323);
     expect(html).toContain('data-slot="headline" data-fit data-fit-min="64" data-fit-max="96"');
-    expect(html).toContain("height:323px");
+    expect(html).toContain("max-height:323px");
     expect(html).toContain("Por qué no lavar el arroz?<br>Segunda línea");
   });
 

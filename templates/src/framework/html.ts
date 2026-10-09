@@ -23,9 +23,10 @@ export const textHtml = (text: string): string => escapeHtml(text).replace(/\r?\
 export const LINE_HEIGHT = { display: 1.12, body: 1.3 } as const;
 
 /**
- * The fixed box a text slot lives in: as tall as `maxLines` lines at the largest size. The fit-text
- * script shrinks the font until the text fits it; text that still overflows at the smallest size is
- * marked `data-overflow` (a QA blocker).
+ * The most a text slot may grow: `maxLines` lines at the largest size. The slot is as tall as its
+ * text up to this limit (`max-height`, `overflow:hidden`); the fit-text script shrinks the font
+ * until the text fits it, and text that still overflows at the smallest size is marked
+ * `data-overflow` (a QA blocker).
  */
 export const slotBoxHeightPx = (spec: TextSlotSpec): number =>
   Math.round(spec.maxLines * spec.maxPx * LINE_HEIGHT[spec.font]);
@@ -41,7 +42,7 @@ export function textSlot(context: RenderContext, name: string, className = ""): 
   const text = context.slide.slots[name];
   if (!text?.trim()) return "";
   const family = spec.font === "display" ? "display" : "body";
-  return `<div class="slot ${family} ${escapeHtml(className)}" data-slot="${escapeHtml(name)}" data-fit data-fit-min="${spec.minPx}" data-fit-max="${spec.maxPx}" style="font-size:${spec.maxPx}px;height:${slotBoxHeightPx(spec)}px">${textHtml(text)}</div>`;
+  return `<div class="slot ${family} ${escapeHtml(className)}" data-slot="${escapeHtml(name)}" data-fit data-fit-min="${spec.minPx}" data-fit-max="${spec.maxPx}" style="font-size:${spec.maxPx}px;max-height:${slotBoxHeightPx(spec)}px">${textHtml(text)}</div>`;
 }
 
 /**
