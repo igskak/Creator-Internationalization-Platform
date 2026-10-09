@@ -8,6 +8,7 @@ import { marketAdapterV1 } from "./market-adapter";
 import { pageTranscriberV1 } from "./page-transcriber";
 import { postAnnotatorV1 } from "./post-annotator";
 import { createRegistry } from "./registry";
+import { visualDirectorV1 } from "./visual-director";
 
 export const PACKAGE_NAME = "@rc/prompts";
 
@@ -36,6 +37,7 @@ export * as marketAdapter from "./market-adapter";
 export * as pageTranscriber from "./page-transcriber";
 export * as postAnnotator from "./post-annotator";
 export { createRegistry, type PromptRegistry } from "./registry";
+export * as visualDirector from "./visual-director";
 export {
   type Attrs,
   type Body,
@@ -60,4 +62,5 @@ export const promptRegistry = createRegistry([
   criticV1,
   criticV2,
   evalJudgeV1,
+  visualDirectorV1,
 ]);

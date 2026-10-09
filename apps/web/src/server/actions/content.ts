@@ -9,6 +9,8 @@ import {
   getIdeasRequestStatus,
   RegenerateAllInput,
   RegenerateVariantInput,
+  RegenerateVisualBriefInput,
+  regenerateVisualBrief as regenerateVisualBriefService,
   requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
@@ -98,4 +100,11 @@ export const regenerateAllVariants = defineAction({
   input: RegenerateAllInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => requestIdeaRegeneration(ctx, input),
+});
+
+export const regenerateVisualBrief = defineAction({
+  name: "regenerateVisualBrief",
+  input: RegenerateVisualBriefInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => regenerateVisualBriefService(ctx, input),
 });

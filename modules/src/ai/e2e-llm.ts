@@ -1,5 +1,10 @@
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
-import { scriptedBrief, scriptedDraft, scriptedReview } from "./scripted-answers";
+import {
+  scriptedBrief,
+  scriptedDraft,
+  scriptedReview,
+  scriptedVisualBrief,
+} from "./scripted-answers";
 
 // The fake model of the E2E server (plan 13 §13.4: `AI_PROVIDER=fake`). It answers the knowledge
 // extractor from the pages it is given, so a pasted text becomes cards whose quotes really are in
@@ -88,6 +93,7 @@ export function createE2eLlm() {
               ],
             });
       }
+      if (promptId === "visual-director") return scriptedVisualBrief(text);
       if (promptId !== "knowledge-extractor" && promptId !== "idea-generator") {
         throw new Error(`The E2E model has no answer for ${promptId}.`);
       }

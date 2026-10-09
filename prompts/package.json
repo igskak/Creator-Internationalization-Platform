@@ -11,6 +11,7 @@
     "./fixtures/critic": "./src/critic/fixtures.ts",
     "./fixtures/content-writer": "./src/content-writer/fixtures.ts",
     "./fixtures/market-adapter": "./src/market-adapter/fixtures.ts",
+    "./fixtures/visual-director": "./src/visual-director/fixtures.ts",
     "./fixtures/knowledge-extractor": "./src/knowledge-extractor/fixtures.ts"
   },
   "scripts": {

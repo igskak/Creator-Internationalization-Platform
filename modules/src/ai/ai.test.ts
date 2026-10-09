@@ -424,8 +424,8 @@ describe("runStage", () => {
 
   it("fails clearly when the active prompt is not registered yet", async () => {
     await expect(
-      runStage(ctxWith(scripted(good)), { stage: "VISUAL_DIRECTION", input: {} }),
-    ).rejects.toThrow("Unknown prompt visual-director@1");
+      runStage(ctxWith(scripted(good)), { stage: "VISUAL_QA", input: {} }),
+    ).rejects.toThrow("Unknown prompt visual-qa@1");
   });
 
   it("sends the per-call output schema from outputFor and checks the answer against it", async () => {

@@ -66,6 +66,7 @@ describe("@rc/prompts", () => {
       "critic@1",
       "critic@2",
       "eval-judge@1",
+      "visual-director@1",
     ]);
   });
 });

@@ -398,7 +398,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `visual_assets`, `carousel_renders`, `rendered_slides`, `content_variants.current_render_id`; `QaReport` type.
   - **Done when:** migration + tests.
 
-- [ ] **M3-02 · Visual director prompt v1 and pipeline step** · P0 · M · deps: M2-13, M3-01
+- [x] **M3-02 · Visual director prompt v1 and pipeline step** · P0 · M · deps: M2-13, M3-01
   - **Do:** prompt + `VisualBrief` schema + validators (slot coverage, library IDs and rights); final pipeline step; persist `visual_brief_json`; action to regenerate the brief.
   - **Done when:** fake tests; pipeline test includes the visual step.
   - **Refs:** 07 §7.6.4.
