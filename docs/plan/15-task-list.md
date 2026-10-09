@@ -421,7 +421,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests: Spanish/French characters covered; emoji or unsupported char reported.
   - **Refs:** 08 §8.3, §8.6.
 
-- [ ] **M3-07 · Template framework** · P0 · M · deps: M3-06
+- [x] **M3-07 · Template framework** · P0 · M · deps: M3-06
   - **Do:** `SlideDocument` (1080×1350, safe area, logo anchor, page indicator), `renderSlideHtml(slide, theme, assets)` → full HTML with inline CSS and data-URL fonts/images, `fit-text.client.js`.
   - **Done when:** HTML snapshot test for a fixture slide.
   - **Refs:** 08 §8.2, §8.6.

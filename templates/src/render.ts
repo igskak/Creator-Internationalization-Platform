@@ -10,6 +10,24 @@ export {
   readFontFile,
 } from "./fonts";
 export {
+  CANVAS,
+  escapeHtml,
+  FIT_TEXT_SCRIPT,
+  imageSlot,
+  LINE_HEIGHT,
+  type RenderAssets,
+  type RenderContext,
+  type RenderSlideInput,
+  registerRenderer,
+  renderSlideHtml,
+  type SlideData,
+  slotBoxHeightPx,
+  TEMPLATE_RENDERERS,
+  type TemplateRenderer,
+  textHtml,
+  textSlot,
+} from "./framework";
+export {
   findMissingGlyphs,
   type MissingGlyph,
   missingGlyphs,
