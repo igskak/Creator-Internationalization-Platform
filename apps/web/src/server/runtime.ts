@@ -3,6 +3,7 @@ import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
 import { loadServerEnv, runtimeDatabaseUrl, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
 import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
+import { createImageProvider, type ImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import { createE2eLlm } from "@rc/modules/ai";
@@ -15,6 +16,7 @@ let logger: Logger | undefined;
 let storage: StorageProvider | undefined;
 let llm: LLMProvider | undefined;
 let embeddings: EmbeddingProvider | undefined;
+let images: ImageProvider | undefined;
 
 export function serverEnv(): ServerEnv {
   env ??= loadServerEnv();
@@ -55,4 +57,9 @@ export function serverLlm(): LLMProvider {
 export function serverEmbeddings(): EmbeddingProvider {
   embeddings ??= createEmbeddingProvider(serverEnv().ai);
   return embeddings;
+}
+
+export function serverImages(): ImageProvider {
+  images ??= createImageProvider(serverEnv().ai);
+  return images;
 }

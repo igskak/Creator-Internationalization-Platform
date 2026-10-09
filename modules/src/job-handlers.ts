@@ -3,7 +3,7 @@ import { z } from "zod";
 import { GenerateContentPayload, generateVariants } from "./content";
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
-import { defineJob } from "./core/job-runner";
+import { defineJob, triggerJob } from "./core/job-runner";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
@@ -13,6 +13,7 @@ import {
   importHistoricalPosts,
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
+import { GenerateVisualAssetsPayload, generateVisualAssets } from "./visuals";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -117,7 +118,30 @@ export const generateIdeasJob = defineJob({
  */
 export const generateContentJob = defineJob({
   payload: GenerateContentPayload,
-  run: (ctx, payload) => generateVariants(ctx, payload),
+  run: async (ctx, payload) => {
+    const result = await generateVariants(ctx, payload);
+    // J7 per finished variant that has a visual brief (06 §6.3 J5 step 3).
+    for (const outcome of result.outcomes) {
+      if (outcome.status !== "READY_FOR_REVIEW") continue;
+      await triggerJob(
+        ctx,
+        "generate-visual-assets",
+        { variantId: outcome.variantId },
+        { idempotencyKey: `visuals:${result.pipelineRunId}:${outcome.variantId}` },
+      );
+    }
+    return result;
+  },
+});
+
+/**
+ * J7 (plan 06 §6.2): plans' pictures of one variant: provider call, normalization, storage, one
+ * `visual_assets` row per slot. A slot that failed is in the result (retry it with `slots`), not
+ * an exception; a provider that is down is rethrown so the run is retried.
+ */
+export const generateVisualAssetsJob = defineJob({
+  payload: GenerateVisualAssetsPayload,
+  run: (ctx, payload) => generateVisualAssets(ctx, payload),
 });
 
 export const jobHandlers = {
@@ -125,6 +149,7 @@ export const jobHandlers = {
   "ingest-source": ingestSourceJob,
   "generate-ideas": generateIdeasJob,
   "generate-content": generateContentJob,
+  "generate-visual-assets": generateVisualAssetsJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

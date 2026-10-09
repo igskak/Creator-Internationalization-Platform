@@ -411,7 +411,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `visuals/images/normalize.ts` (auto-orient, sRGB, attention crop to slot aspect, resize, WebP q90, keep original), `phash.ts`, storage keys.
   - **Done when:** fixture tests (dimensions, color space, hash stability).
 
-- [ ] **M3-05 · `generate-visual-assets` job** · P0 · M · deps: M3-02, M3-03, M3-04
+- [x] **M3-05 · `generate-visual-assets` job** · P0 · M · deps: M3-02, M3-03, M3-04
   - **Do:** J7: per planned slot → provider → normalize → R2 → `visual_assets`; update slide image slots; per-slot failure with retry action; `VISUAL_MISSING` flag; trigger render.
   - **Done when:** integration test with fakes; idempotent rerun creates no duplicates.
   - **Refs:** 06 J7.

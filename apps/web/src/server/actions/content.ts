@@ -21,6 +21,8 @@ import {
   UpdateIdeaInput,
   updateIdea as updateService,
 } from "@rc/modules/content";
+import { triggerJob } from "@rc/modules/core";
+import { GenerateVisualAssetsPayload } from "@rc/modules/visuals";
 import { z } from "zod";
 import { defineAction } from "./_define";
 
@@ -107,4 +109,15 @@ export const regenerateVisualBrief = defineAction({
   input: RegenerateVisualBriefInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => regenerateVisualBriefService(ctx, input),
+});
+
+/** Starts J7 for one variant: all its pictures, or only the given slots (retry of failed ones). */
+export const generateVisualAssets = defineAction({
+  name: "generateVisualAssets",
+  input: GenerateVisualAssetsPayload,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const { runId } = await triggerJob(ctx, "generate-visual-assets", input);
+    return { jobRunId: runId };
+  },
 });

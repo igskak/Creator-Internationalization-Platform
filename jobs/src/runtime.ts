@@ -2,6 +2,7 @@ import { type AnyDatabase, createDb, isPoolerUrl } from "@rc/db";
 import { loadServerEnv, runtimeDatabaseUrl, type ServerEnv } from "@rc/lib/env";
 import { createLogger, type Logger } from "@rc/lib/logging";
 import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
+import { createImageProvider, type ImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import {
@@ -19,6 +20,7 @@ type Runtime = {
   storage: StorageProvider;
   llm: LLMProvider;
   embeddings: EmbeddingProvider;
+  images: ImageProvider;
 };
 
 // One set of clients per worker process, created on first use.
@@ -54,13 +56,14 @@ function createRuntime(): Runtime {
     storage: createStorage(env.storage),
     llm: createLlmProvider(env.ai),
     embeddings: createEmbeddingProvider(env.ai),
+    images: createImageProvider(env.ai),
   };
 }
 
 /** Service context for one Trigger.dev run (actor JOB, run id, request id from the envelope). */
 export function jobContext(runId: string, taskId: string, meta: JobMeta): ServiceContext {
   shared ??= createRuntime();
-  const { logger, db, jobs, storage, llm, embeddings } = shared;
+  const { logger, db, jobs, storage, llm, embeddings, images } = shared;
   return createServiceContext({
     db,
     logger: logger.child({ taskId }),
@@ -68,6 +71,7 @@ export function jobContext(runId: string, taskId: string, meta: JobMeta): Servic
     storage,
     llm,
     embeddings,
+    images,
     ...(meta.requestId ? { requestId: meta.requestId } : {}),
     ...(jobs ? { jobs } : {}),
   });
