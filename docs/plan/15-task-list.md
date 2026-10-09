@@ -407,7 +407,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `ImageProvider` interface, OpenAI Images adapter (current gpt-image model, portrait size, quality), fake (gradient PNG with slot label), cost per image.
   - **Done when:** MSW contract test; fake test.
 
-- [ ] **M3-04 · Image normalization and pHash** · P0 · M · deps: M0-13
+- [x] **M3-04 · Image normalization and pHash** · P0 · M · deps: M0-13
   - **Do:** `visuals/images/normalize.ts` (auto-orient, sRGB, attention crop to slot aspect, resize, WebP q90, keep original), `phash.ts`, storage keys.
   - **Done when:** fixture tests (dimensions, color space, hash stability).
 
