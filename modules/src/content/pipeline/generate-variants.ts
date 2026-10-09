@@ -15,7 +15,7 @@ import { InvalidStateError, TransientError } from "@rc/lib/errors";
 import type { contentWriter, critic } from "@rc/prompts";
 import { countChars, registry } from "@rc/templates";
 import { generationVersion, runStage, STAGE_CONFIG, type StageResult } from "../../ai";
-import { type ServiceContext, transition } from "../../core";
+import { audit, type ServiceContext, transition } from "../../core";
 import {
   type DifferentiationVariant,
   differentiateVariants,
@@ -383,6 +383,10 @@ export async function generateVariants(
     // --- 4. finish ---------------------------------------------------------------------------------
     const finalPairs = await compare(ctx, c, order, alive());
     for (const run of alive()) await finish(ctx, c, run, finalPairs, pipelineRunId);
+    // The other markets' drafts were compared with the old versions: bring them up to date.
+    await refreshSiblings(ctx, c, finalPairs).catch((error: unknown) =>
+      ctx.logger.warn({ err: error }, "could not refresh the comparison of the sibling variants"),
+    );
 
     return {
       pipelineRunId,
@@ -397,6 +401,44 @@ export async function generateVariants(
       }
     }
     throw error;
+  }
+}
+
+/** Variants a refresh leaves alone: out in the world, rejected, or being written by another run. */
+const NOT_REFRESHED = new Set(["GENERATING", "PUBLISHING", "PUBLISHED", "REJECTED"]);
+
+/**
+ * After a run that rewrote some markets only (a regenerated variant), the drafts of the other
+ * markets still carry the comparison made against the old versions. This recomputes their report
+ * and the DUPLICATION_RISK flag from the final pairs (M2-13b); nothing else of them changes.
+ */
+async function refreshSiblings(
+  ctx: ServiceContext,
+  c: PipelineContext,
+  pairs: readonly PairReport[],
+): Promise<void> {
+  for (const other of c.others) {
+    if (NOT_REFRESHED.has(other.status) || !other.hook || other.slidesJson.length === 0) continue;
+    const code = marketCodeOf(c, other);
+    const mine = pairs.filter((p) => p.a === code || p.b === code);
+    const report = worstReport(mine)?.report;
+    if (!report) continue;
+    const flags: string[] = other.flags.filter((flag) => flag !== "DUPLICATION_RISK");
+    if (report.verdict !== "OK") flags.push("DUPLICATION_RISK");
+    const sameFlags = [...flags].sort().join() === [...other.flags].sort().join();
+    if (sameFlags && JSON.stringify(report) === JSON.stringify(other.differentiationReport))
+      continue;
+    await ctx.db
+      .update(schema.contentVariants)
+      .set({ differentiationReport: report, flags })
+      .where(eq(schema.contentVariants.id, other.id));
+    await audit(ctx, {
+      action: "variant.comparison_refreshed",
+      entityType: "content_variant",
+      entityId: other.id,
+      marketId: other.marketId,
+      data: { verdict: report.verdict, flags },
+    });
   }
 }
 

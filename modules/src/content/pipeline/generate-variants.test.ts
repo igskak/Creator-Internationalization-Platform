@@ -397,6 +397,107 @@ describe("generateVariants", () => {
     expect(first).toContain("No previous draft.");
   });
 
+  describe("the comparison of siblings the run did not touch (M2-13b)", () => {
+    /** The English plan and draft with the Spanish template order: the same shape, another hook type. */
+    const sameShape = () => {
+      script = (promptId, market) => {
+        if (market !== "en") return undefined;
+        if (promptId === "market-adapter") {
+          return {
+            ...brief("es-ES"),
+            hookType: "MYTH_BUST",
+            unitsPolicy: { system: "DUAL", conversions: [] },
+          };
+        }
+        if (promptId === "content-writer") {
+          const es = JSON.stringify(draft("es-ES")).replaceAll("Texto", "Copy");
+          return { ...JSON.parse(es), hookType: "MYTH_BUST" };
+        }
+        return undefined;
+      };
+    };
+    const regenerateEnglish = () =>
+      generateVariants(ctx, {
+        masterIdeaId: ideaId,
+        variantIds: [variants.en as string],
+        pipelineRunId: "run-en",
+      });
+
+    it("clears the duplication warning of the sibling when the regenerated market no longer looks like it", async () => {
+      sameShape();
+      await run();
+      const before = await variantRow("es-ES");
+      expect(before.flags).toContain("DUPLICATION_RISK");
+      expect(before.differentiationReport).toMatchObject({
+        verdict: "WARN",
+        templateSequenceSimilarity: 1,
+      });
+
+      script = () => undefined; // the English draft is regenerated with its own structure
+      await regenerateEnglish();
+      const after = await variantRow("es-ES");
+      expect(after.flags).not.toContain("DUPLICATION_RISK");
+      expect(after.differentiationReport).toMatchObject({ verdict: "OK" });
+      expect((await variantRow("en")).flags).toEqual([]);
+      // Only the comparison changed: the Spanish draft itself is as it was.
+      expect(after).toMatchObject({
+        hook: before.hook,
+        status: "READY_FOR_REVIEW",
+        lockVersion: before.lockVersion,
+      });
+      expect(after.slidesJson).toEqual(before.slidesJson);
+      const audits = (await t.db.select().from(schema.auditEvents)).filter(
+        (a) => a.action === "variant.comparison_refreshed",
+      );
+      expect(audits).toEqual([
+        expect.objectContaining({
+          entityId: variants["es-ES"],
+          data: { verdict: "OK", flags: [] },
+        }),
+      ]);
+    });
+
+    it("adds the warning to a sibling that now looks like the regenerated market", async () => {
+      await run();
+      expect((await variantRow("es-ES")).flags).toEqual([]);
+      sameShape();
+      await regenerateEnglish();
+      const es = await variantRow("es-ES");
+      expect(es.flags).toEqual(["DUPLICATION_RISK"]);
+      expect(es.differentiationReport).toMatchObject({ verdict: "WARN" });
+    });
+
+    it("leaves a published sibling and a sibling being written alone", async () => {
+      sameShape();
+      await run();
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "PUBLISHED" })
+        .where(eq(schema.contentVariants.id, variants["es-ES"] as string));
+      const published = await variantRow("es-ES");
+      script = () => undefined;
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "READY_FOR_REVIEW" })
+        .where(eq(schema.contentVariants.id, variants.en as string));
+      await regenerateEnglish();
+      expect(await variantRow("es-ES")).toEqual(published);
+    });
+
+    it("keeps the flags and shows the numbers of the pair as it is now when the verdict stays OK", async () => {
+      await run();
+      const before = await variantRow("es-ES");
+      await regenerateEnglish();
+      const es = await variantRow("es-ES");
+      const en = await variantRow("en");
+      expect(es.flags).toEqual([]);
+      // Both markets show the same comparison: the pair of the new English draft and the Spanish one.
+      expect(es.differentiationReport).toEqual(en.differentiationReport);
+      expect(es.differentiationReport?.verdict).toBe("OK");
+      expect(es.hook).toBe(before.hook);
+    });
+  });
+
   describe("locking", () => {
     it("stops before touching anything when another run holds a variant", async () => {
       await t.db

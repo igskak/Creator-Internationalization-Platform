@@ -363,6 +363,14 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests with a linked idea and variants in several statuses (flag set on the unpublished ones only, cleared when the card is approved again).
   - **Refs:** 05 §5.4, 10 §10.4.1, 04 §4.4 `VariantFlag`.
 
+- [x] **M2-13b · Refresh the comparison of sibling variants after a partial run** · P1 · S · deps: M2-13, M2-11
+  - **Do:** after `generateVariants` has finished some variants, recompute the differentiation report and the `DUPLICATION_RISK` flag of the live variants of the idea that were not in the run (not PUBLISHING, PUBLISHED, REJECTED or GENERATING); nothing else of them changes.
+  - **Done when:** tests: a stale warning is cleared, a new one is added, a published sibling is untouched. Found in the G1 pilot (a regenerated market left the other with a stale flag).
+
+- [ ] **M2-12a · Critic: hook strength** · P1 · S · deps: M2-12
+  - **Do:** `critic@2` (new version + eval): score or issue category for the hook (a real hook vs a general statement), and a writer rule; `decideVerdict` asks a rewrite for a weak hook only with a concrete instruction.
+  - **Done when:** the pilot's weak hook case is flagged by the critic in an eval; no regression on the synthetic set. Found in the G1 pilot (a weak hook passed with 4.37).
+
 - [x] **M2-14 · `generate-content` job and actions** · P0 · M · deps: M2-13, M0-14
   - **Do:** J5 handler + task; actions `generateVariants`, `regenerateVariant`; `getStatuses` for variants (stage from `pipeline_state`).
   - **Done when:** inline integration test from action to READY_FOR_REVIEW.
