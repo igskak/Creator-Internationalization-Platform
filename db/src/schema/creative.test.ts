@@ -2,9 +2,9 @@ import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { QaReport } from "../json";
 import { createTestDb, type TestDb } from "../test-db";
-import { contentVariants, masterIdeas } from "./content";
+import { carouselRenders, contentVariants, masterIdeas } from "./content";
 import { brands, markets } from "./core";
-import { carouselRenders, renderedSlides, visualAssets } from "./creative";
+import { renderedSlides, visualAssets } from "./creative";
 
 // Synthetic data only.
 describe("0004_creative", () => {

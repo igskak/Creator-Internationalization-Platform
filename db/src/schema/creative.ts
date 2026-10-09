@@ -13,19 +13,17 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import type { RightsPolicy } from "../json/rights";
 import type { QaReport } from "../json/content";
-import { contentVariants } from "./content";
+import type { RightsPolicy } from "../json/rights";
+import { carouselRenders, contentVariants } from "./content";
 import { brands } from "./core";
 import { generationRuns, sourceAssets } from "./knowledge";
 
 // 0004_creative (plan 04 §4.3). RLS on every table, no policies (04 §4.1).
-// content_variants.current_render_id is declared next to the other content_variants columns in
-// ./content; this migration adds it. The two files import each other, but only inside lazy
-// reference callbacks, so the module cycle is harmless.
+// content_variants.current_render_id and its target carousel_renders live in ./content, next to
+// content_variants: the two tables reference each other and the module rules forbid an import cycle.
 
 export const assetStatus = pgEnum("asset_status", ["PENDING", "READY", "FAILED", "REJECTED"]);
-export const renderStatus = pgEnum("render_status", ["PENDING", "RENDERING", "READY", "FAILED"]);
 
 const id = () => uuid().primaryKey().defaultRandom();
 const createdAt = () => timestamp({ withTimezone: true }).notNull().defaultNow();
@@ -82,30 +80,6 @@ export const visualAssets = pgTable(
     index("visual_assets_kind_status_idx").on(t.kind, t.status),
     check("visual_assets_kind_check", sql`${t.kind} in ('GENERATED', 'LIBRARY_PHOTO', 'UPLOADED')`),
   ],
-).enableRLS();
-
-/** One render of a variant's slides; the input hash makes a re-render of the same input a no-op. */
-export const carouselRenders = pgTable(
-  "carousel_renders",
-  {
-    id: id(),
-    contentVariantId: uuid()
-      .notNull()
-      .references(() => contentVariants.id),
-    /** Hash of slides, asset ids, theme and template versions. */
-    inputHash: text().notNull(),
-    status: renderStatus().notNull().default("PENDING"),
-    width: integer().notNull().default(1080),
-    height: integer().notNull().default(1350),
-    slideCount: integer(),
-    templatesVersion: text().notNull(),
-    qaReport: jsonb().$type<QaReport>(),
-    error: jsonb().$type<{ code: string; message: string; details?: Record<string, unknown> }>(),
-    triggerRunId: text(),
-    createdAt: createdAt(),
-    completedAt: timestamp({ withTimezone: true }),
-  },
-  (t) => [unique("carousel_renders_variant_input_uq").on(t.contentVariantId, t.inputHash)],
 ).enableRLS();
 
 export const renderedSlides = pgTable(
