@@ -53,7 +53,7 @@ import { validateCriticOutput } from "./validate-critic";
 
 type Brief = MarketBrief;
 type Draft = contentWriter.ContentWriterOutput;
-type CriticOutput = critic.CriticOutput;
+type CriticOutput = critic.CriticAnswer;
 
 export type VariantPipelineInput = {
   masterIdeaId: string;

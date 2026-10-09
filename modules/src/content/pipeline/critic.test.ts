@@ -11,7 +11,7 @@ import { createServiceContext, type ServiceContext } from "../../core";
 import { buildCriticReport, decideVerdict } from "./policy";
 import { draftFieldPaths, validateCriticOutput } from "./validate-critic";
 
-type Output = critic.CriticOutput;
+type Output = critic.CriticAnswer;
 
 // The critic through runStage with a fake model, then the policy (M2-12).
 

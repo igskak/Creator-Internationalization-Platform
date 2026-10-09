@@ -120,7 +120,7 @@ describe("a run with the fake model on the synthetic set", () => {
         rewrites: 0,
         criticVerdicts: { PASS: 2 },
       });
-      expect(m.meanQualityScore).toBe(4.42);
+      expect(m.meanQualityScore).toBe(4.38);
       expect(expectationsMet(m)).toBe(true);
       expect(outcome.judgements["es-ES"]).toMatchObject({ scores: { factualFidelity: 5 } });
     }
@@ -137,7 +137,7 @@ describe("a run with the fake model on the synthetic set", () => {
       differentiationFails: 0,
       judge: { factualFidelity: 5, localization: 4, voice: 4 },
     });
-    expect(report.pipelineVersion).toBe("p1.0.0");
+    expect(report.pipelineVersion).toBe("p1.1.0");
     expect(summarize(report)).toContain("cases meeting expectations   3/3");
 
     const dir = await mkdtemp(join(tmpdir(), "eval-out-"));
@@ -251,7 +251,7 @@ describe("Gate G1 check", () => {
     provider,
     model: "m",
     judge: true,
-    pipelineVersion: "p1.0.0",
+    pipelineVersion: "p1.1.0",
     totals: {
       cases: 10,
       casesMeetingExpectations: 10,

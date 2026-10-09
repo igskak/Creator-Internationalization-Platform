@@ -24,7 +24,7 @@ import {
 // per prompt and market, so each test can change one thing. Synthetic content only.
 
 type Draft = contentWriter.ContentWriterOutput;
-type Review = critic.CriticOutput;
+type Review = critic.CriticAnswer;
 
 const logger = createLogger({
   service: "jobs",
@@ -146,13 +146,13 @@ describe("generateVariants", () => {
       hookType: "MISTAKE_CALLOUT",
       ctaType: "SAVE",
       criticVerdict: "PASS",
-      generationVersion: "p1.0.0",
+      generationVersion: "p1.1.0",
       lockVersion: 1,
       flags: [],
       lastError: null,
       templateSequence: ["A", "E", "B", "B", "F"],
     });
-    expect(es.qualityScore).toBe("4.42");
+    expect(es.qualityScore).toBe("4.38");
     expect(es.slidesJson).toHaveLength(5);
     expect(new Set(es.slidesJson.map((s) => s.id)).size).toBe(5);
     expect(es.slidesJson[1]).toMatchObject({
@@ -167,12 +167,12 @@ describe("generateVariants", () => {
       thresholdsVersion: "d1-placeholder",
     });
     expect(es.generationConfig).toMatchObject({
-      pipelineVersion: "1.0.0",
+      pipelineVersion: "1.1.0",
       embeddingModel: "fake-embedding",
       stages: {
         MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 1 },
-        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 1 },
-        CRITIC: { promptId: "critic", promptVersion: 1 },
+        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 2 },
+        CRITIC: { promptId: "critic", promptVersion: 2 },
       },
     });
     expect(es.pipelineState).toMatchObject({ pipelineRunId: "run-1", stage: "DONE" });

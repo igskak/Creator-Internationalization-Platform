@@ -1,5 +1,5 @@
 import { FIXTURE_OUTPUT as DRAFT, FIXTURE_INPUT as WRITER_INPUT } from "../content-writer/fixtures";
-import type { CriticInput, CriticOutput } from "./schema";
+import type { CriticAnswer, CriticInput } from "./schema";
 
 // Synthetic input and output for the tests and the fake LLM provider. Not Reg.Chef content.
 
@@ -46,8 +46,8 @@ export const FIXTURE_INPUT: CriticInput = {
   iteration: 0,
 };
 
-/** A passing review. */
-export const FIXTURE_OUTPUT: CriticOutput = {
+/** A passing review (critic@2: with the hook score; critic@1 ignores it). */
+export const FIXTURE_OUTPUT: CriticAnswer = {
   verdict: "PASS",
   scores: {
     factualFidelity: 5,
@@ -57,6 +57,7 @@ export const FIXTURE_OUTPUT: CriticOutput = {
     brandVoice: 4,
     structure: 5,
     cta: 4,
+    hook: 4,
     overall: 4,
   },
   unsupportedClaims: [],

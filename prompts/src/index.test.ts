@@ -62,7 +62,9 @@ describe("@rc/prompts", () => {
       "idea-generator@1",
       "market-adapter@1",
       "content-writer@1",
+      "content-writer@2",
       "critic@1",
+      "critic@2",
       "eval-judge@1",
     ]);
   });

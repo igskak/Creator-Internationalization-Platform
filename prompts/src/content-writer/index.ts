@@ -7,3 +7,4 @@ export {
   MIN_HASHTAGS_ASKED,
 } from "./schema";
 export { default as contentWriterV1 } from "./v1";
+export { default as contentWriterV2 } from "./v2";

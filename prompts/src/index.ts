@@ -1,5 +1,5 @@
-import { contentWriterV1 } from "./content-writer";
-import { criticV1 } from "./critic";
+import { contentWriterV1, contentWriterV2 } from "./content-writer";
+import { criticV1, criticV2 } from "./critic";
 import { evalJudgeV1 } from "./eval-judge";
 import { ideaGeneratorV1 } from "./idea-generator";
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
@@ -56,6 +56,8 @@ export const promptRegistry = createRegistry([
   ideaGeneratorV1,
   marketAdapterV1,
   contentWriterV1,
+  contentWriterV2,
   criticV1,
+  criticV2,
   evalJudgeV1,
 ]);

@@ -6,7 +6,7 @@ import type { contentWriter, critic } from "@rc/prompts";
 // es-ES starts from the mistake, every other market from the myth, so the two never copy each other.
 
 type Draft = contentWriter.ContentWriterOutput;
-type Review = critic.CriticOutput;
+type Review = critic.CriticAnswer;
 
 /** A valid plan for es-ES (mistake first) or any other market (myth first): they differ. */
 export function scriptedBrief(
@@ -100,6 +100,7 @@ export const scriptedReview = (over: Partial<Review> = {}): Review => ({
     brandVoice: 4,
     structure: 5,
     cta: 4,
+    hook: 4,
     overall: 4,
   },
   unsupportedClaims: [],

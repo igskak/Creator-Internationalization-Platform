@@ -161,6 +161,8 @@ export const CriticReport = z.object({
     brandVoice: criticScore,
     structure: criticScore,
     cta: criticScore,
+    /** From critic@2 (M2-12a); older reports have none. */
+    hook: criticScore.optional(),
     overall: criticScore,
   }),
   unsupportedClaims: z.array(

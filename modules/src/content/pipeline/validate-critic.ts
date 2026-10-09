@@ -4,7 +4,7 @@ import type { contentWriter, critic } from "@rc/prompts";
 // Checks of the critic's answer itself (plan 07 §7.8): scores in range, a verdict that carries
 // what it needs, and field paths that exist in the draft. BLOCKER issues go to the one repair.
 
-type Output = critic.CriticOutput;
+type Output = critic.CriticAnswer;
 
 /** Every path the critic may point at: the ones printed in its input. */
 export function draftFieldPaths(draft: contentWriter.ContentWriterOutput): Set<string> {
