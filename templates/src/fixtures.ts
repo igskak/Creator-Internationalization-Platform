@@ -85,4 +85,89 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
       slide("F", "CTA", { headline: "Guárdalo", body: "Te servirá la próxima vez." }),
     ),
   ]),
+  B: Object.fromEntries([
+    fixture(
+      "es-long",
+      slide("B", "FACT", {
+        number: "2:1",
+        label: "Agua y arroz",
+        headline: "La proporción que no falla",
+        body: "Dos partes de agua por una de arroz, tapa puesta y fuego bajo; el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.",
+      }),
+    ),
+    fixture("en-short", slide("B", "FACT", { number: "12", body: "Minutes of rest." })),
+    fixture(
+      "max-length",
+      slide("B", "EXPLANATION", {
+        number: "88888888",
+        label: repeat("Etiqueta ", 40),
+        headline: repeat("Titular largo para el máximo ", 60),
+        body: repeat("Cuerpo con el máximo de caracteres permitido en esta plantilla. ", 220),
+      }),
+    ),
+    fixture(
+      "special-chars",
+      slide("B", "FACT", {
+        number: "180°",
+        label: "Horno a 180 °C",
+        body: "¿Cuánto tarda? ½ hora – quizá ¾. Añade “sal”, café y crème.",
+      }),
+    ),
+    fixture(
+      "no-number",
+      slide("B", "EXPLANATION", {
+        headline: "Por qué suelta almidón",
+        body: "El grano roza con otros granos y libera almidón en el agua.",
+      }),
+    ),
+  ]),
+  E: Object.fromEntries([
+    fixture(
+      "es-long",
+      slide("E", "MISTAKE", {
+        mistakeTitle: "Error: remover el risotto",
+        mistakeText:
+          "Remover sin parar rompe los granos y el caldo se vuelve espeso y pegajoso, sin cremosidad.",
+        correctTitle: "Mejor: remover lo justo",
+        correctText:
+          "Añade el caldo poco a poco y mueve la olla; el almidón sale solo y el grano queda entero.",
+      }),
+    ),
+    fixture(
+      "en-short",
+      slide("E", "MISTAKE", {
+        mistakeTitle: "Wrong: rinse",
+        mistakeText: "Washes the starch away.",
+        correctTitle: "Right: keep it",
+        correctText: "Starch makes it creamy.",
+      }),
+    ),
+    fixture(
+      "max-length",
+      slide("E", "MISTAKE", {
+        mistakeTitle: repeat("Título del error ", 40),
+        mistakeText: repeat("Texto del error con el máximo permitido de caracteres. ", 140),
+        correctTitle: repeat("Título correcto ", 40),
+        correctText: repeat("Texto correcto con el máximo permitido de caracteres. ", 140),
+      }),
+    ),
+    fixture(
+      "special-chars",
+      slide("E", "MISTAKE", {
+        mistakeTitle: "¡Ojo con los 200 °C!",
+        mistakeText: "Más de ½ hora – se seca: café, crème, naïve “mal”.",
+        correctTitle: "Mejor a 180 °C",
+        correctText: "Tapa y vigila; ¿listo? ¡Ñam!",
+      }),
+    ),
+    fixture(
+      "no-optionals",
+      slide("E", "CORRECT", {
+        mistakeTitle: "Error",
+        mistakeText: "Lo que no se hace.",
+        correctTitle: "Acierto",
+        correctText: "Lo que sí se hace.",
+      }),
+    ),
+  ]),
 };

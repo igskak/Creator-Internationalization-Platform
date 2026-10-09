@@ -430,7 +430,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** components + styles + fixtures (ES long, EN short, max-length, special characters).
   - **Done when:** fixtures render without overflow in the renderer (after M3-11) — until then HTML snapshots.
 
-- [ ] **M3-09 · Templates B and E** · P0 · M · deps: M3-07
+- [x] **M3-09 · Templates B and E** · P0 · M · deps: M3-07
   - **Do:** as M3-08 (B with and without `number`).
   - **Done when:** as M3-08.
 
