@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   char,
   check,
@@ -12,6 +13,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -23,6 +25,7 @@ import type {
   GenerationConfig,
   MarketBrief,
   PipelineState,
+  QaReport,
   Slide,
   UtmSpec,
   VisualBrief,
@@ -61,6 +64,8 @@ export const criticVerdict = pgEnum("critic_verdict", [
   "REQUEST_REWRITE",
   "FLAG_FOR_HUMAN",
 ]);
+
+export const renderStatus = pgEnum("render_status", ["PENDING", "RENDERING", "READY", "FAILED"]);
 
 const id = () => uuid().primaryKey().defaultRandom();
 const createdAt = () => timestamp({ withTimezone: true }).notNull().defaultNow();
@@ -213,6 +218,8 @@ export const contentVariants = pgTable(
     marketBriefJson: jsonb().$type<MarketBrief>(),
     /** Taxonomy visual_style code. */
     visualStyle: text(),
+    /** The render the review screen shows; set by the render job (M3-12). */
+    currentRenderId: uuid().references((): AnyPgColumn => carouselRenders.id),
     /** Derived; used by analytics and originality checks. */
     templateSequence: text().array().notNull().default(sql`'{}'::text[]`),
     /** Must belong to the same market (checked in code). */
@@ -249,6 +256,30 @@ export const contentVariants = pgTable(
     index("content_variants_market_status_idx").on(t.marketId, t.status),
     index("content_variants_status_updated_idx").on(t.status, t.updatedAt.desc()),
   ],
+).enableRLS();
+
+/** One render of a variant's slides; the input hash makes a re-render of the same input a no-op. */
+export const carouselRenders = pgTable(
+  "carousel_renders",
+  {
+    id: id(),
+    contentVariantId: uuid()
+      .notNull()
+      .references(() => contentVariants.id),
+    /** Hash of slides, asset ids, theme and template versions. */
+    inputHash: text().notNull(),
+    status: renderStatus().notNull().default("PENDING"),
+    width: integer().notNull().default(1080),
+    height: integer().notNull().default(1350),
+    slideCount: integer(),
+    templatesVersion: text().notNull(),
+    qaReport: jsonb().$type<QaReport>(),
+    error: jsonb().$type<{ code: string; message: string; details?: Record<string, unknown> }>(),
+    triggerRunId: text(),
+    createdAt: createdAt(),
+    completedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [unique("carousel_renders_variant_input_uq").on(t.contentVariantId, t.inputHash)],
 ).enableRLS();
 
 /** P1 [S§20: Sergey's edits]. */

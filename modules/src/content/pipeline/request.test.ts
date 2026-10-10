@@ -78,7 +78,11 @@ describe("generateVariants and regenerateVariant actions", () => {
     mode = "await";
     queued.length = 0;
     const runner: ServiceContext["jobs"] = createInlineJobRunner({
-      handlers: jobHandlers,
+      // The browser render (J8) is tested on its own; here it would start Chromium.
+      handlers: {
+        ...jobHandlers,
+        "render-carousel": { ...jobHandlers["render-carousel"], run: async () => ({}) },
+      },
       mode: "await",
       makeContext: (runId) => make({ type: "JOB", jobRunId: runId }, runner),
     });
@@ -192,7 +196,10 @@ describe("generateVariants and regenerateVariant actions", () => {
         payload: { variantIds: [first?.id], instruction: "Open with a question." },
         key: `gen:${result.pipelineRunId}`,
       });
-      const [redone, untouched] = await variants();
+      // By id: two rows made in one go may tie on created_at.
+      const after = await variants();
+      const redone = after.find((v) => v.id === first?.id);
+      const untouched = after.find((v) => v.id === second?.id);
       expect(redone).toMatchObject({ status: "READY_FOR_REVIEW" });
       expect(redone?.hook).toContain("redone");
       expect(untouched?.hook).toBe(second?.hook);

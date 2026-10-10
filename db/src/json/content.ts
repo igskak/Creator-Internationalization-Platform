@@ -161,6 +161,8 @@ export const CriticReport = z.object({
     brandVoice: criticScore,
     structure: criticScore,
     cta: criticScore,
+    /** From critic@2 (M2-12a); older reports have none. */
+    hook: criticScore.optional(),
     overall: criticScore,
   }),
   unsupportedClaims: z.array(
@@ -252,3 +254,22 @@ export const BLOCKING_VARIANT_FLAGS: readonly VariantFlag[] = [
   "VISUAL_MISSING",
   "KNOWLEDGE_ARCHIVED",
 ];
+
+/** carousel_renders.qa_report (plan 04 §4.4, 08 §8.7). */
+export const QaReport = z.object({
+  overflow: z.array(
+    z.object({ slideId: z.string(), slot: z.string(), fontPxUsed: z.number().nonnegative() }),
+  ),
+  missingGlyphs: z.array(
+    z.object({ slideId: z.string(), slot: z.string(), chars: z.array(z.string()) }),
+  ),
+  dimensionsOk: z.boolean(),
+  logoPlacementOk: z.boolean(),
+  fileSizes: z.array(z.number().int().nonnegative()),
+  durationMs: z.number().nonnegative(),
+  /** Text whose contrast with the picture or background under it is below 4.5:1 (a warning, 08 §8.6). */
+  lowContrast: z
+    .array(z.object({ slideId: z.string(), slot: z.string(), ratio: z.number().nonnegative() }))
+    .optional(),
+});
+export type QaReport = z.infer<typeof QaReport>;

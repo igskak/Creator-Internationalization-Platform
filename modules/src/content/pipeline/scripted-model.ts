@@ -47,7 +47,7 @@ export const textOfRequest = (request: StructuredRequest<unknown>): string =>
 
 /** The market a rendered request is about. */
 export const marketOfRequest = (request: StructuredRequest<unknown>): string =>
-  /<market_profile code="([^"]+)"/.exec(textOfRequest(request))?.[1] ?? "";
+  /<market(?:_profile)? code="([^"]+)"/.exec(textOfRequest(request))?.[1] ?? "";
 
 export type SeededIdea = { brandId: string; card1: string; card2: string; ideaId: string };
 
@@ -109,4 +109,9 @@ export async function seedAcceptedIdea(db: AnyDatabase): Promise<SeededIdea> {
   return { brandId, card1, card2, ideaId };
 }
 
-export { scriptedBrief, scriptedDraft, scriptedReview } from "../../ai/scripted-answers";
+export {
+  scriptedBrief,
+  scriptedDraft,
+  scriptedReview,
+  scriptedVisualBrief,
+} from "../../ai/scripted-answers";

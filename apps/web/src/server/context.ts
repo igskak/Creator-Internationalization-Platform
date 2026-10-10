@@ -15,6 +15,7 @@ import {
   serverDb,
   serverEmbeddings,
   serverEnv,
+  serverImages,
   serverLlm,
   serverLogger,
   serverStorage,
@@ -43,6 +44,7 @@ function jobRunner(): JobRunner {
         storage: serverStorage(),
         llm: serverLlm(),
         embeddings: serverEmbeddings(),
+        images: serverImages(),
       }),
   });
   jobs = runner;
@@ -65,5 +67,6 @@ export async function requestContext(actor: Actor, requestId?: string): Promise<
     storage: serverStorage(),
     llm: serverLlm(),
     embeddings: serverEmbeddings(),
+    images: serverImages(),
   });
 }

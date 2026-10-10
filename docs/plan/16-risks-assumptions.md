@@ -89,9 +89,9 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-14 | Meta accepts presigned R2 URLs (with query strings) as `image_url` | M5-10 | Smoke test |
 | V-15 | Whether media can be deleted through the API (assumed not) | M5-00 | API reference |
 | V-16 | AI-content labeling options through the API; handling of provenance metadata | M5-12 / B-13 | Meta policy + API reference |
-| V-17 | Trigger.dev: current major version; idempotency key scopes (raw strings = run scope since v4.3.1) and TTL (default 30 days); behavior when re-triggering after a failed run; Playwright extension; machine presets; `wait.for`; `batchTriggerAndWait`; regions | M0-14, M3-12 | Trigger.dev docs |
+| V-17 | Trigger.dev: current major version; idempotency key scopes (raw strings = run scope since v4.3.1) and TTL (default 30 days); behavior when re-triggering after a failed run; Playwright extension; machine presets; `wait.for`; `batchTriggerAndWait`; regions | M0-14, M3-12 | Trigger.dev docs. **Playwright extension checked 2026-10-10** (see decision log) |
 | V-18 | Anthropic: model ids (`claude-opus-5`), `messages.parse` + `zodOutputFormat`, PDF limits (32 MB, page limits), citations vs structured outputs, sampling params removed, refusal fallback | M1-08 | `claude-api` skill + Anthropic docs. **Verified 2026-10-03**, see decision-log |
-| V-19 | OpenAI: embedding model and `dimensions`; image model name, sizes, pricing, usage policy; API data terms | M1-11, M3-03 | OpenAI docs. **Embeddings part verified 2026-10-03** (see decision log); the image part stays open for M3-03 |
+| V-19 | OpenAI: embedding model and `dimensions`; image model name, sizes, pricing, usage policy; API data terms | M1-11, M3-03 | OpenAI docs. **Embeddings part verified 2026-10-03** (see decision log); **image part verified 2026-10-10** (see decision log) |
 | V-20 | Supabase: pgvector + HNSW; pooler mode with `prepare: false`; Auth email OTP + custom SMTP; PITR by plan | M0-09, M0-15 | Supabase docs |
 | V-21 | Vercel limits (request body 4.5 MB, max duration), region `fra1`, Node version; Next.js major (middleware vs `proxy.ts`) | M0-08 | Vercel / Next.js docs |
 | V-22 | R2: presigned PUT and CORS; single PUT size limit; EU jurisdiction; public bucket option | M0-13 | Cloudflare docs |

@@ -129,3 +129,36 @@ export type CriticOutput = z.infer<typeof CriticOutput>;
 export function criticOutputFor(_input: CriticInput): z.ZodType<CriticOutput> {
   return CriticOutput;
 }
+
+// critic@2 (M2-12a): the same answer plus a 1–5 score for the hook and a HOOK issue category.
+export const ISSUE_CATEGORIES_V2 = [...ISSUE_CATEGORIES, "HOOK"] as const;
+
+export const CriticOutputV2 = z.object({
+  verdict: CriticOutput.shape.verdict,
+  scores: CriticOutput.shape.scores.extend({ hook: z.number() }),
+  unsupportedClaims: CriticOutput.shape.unsupportedClaims,
+  issues: z.array(
+    z.object({
+      severity: z.enum(ISSUE_SEVERITIES),
+      category: z.enum(ISSUE_CATEGORIES_V2),
+      fieldPath: z.string(),
+      explanation: z.string(),
+      suggestedFix: z.string(),
+    }),
+  ),
+  rewriteInstructions: z.string(),
+  humanAttention: z.string(),
+});
+export type CriticOutputV2 = z.infer<typeof CriticOutputV2>;
+
+export function criticOutputV2For(_input: CriticInput): z.ZodType<CriticOutputV2> {
+  return CriticOutputV2;
+}
+
+/** What the pipeline reads from either version: `hook` and the HOOK category exist from v2 on. */
+export type CriticAnswer = Omit<CriticOutput, "scores" | "issues"> & {
+  scores: CriticOutput["scores"] & { hook?: number };
+  issues: (Omit<CriticOutput["issues"][number], "category"> & {
+    category: (typeof ISSUE_CATEGORIES_V2)[number];
+  })[];
+};

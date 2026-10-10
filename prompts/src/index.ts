@@ -1,5 +1,5 @@
-import { contentWriterV1 } from "./content-writer";
-import { criticV1 } from "./critic";
+import { contentWriterV1, contentWriterV2 } from "./content-writer";
+import { criticV1, criticV2 } from "./critic";
 import { evalJudgeV1 } from "./eval-judge";
 import { ideaGeneratorV1 } from "./idea-generator";
 import { knowledgeExtractorV1 } from "./knowledge-extractor";
@@ -8,6 +8,8 @@ import { marketAdapterV1 } from "./market-adapter";
 import { pageTranscriberV1 } from "./page-transcriber";
 import { postAnnotatorV1 } from "./post-annotator";
 import { createRegistry } from "./registry";
+import { visualDirectorV1 } from "./visual-director";
+import { visualQaV1 } from "./visual-qa";
 
 export const PACKAGE_NAME = "@rc/prompts";
 
@@ -36,6 +38,8 @@ export * as marketAdapter from "./market-adapter";
 export * as pageTranscriber from "./page-transcriber";
 export * as postAnnotator from "./post-annotator";
 export { createRegistry, type PromptRegistry } from "./registry";
+export * as visualDirector from "./visual-director";
+export * as visualQa from "./visual-qa";
 export {
   type Attrs,
   type Body,
@@ -56,6 +60,10 @@ export const promptRegistry = createRegistry([
   ideaGeneratorV1,
   marketAdapterV1,
   contentWriterV1,
+  contentWriterV2,
   criticV1,
+  criticV2,
   evalJudgeV1,
+  visualDirectorV1,
+  visualQaV1,
 ]);

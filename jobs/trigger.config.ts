@@ -1,5 +1,7 @@
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { esbuildPlugin } from "@trigger.dev/build/extensions";
+import { additionalFiles } from "@trigger.dev/build/extensions/core";
+import { playwright } from "@trigger.dev/build/extensions/playwright";
 import { defineConfig } from "@trigger.dev/sdk";
 
 // Trigger.dev v4 (plan 01 D-05, 06 §6.1; V-17 checked 2026-09-27).
@@ -33,20 +35,28 @@ export default defineConfig({
     },
   },
   build: {
-    // Playwright/Chromium for render-carousel is added in M3-12.
+    // Native or browser packages stay outside the bundle and are installed in the image (M3-12).
+    external: ["playwright-core", "sharp"],
     // Source maps go to Sentry on `trigger deploy` when SENTRY_AUTH_TOKEN is set (M0-19).
-    extensions: process.env.SENTRY_AUTH_TOKEN
-      ? [
-          esbuildPlugin(
-            sentryEsbuildPlugin({
-              ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
-              ...(sentryJobsProject ? { project: sentryJobsProject } : {}),
-              authToken: process.env.SENTRY_AUTH_TOKEN,
-              telemetry: false,
-            }),
-            { placement: "last", target: "deploy" },
-          ),
-        ]
-      : [],
+    extensions: [
+      // Chromium and its system libraries for render-carousel (V-17); the image sets
+      // PLAYWRIGHT_BROWSERS_PATH. The version is pinned to the one of playwright-core.
+      playwright({ browsers: ["chromium"], version: "1.63.0" }),
+      // Fonts and icons of @rc/templates are read from disk (assets-path.ts).
+      additionalFiles({ files: ["../templates/assets/**"] }),
+      ...(process.env.SENTRY_AUTH_TOKEN
+        ? [
+            esbuildPlugin(
+              sentryEsbuildPlugin({
+                ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
+                ...(sentryJobsProject ? { project: sentryJobsProject } : {}),
+                authToken: process.env.SENTRY_AUTH_TOKEN,
+                telemetry: false,
+              }),
+              { placement: "last", target: "deploy" },
+            ),
+          ]
+        : []),
+    ],
   },
 });

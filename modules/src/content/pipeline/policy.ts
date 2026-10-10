@@ -6,13 +6,17 @@ import { flagsForIssues, isBlocking } from "../validation";
 // and scores; this code decides, so a lenient or an over-strict model cannot let a draft with an
 // unsupported claim through or send a good one round the loop forever.
 
-type Output = critic.CriticOutput;
+type Output = critic.CriticAnswer;
 
 /** A draft is rewritten at most this many times; what is left after that goes to a person. */
 export const MAX_REWRITES = 2;
 
+/** A hook scored this or lower is weak (critic@2, M2-12a). */
+export const WEAK_HOOK_SCORE = 2;
+
 /** Weights of the quality score (07 §7.6.3 rule 7); every other score counts once. */
 export const SCORE_WEIGHTS: Record<keyof Output["scores"], number> = {
+  hook: 1,
   factualFidelity: 2,
   localization: 1.5,
   sourceCoverage: 1,
@@ -28,7 +32,10 @@ export function qualityScore(scores: Output["scores"]): number {
   let sum = 0;
   let weights = 0;
   for (const [name, weight] of Object.entries(SCORE_WEIGHTS)) {
-    sum += scores[name as keyof Output["scores"]] * weight;
+    const value = scores[name as keyof Output["scores"]];
+    // critic@1 has no hook score: the mean is then over the other scores.
+    if (value === undefined) continue;
+    sum += value * weight;
     weights += weight;
   }
   return Math.round(Math.min(5, Math.max(1, sum / weights)) * 100) / 100;
@@ -67,7 +74,11 @@ export function decideVerdict(input: PolicyInput): PolicyDecision {
   const blockers = deterministicIssues.filter(isBlocking);
   const modelBlockers = output.issues.filter((i) => i.severity === "BLOCKER");
   const scores = Object.entries(output.scores) as [keyof Output["scores"], number][];
-  const lowScores = scores.filter(([name, value]) => name !== "overall" && value <= 2);
+  const lowScores = scores.filter(
+    ([name, value]) => name !== "overall" && name !== "hook" && value <= 2,
+  );
+  const hookFixes = hookInstructions(output);
+  const weakHook = output.scores.hook !== undefined && output.scores.hook <= WEAK_HOOK_SCORE;
 
   // Rules 1–3: what needs a rewrite.
   const rewriteReasons: string[] = [];
@@ -91,6 +102,12 @@ export function decideVerdict(input: PolicyInput): PolicyDecision {
       ...(output.scores.overall < 3 ? ["overall"] : []),
     ];
     rewriteReasons.push(`Low score: ${names.join(", ")}.`);
+  }
+
+  // A weak hook asks for a rewrite only when the critic says how to fix it (M2-12a); without a
+  // concrete instruction the writer would only be told "better", so a person looks instead.
+  if (weakHook && hookFixes.length > 0) {
+    rewriteReasons.push(`Weak hook (${output.scores.hook}/5).`);
   }
 
   const flags = new Set<VariantFlag>();
@@ -128,6 +145,18 @@ export function decideVerdict(input: PolicyInput): PolicyDecision {
       ]),
     };
   }
+  if (weakHook && hookFixes.length === 0) {
+    return {
+      ...base,
+      verdict: "FLAG_FOR_HUMAN",
+      reasons: [`Weak hook (${output.scores.hook}/5) without a concrete fix.`],
+      flags: [...flags],
+      rewriteInstructions: "",
+      humanAttention: humanAttention(input, [
+        `The hook is weak (${output.scores.hook}/5) and the critic gave no concrete fix; read it.`,
+      ]),
+    };
+  }
   // Rule 4: the critic is unsure.
   if (output.verdict === "FLAG_FOR_HUMAN") {
     return {
@@ -150,6 +179,13 @@ export function decideVerdict(input: PolicyInput): PolicyDecision {
   };
 }
 
+/** Hook issues of the critic that carry a replacement or a concrete instruction. */
+function hookInstructions(output: Output): string[] {
+  return output.issues
+    .filter((i) => i.category === "HOOK" && i.suggestedFix.trim())
+    .map((i) => `hook: ${i.suggestedFix.trim()}`);
+}
+
 function rewriteInstructions(input: PolicyInput, reasons: readonly string[]): string {
   const { output, deterministicIssues, differentiation } = input;
   const lines: string[] = [];
@@ -162,6 +198,11 @@ function rewriteInstructions(input: PolicyInput, reasons: readonly string[]): st
   }
   for (const issue of output.issues.filter((i) => i.severity === "BLOCKER")) {
     lines.push(`${issue.fieldPath || "draft"}: ${issue.suggestedFix.trim() || issue.explanation}`);
+  }
+  if (output.scores.hook !== undefined && output.scores.hook <= WEAK_HOOK_SCORE) {
+    for (const fix of hookInstructions(output)) {
+      if (!lines.includes(fix)) lines.push(fix);
+    }
   }
   if (differentiation?.verdict === "FAIL" && differentiation.later) lines.push(DIFFERENTIATION_FIX);
   // A rewrite that only a low score asks for still gets the critic's fixes for its weaker findings.

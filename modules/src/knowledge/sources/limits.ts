@@ -21,6 +21,14 @@ const MD: Format = {
 const SRT: Format = { mimeTypes: ["application/x-subrip", "text/plain"], maxBytes: 20 * MB };
 const VTT: Format = { mimeTypes: ["text/vtt", "text/plain"], maxBytes: 20 * MB };
 
+const photo = (mimeType: string): Format => ({ mimeTypes: [mimeType], maxBytes: 25 * MB });
+const PHOTO_FORMATS: Record<string, Format> = {
+  jpg: photo("image/jpeg"),
+  jpeg: photo("image/jpeg"),
+  png: photo("image/png"),
+  webp: photo("image/webp"),
+};
+
 const DOCUMENT_FORMATS: Record<string, Format> = { pdf: PDF, docx: DOCX, txt: TXT, md: MD };
 
 /** Extension (lower case, no dot) → format, per source type. Absent types are not accepted. */
@@ -31,6 +39,8 @@ export const ACCEPTED_FORMATS: Partial<Record<SourceType, Record<string, Format>
   PRODUCT_MATERIAL: DOCUMENT_FORMATS,
   NOTE: { txt: TXT, md: MD },
   TRANSCRIPT: { srt: SRT, vtt: VTT, txt: TXT },
+  /** Library photos (M3-16): imported by `import-library-photo`, not read by a model. */
+  PHOTO: PHOTO_FORMATS,
 };
 
 /** Pasted-text limit for NOTE / TRANSCRIPT / RECIPE (characters). */
@@ -39,7 +49,6 @@ export const MAX_TEXT_CHARS = 200_000;
 const NOT_ACCEPTED: Partial<Record<SourceType, string>> = {
   VIDEO: "Video transcription arrives with Reels (post-MVP). Upload a transcript instead.",
   INSTAGRAM_POST: "Instagram posts are imported with the historical posts import, not as sources.",
-  PHOTO: "Photo sources are not supported yet.",
 };
 
 /** Largest accepted size for a type and file name, or undefined if the file is not accepted. */

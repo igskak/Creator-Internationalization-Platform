@@ -87,7 +87,11 @@ describe("review bundle and regenerate all", () => {
         ...(runner ? { jobs: runner } : {}),
       });
     const runner: ServiceContext["jobs"] = createInlineJobRunner({
-      handlers: jobHandlers,
+      // The browser render (J8) is tested on its own; here it would start Chromium.
+      handlers: {
+        ...jobHandlers,
+        "render-carousel": { ...jobHandlers["render-carousel"], run: async () => ({}) },
+      },
       mode: "await",
       makeContext: (runId) => make({ type: "JOB", jobRunId: runId }, runner),
     });
@@ -115,12 +119,12 @@ describe("review bundle and regenerate all", () => {
       status: "READY_FOR_REVIEW",
       hasContent: true,
       hookType: "MISTAKE_CALLOUT",
-      generationVersion: "p1.0.0",
+      generationVersion: "p1.1.0",
       lastError: null,
       critic: { verdict: "PASS", iteration: 0 },
       differentiation: { verdict: "OK" },
     });
-    expect(es?.qualityScore).toBe(4.42);
+    expect(es?.qualityScore).toBe(4.38);
     expect(es?.slides).toHaveLength(5);
     // Slots come in the order of the template (mistake before correct), not in jsonb's key order.
     expect(Object.keys(es?.slides[1]?.slots ?? {})).toEqual([

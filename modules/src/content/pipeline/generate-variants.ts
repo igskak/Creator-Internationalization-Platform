@@ -9,6 +9,7 @@ import type {
   Slide,
   ValidationIssue,
   VariantFlag,
+  VisualBrief,
 } from "@rc/db/json";
 import { eq, inArray, sql } from "@rc/db/orm";
 import { InvalidStateError, TransientError } from "@rc/lib/errors";
@@ -25,6 +26,14 @@ import {
 } from "../../localization";
 import { validateMarketBrief } from "../brief";
 import { validateWriterOutput } from "../draft";
+import {
+  loadLibraryCandidates,
+  loadVisualStyles,
+  type SiblingVisual,
+  validateVisualBrief,
+  visualInput,
+  visualValidationContext,
+} from "../visual";
 import {
   loadPipelineContext,
   type PipelineContext,
@@ -53,7 +62,7 @@ import { validateCriticOutput } from "./validate-critic";
 
 type Brief = MarketBrief;
 type Draft = contentWriter.ContentWriterOutput;
-type CriticOutput = critic.CriticOutput;
+type CriticOutput = critic.CriticAnswer;
 
 export type VariantPipelineInput = {
   masterIdeaId: string;
@@ -117,6 +126,7 @@ type Run = {
   slideIds: string[];
   decision?: PolicyDecision | undefined;
   criticOutput?: CriticOutput | undefined;
+  visual?: VisualBrief | undefined;
   report?: DifferentiationReport | undefined;
   deterministic: ValidationIssue[];
   rewrites: number;
@@ -380,6 +390,58 @@ export async function generateVariants(
       for (const run of again) if (!run.failed) run.decision = undefined;
     }
 
+    // --- 3b. visual briefs, one market after another (the later ones see the earlier ones) ---------
+    const visualStyles = await loadVisualStyles(ctx);
+    const library = await loadLibraryCandidates(ctx);
+    const siblingVisuals: SiblingVisual[] = c.others.flatMap((o) =>
+      o.visualBriefJson && !inRun.has(o.marketId)
+        ? [{ marketCode: marketCodeOf(c, o), brief: o.visualBriefJson }]
+        : [],
+    );
+    for (const run of order) {
+      const draft = run.drafts.filter(Boolean).at(-1);
+      if (run.failed || !draft || !run.brief) continue;
+      const slides = draftColumns(draft, run.slideIds, run.brief).slidesJson;
+      const hypotheses = run.market.visualHypotheses;
+      const visual = await stage<VisualBrief>(
+        run,
+        "VISUAL",
+        () =>
+          runStage<VisualBrief>(ctx, {
+            stage: "VISUAL_DIRECTION",
+            input: visualInput({
+              idea: c.idea,
+              market: { code: run.market.code, displayName: run.market.displayName, hypotheses },
+              slides,
+              templates: p0Registry,
+              library,
+              siblings: siblingVisuals.filter((s) => s.marketCode !== run.market.code),
+              visualStyles,
+            }),
+            inputRefs: refs(c, run),
+            validate: (output) =>
+              validateVisualBrief(
+                output,
+                visualValidationContext({
+                  slides,
+                  templates: p0Registry,
+                  library,
+                  visualStyles,
+                  hypotheses,
+                }),
+              ),
+          }),
+        // No brief does not cost the draft: the pictures can be planned again from the review screen.
+        { soft: true },
+      );
+      if (!visual) {
+        ctx.logger.warn({ variantId: run.row.id }, "the visual director gave no usable brief");
+        continue;
+      }
+      run.visual = visual;
+      siblingVisuals.push({ marketCode: run.market.code, brief: visual });
+    }
+
     // --- 4. finish ---------------------------------------------------------------------------------
     const finalPairs = await compare(ctx, c, order, alive());
     for (const run of alive()) await finish(ctx, c, run, finalPairs, pipelineRunId);
@@ -598,6 +660,8 @@ async function finish(
     set: {
       ...draftColumns(draft, run.slideIds, brief),
       offerId: c.offers.get(run.market.id)?.id ?? null,
+      visualBriefJson: run.visual ?? null,
+      visualStyle: run.visual?.visualStyle ?? null,
       flags,
       criticVerdict: decision.verdict,
       criticReport: criticReport ?? null,
@@ -621,18 +685,20 @@ async function finish(
 
 function generationConfig(ctx: ServiceContext): GenerationConfig {
   const stages = Object.fromEntries(
-    (["MARKET_ADAPTATION", "CONTENT_WRITING", "CRITIC"] as const).map((name) => {
-      const config = STAGE_CONFIG[name];
-      return [
-        name,
-        {
-          promptId: config.promptId,
-          promptVersion: config.version,
-          model: config.model,
-          effort: config.effort,
-        },
-      ];
-    }),
+    (["MARKET_ADAPTATION", "CONTENT_WRITING", "CRITIC", "VISUAL_DIRECTION"] as const).map(
+      (name) => {
+        const config = STAGE_CONFIG[name];
+        return [
+          name,
+          {
+            promptId: config.promptId,
+            promptVersion: config.version,
+            model: config.model,
+            effort: config.effort,
+          },
+        ];
+      },
+    ),
   );
   return {
     pipelineVersion: generationVersion().slice(1),

@@ -1,4 +1,4 @@
-import type { MarketBrief } from "@rc/db/json";
+import type { MarketBrief, VisualBrief } from "@rc/db/json";
 import type { contentWriter, critic } from "@rc/prompts";
 
 // Valid answers of the market adapter, the writer and the critic for two cards, shared by the tests
@@ -6,7 +6,7 @@ import type { contentWriter, critic } from "@rc/prompts";
 // es-ES starts from the mistake, every other market from the myth, so the two never copy each other.
 
 type Draft = contentWriter.ContentWriterOutput;
-type Review = critic.CriticOutput;
+type Review = critic.CriticAnswer;
 
 /** A valid plan for es-ES (mistake first) or any other market (myth first): they differ. */
 export function scriptedBrief(
@@ -100,6 +100,7 @@ export const scriptedReview = (over: Partial<Review> = {}): Review => ({
     brandVoice: 4,
     structure: 5,
     cta: 4,
+    hook: 4,
     overall: 4,
   },
   unsupportedClaims: [],
@@ -108,3 +109,36 @@ export const scriptedReview = (over: Partial<Review> = {}): Review => ({
   humanAttention: "",
   ...over,
 });
+
+/**
+ * A valid visual brief for a rendered visual-director request: every image slot of the slides gets
+ * a generated picture (so the required ones are covered), the first style is used, and the
+ * composition names the market so that two markets never look the same.
+ */
+export function scriptedVisualBrief(requestText: string): VisualBrief {
+  const market = /<market code="([^"]+)"/u.exec(requestText)?.[1] ?? "";
+  const style = /<style code="([^"]+)"/u.exec(requestText)?.[1] ?? "";
+  const slides: VisualBrief["slides"] = [];
+  for (const slide of requestText.matchAll(/<slide id="([^"]+)"[^>]*>([\s\S]*?)<\/slide>/gu)) {
+    for (const slot of (slide[2] ?? "").matchAll(
+      /<image_slot name="([^"]+)" aspect="([^"]+)" required="(true|false)"/gu,
+    )) {
+      const aspect = (["4:5", "1:1", "3:4", "16:9"] as const).find((a) => a === slot[2]) ?? "4:5";
+      slides.push({
+        slideId: slide[1] ?? "",
+        slot: slot[1] ?? "",
+        source: "GENERATE",
+        prompt: `Macro photo of rice grains in a bowl, soft side light, ${market} mood`,
+        negativePrompt: "text, logos, packaging, clutter",
+        composition: `Subject low in the frame, empty space above (${market}).`,
+        aspect,
+      });
+    }
+  }
+  return {
+    concept: `Scripted concept for ${market}.`,
+    visualStyle: style,
+    slides,
+    differentiationFromSibling: "",
+  };
+}

@@ -13,7 +13,8 @@
     "./providers/storage": "./src/providers/storage/index.ts",
     "./observability": "./src/observability/index.ts",
     "./providers/llm": "./src/providers/llm/index.ts",
-    "./providers/embeddings": "./src/providers/embeddings/index.ts"
+    "./providers/embeddings": "./src/providers/embeddings/index.ts",
+    "./providers/image": "./src/providers/image/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

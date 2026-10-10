@@ -12,7 +12,7 @@ import {
 
 // The verdict policy of 07 §7.6.3: one table row per rule, then the combinations. Synthetic data.
 
-type Output = critic.CriticOutput;
+type Output = critic.CriticAnswer;
 const scores = (over: Partial<Output["scores"]> = {}): Output["scores"] => ({
   ...PASS.scores,
   ...over,
@@ -53,7 +53,7 @@ describe("qualityScore (rule 7)", () => {
     expect(qualityScore(all(3))).toBe(3);
     expect(qualityScore(all(5))).toBe(5);
     expect(qualityScore(all(1))).toBe(1);
-    // (5×2 + 1×1.5 + 6×3) / 9.5
+    // (5×2 + 1×1.5 + 7×3) / 10.5
     expect(
       qualityScore(
         scores({
@@ -64,10 +64,11 @@ describe("qualityScore (rule 7)", () => {
           brandVoice: 3,
           structure: 3,
           cta: 3,
+          hook: 3,
           overall: 3,
         }),
       ),
-    ).toBe(3.11);
+    ).toBe(3.1);
   });
 
   it("stays within 1–5 even for scores out of range", () => {
@@ -328,5 +329,62 @@ describe("buildCriticReport", () => {
       },
       { severity: "MINOR", category: "OTHER", explanation: "y", suggestedFix: "Z" },
     ]);
+  });
+});
+
+describe("weak hook (critic@2, M2-12a)", () => {
+  const weak = (fix: string) =>
+    out({
+      scores: scores({ hook: 2 }),
+      issues: [
+        {
+          severity: "MAJOR",
+          category: "HOOK",
+          fieldPath: "hook",
+          explanation: "A general statement, not a hook.",
+          suggestedFix: fix,
+        },
+      ],
+    });
+
+  it("asks a rewrite for a weak hook that comes with a concrete fix, and passes the fix on", () => {
+    const d = decideVerdict(
+      input({ output: weak("Open with the myth: “Pasta water needs oil”.") }),
+    );
+    expect(d.verdict).toBe("REQUEST_REWRITE");
+    expect(d.reasons).toContain("Weak hook (2/5).");
+    expect(d.rewriteInstructions).toContain("hook: Open with the myth");
+    // A weak hook alone is not a "low score" of the other rule.
+    expect(d.reasons.filter((r) => r.startsWith("Low score"))).toEqual([]);
+  });
+
+  it("does not ask a rewrite without a concrete instruction: a person looks", () => {
+    const d = decideVerdict(input({ output: weak("  ") }));
+    expect(d.verdict).toBe("FLAG_FOR_HUMAN");
+    expect(d.rewriteInstructions).toBe("");
+    expect(d.humanAttention).toContain("hook is weak");
+  });
+
+  it("lets a hook of 3 pass and ignores a missing hook score (critic@1)", () => {
+    expect(decideVerdict(input({ output: out({ scores: scores({ hook: 3 }) }) })).verdict).toBe(
+      "PASS",
+    );
+    const { hook: _hook, ...v1Scores } = scores();
+    expect(decideVerdict(input({ output: out({ scores: v1Scores }) })).verdict).toBe("PASS");
+    expect(qualityScore(v1Scores)).toBe(
+      qualityScore({ ...v1Scores, hook: qualityScore(v1Scores) }),
+    );
+  });
+
+  it("flags a weak hook that is still there after the last rewrite", () => {
+    const d = decideVerdict(
+      input({ output: weak("Open with the myth."), rewritesDone: MAX_REWRITES }),
+    );
+    expect(d.verdict).toBe("FLAG_FOR_HUMAN");
+    expect(d.reasons).toContain("Weak hook (2/5).");
+  });
+
+  it("weighs the hook in the quality score", () => {
+    expect(qualityScore(scores({ hook: 1 }))).toBeLessThan(qualityScore(scores({ hook: 5 })));
   });
 });

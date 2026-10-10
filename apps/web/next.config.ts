@@ -10,6 +10,11 @@ const config = (phase: string): NextConfig => ({
   // Posts import files travel as text through a server action (up to 20 MB, plan 07 §7.2.1).
   experimental: { serverActions: { bodySizeLimit: "21mb" } },
   serverExternalPackages: ["sharp", "playwright-core"],
+  // Fonts and icons are read from disk when a slide is previewed (templates/src/assets-path.ts).
+  outputFileTracingIncludes: {
+    "/api/preview/slide": ["../../templates/assets/**"],
+    "/content/review/[ideaId]": ["../../templates/assets/**"],
+  },
   async headers() {
     return [
       {

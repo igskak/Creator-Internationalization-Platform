@@ -3,7 +3,7 @@ import { z } from "zod";
 import { GenerateContentPayload, generateVariants } from "./content";
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
-import { defineJob } from "./core/job-runner";
+import { defineJob, triggerJob } from "./core/job-runner";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
@@ -13,6 +13,15 @@ import {
   importHistoricalPosts,
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
+import {
+  GenerateVisualAssetsPayload,
+  generateVisualAssets,
+  importLibraryPhoto,
+  RenderCarouselPayload,
+  RunVisualQaPayload,
+  requestRender,
+  runVisualQa,
+} from "./visuals";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -117,7 +126,69 @@ export const generateIdeasJob = defineJob({
  */
 export const generateContentJob = defineJob({
   payload: GenerateContentPayload,
-  run: (ctx, payload) => generateVariants(ctx, payload),
+  run: async (ctx, payload) => {
+    const result = await generateVariants(ctx, payload);
+    // J7 per finished variant that has a visual brief (06 §6.3 J5 step 3).
+    for (const outcome of result.outcomes) {
+      if (outcome.status !== "READY_FOR_REVIEW") continue;
+      await triggerJob(
+        ctx,
+        "generate-visual-assets",
+        { variantId: outcome.variantId },
+        { idempotencyKey: `visuals:${result.pipelineRunId}:${outcome.variantId}` },
+      );
+    }
+    return result;
+  },
+});
+
+/**
+ * J7 (plan 06 §6.2): plans' pictures of one variant: provider call, normalization, storage, one
+ * `visual_assets` row per slot. A slot that failed is in the result (retry it with `slots`), not
+ * an exception; a provider that is down is rethrown so the run is retried.
+ */
+export const generateVisualAssetsJob = defineJob({
+  payload: GenerateVisualAssetsPayload,
+  run: async (ctx, payload) => {
+    const result = await generateVisualAssets(ctx, payload);
+    // The pictures are in: render the carousel (J8). A variant that no longer can be rendered
+    // (changed meanwhile) is not an error of this job.
+    await requestRender(ctx, payload.variantId).catch((error: unknown) =>
+      ctx.logger.warn({ err: error, variantId: payload.variantId }, "could not queue the render"),
+    );
+    return result;
+  },
+});
+
+/**
+ * J8 (plan 06 §6.2): renders the slides of a variant with Chromium and stores the JPEGs, the QA
+ * report and the flags. The browser code is loaded on demand, so the web app that registers the
+ * handlers does not load Playwright.
+ */
+export const renderCarouselJob = defineJob({
+  payload: RenderCarouselPayload,
+  run: async (ctx, payload) => {
+    const { renderVariantCarousel } = await import("./visuals/render");
+    return renderVariantCarousel(ctx, payload);
+  },
+});
+
+/**
+ * J20 (plan 08 §8.4): turns an uploaded PHOTO source into a library photo (`visual_assets`). A file
+ * that is not an image ends the source as FAILED and returns normally.
+ */
+export const importLibraryPhotoJob = defineJob({
+  payload: z.object({ sourceAssetId: z.uuid(), attempt: z.number().int().positive() }),
+  run: (ctx, payload) => importLibraryPhoto(ctx, payload),
+});
+
+/**
+ * J21 (plan 07 §7.6.1): the vision check of a variant's rendered slides. Findings are added to the
+ * critic report; a variant that cannot be checked yet is an error the person sees.
+ */
+export const runVisualQaJob = defineJob({
+  payload: RunVisualQaPayload,
+  run: (ctx, payload) => runVisualQa(ctx, payload),
 });
 
 export const jobHandlers = {
@@ -125,6 +196,10 @@ export const jobHandlers = {
   "ingest-source": ingestSourceJob,
   "generate-ideas": generateIdeasJob,
   "generate-content": generateContentJob,
+  "generate-visual-assets": generateVisualAssetsJob,
+  "render-carousel": renderCarouselJob,
+  "import-library-photo": importLibraryPhotoJob,
+  "run-visual-qa": runVisualQaJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

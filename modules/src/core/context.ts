@@ -2,6 +2,7 @@ import type { AnyDatabase } from "@rc/db";
 import { PermanentError } from "@rc/lib/errors";
 import type { Logger } from "@rc/lib/logging";
 import type { EmbeddingProvider } from "@rc/lib/providers/embeddings";
+import type { ImageProvider } from "@rc/lib/providers/image";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import type { StorageProvider } from "@rc/lib/providers/storage";
 import { type Clock, systemClock } from "./clock";
@@ -17,7 +18,6 @@ export type Actor =
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
- * The image provider is added by the task that first uses it.
  */
 export type ServiceContext = {
   db: AnyDatabase;
@@ -34,6 +34,8 @@ export type ServiceContext = {
   llm: LLMProvider;
   /** Text embeddings for `vector(1536)` columns. */
   embeddings: EmbeddingProvider;
+  /** Image generation (M3-03). */
+  images: ImageProvider;
 };
 
 export type CreateServiceContextInput = {
@@ -50,6 +52,8 @@ export type CreateServiceContextInput = {
   llm?: LLMProvider;
   /** Default: a provider that refuses every call. */
   embeddings?: EmbeddingProvider;
+  /** Default: a provider that refuses every call. */
+  images?: ImageProvider;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -68,6 +72,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     storage: input.storage ?? disabledStorage,
     llm: input.llm ?? disabledLlm,
     embeddings: input.embeddings ?? disabledEmbeddings,
+    images: input.images ?? disabledImages,
   };
 }
 
@@ -111,3 +116,12 @@ export function withTransaction<T>(
 ): Promise<T> {
   return ctx.db.transaction((tx) => fn({ ...ctx, db: tx }));
 }
+
+/** Default for contexts that must not generate images. */
+export const disabledImages: ImageProvider = {
+  id: "fake",
+  model: "disabled",
+  generate: async () => {
+    throw new PermanentError("No image provider is configured for this context.");
+  },
+};

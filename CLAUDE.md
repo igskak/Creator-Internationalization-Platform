@@ -50,6 +50,7 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | `pnpm rc <command>` | Dev CLI (`cli/`) with a SYSTEM ServiceContext for the `.env` database; refuses `APP_ENV=production`. `pnpm rc help` lists commands; modules register theirs in `modules/src/cli-commands.ts` |
 | `pnpm rc ingest <file> --ai-allowed [--type GUIDE] [--language ru] [--title T]` | Upload a local file as a source and run ingestion in-process against the `.env` database, storage and model (real API calls and cost with `AI_PROVIDER=live`); prints status, pages, cards and cost |
 | `pnpm eval [--set S] [--provider fake\|live] [--judge] [--blind]` | Eval harness (`evals/`): runs a set of cases through the pipeline in a throw-away database and writes `evals/results/*.json`. The fake model is free; `--provider live` prints a cost estimate and asks first, never run it in CI |
+| `pnpm test:visual [--update]` | Renders every fixture of every slide template with Chromium and compares it with the golden PNGs in `templates/__golden__/<platform>/` (pixelmatch, 0.1 % limit); `--update` rewrites them (review the changed images). Needs a Chromium (local Chrome on a Mac, or the pre-installed one). |
 | `pnpm db:seed` | Insert missing reference rows (brand, markets, taxonomy, owners from `SEED_OWNER_EMAILS`, settings); never overwrites |
 
-Added by later tasks (not available yet): `pnpm test:visual` (M3-14). Update this table when you add one.
+Added by later tasks (not available yet): none. Update this table when you add one.

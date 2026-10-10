@@ -367,7 +367,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** after `generateVariants` has finished some variants, recompute the differentiation report and the `DUPLICATION_RISK` flag of the live variants of the idea that were not in the run (not PUBLISHING, PUBLISHED, REJECTED or GENERATING); nothing else of them changes.
   - **Done when:** tests: a stale warning is cleared, a new one is added, a published sibling is untouched. Found in the G1 pilot (a regenerated market left the other with a stale flag).
 
-- [ ] **M2-12a · Critic: hook strength** · P1 · S · deps: M2-12
+- [x] **M2-12a · Critic: hook strength** · P1 · S · deps: M2-12
   - **Do:** `critic@2` (new version + eval): score or issue category for the hook (a real hook vs a general statement), and a writer rule; `decideVerdict` asks a rewrite for a weak hook only with a concrete instruction.
   - **Done when:** the pilot's weak hook case is flagged by the critic in an eval; no regression on the synthetic set. Found in the G1 pilot (a weak hook passed with 4.37).
 
@@ -394,66 +394,66 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M3 · Creative Engine
 
-- [ ] **M3-01 · Creative schema (0004_creative)** · P0 · S · deps: M2-01
+- [x] **M3-01 · Creative schema (0004_creative)** · P0 · S · deps: M2-01
   - **Do:** `visual_assets`, `carousel_renders`, `rendered_slides`, `content_variants.current_render_id`; `QaReport` type.
   - **Done when:** migration + tests.
 
-- [ ] **M3-02 · Visual director prompt v1 and pipeline step** · P0 · M · deps: M2-13, M3-01
+- [x] **M3-02 · Visual director prompt v1 and pipeline step** · P0 · M · deps: M2-13, M3-01
   - **Do:** prompt + `VisualBrief` schema + validators (slot coverage, library IDs and rights); final pipeline step; persist `visual_brief_json`; action to regenerate the brief.
   - **Done when:** fake tests; pipeline test includes the visual step.
   - **Refs:** 07 §7.6.4.
 
-- [ ] **M3-03 · Image provider (OpenAI) and fake** · P0 · M · deps: M0-04 · ⚠ V-19
+- [x] **M3-03 · Image provider (OpenAI) and fake** · P0 · M · deps: M0-04 · ⚠ V-19
   - **Do:** `ImageProvider` interface, OpenAI Images adapter (current gpt-image model, portrait size, quality), fake (gradient PNG with slot label), cost per image.
   - **Done when:** MSW contract test; fake test.
 
-- [ ] **M3-04 · Image normalization and pHash** · P0 · M · deps: M0-13
+- [x] **M3-04 · Image normalization and pHash** · P0 · M · deps: M0-13
   - **Do:** `visuals/images/normalize.ts` (auto-orient, sRGB, attention crop to slot aspect, resize, WebP q90, keep original), `phash.ts`, storage keys.
   - **Done when:** fixture tests (dimensions, color space, hash stability).
 
-- [ ] **M3-05 · `generate-visual-assets` job** · P0 · M · deps: M3-02, M3-03, M3-04
+- [x] **M3-05 · `generate-visual-assets` job** · P0 · M · deps: M3-02, M3-03, M3-04
   - **Do:** J7: per planned slot → provider → normalize → R2 → `visual_assets`; update slide image slots; per-slot failure with retry action; `VISUAL_MISSING` flag; trigger render.
   - **Done when:** integration test with fakes; idempotent rerun creates no duplicates.
   - **Refs:** 06 J7.
 
-- [ ] **M3-06 · Fonts, theme tokens and glyph checks** · P0 · M · deps: M2-03, B-10
+- [x] **M3-06 · Fonts, theme tokens and glyph checks** · P0 · M · deps: M2-03, B-10
   - **Do:** bundle fonts (WOFF2 + TTF) in `templates/assets/fonts` (brand fonts if licensed, else OFL fallback); theme tokens from `brands.visual_system` + market variant → CSS variables; `glyphs.ts` with fontkit.
   - **Done when:** tests: Spanish/French characters covered; emoji or unsupported char reported.
   - **Refs:** 08 §8.3, §8.6.
 
-- [ ] **M3-07 · Template framework** · P0 · M · deps: M3-06
+- [x] **M3-07 · Template framework** · P0 · M · deps: M3-06
   - **Do:** `SlideDocument` (1080×1350, safe area, logo anchor, page indicator), `renderSlideHtml(slide, theme, assets)` → full HTML with inline CSS and data-URL fonts/images, `fit-text.client.js`.
   - **Done when:** HTML snapshot test for a fixture slide.
   - **Refs:** 08 §8.2, §8.6.
 
-- [ ] **M3-08 · Templates A and F** · P0 · M · deps: M3-07
+- [x] **M3-08 · Templates A and F** · P0 · M · deps: M3-07
   - **Do:** components + styles + fixtures (ES long, EN short, max-length, special characters).
   - **Done when:** fixtures render without overflow in the renderer (after M3-11) — until then HTML snapshots.
 
-- [ ] **M3-09 · Templates B and E** · P0 · M · deps: M3-07
+- [x] **M3-09 · Templates B and E** · P0 · M · deps: M3-07
   - **Do:** as M3-08 (B with and without `number`).
   - **Done when:** as M3-08.
 
-- [ ] **M3-10 · Templates C and D** · P1 · M · deps: M3-07
+- [x] **M3-10 · Templates C and D** · P1 · M · deps: M3-07
   - **Do:** as M3-08; D uses an icon set in `templates/assets/icons`.
   - **Done when:** as M3-08.
 
-- [ ] **M3-11 · Playwright renderer and render QA** · P0 · M · deps: M3-08
+- [x] **M3-11 · Playwright renderer and render QA** · P0 · M · deps: M3-08
   - **Do:** `visuals/render/renderer.ts` (one Chromium per run, viewport 1080×1350, DPR 1, fonts ready, fit-text, overflow/logo/image checks, PNG → sharp JPEG q90 4:4:4 sRGB, size guard) and `qa.ts`.
   - **Done when:** renders fixtures in CI and in Claude Code (pre-installed Chromium); QA catches a forced overflow.
   - **Refs:** 08 §8.6, §8.7.
 
-- [ ] **M3-12 · `render-carousel` job and auto-trigger** · P0 · M · deps: M3-11, M3-05 · ⚠ V-17
+- [x] **M3-12 · `render-carousel` job and auto-trigger** · P0 · M · deps: M3-11, M3-05 · ⚠ V-17
   - **Do:** J8 with the Playwright build extension, `medium-1x` machine, `render` queue; input-hash idempotency; `rendered_slides`; `current_render_id`; flags; debounce on text edits.
   - **Done when:** inline integration test; dev run in Trigger.dev renders a real variant.
   - **Refs:** 06 J8.
 
-- [ ] **M3-13 · Preview: slide route and carousel viewer** · P0 · M · deps: M3-12, M2-15
+- [x] **M3-13 · Preview: slide route and carousel viewer** · P0 · M · deps: M3-12, M2-15
   - **Do:** `/api/preview/slide` (same HTML as the renderer, draft values allowed, sandboxed iframe); carousel viewer (4:5 frame, swipe, thumbnails, 1:1 zoom, QA badges, stale-render state) in the review screen.
   - **Done when:** live preview matches the JPEG for fixtures; screenshots.
   - **Refs:** 08 §8.5.
 
-- [ ] **M3-14 · Visual regression tests** · P0 · S · deps: M3-09, M3-11
+- [x] **M3-14 · Visual regression tests** · P0 · S · deps: M3-09, M3-11
   - **Do:** golden PNGs per template × fixtures; pixelmatch compare; `pnpm test:visual --update`; CI job on `templates/**` changes + nightly.
   - **Done when:** CI job green; a deliberate CSS change fails it.
   - **Refs:** 08 §8.9.
@@ -462,11 +462,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** 10 real visual briefs × 2 models (OpenAI + one alternative through a throwaway script); blind review by Ihor/Sergey on a "premium macro food" rubric; `docs/decisions/image-provider.md`; set the default model (add a second adapter task if the alternative wins).
   - **Done when:** decision recorded.
 
-- [ ] **M3-16 · Photo library** · P1 · M · deps: M3-04, M1-04
+- [x] **M3-16 · Photo library** · P1 · M · deps: M3-04, M1-04
   - **Do:** PHOTO sources → `visual_assets` (LIBRARY_PHOTO) with tags/description (manual + optional AI tags); rights check; library candidates for the visual director.
   - **Done when:** director can pick a library photo in a test.
 
-- [ ] **M3-17 · Visual QA with vision** · P1 · M · deps: M3-12
+- [x] **M3-17 · Visual QA with vision** · P1 · M · deps: M3-12
   - **Do:** `visual-qa@1` on rendered JPEGs (legibility, AI artifacts, text inside images, brand consistency) → issues added to the critic report; contrast check.
   - **Done when:** fake tests; real run on 5 variants logged.
 

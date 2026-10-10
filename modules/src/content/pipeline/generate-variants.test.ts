@@ -10,12 +10,14 @@ import { createFakeLLMProvider, type StructuredRequest } from "@rc/lib/providers
 import type { contentWriter, critic } from "@rc/prompts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext, manualClock, type ServiceContext } from "../../core";
+import { p0Registry } from "./context";
 import { generateVariants, shuffled } from "./generate-variants";
 import {
   marketOfRequest as marketOf,
   scriptedBrief,
   scriptedDraft,
   scriptedReview,
+  scriptedVisualBrief,
   seedAcceptedIdea,
   textOfRequest as textOf,
 } from "./scripted-model";
@@ -24,7 +26,7 @@ import {
 // per prompt and market, so each test can change one thing. Synthetic content only.
 
 type Draft = contentWriter.ContentWriterOutput;
-type Review = critic.CriticOutput;
+type Review = critic.CriticAnswer;
 
 const logger = createLogger({
   service: "jobs",
@@ -120,6 +122,8 @@ describe("generateVariants", () => {
         if (scripted !== undefined) return scripted;
         if (request.meta.promptId === "market-adapter") return brief(market);
         if (request.meta.promptId === "content-writer") return draft(market, n > 0 ? `v${n}` : "");
+        if (request.meta.promptId === "visual-director")
+          return scriptedVisualBrief(textOf(request));
         return review();
       },
     });
@@ -146,13 +150,13 @@ describe("generateVariants", () => {
       hookType: "MISTAKE_CALLOUT",
       ctaType: "SAVE",
       criticVerdict: "PASS",
-      generationVersion: "p1.0.0",
+      generationVersion: "p1.1.0",
       lockVersion: 1,
       flags: [],
       lastError: null,
       templateSequence: ["A", "E", "B", "B", "F"],
     });
-    expect(es.qualityScore).toBe("4.42");
+    expect(es.qualityScore).toBe("4.38");
     expect(es.slidesJson).toHaveLength(5);
     expect(new Set(es.slidesJson.map((s) => s.id)).size).toBe(5);
     expect(es.slidesJson[1]).toMatchObject({
@@ -167,27 +171,58 @@ describe("generateVariants", () => {
       thresholdsVersion: "d1-placeholder",
     });
     expect(es.generationConfig).toMatchObject({
-      pipelineVersion: "1.0.0",
+      pipelineVersion: "1.1.0",
       embeddingModel: "fake-embedding",
       stages: {
         MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 1 },
-        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 1 },
-        CRITIC: { promptId: "critic", promptVersion: 1 },
+        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 2 },
+        CRITIC: { promptId: "critic", promptVersion: 2 },
+        VISUAL_DIRECTION: { promptId: "visual-director", promptVersion: 1 },
       },
     });
     expect(es.pipelineState).toMatchObject({ pipelineRunId: "run-1", stage: "DONE" });
     expect(Object.keys(es.pipelineState?.runIds ?? {}).sort()).toEqual([
       "ADAPT",
       "CRITIC:0",
+      "VISUAL",
       "WRITE:0",
     ]);
+    // The visual brief covers every image slot of the slides and is stored with its style.
+    expect(es.visualStyle).toBe(es.visualBriefJson?.visualStyle);
+    expect(es.visualBriefJson?.slides.map((e) => `${e.slideId}/${e.slot}`)).toEqual(
+      es.slidesJson.flatMap((s) =>
+        (p0Registry.get(s.templateId)?.imageSlots
+          ? Object.keys(p0Registry.get(s.templateId)?.imageSlots ?? {})
+          : []
+        ).map((slot) => `${s.id}/${slot}`),
+      ),
+    );
 
     const runs = await t.db.select().from(schema.generationRuns);
-    expect(runs).toHaveLength(6);
+    expect(runs).toHaveLength(8);
     expect(runs.every((r) => r.masterIdeaId === ideaId && r.contentVariantId !== null)).toBe(true);
     const audits = (await t.db.select().from(schema.auditEvents)).map((a) => a.action);
     expect(audits.filter((a) => a === "variant.generation_started")).toHaveLength(2);
     expect(audits.filter((a) => a === "variant.generated")).toHaveLength(2);
+  });
+
+  it("plans the pictures after the review, one market after another", async () => {
+    await run();
+    const [first, second] = calls("visual-director");
+    expect(calls("visual-director")).toHaveLength(2);
+    expect(textOf(first as StructuredRequest<unknown>)).not.toContain("<brief market=");
+    expect(textOf(second as StructuredRequest<unknown>)).toContain("<brief market=");
+  });
+
+  it("keeps the draft when the visual director gives no usable brief", async () => {
+    script = (promptId) =>
+      promptId === "visual-director"
+        ? { concept: "x", visualStyle: "NOPE", slides: [] }
+        : undefined;
+    const result = await run();
+    expect(result.outcomes.every((o) => o.status === "READY_FOR_REVIEW")).toBe(true);
+    const es = await variantRow("es-ES");
+    expect(es).toMatchObject({ status: "READY_FOR_REVIEW", visualBriefJson: null });
   });
 
   it("plans the markets one after another: the later plan sees the earlier one as a sibling", async () => {
@@ -226,6 +261,7 @@ describe("generateVariants", () => {
       "ADAPT",
       "CRITIC:0",
       "CRITIC:1",
+      "VISUAL",
       "WRITE:0",
       "WRITE:1",
     ]);
@@ -318,6 +354,7 @@ describe("generateVariants", () => {
     expect(Object.keys((await variantRow("en")).pipelineState?.runIds ?? {}).sort()).toEqual([
       "ADAPT",
       "CRITIC:0",
+      "VISUAL",
       "WRITE:0",
     ]);
   });

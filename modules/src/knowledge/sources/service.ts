@@ -358,7 +358,9 @@ async function queueOrBlock(
   source: SourceAsset,
   action: string,
 ): Promise<{ status: "QUEUED" | "BLOCKED" }> {
-  if (!canProcessWithAI(source)) {
+  // A photo is not read by a model, so the AI gate does not apply; the library checks the rights
+  // that matter for it (visual transform) when the director picks it.
+  if (source.type !== "PHOTO" && !canProcessWithAI(source)) {
     await transition(ctx, {
       table: schema.sourceAssets,
       statusKey: "processingStatus",
@@ -389,6 +391,15 @@ async function queue(ctx: ServiceContext, source: SourceAsset, action: string): 
     set: { processingAttempt: attempt },
     audit: { action, entityType: "source_asset", data: { type: source.type, attempt } },
   });
+  if (source.type === "PHOTO") {
+    await triggerJob(
+      ctx,
+      "import-library-photo",
+      { sourceAssetId: source.id, attempt },
+      { idempotencyKey: `photo:${source.id}:${attempt}` },
+    );
+    return;
+  }
   await triggerJob(
     ctx,
     "ingest-source",

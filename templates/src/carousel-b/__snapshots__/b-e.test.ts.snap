@@ -1,0 +1,741 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`template B > fixture en-short is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="B" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.b-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:28px}
+.b-number{color:var(--rc-accent);line-height:1}
+.b-label{text-transform:uppercase;letter-spacing:.12em;font-weight:600;opacity:.75}
+.b-side{width:340px;height:340px;border-radius:28px;margin-top:auto;align-self:flex-end}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="b-wrap">
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">12</div>
+
+
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Minutes of rest.</div>
+<img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template B > fixture es-long is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="B" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.b-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:28px}
+.b-number{color:var(--rc-accent);line-height:1}
+.b-label{text-transform:uppercase;letter-spacing:.12em;font-weight:600;opacity:.75}
+.b-side{width:340px;height:340px;border-radius:28px;margin-top:auto;align-self:flex-end}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="b-wrap">
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">2:1</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Agua y arroz</div>
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">La proporción que no falla</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Dos partes de agua por una de arroz, tapa puesta y fuego bajo; el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.</div>
+<img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template B > fixture max-length is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="B" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.b-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:28px}
+.b-number{color:var(--rc-accent);line-height:1}
+.b-label{text-transform:uppercase;letter-spacing:.12em;font-weight:600;opacity:.75}
+.b-side{width:340px;height:340px;border-radius:28px;margin-top:auto;align-self:flex-end}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="b-wrap">
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">88888888</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Etiqueta Etiqueta Etiqueta Etiqueta Etiq</div>
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Titular largo para el máximo Titular largo para el máximo Ti</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de cara</div>
+<img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template B > fixture no-number is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="B" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.b-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:28px}
+.b-number{color:var(--rc-accent);line-height:1}
+.b-label{text-transform:uppercase;letter-spacing:.12em;font-weight:600;opacity:.75}
+.b-side{width:340px;height:340px;border-radius:28px;margin-top:auto;align-self:flex-end}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-no-number" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="b-wrap">
+
+
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Por qué suelta almidón</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">El grano roza con otros granos y libera almidón en el agua.</div>
+<img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template B > fixture special-chars is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="B" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.b-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:28px}
+.b-number{color:var(--rc-accent);line-height:1}
+.b-label{text-transform:uppercase;letter-spacing:.12em;font-weight:600;opacity:.75}
+.b-side{width:340px;height:340px;border-radius:28px;margin-top:auto;align-self:flex-end}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="b-wrap">
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">180°</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Horno a 180 °C</div>
+
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">¿Cuánto tarda? ½ hora – quizá ¾. Añade “sal”, café y crème.</div>
+<img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template E > fixture en-short is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="E" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.e-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:32px;justify-content:center}
+.e-image{width:260px;height:260px;border-radius:28px;align-self:center}
+.e-panel{background:var(--rc-surface);border-radius:28px;padding:40px 44px;display:flex;flex-direction:column;gap:16px;border-left:14px solid var(--rc-negative)}
+.e-panel.correct{border-left-color:var(--rc-positive)}
+.e-mistake-title{color:var(--rc-negative)}
+.e-correct-title{color:var(--rc-positive)}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="e-wrap">
+<img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="e-panel mistake">
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Wrong: rinse</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Washes the starch away.</div>
+</div>
+<div class="e-panel correct">
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Right: keep it</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Starch makes it creamy.</div>
+</div>
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template E > fixture es-long is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="E" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.e-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:32px;justify-content:center}
+.e-image{width:260px;height:260px;border-radius:28px;align-self:center}
+.e-panel{background:var(--rc-surface);border-radius:28px;padding:40px 44px;display:flex;flex-direction:column;gap:16px;border-left:14px solid var(--rc-negative)}
+.e-panel.correct{border-left-color:var(--rc-positive)}
+.e-mistake-title{color:var(--rc-negative)}
+.e-correct-title{color:var(--rc-positive)}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="e-wrap">
+<img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="e-panel mistake">
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Error: remover el risotto</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Remover sin parar rompe los granos y el caldo se vuelve espeso y pegajoso, sin cremosidad.</div>
+</div>
+<div class="e-panel correct">
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Mejor: remover lo justo</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Añade el caldo poco a poco y mueve la olla; el almidón sale solo y el grano queda entero.</div>
+</div>
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template E > fixture max-length is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="E" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.e-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:32px;justify-content:center}
+.e-image{width:260px;height:260px;border-radius:28px;align-self:center}
+.e-panel{background:var(--rc-surface);border-radius:28px;padding:40px 44px;display:flex;flex-direction:column;gap:16px;border-left:14px solid var(--rc-negative)}
+.e-panel.correct{border-left-color:var(--rc-positive)}
+.e-mistake-title{color:var(--rc-negative)}
+.e-correct-title{color:var(--rc-positive)}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="e-wrap">
+<img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="e-panel mistake">
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Título del error Título del error Título</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Texto del error con el máximo permitido de caracteres. Texto del error con el máximo permitido de caracteres. Texto del error con el máximo </div>
+</div>
+<div class="e-panel correct">
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Título correcto Título correcto Título c</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo per</div>
+</div>
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template E > fixture no-optionals is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="E" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.e-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:32px;justify-content:center}
+.e-image{width:260px;height:260px;border-radius:28px;align-self:center}
+.e-panel{background:var(--rc-surface);border-radius:28px;padding:40px 44px;display:flex;flex-direction:column;gap:16px;border-left:14px solid var(--rc-negative)}
+.e-panel.correct{border-left-color:var(--rc-positive)}
+.e-mistake-title{color:var(--rc-negative)}
+.e-correct-title{color:var(--rc-positive)}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="e-wrap">
+<img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="e-panel mistake">
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Error</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Lo que no se hace.</div>
+</div>
+<div class="e-panel correct">
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Acierto</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Lo que sí se hace.</div>
+</div>
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;
+
+exports[`template E > fixture special-chars is valid for the template and renders a stable page 1`] = `
+"<!doctype html>
+<html lang="en" data-template="E" data-template-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080,initial-scale=1">
+<style>
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
+.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.img{display:block;object-fit:cover}
+.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo img{display:block;height:100%;width:auto}
+.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
+.e-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:32px;justify-content:center}
+.e-image{width:260px;height:260px;border-radius:28px;align-self:center}
+.e-panel{background:var(--rc-surface);border-radius:28px;padding:40px 44px;display:flex;flex-direction:column;gap:16px;border-left:14px solid var(--rc-negative)}
+.e-panel.correct{border-left-color:var(--rc-positive)}
+.e-mistake-title{color:var(--rc-negative)}
+.e-correct-title{color:var(--rc-positive)}
+</style>
+</head>
+<body>
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="e-wrap">
+<img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="e-panel mistake">
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">¡Ojo con los 200 °C!</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Más de ½ hora – se seca: café, crème, naïve “mal”.</div>
+</div>
+<div class="e-panel correct">
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Mejor a 180 °C</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Tapa y vigila; ¿listo? ¡Ñam!</div>
+</div>
+</div>
+<div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
+<div class="rc-page" data-page>1/6</div>
+</div>
+<script>(function () {
+  var STEP = 2;
+  function overflows(el) {
+    return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
+  }
+  function fit() {
+    var nodes = document.querySelectorAll("[data-fit]");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var max = Number(el.getAttribute("data-fit-max"));
+      var min = Number(el.getAttribute("data-fit-min"));
+      var size = max;
+      el.style.fontSize = size + "px";
+      while (size > min && overflows(el)) {
+        size = Math.max(min, size - STEP);
+        el.style.fontSize = size + "px";
+      }
+      if (overflows(el)) el.setAttribute("data-overflow", "true");
+      el.setAttribute("data-font-px", String(size));
+    }
+    document.documentElement.setAttribute("data-fit-done", "true");
+  }
+  window.__rcFit = fit;
+  var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(fit, fit);
+})();</script>
+</body>
+</html>
+"
+`;

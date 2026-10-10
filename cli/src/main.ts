@@ -2,6 +2,7 @@ import { createDb, isPoolerUrl } from "@rc/db";
 import { EnvValidationError, loadServerEnv } from "@rc/lib/env";
 import { createLogger } from "@rc/lib/logging";
 import { createEmbeddingProvider } from "@rc/lib/providers/embeddings";
+import { createImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider } from "@rc/lib/providers/llm";
 import { createStorage } from "@rc/lib/providers/storage";
 import { cliCommands } from "@rc/modules/cli-commands";
@@ -48,6 +49,7 @@ const providers = {
   storage: createStorage(env.storage),
   llm: createLlmProvider(env.ai),
   embeddings: createEmbeddingProvider(env.ai),
+  images: createImageProvider(env.ai),
 };
 // Jobs run in-process, one after the other, so a command can wait for ingestion to finish.
 const jobs: ReturnType<typeof createInlineJobRunner> = createInlineJobRunner({

@@ -25,5 +25,10 @@ export {
   requestVariants,
   type VariantsRequest,
 } from "./request";
-export { getReviewBundle, type ReviewBundle, type VariantView } from "./review";
+export {
+  getReviewBundle,
+  type RenderView,
+  type ReviewBundle,
+  type VariantView,
+} from "./review";
 export { draftFieldPaths, validateCriticOutput } from "./validate-critic";

@@ -24,14 +24,15 @@ const stage = (
   effort: Effort,
   maxTokens: number,
   extra: Pick<StageConfig, "stream"> = {},
-): StageConfig => ({ promptId, version: 1, model: DEFAULT_MODEL, effort, maxTokens, ...extra });
+  version = 1,
+): StageConfig => ({ promptId, version, model: DEFAULT_MODEL, effort, maxTokens, ...extra });
 
 export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   KNOWLEDGE_EXTRACTION: stage("knowledge-extractor", "medium", 32_000, { stream: true }),
   IDEA_GENERATION: stage("idea-generator", "high", 16_000),
   MARKET_ADAPTATION: stage("market-adapter", "high", 16_000),
-  CONTENT_WRITING: stage("content-writer", "high", 16_000),
-  CRITIC: stage("critic", "high", 16_000),
+  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 2),
+  CRITIC: stage("critic", "high", 16_000, {}, 2),
   VISUAL_DIRECTION: stage("visual-director", "medium", 16_000),
   FIELD_REGENERATION: stage("field-regenerator", "high", 8_000),
   POST_ANNOTATION: stage("post-annotator", "low", 4_000),

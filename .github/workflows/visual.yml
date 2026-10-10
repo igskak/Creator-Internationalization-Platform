@@ -1,0 +1,43 @@
+# Visual regression of the slide templates (plan 08 §8.9, 13 §13.7, M3-14): renders every fixture
+# of every template with Chromium and compares it with the golden images in
+# templates/__golden__/linux. Runs on changes to the templates and the renderer, and nightly.
+# Bootstrap: the first run on a new platform has no goldens; download the `visual-actual` artifact
+# of that run and commit its images (or run `pnpm test:visual --update` on a Linux machine).
+name: Visual regression
+
+on:
+  pull_request:
+    paths:
+      - "templates/**"
+      - "modules/src/visuals/**"
+      - ".github/workflows/visual.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    name: Golden images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Chromium is pinned through the playwright-core version of the lockfile.
+      - run: pnpm --filter @rc/modules exec playwright-core install --with-deps chromium
+      - run: pnpm test:visual
+      - name: Upload actual and diff images
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: visual-actual
+          path: templates/__golden__/.actual
+          if-no-files-found: ignore
