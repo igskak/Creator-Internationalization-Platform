@@ -14,9 +14,9 @@ exports[`template A > fixture en-short is valid for the template and renders a s
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -31,12 +31,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-shade"></div>
 <div class="a-text">
 
-<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:323px">Stop rinsing your pasta</div>
+<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:342px">Stop rinsing your pasta</div>
 
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -87,9 +87,9 @@ exports[`template A > fixture es-long is valid for the template and renders a st
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -104,13 +104,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-shade"></div>
 <div class="a-text">
-<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:38px">Error común</div>
-<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:323px">¿Por qué el arroz del domingo siempre queda pegajoso?</div>
-<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:99px">Tres gestos que cambian el resultado, sin comprar nada nuevo.</div>
+<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:45px">Error común</div>
+<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:342px">¿Por qué el arroz del domingo siempre queda pegajoso?</div>
+<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:103px">Tres gestos que cambian el resultado, sin comprar nada nuevo.</div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>
@@ -160,9 +160,9 @@ exports[`template A > fixture max-length is valid for the template and renders a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -177,13 +177,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-shade"></div>
 <div class="a-text">
-<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:38px">Kicker Kicker Kicker Kic</div>
-<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:323px">Una frase larga para el límite Una frase larga para el límite Una fras</div>
-<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:99px">Subtítulo con el máximo de caracteres permitido Subtítulo con el máximo de caracteres perm</div>
+<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:45px">Kicker Kicker Kicker Kic</div>
+<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:342px">Una frase larga para el límite Una frase larga para el límite Una fras</div>
+<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:103px">Subtítulo con el máximo de caracteres permitido Subtítulo con el máximo de caracteres perm</div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>
@@ -233,9 +233,9 @@ exports[`template A > fixture no-optionals is valid for the template and renders
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -250,12 +250,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-shade"></div>
 <div class="a-text">
 
-<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:323px">Solo el titular</div>
+<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:342px">Solo el titular</div>
 
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -306,9 +306,9 @@ exports[`template A > fixture special-chars is valid for the template and render
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -323,13 +323,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="A" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-shade"></div>
 <div class="a-text">
-<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:38px">¡Ojo! ñ ü</div>
-<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:323px">¿Qué pasa a 180 °C con ½ taza de aceite?</div>
-<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:99px">Añade “sal” – y prueba: café, crème, naïve</div>
+<div class="slot display a-kicker" data-slot="kicker" data-fit data-fit-min="28" data-fit-max="34" style="font-size:34px;max-height:45px">¡Ojo! ñ ü</div>
+<div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="96" style="font-size:96px;max-height:342px">¿Qué pasa a 180 °C con ½ taza de aceite?</div>
+<div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="32" data-fit-max="38" style="font-size:38px;max-height:103px">Añade “sal” – y prueba: café, crème, naïve</div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>
@@ -379,9 +379,9 @@ exports[`template F > fixture en-short is valid for the template and renders a s
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -395,12 +395,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="f-wrap">
 <img class="img f-product" data-image="product" alt="" src="data:image/webp;base64,UklGRg==">
 
-<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Get the guide</div>
-<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Comment GUIDE and we send it to you.</div>
+<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Get the guide</div>
+<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Comment GUIDE and we send it to you.</div>
 
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -451,9 +451,9 @@ exports[`template F > fixture es-long is valid for the template and renders a st
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -467,13 +467,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="f-wrap">
 <img class="img f-product" data-image="product" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="slot body f-offer" data-slot="offerName" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:52px">Guía de arroz</div>
-<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Llévate la guía completa del arroz perfecto</div>
-<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Comenta la palabra GUÍA y te la enviamos por mensaje directo, con recetas y tiempos.</div>
-<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:81px">GUÍA</div></div>
+<div class="slot body f-offer" data-slot="offerName" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Guía de arroz</div>
+<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Llévate la guía completa del arroz perfecto</div>
+<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Comenta la palabra GUÍA y te la enviamos por mensaje directo, con recetas y tiempos.</div>
+<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:95px">GUÍA</div></div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>
@@ -523,9 +523,9 @@ exports[`template F > fixture max-length is valid for the template and renders a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -539,13 +539,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="f-wrap">
 <img class="img f-product" data-image="product" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="slot body f-offer" data-slot="offerName" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:52px">Nombre de la oferta Nombre de la oferta </div>
-<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Titular de llamada a la acción Titular de llamada a la acció</div>
-<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Texto del cuerpo con el máximo permitido de caracteres Texto del cuerpo con el máximo permitido de caracteres Texto del cuerpo con el máximo permitido de caract</div>
-<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:81px">ABCDEFGHIJKLMNOP</div></div>
+<div class="slot body f-offer" data-slot="offerName" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Nombre de la oferta Nombre de la oferta </div>
+<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Titular de llamada a la acción Titular de llamada a la acció</div>
+<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Texto del cuerpo con el máximo permitido de caracteres Texto del cuerpo con el máximo permitido de caracteres Texto del cuerpo con el máximo permitido de caract</div>
+<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:95px">ABCDEFGHIJKLMNOP</div></div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>
@@ -595,9 +595,9 @@ exports[`template F > fixture no-optionals is valid for the template and renders
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -611,12 +611,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="f-wrap">
 <img class="img f-product" data-image="product" alt="" src="data:image/webp;base64,UklGRg==">
 
-<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Guárdalo</div>
-<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Te servirá la próxima vez.</div>
+<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Guárdalo</div>
+<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Te servirá la próxima vez.</div>
 
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -667,9 +667,9 @@ exports[`template F > fixture special-chars is valid for the template and render
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -683,13 +683,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="F" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="f-wrap">
 <img class="img f-product" data-image="product" alt="" src="data:image/webp;base64,UklGRg==">
 
-<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">¿Listo? ¡Guarda esta receta!</div>
-<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Hornea a 200 °C, 2½ tazas – sin prisa. Más en el perfil.</div>
-<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:81px">ÑAM</div></div>
+<div class="slot display f-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">¿Listo? ¡Guarda esta receta!</div>
+<div class="slot body f-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Hornea a 200 °C, 2½ tazas – sin prisa. Más en el perfil.</div>
+<div class="f-keyword-box"><div class="slot display f-keyword" data-slot="keyword" data-fit data-fit-min="48" data-fit-max="72" style="font-size:72px;max-height:95px">ÑAM</div></div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
 <div class="rc-page" data-page>1/6</div>

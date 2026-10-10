@@ -45,6 +45,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The render tests (M3-11) need a Chromium; without one they are skipped.
+      - run: pnpm --filter @rc/modules exec playwright-core install --with-deps chromium
       - run: pnpm test
 
   build:

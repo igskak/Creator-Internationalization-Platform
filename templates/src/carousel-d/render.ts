@@ -3,13 +3,11 @@ import type { TemplateRenderer } from "../framework/types";
 import { readIcon, STEP_ICONS } from "../icons";
 
 // Template D, diagram / mechanism (plan 08 §8.2.1, P1): a title and three to five numbered steps,
-// each with an icon of the template's own set, in order. An optional small picture sits beside the title.
+// each with an icon of the template's own set, in order. An optional small picture sits right-aligned under the title.
 
 export const rendererD: TemplateRenderer = {
   css: `.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-head{display:flex;align-items:flex-start;gap:32px}
-.d-head .slot{flex:1}
-.d-image{width:220px;height:220px;border-radius:24px;flex:none}
+.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
 .d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
 .d-step{display:flex;align-items:center;gap:28px}
 .d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
@@ -27,10 +25,8 @@ export const rendererD: TemplateRenderer = {
       );
     }
     return `<div class="d-wrap">
-<div class="d-head">
 ${textSlot(c, "title", "d-title")}
 ${c.assets.images.image ? imageSlot(c, "image", "d-image") : ""}
-</div>
 <div class="d-steps">
 ${steps.join("\n")}
 </div>

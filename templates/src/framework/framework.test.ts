@@ -71,6 +71,11 @@ describe("renderSlideHtml", () => {
     const html = renderSlideHtml(input);
     expect(html).toContain('<div class="rc-page" data-page>1/6</div>');
     expect(html).toContain("--rc-bg:#FAF6EF;");
+    // The quotes of the font names must not end the style attribute.
+    expect(html).toContain(
+      "--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;",
+    );
+    expect(html).toContain("--rc-safe-margin:72px;");
   });
 
   it("fails clearly for an unknown template or one without a renderer", () => {
@@ -93,10 +98,10 @@ describe("slot helpers", () => {
 
   it("limits the box from the template's limits and marks the slot for fit-text", () => {
     const html = textSlot(context, "headline", "h");
-    // headline: 3 lines × 96 px × 1.12
-    expect(slotBoxHeightPx(context.template.textSlots.headline as never)).toBe(323);
+    // headline: 3 lines × 96 px × 1.12 + 2 × 0.1 em of padding
+    expect(slotBoxHeightPx(context.template.textSlots.headline as never)).toBe(342);
     expect(html).toContain('data-slot="headline" data-fit data-fit-min="64" data-fit-max="96"');
-    expect(html).toContain("max-height:323px");
+    expect(html).toContain("max-height:342px");
     expect(html).toContain("Por qué no lavar el arroz?<br>Segunda línea");
   });
 

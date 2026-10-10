@@ -14,9 +14,9 @@ exports[`template B > fixture en-short is valid for the template and renders a s
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -29,12 +29,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="b-wrap">
-<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:269px">12</div>
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">12</div>
 
 
-<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:343px">Minutes of rest.</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Minutes of rest.</div>
 <img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -85,9 +85,9 @@ exports[`template B > fixture es-long is valid for the template and renders a st
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -100,12 +100,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="b-wrap">
-<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:269px">2:1</div>
-<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:52px">Agua y arroz</div>
-<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">La proporción que no falla</div>
-<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:343px">Dos partes de agua por una de arroz, tapa puesta y fuego bajo; el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.</div>
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">2:1</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Agua y arroz</div>
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">La proporción que no falla</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Dos partes de agua por una de arroz, tapa puesta y fuego bajo; el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.</div>
 <img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -156,9 +156,9 @@ exports[`template B > fixture max-length is valid for the template and renders a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -171,12 +171,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="b-wrap">
-<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:269px">88888888</div>
-<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:52px">Etiqueta Etiqueta Etiqueta Etiqueta Etiq</div>
-<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Titular largo para el máximo Titular largo para el máximo Ti</div>
-<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:343px">Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de cara</div>
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">88888888</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Etiqueta Etiqueta Etiqueta Etiqueta Etiq</div>
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Titular largo para el máximo Titular largo para el máximo Ti</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de caracteres permitido en esta plantilla. Cuerpo con el máximo de cara</div>
 <img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -227,9 +227,9 @@ exports[`template B > fixture no-number is valid for the template and renders a 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -242,12 +242,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-number" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-no-number" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="b-wrap">
 
 
-<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:179px">Por qué suelta almidón</div>
-<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:343px">El grano roza con otros granos y libera almidón en el agua.</div>
+<div class="slot display b-headline" data-slot="headline" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Por qué suelta almidón</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">El grano roza con otros granos y libera almidón en el agua.</div>
 <img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -298,9 +298,9 @@ exports[`template B > fixture special-chars is valid for the template and render
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -313,12 +313,12 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="B" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="b-wrap">
-<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:269px">180°</div>
-<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:52px">Horno a 180 °C</div>
+<div class="slot display b-number" data-slot="number" data-fit data-fit-min="120" data-fit-max="240" style="font-size:240px;max-height:317px">180°</div>
+<div class="slot body b-label" data-slot="label" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:57px">Horno a 180 °C</div>
 
-<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:343px">¿Cuánto tarda? ½ hora – quizá ¾. Añade “sal”, café y crème.</div>
+<div class="slot body b-body" data-slot="body" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:348px">¿Cuánto tarda? ½ hora – quizá ¾. Añade “sal”, café y crème.</div>
 <img class="img b-side" data-image="side" alt="" src="data:image/webp;base64,UklGRg==">
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -369,9 +369,9 @@ exports[`template E > fixture en-short is valid for the template and renders a s
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -386,16 +386,16 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="e-wrap">
 <img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="e-panel mistake">
-<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Wrong: rinse</div>
-<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Washes the starch away.</div>
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Wrong: rinse</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Washes the starch away.</div>
 </div>
 <div class="e-panel correct">
-<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Right: keep it</div>
-<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Starch makes it creamy.</div>
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Right: keep it</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Starch makes it creamy.</div>
 </div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -446,9 +446,9 @@ exports[`template E > fixture es-long is valid for the template and renders a st
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -463,16 +463,16 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="e-wrap">
 <img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="e-panel mistake">
-<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Error: remover el risotto</div>
-<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Remover sin parar rompe los granos y el caldo se vuelve espeso y pegajoso, sin cremosidad.</div>
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Error: remover el risotto</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Remover sin parar rompe los granos y el caldo se vuelve espeso y pegajoso, sin cremosidad.</div>
 </div>
 <div class="e-panel correct">
-<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Mejor: remover lo justo</div>
-<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Añade el caldo poco a poco y mueve la olla; el almidón sale solo y el grano queda entero.</div>
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Mejor: remover lo justo</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Añade el caldo poco a poco y mueve la olla; el almidón sale solo y el grano queda entero.</div>
 </div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -523,9 +523,9 @@ exports[`template E > fixture max-length is valid for the template and renders a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -540,16 +540,16 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="e-wrap">
 <img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="e-panel mistake">
-<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Título del error Título del error Título</div>
-<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Texto del error con el máximo permitido de caracteres. Texto del error con el máximo permitido de caracteres. Texto del error con el máximo </div>
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Título del error Título del error Título</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Texto del error con el máximo permitido de caracteres. Texto del error con el máximo permitido de caracteres. Texto del error con el máximo </div>
 </div>
 <div class="e-panel correct">
-<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Título correcto Título correcto Título c</div>
-<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo per</div>
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Título correcto Título correcto Título c</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo permitido de caracteres. Texto correcto con el máximo per</div>
 </div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -600,9 +600,9 @@ exports[`template E > fixture no-optionals is valid for the template and renders
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -617,16 +617,16 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="e-wrap">
 <img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="e-panel mistake">
-<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Error</div>
-<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Lo que no se hace.</div>
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Error</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Lo que no se hace.</div>
 </div>
 <div class="e-panel correct">
-<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Acierto</div>
-<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Lo que sí se hace.</div>
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Acierto</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Lo que sí se hace.</div>
 </div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>
@@ -677,9 +677,9 @@ exports[`template E > fixture special-chars is valid for the template and render
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -694,16 +694,16 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:"Fraunces", serif;--rc-font-body:"Inter", sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="E" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
 <div class="e-wrap">
 <img class="img e-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="e-panel mistake">
-<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">¡Ojo con los 200 °C!</div>
-<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Más de ½ hora – se seca: café, crème, naïve “mal”.</div>
+<div class="slot display e-mistake-title" data-slot="mistakeTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">¡Ojo con los 200 °C!</div>
+<div class="slot body e-mistake-text" data-slot="mistakeText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Más de ½ hora – se seca: café, crème, naïve “mal”.</div>
 </div>
 <div class="e-panel correct">
-<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:63px">Mejor a 180 °C</div>
-<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:208px">Tapa y vigila; ¿listo? ¡Ñam!</div>
+<div class="slot display e-correct-title" data-slot="correctTitle" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:74px">Mejor a 180 °C</div>
+<div class="slot body e-correct-text" data-slot="correctText" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:213px">Tapa y vigila; ¿listo? ¡Ñam!</div>
 </div>
 </div>
 <div class="rc-logo" data-logo style="bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px;font-size:29px">Reg.Chef</div>

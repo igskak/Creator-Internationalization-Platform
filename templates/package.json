@@ -6,7 +6,8 @@
   "description": "Carousel slide templates and HTML rendering",
   "exports": {
     ".": "./src/index.ts",
-    "./render": "./src/render.ts"
+    "./render": "./src/render.ts",
+    "./fixtures": "./src/fixtures.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

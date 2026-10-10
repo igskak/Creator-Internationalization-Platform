@@ -23,13 +23,22 @@ export const textHtml = (text: string): string => escapeHtml(text).replace(/\r?\
 export const LINE_HEIGHT = { display: 1.12, body: 1.3 } as const;
 
 /**
+ * Vertical padding of a slot in em. A font's glyph box is taller than a tight line height (Fraunces
+ * at 1.12), and the browser counts that extra as scrollable overflow; the padding gives it room, so
+ * only text that really needs another line is reported as overflow.
+ */
+export const SLOT_PAD_EM = { display: 0.1, body: 0.06 } as const;
+
+/**
  * The most a text slot may grow: `maxLines` lines at the largest size. The slot is as tall as its
  * text up to this limit (`max-height`, `overflow:hidden`); the fit-text script shrinks the font
  * until the text fits it, and text that still overflows at the smallest size is marked
  * `data-overflow` (a QA blocker).
  */
 export const slotBoxHeightPx = (spec: TextSlotSpec): number =>
-  Math.round(spec.maxLines * spec.maxPx * LINE_HEIGHT[spec.font]);
+  Math.round(
+    spec.maxLines * spec.maxPx * LINE_HEIGHT[spec.font] + 2 * spec.maxPx * SLOT_PAD_EM[spec.font],
+  );
 
 /**
  * A text slot element, or nothing for an optional slot without text. `className` positions it

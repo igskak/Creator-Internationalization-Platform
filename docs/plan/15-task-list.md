@@ -438,7 +438,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** as M3-08; D uses an icon set in `templates/assets/icons`.
   - **Done when:** as M3-08.
 
-- [ ] **M3-11 · Playwright renderer and render QA** · P0 · M · deps: M3-08
+- [x] **M3-11 · Playwright renderer and render QA** · P0 · M · deps: M3-08
   - **Do:** `visuals/render/renderer.ts` (one Chromium per run, viewport 1080×1350, DPR 1, fonts ready, fit-text, overflow/logo/image checks, PNG → sharp JPEG q90 4:4:4 sRGB, size guard) and `qa.ts`.
   - **Done when:** renders fixtures in CI and in Claude Code (pre-installed Chromium); QA catches a forced overflow.
   - **Refs:** 08 §8.6, §8.7.

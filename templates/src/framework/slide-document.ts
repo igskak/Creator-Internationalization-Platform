@@ -48,9 +48,9 @@ const LOGO_ANCHORS: Record<TemplateDefinition["logo"]["anchor"], string> = {
 const BASE_CSS = `*{box-sizing:border-box;margin:0;padding:0}
 html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;overflow:hidden}
 .rc-slide{position:relative;width:${CANVAS.width}px;height:${CANVAS.height}px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;font-weight:400}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
@@ -83,7 +83,7 @@ ${renderer.css}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="${escapeHtml(slide.id)}" data-template="${escapeHtml(template.id)}" style="${cssVariablesText(theme)}">
+<div class="rc-slide" data-slide-id="${escapeHtml(slide.id)}" data-template="${escapeHtml(template.id)}" style="${escapeHtml(cssVariablesText(theme))}">
 ${renderer.body(context)}
 ${logo}
 <div class="rc-page" data-page>${page.index}/${page.count}</div>
