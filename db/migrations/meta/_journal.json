@@ -43,6 +43,13 @@
       "when": 1791652773011,
       "tag": "0005_independent_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791672260100,
+      "tag": "0006_review_scheduling",
+      "breakpoints": true
     }
   ]
 }

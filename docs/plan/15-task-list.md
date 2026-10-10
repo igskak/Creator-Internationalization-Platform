@@ -472,7 +472,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M4 · Review + Calendar
 
-- [ ] **M4-01 · Review and scheduling schema (0005)** · P0 · M · deps: M3-01
+- [x] **M4-01 · Review and scheduling schema (0005)** · P0 · M · deps: M3-01
   - **Do:** `review_events`, `content_variant_versions`, `social_accounts`, `publications`; `content_variants.approved_version_id`; `voice_examples` FK; `ApprovedSnapshot`, `InstagramError` types.
   - **Done when:** migration + tests (partial unique indexes).
   - **Refs:** 04 §4.3 (0005).

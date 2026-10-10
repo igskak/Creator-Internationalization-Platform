@@ -30,6 +30,7 @@ import type {
   UtmSpec,
   VisualBrief,
 } from "../json/content";
+import type { ApprovedSnapshot } from "../json/review";
 import { appUsers, brands, markets } from "./core";
 import { contentFormat, generationRuns, knowledgeItems, sourceAssets } from "./knowledge";
 
@@ -37,6 +38,9 @@ import { contentFormat, generationRuns, knowledgeItems, sourceAssets } from "./k
 // content_format was created in 0002 (decision log, M1-01) and is reused here.
 // generation_runs.master_idea_id and content_variant_id are declared next to the other
 // generation_runs columns in ./knowledge; this migration adds them.
+// 0006_review_scheduling adds review_events and content_variant_versions here, next to
+// content_variants (they reference each other and the module rules forbid an import cycle);
+// social_accounts and publications are in ./publishing.
 
 export const ideaStatus = pgEnum("idea_status", ["PROPOSED", "ACCEPTED", "REJECTED", "ARCHIVED"]);
 export const commercialIntent = pgEnum("commercial_intent", [
@@ -66,6 +70,19 @@ export const criticVerdict = pgEnum("critic_verdict", [
 ]);
 
 export const renderStatus = pgEnum("render_status", ["PENDING", "RENDERING", "READY", "FAILED"]);
+
+/** What a reviewer did to a variant (plan 04 §4.2). */
+export const REVIEW_ACTIONS = [
+  "EDIT",
+  "REGENERATE",
+  "APPROVE",
+  "REJECT",
+  "REQUEST_CHANGES",
+  "RESUBMIT",
+  "UNAPPROVE",
+  "COMMENT",
+] as const;
+export const reviewAction = pgEnum("review_action", REVIEW_ACTIONS);
 
 const id = () => uuid().primaryKey().defaultRandom();
 const createdAt = () => timestamp({ withTimezone: true }).notNull().defaultNow();
@@ -220,6 +237,8 @@ export const contentVariants = pgTable(
     visualStyle: text(),
     /** The render the review screen shows; set by the render job (M3-12). */
     currentRenderId: uuid().references((): AnyPgColumn => carouselRenders.id),
+    /** The snapshot the publisher posts; null until approved, cleared when the approval is undone. */
+    approvedVersionId: uuid().references((): AnyPgColumn => contentVariantVersions.id),
     /** Derived; used by analytics and originality checks. */
     templateSequence: text().array().notNull().default(sql`'{}'::text[]`),
     /** Must belong to the same market (checked in code). */
@@ -282,6 +301,58 @@ export const carouselRenders = pgTable(
   (t) => [unique("carousel_renders_variant_input_uq").on(t.contentVariantId, t.inputHash)],
 ).enableRLS();
 
+/** One reviewer action on a variant, with the value before and after [S§5, §10.3]. */
+export const reviewEvents = pgTable(
+  "review_events",
+  {
+    id: id(),
+    contentVariantId: uuid()
+      .notNull()
+      .references(() => contentVariants.id),
+    action: reviewAction().notNull(),
+    /** FieldPath (04 §4.4). */
+    field: text(),
+    /** jsonb because slides are structured [C-07]. */
+    originalValue: jsonb().$type<unknown>(),
+    editedValue: jsonb().$type<unknown>(),
+    /** Null = the system. */
+    reviewerId: uuid().references(() => appUsers.id),
+    /** Taxonomy kind 'reason_code'. */
+    reasonCode: text(),
+    reason: text(),
+    generationRunId: uuid().references(() => generationRuns.id),
+    variantLockVersion: integer().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("review_events_variant_idx").on(t.contentVariantId, t.createdAt),
+    index("review_events_reason_idx").on(t.reasonCode),
+  ],
+).enableRLS();
+
+/** Approved, immutable snapshots of a variant [S§19]. */
+export const contentVariantVersions = pgTable(
+  "content_variant_versions",
+  {
+    id: id(),
+    contentVariantId: uuid()
+      .notNull()
+      .references(() => contentVariants.id),
+    versionNo: integer().notNull(),
+    snapshot: jsonb().$type<ApprovedSnapshot>().notNull(),
+    carouselRenderId: uuid()
+      .notNull()
+      .references(() => carouselRenders.id),
+    /** Hash of the snapshot content; the render's input hash is bound to it. */
+    contentHash: text().notNull(),
+    approvedBy: uuid()
+      .notNull()
+      .references(() => appUsers.id),
+    approvedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("content_variant_versions_variant_no_uq").on(t.contentVariantId, t.versionNo)],
+).enableRLS();
+
 /** P1 [S§20: Sergey's edits]. */
 export const voiceExamples = pgTable(
   "voice_examples",
@@ -295,8 +366,7 @@ export const voiceExamples = pgTable(
     note: text(),
     language: text(),
     source: text().$type<"SEED" | "REVIEW_EVENT">().notNull(),
-    /** FK is added in 0005 when review_events exists. */
-    reviewEventId: uuid(),
+    reviewEventId: uuid().references(() => reviewEvents.id),
     isActive: boolean().notNull().default(true),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
