@@ -477,7 +477,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** migration + tests (partial unique indexes).
   - **Refs:** 04 §4.3 (0005).
 
-- [ ] **M4-02 · Variant state machine** · P0 · M · deps: M4-01
+- [x] **M4-02 · Variant state machine** · P0 · M · deps: M4-01
   - **Do:** `content/variants/state.ts`: transition table (10 §10.4.3), guards, side-effect hooks, "allowed actions" for the UI.
   - **Done when:** full transition matrix tests.
 
