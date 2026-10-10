@@ -40,4 +40,6 @@ jobs:
         with:
           name: visual-actual
           path: templates/__golden__/.actual
+          # `.actual` is a dot directory, which upload-artifact skips unless told otherwise.
+          include-hidden-files: true
           if-no-files-found: ignore
