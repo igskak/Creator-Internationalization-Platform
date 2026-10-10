@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Where the bundled fonts and icons are (M3-06, M3-12). From source they sit next to this file's
@@ -14,7 +14,7 @@ export function setAssetsRoot(path: string | undefined): void {
   override = path;
 }
 
-const here = (): string => fileURLToPath(new URL("../assets", import.meta.url));
+const here = (): string => join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 
 /** Absolute path of a file under `assets/`; throws with the places it looked in. */
 export function assetPath(relative: string): string {
@@ -25,6 +25,7 @@ export function assetPath(relative: string): string {
     join(cwd, "templates", "assets"),
     join(cwd, "assets"),
     join(cwd, "..", "templates", "assets"),
+    join(cwd, "..", "..", "templates", "assets"),
   ];
   for (const root of roots) {
     const candidate = join(root, relative);
