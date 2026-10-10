@@ -8,7 +8,8 @@ import type { GeneratedImage, ImageAspect, ImageProvider, ImageRequest } from ".
 // added to the prompt as an "Avoid:" sentence. A moderation block comes as
 // `error.code = "moderation_blocked"` and is permanent for that prompt.
 
-export const OPENAI_IMAGE_MODEL = "gpt-image-2.5-flare";
+/** Owner decision after the bake-off (M3-15, docs/decisions/image-provider.md). */
+export const OPENAI_IMAGE_MODEL = "gpt-image-2.5-sunburst";
 
 export type ImageQuality = "low" | "medium" | "high" | "xhigh" | "max" | "auto";
 
@@ -21,9 +22,15 @@ const SIZES: Record<ImageAspect, { size: string; width: number; height: number }
 };
 
 /**
- * Estimated USD per image by quality for a portrait image. OpenAI's pricing page lists image
- * tokens, not a per-image table, so these are the published gpt-image-1 per-image figures used as
- * an estimate; override with `prices` once the real bill is known (the bake-off, M3-15).
+ * USD per million tokens of the gpt-image-2.5 models (flare and sunburst alike; OpenAI pricing
+ * page, read 2026-10-11). The cost of an image comes from the `usage` of its answer.
+ */
+export const GPT_IMAGE_TOKEN_PRICES = { textInput: 5, imageInput: 8, imageOutput: 30 };
+
+/**
+ * Fallback when an answer carries no `usage`: estimated USD per portrait image by quality, the
+ * published gpt-image-1 per-image figures. The bake-off (M3-15) measured about 0.04 USD for a
+ * `high` 1024x1536 image of gpt-image-2.5 from its usage, so these overstate the cost.
  */
 export const DEFAULT_IMAGE_PRICES: Record<string, number> = {
   low: 0.02,
@@ -38,6 +45,9 @@ export type OpenAIImageOptions = {
   baseUrl?: string;
   model?: string;
   quality?: ImageQuality;
+  /** USD per million tokens, for the cost from `usage`. */
+  tokenPrices?: typeof GPT_IMAGE_TOKEN_PRICES;
+  /** Per-image fallback by quality when an answer has no `usage`. */
   prices?: Record<string, number>;
   maxRetries?: number;
   /** Default 180 s: high quality images take a while. */
@@ -50,6 +60,7 @@ export function createOpenAIImageProvider(options: OpenAIImageOptions): ImagePro
   const model = options.model ?? OPENAI_IMAGE_MODEL;
   const quality = options.quality ?? "high";
   const prices = options.prices ?? DEFAULT_IMAGE_PRICES;
+  const tokenPrices = options.tokenPrices ?? GPT_IMAGE_TOKEN_PRICES;
   const baseUrl = (options.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
   const maxRetries = options.maxRetries ?? 2;
   const timeoutMs = options.timeoutMs ?? 180_000;
@@ -97,17 +108,18 @@ export function createOpenAIImageProvider(options: OpenAIImageOptions): ImagePro
         }
 
         if (response.ok) {
-          const body = (await response.json()) as { data?: { b64_json?: string }[] };
+          const body = (await response.json()) as { data?: { b64_json?: string }[]; usage?: Usage };
           const b64 = body.data?.[0]?.b64_json;
           if (!b64) throw new PermanentError("OpenAI returned no image.");
+          const measured = costFromUsage(body.usage, tokenPrices);
           return {
             bytes: new Uint8Array(Buffer.from(b64, "base64")),
             mimeType: "image/png",
             width,
             height,
             model,
-            costUsd: prices[quality] ?? null,
-            params,
+            costUsd: measured ?? prices[quality] ?? null,
+            params: body.usage ? { ...params, usage: body.usage } : params,
           };
         }
 
@@ -142,4 +154,27 @@ export function createOpenAIImageProvider(options: OpenAIImageOptions): ImagePro
       }
     },
   };
+}
+
+type Usage = {
+  input_tokens?: number;
+  output_tokens?: number;
+  input_tokens_details?: { text_tokens?: number; image_tokens?: number };
+};
+
+/** USD of one answer from its token usage; null when the answer has no usable counts. */
+function costFromUsage(
+  usage: Usage | undefined,
+  perMillion: typeof GPT_IMAGE_TOKEN_PRICES,
+): number | null {
+  if (typeof usage?.input_tokens !== "number" || typeof usage.output_tokens !== "number") {
+    return null;
+  }
+  const imageInput = usage.input_tokens_details?.image_tokens ?? 0;
+  const textInput = usage.input_tokens - imageInput;
+  const usd =
+    textInput * perMillion.textInput +
+    imageInput * perMillion.imageInput +
+    usage.output_tokens * perMillion.imageOutput;
+  return Math.round(usd) / 1e6;
 }

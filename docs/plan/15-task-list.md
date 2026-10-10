@@ -458,7 +458,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** CI job green; a deliberate CSS change fails it.
   - **Refs:** 08 §8.9.
 
-- [ ] **M3-15 · Image model bake-off** · P0 · S · deps: M3-05
+- [x] **M3-15 · Image model bake-off** · P0 · S · deps: M3-05
   - **Do:** 10 real visual briefs × 2 models (OpenAI + one alternative through a throwaway script); blind review by Ihor/Sergey on a "premium macro food" rubric; `docs/decisions/image-provider.md`; set the default model (add a second adapter task if the alternative wins).
   - **Done when:** decision recorded.
 
