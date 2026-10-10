@@ -68,6 +68,26 @@ describe("OpenAI image provider", () => {
     ).toBeNull();
   });
 
+  it("prices an image from the token usage of the answer", async () => {
+    // The usage of a real high 1024x1536 answer of gpt-image-2.5 (bake-off M3-15).
+    const usage = {
+      input_tokens: 149,
+      input_tokens_details: { image_tokens: 0, text_tokens: 149 },
+      output_tokens: 1372,
+    };
+    server.use(
+      http.post(URL, () =>
+        HttpResponse.json({ data: [{ b64_json: PNG.toString("base64") }], usage }),
+      ),
+    );
+    const image = await provider().generate({ prompt: "x", aspect: "4:5" });
+    // 149 × 5 + 1372 × 30 USD per million tokens.
+    expect(image.costUsd).toBe(0.041905);
+    expect(image.params).toMatchObject({ usage });
+    const custom = provider({ tokenPrices: { textInput: 0, imageInput: 0, imageOutput: 1000 } });
+    expect((await custom.generate({ prompt: "x", aspect: "4:5" })).costUsd).toBe(1.372);
+  });
+
   it("rejects an empty prompt before any request", async () => {
     await expect(provider().generate({ prompt: " ", aspect: "1:1" })).rejects.toBeInstanceOf(
       ValidationError,

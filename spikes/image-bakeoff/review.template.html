@@ -1,0 +1,239 @@
+<title>Кадры вслепую</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: a neutral-grey light table (photo-editing convention), one brief per row, A and B side by side, scores under each picture. */
+:root {
+  --ground: #d6d7d9;
+  --surface: #e6e7e9;
+  --ink: #1b1d21;
+  --ink-soft: #565a62;
+  --line: #b9bbbf;
+  --pick: #2d5fd3;
+  --pick-ink: #ffffff;
+  --ok: #2f7a4b;
+  --warn: #9a5b00;
+  --display: "Archivo Narrow", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #2b2c2f; --surface: #36373b; --ink: #ecedef; --ink-soft: #a5a8af; --line: #4a4c51;
+    --pick: #6f97f2; --pick-ink: #0d1424; --ok: #6cc28d; --warn: #e0a54b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #2b2c2f; --surface: #36373b; --ink: #ecedef; --ink-soft: #a5a8af; --line: #4a4c51;
+  --pick: #6f97f2; --pick-ink: #0d1424; --ok: #6cc28d; --warn: #e0a54b; color-scheme: dark;
+}
+body { background: var(--ground); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+h1 { font: 600 clamp(26px, 4vw, 36px)/1.1 var(--display); letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.lede { margin: 0; max-width: 68ch; color: var(--ink-soft); }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font: 500 13px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+.status { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); }
+.status[data-kind="ok"] { color: var(--ok); border-color: currentColor; }
+.status[data-kind="warn"] { color: var(--warn); border-color: currentColor; }
+.progress { font-variant-numeric: tabular-nums; }
+details.rubric { background: var(--surface); border-radius: 6px; padding: 12px 16px; max-width: 80ch; }
+details.rubric summary { cursor: pointer; font-weight: 600; }
+details.rubric dl { margin: 10px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; }
+details.rubric dt { font-weight: 600; }
+details.rubric dd { margin: 0; color: var(--ink-soft); }
+.pair { display: grid; gap: 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.pair-head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+.pair-head h2 { font: 600 22px/1.2 var(--display); margin: 0; font-variant-numeric: tabular-nums; }
+.meta { color: var(--ink-soft); font-size: 13px; }
+.prompt summary { cursor: pointer; color: var(--ink-soft); font-size: 13px; }
+.prompt p { font: 12.5px/1.55 var(--mono); margin: 8px 0 0; max-width: 100ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+.duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 720px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+.side { display: grid; gap: 10px; min-width: 0; }
+.side-label { font: 600 15px/1 var(--display); letter-spacing: .08em; }
+.shot { display: block; padding: 0; border: 0; background: var(--surface); cursor: zoom-in; border-radius: 4px; overflow: hidden; aspect-ratio: 2 / 3; max-width: 100%; }
+.shot img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.shot:focus-visible, .seg input:focus-visible + span, .pick input:focus-visible + span { outline: 2px solid var(--pick); outline-offset: 2px; }
+.scores { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.row-name { font-size: 13.5px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+.seg label { position: relative; }
+.seg input, .pick input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; min-width: 34px; padding: 6px 0; text-align: center; cursor: pointer; font-variant-numeric: tabular-nums; border-left: 1px solid var(--line); }
+.seg label:first-child span { border-left: 0; }
+.seg input:checked + span { background: var(--pick); color: var(--pick-ink); }
+.verdict { display: grid; gap: 10px; background: var(--surface); border-radius: 6px; padding: 14px 16px; }
+.verdict-title { font: 600 14px/1.2 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+.pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick label { position: relative; }
+.pick span { display: block; padding: 8px 16px; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; font-weight: 600; }
+.pick input:checked + span { background: var(--pick); color: var(--pick-ink); border-color: var(--pick); }
+textarea { width: 100%; min-height: 60px; resize: vertical; font: inherit; color: var(--ink); background: var(--ground); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; }
+.lightbox { position: fixed; inset: 0; background: rgba(10, 10, 12, .92); display: grid; place-items: center; padding: 16px; z-index: 10; cursor: zoom-out; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lightbox-label { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 16px; color: #fff; font: 600 15px/1 var(--display); letter-spacing: .08em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Кадры вслепую</h1>
+    <p class="lede">Две модели нарисовали главный кадр по одному и тому же брифу. Какая модель где, не сказано. Оцените оба кадра по четырём пунктам и выберите лучший. Оценки сохраняются сами; коллега их не видит.</p>
+    <div class="bar">
+      <span class="status" id="status">Подключаюсь…</span>
+      <span class="progress" id="progress"></span>
+    </div>
+    <details class="rubric">
+      <summary>Как оценивать (1 плохо, 5 отлично)</summary>
+      <dl id="rubric"></dl>
+    </details>
+  </header>
+  <main id="pairs"></main>
+</div>
+<div class="lightbox" id="lightbox" hidden><span class="lightbox-label" id="lightbox-label"></span><img id="lightbox-img" alt=""></div>
+
+<script>
+const PAIRS = /*PAIRS*/[];
+const CRITERIA = [
+  { key: "appetite", name: "Аппетитность", hint: "Хочется съесть; выглядит премиально, как в хорошем фуд-журнале." },
+  { key: "realism", name: "Реализм", hint: "Нет примет ИИ: пластиковой еды, каши из деталей, лишних предметов, букв." },
+  { key: "brief", name: "По брифу", hint: "На кадре то, что просил промпт: продукт, состояние, ракурс, настроение." },
+  { key: "light", name: "Свет и макро", hint: "Фактура, глубина резкости, свет и композиция крупного плана." },
+];
+const PICKS = [{ v: "A", t: "Лучше A" }, { v: "B", t: "Лучше B" }, { v: "tie", t: "Равны" }];
+
+let state = { pairs: {} };
+let ref = null;
+let saveTimer = null;
+let saving = Promise.resolve();
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const node = Object.assign(document.createElement(tag), props);
+  for (const kid of kids) node.append(kid);
+  return node;
+};
+const pairState = (n) => (state.pairs[n] ??= { A: {}, B: {}, pick: null, note: "" });
+
+function setStatus(text, kind) {
+  const s = $("status");
+  s.textContent = text;
+  s.dataset.kind = kind ?? "";
+}
+
+function complete(n) {
+  const p = state.pairs[n];
+  if (!p || !p.pick) return false;
+  return ["A", "B"].every((side) => CRITERIA.every((c) => Number.isInteger(p[side]?.[c.key])));
+}
+
+function renderProgress() {
+  const done = PAIRS.filter((p) => complete(p.n)).length;
+  $("progress").textContent = `Готово ${done} из ${PAIRS.length}`;
+}
+
+function scoreRow(n, side, c) {
+  const seg = el("span", { className: "seg", role: "radiogroup", ariaLabel: `${c.name}, ${side}` });
+  for (let v = 1; v <= 5; v++) {
+    const input = el("input", { type: "radio", name: `p${n}-${side}-${c.key}`, id: `p${n}-${side}-${c.key}-${v}`, value: String(v) });
+    input.addEventListener("change", () => { pairState(n)[side][c.key] = v; changed(); });
+    seg.append(el("label", { htmlFor: input.id }, input, el("span", { textContent: String(v) })));
+  }
+  return el("div", { className: "row" }, el("span", { className: "row-name", textContent: c.name, title: c.hint }), seg);
+}
+
+function side(pair, label) {
+  const src = `img/${pair.n}-${label}.jpg`;
+  const shot = el("button", { className: "shot", type: "button", ariaLabel: `Кадр ${label}, открыть крупно` },
+    el("img", { src, alt: `Кадр ${label} к брифу ${pair.n}`, loading: "lazy" }));
+  shot.addEventListener("click", () => openLightbox(src, `${pair.n} · ${label}`));
+  const scores = el("div", { className: "scores" }, ...CRITERIA.map((c) => scoreRow(pair.n, label, c)));
+  return el("div", { className: "side" }, el("span", { className: "side-label", textContent: label }), shot, scores);
+}
+
+function verdict(pair) {
+  const pick = el("div", { className: "pick", role: "radiogroup", ariaLabel: "Какой кадр лучше" });
+  for (const { v, t } of PICKS) {
+    const input = el("input", { type: "radio", name: `p${pair.n}-pick`, id: `p${pair.n}-pick-${v}`, value: v });
+    input.addEventListener("change", () => { pairState(pair.n).pick = v; changed(); });
+    pick.append(el("label", { htmlFor: input.id }, input, el("span", { textContent: t })));
+  }
+  const note = el("textarea", { id: `p${pair.n}-note`, placeholder: "Почему (по желанию): что выдаёт ИИ, чего не хватает…" });
+  note.addEventListener("input", () => { pairState(pair.n).note = note.value; changed(); });
+  return el("div", { className: "verdict" }, el("span", { className: "verdict-title", textContent: "Итог" }), pick, note);
+}
+
+function render() {
+  for (const c of CRITERIA) $("rubric").append(el("dt", { textContent: c.name }), el("dd", { textContent: c.hint }));
+  for (const pair of PAIRS) {
+    const head = el("div", { className: "pair-head" },
+      el("h2", { textContent: `Бриф ${pair.n}` }),
+      el("span", { className: "meta", textContent: `${pair.market} · ${pair.style} · слот ${pair.slot}, ${pair.aspect}` }));
+    const prompt = el("details", { className: "prompt" }, el("summary", { textContent: "Промпт брифа" }), el("p", { textContent: pair.prompt }));
+    $("pairs").append(el("section", { className: "pair", id: `brief-${pair.n}` }, head, prompt,
+      el("div", { className: "duo" }, side(pair, "A"), side(pair, "B")), verdict(pair)));
+  }
+  renderProgress();
+}
+
+function applyState() {
+  for (const pair of PAIRS) {
+    const p = state.pairs[pair.n];
+    if (!p) continue;
+    for (const s of ["A", "B"]) for (const c of CRITERIA) {
+      const v = p[s]?.[c.key];
+      const input = v && $(`p${pair.n}-${s}-${c.key}-${v}`);
+      if (input) input.checked = true;
+    }
+    if (p.pick && $(`p${pair.n}-pick-${p.pick}`)) $(`p${pair.n}-pick-${p.pick}`).checked = true;
+    if (typeof p.note === "string") $(`p${pair.n}-note`).value = p.note;
+  }
+  renderProgress();
+}
+
+function changed() {
+  renderProgress();
+  if (!ref) return;
+  setStatus("Сохраняю…");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const body = JSON.parse(JSON.stringify({ pairs: state.pairs, updatedAt: new Date().toISOString() }));
+    saving = saving.then(() => ref.set(body))
+      .then(() => setStatus("Сохранено", "ok"))
+      .catch((e) => setStatus(`Не сохранилось: ${e?.message || "ошибка"}. Обновите страницу.`, "warn"));
+  }, 700);
+}
+
+function openLightbox(src, label) {
+  $("lightbox-img").src = src;
+  $("lightbox-label").textContent = label;
+  $("lightbox").hidden = false;
+}
+$("lightbox").addEventListener("click", () => { $("lightbox").hidden = true; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("lightbox").hidden = true; });
+
+render();
+
+(async () => {
+  const use = window.claude?.use;
+  const [db, user] = use ? await Promise.all([use("db"), use("user")]) : [null, null];
+  const id = user ? await user.id() : null;
+  if (!db || !id) {
+    setStatus("Оценки не сохраняются: откройте страницу в claude.ai, войдя в аккаунт", "warn");
+    return;
+  }
+  ref = db.doc(`ratings/${id}`);
+  try {
+    const snap = await ref.get();
+    if (snap.exists) state = JSON.parse(JSON.stringify(snap.data()));
+    state.pairs ??= {};
+    applyState();
+    setStatus(snap.exists ? "Сохранено" : "Готово к оценке", "ok");
+  } catch (e) {
+    ref = null;
+    setStatus(`Нет доступа к сохранению: ${e?.message || "ошибка"}. Попросите права «Contributor».`, "warn");
+  }
+})();
+</script>

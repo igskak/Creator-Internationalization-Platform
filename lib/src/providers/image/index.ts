@@ -3,6 +3,7 @@ export { createFakeImageProvider, type FakeImageOptions, gradientPng } from "./f
 export {
   createOpenAIImageProvider,
   DEFAULT_IMAGE_PRICES,
+  GPT_IMAGE_TOKEN_PRICES,
   type ImageQuality,
   OPENAI_IMAGE_MODEL,
   type OpenAIImageOptions,
