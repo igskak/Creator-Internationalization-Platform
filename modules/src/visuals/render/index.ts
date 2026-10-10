@@ -8,6 +8,7 @@ export {
   type PageMeasurement,
   type QaVerdict,
 } from "./qa";
+export { type RenderVariantResult, renderVariantCarousel } from "./render-variant";
 export {
   type CarouselRender,
   chromiumPath,

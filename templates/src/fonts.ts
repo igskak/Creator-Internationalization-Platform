@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { assetPath } from "./assets-path";
 
 // Bundled fonts (plan 08 §8.3, M3-06). Brand fonts are not licensed for embedding yet (Track B
 // B-10), so the SIL OFL fallback is Fraunces (display serif) and Inter (sans), Latin and Latin
@@ -65,7 +66,7 @@ const cache = new Map<string, Buffer>();
 export function readFontFile(path: string): Buffer {
   let bytes = cache.get(path);
   if (!bytes) {
-    bytes = readFileSync(new URL(`../assets/fonts/${path}`, import.meta.url));
+    bytes = readFileSync(assetPath(`fonts/${path}`));
     cache.set(path, bytes);
   }
   return bytes;

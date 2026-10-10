@@ -8,3 +8,11 @@ export {
   type SlotOutcome,
 } from "./generate-assets";
 export * from "./images";
+export {
+  loadRenderAssets,
+  loadRenderInput,
+  RENDER_DEBOUNCE_SECONDS,
+  RenderCarouselPayload,
+  requestRender,
+  templatesVersionOf,
+} from "./render-input";

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { assetPath } from "./assets-path";
 
 // The icon set of template D (plan 08 §8.2.1): five original line icons in `assets/icons`, drawn
 // with `currentColor`, one per step in order.
@@ -12,7 +13,7 @@ const cache = new Map<string, string>();
 export function readIcon(name: StepIcon): string {
   let svg = cache.get(name);
   if (!svg) {
-    svg = readFileSync(new URL(`../assets/icons/${name}.svg`, import.meta.url), "utf8").trim();
+    svg = readFileSync(assetPath(`icons/${name}.svg`), "utf8").trim();
     cache.set(name, svg);
   }
   return svg;

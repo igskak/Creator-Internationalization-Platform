@@ -87,7 +87,11 @@ describe("review bundle and regenerate all", () => {
         ...(runner ? { jobs: runner } : {}),
       });
     const runner: ServiceContext["jobs"] = createInlineJobRunner({
-      handlers: jobHandlers,
+      // The browser render (J8) is tested on its own; here it would start Chromium.
+      handlers: {
+        ...jobHandlers,
+        "render-carousel": { ...jobHandlers["render-carousel"], run: async () => ({}) },
+      },
       mode: "await",
       makeContext: (runId) => make({ type: "JOB", jobRunId: runId }, runner),
     });

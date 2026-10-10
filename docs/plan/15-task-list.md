@@ -443,7 +443,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** renders fixtures in CI and in Claude Code (pre-installed Chromium); QA catches a forced overflow.
   - **Refs:** 08 §8.6, §8.7.
 
-- [ ] **M3-12 · `render-carousel` job and auto-trigger** · P0 · M · deps: M3-11, M3-05 · ⚠ V-17
+- [x] **M3-12 · `render-carousel` job and auto-trigger** · P0 · M · deps: M3-11, M3-05 · ⚠ V-17
   - **Do:** J8 with the Playwright build extension, `medium-1x` machine, `render` queue; input-hash idempotency; `rendered_slides`; `current_render_id`; flags; debounce on text edits.
   - **Done when:** inline integration test; dev run in Trigger.dev renders a real variant.
   - **Refs:** 06 J8.

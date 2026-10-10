@@ -78,7 +78,11 @@ describe("generateVariants and regenerateVariant actions", () => {
     mode = "await";
     queued.length = 0;
     const runner: ServiceContext["jobs"] = createInlineJobRunner({
-      handlers: jobHandlers,
+      // The browser render (J8) is tested on its own; here it would start Chromium.
+      handlers: {
+        ...jobHandlers,
+        "render-carousel": { ...jobHandlers["render-carousel"], run: async () => ({}) },
+      },
       mode: "await",
       makeContext: (runId) => make({ type: "JOB", jobRunId: runId }, runner),
     });

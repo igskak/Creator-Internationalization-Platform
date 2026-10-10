@@ -13,7 +13,12 @@ import {
   importHistoricalPosts,
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
-import { GenerateVisualAssetsPayload, generateVisualAssets } from "./visuals";
+import {
+  GenerateVisualAssetsPayload,
+  generateVisualAssets,
+  RenderCarouselPayload,
+  requestRender,
+} from "./visuals";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -141,7 +146,28 @@ export const generateContentJob = defineJob({
  */
 export const generateVisualAssetsJob = defineJob({
   payload: GenerateVisualAssetsPayload,
-  run: (ctx, payload) => generateVisualAssets(ctx, payload),
+  run: async (ctx, payload) => {
+    const result = await generateVisualAssets(ctx, payload);
+    // The pictures are in: render the carousel (J8). A variant that no longer can be rendered
+    // (changed meanwhile) is not an error of this job.
+    await requestRender(ctx, payload.variantId).catch((error: unknown) =>
+      ctx.logger.warn({ err: error, variantId: payload.variantId }, "could not queue the render"),
+    );
+    return result;
+  },
+});
+
+/**
+ * J8 (plan 06 §6.2): renders the slides of a variant with Chromium and stores the JPEGs, the QA
+ * report and the flags. The browser code is loaded on demand, so the web app that registers the
+ * handlers does not load Playwright.
+ */
+export const renderCarouselJob = defineJob({
+  payload: RenderCarouselPayload,
+  run: async (ctx, payload) => {
+    const { renderVariantCarousel } = await import("./visuals/render");
+    return renderVariantCarousel(ctx, payload);
+  },
 });
 
 export const jobHandlers = {
@@ -150,6 +176,7 @@ export const jobHandlers = {
   "generate-ideas": generateIdeasJob,
   "generate-content": generateContentJob,
   "generate-visual-assets": generateVisualAssetsJob,
+  "render-carousel": renderCarouselJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

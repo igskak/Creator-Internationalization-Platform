@@ -1,5 +1,7 @@
 // Server-only parts of the template package (they read font files): fonts, glyph checks, theme.
 // Kept out of the main entry so that client bundles that import the registry stay free of node:fs.
+
+export { assetPath, setAssetsRoot } from "./assets-path";
 export {
   DEFAULT_FONTS,
   FONT_FAMILIES,
