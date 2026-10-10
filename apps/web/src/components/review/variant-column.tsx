@@ -12,6 +12,7 @@ import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
 import { SlideCard } from "./slide-card";
 import { SlideDrawer } from "./slide-drawer";
+import { VariantActions } from "./variant-actions";
 import { type ConfirmKind, type TemplateInfo, VariantProvider } from "./variant-state";
 
 type T = Messages["review"];
@@ -198,6 +199,8 @@ export function VariantColumn({
           </Section>
 
           <CriticPanel report={variant.critic} t={t} locale={locale} />
+
+          <VariantActions allowed={variant.allowed} flagLabels={t.flags} />
         </VariantProvider>
       )}
       {variant.hasContent ? (

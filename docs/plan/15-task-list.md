@@ -494,7 +494,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** full UX (10 §10.3): inline edit + regenerate per field with instruction and reason code, keep/undo, slide drawer with live preview, critic panel with jump-to-field, knowledge references, conflict handling, allowed-actions driven buttons.
   - **Done when:** manual walkthrough in dev; screenshots; component tests for key interactions.
 
-- [ ] **M4-06 · Approve, reject, request changes, unapprove** · P0 · M · deps: M4-02, M4-05
+- [x] **M4-06 · Approve, reject, request changes, unapprove** · P0 · M · deps: M4-02, M4-05
   - **Do:** actions with guards (current READY render, blocking flags, checklists, offer for commercial intent); `content_variant_versions` snapshot with content hash and render; dialogs; audit.
   - **Done when:** tests for every guard; snapshot equals render hash.
 

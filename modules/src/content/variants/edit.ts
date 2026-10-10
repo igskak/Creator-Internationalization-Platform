@@ -149,13 +149,12 @@ const parseInput = <S extends z.ZodType>(schemaOf: S, raw: unknown): z.output<S>
   return parsed.data;
 };
 
-/** Findings about a new content; the ones inside `field` are the edit's own. */
-export async function validateEdit(
+/** Every finding of the validators over a whole draft (the pipeline's checks, minus the shape ones). */
+export async function validateDraftContent(
   ctx: ServiceContext,
   variant: Variant,
-  next: NonNullable<ReturnType<typeof contentOf>>,
-  field: ParsedFieldPath,
-): Promise<{ own: ValidationIssue[]; numericMismatch: boolean }> {
+  content: NonNullable<ReturnType<typeof contentOf>>,
+): Promise<ValidationIssue[]> {
   const [market] = await ctx.db
     .select()
     .from(schema.markets)
@@ -167,16 +166,28 @@ export async function validateEdit(
     ideaKnowledgeIds: new Set(cards.map((c) => c.id)),
     numericReference: numericReference({ cards }),
   };
-  const draft = toDraft(next, variant.hookType);
-  const own = [
+  const draft = toDraft(content, variant.hookType);
+  return [
     ...validateSlots(draft, context),
     ...validateTextRules(draft, context),
     ...validateForbiddenPatterns(draft, context),
     ...validateCitations(draft, context),
     ...validateNumericFidelity(draft, context),
-  ].filter((issue) => isWithin(issue.fieldPath, field));
-  const numericMismatch = validateNumericFidelity(draft, context).length > 0;
-  return { own, numericMismatch };
+  ];
+}
+
+/** Findings about a new content; the ones inside `field` are the edit's own. */
+export async function validateEdit(
+  ctx: ServiceContext,
+  variant: Variant,
+  next: NonNullable<ReturnType<typeof contentOf>>,
+  field: ParsedFieldPath,
+): Promise<{ own: ValidationIssue[]; numericMismatch: boolean }> {
+  const all = await validateDraftContent(ctx, variant, next);
+  return {
+    own: all.filter((issue) => isWithin(issue.fieldPath, field)),
+    numericMismatch: all.some((issue) => issue.code === "NUMERIC_MISMATCH"),
+  };
 }
 
 /**

@@ -1,6 +1,8 @@
 "use server";
 
 import {
+  ApproveVariantInput,
+  approveVariant as approveVariantService,
   CreateManualIdeaInput,
   createManualIdea as createManualService,
   EditVariantFieldInput,
@@ -13,20 +15,32 @@ import {
   RegenerateVariantFieldInput,
   RegenerateVariantInput,
   RegenerateVisualBriefInput,
+  RejectVariantInput,
+  RequestChangesInput,
+  ResubmitVariantInput,
   regenerateVisualBrief as regenerateVisualBriefService,
+  rejectVariant as rejectVariantService,
+  requestChanges as requestChangesService,
   requestFieldRegeneration,
   requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
+  resubmitVariant as resubmitVariantService,
   SearchCardsInput,
   searchCardsForIdea,
   TransitionIdeaInput,
   transitionIdea as transitionService,
+  UnapproveVariantInput,
   UpdateIdeaInput,
+  unapproveVariant as unapproveVariantService,
   updateIdea as updateService,
 } from "@rc/modules/content";
 import { triggerJob } from "@rc/modules/core";
-import { GenerateVisualAssetsPayload, RunVisualQaPayload } from "@rc/modules/visuals";
+import {
+  GenerateVisualAssetsPayload,
+  RunVisualQaPayload,
+  requestRender,
+} from "@rc/modules/visuals";
 import { z } from "zod";
 import { defineAction } from "./_define";
 
@@ -164,4 +178,61 @@ export const regenerateVariantField = defineAction({
   input: RegenerateVariantFieldInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => requestFieldRegeneration(ctx, input),
+});
+
+// Plan 05 §5.7: the reviewer's decisions. Every signed-in role may take them; the services check
+// the state machine, the reasons and (for approval) the guards of 10 §10.4.3.
+
+const slim = (v: { status: string; lockVersion: number }) => ({
+  status: v.status,
+  lockVersion: v.lockVersion,
+});
+
+export const approveVariant = defineAction({
+  name: "approveVariant",
+  input: ApproveVariantInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const result = await approveVariantService(ctx, input);
+    return { ...slim(result.variant), versionId: result.versionId, versionNo: result.versionNo };
+  },
+});
+
+export const requestChanges = defineAction({
+  name: "requestChanges",
+  input: RequestChangesInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => slim(await requestChangesService(ctx, input)),
+});
+
+export const resubmitVariant = defineAction({
+  name: "resubmitVariant",
+  input: ResubmitVariantInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => slim(await resubmitVariantService(ctx, input)),
+});
+
+export const rejectVariant = defineAction({
+  name: "rejectVariant",
+  input: RejectVariantInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => slim(await rejectVariantService(ctx, input)),
+});
+
+export const unapproveVariant = defineAction({
+  name: "unapproveVariant",
+  input: UnapproveVariantInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => slim(await unapproveVariantService(ctx, input)),
+});
+
+/** Queues the render of the draft as it is now (a no-op when a READY render of the same input exists). */
+export const triggerRender = defineAction({
+  name: "triggerRender",
+  input: z.object({ variantId: z.uuid() }),
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, { variantId }) => {
+    const { jobRunId } = await requestRender(ctx, variantId);
+    return { jobRunId };
+  },
 });

@@ -1,4 +1,22 @@
+export {
+  type ApproveResult,
+  ApproveVariantInput,
+  approveVariant,
+  hashSnapshot,
+  type VersionCheck,
+  verifyApprovedVersion,
+} from "./approve";
 export { columnsOf, contentOf, slotOrder, toDraft } from "./content";
+export {
+  RejectVariantInput,
+  RequestChangesInput,
+  ResubmitVariantInput,
+  rejectVariant,
+  requestChanges,
+  resubmitVariant,
+  UnapproveVariantInput,
+  unapproveVariant,
+} from "./decisions";
 export {
   applyFieldChange,
   EditVariantFieldInput,
@@ -6,6 +24,7 @@ export {
   editVariantField,
   type FieldChange,
   staleLockError,
+  validateDraftContent,
   validateEdit,
 } from "./edit";
 export {
@@ -31,6 +50,7 @@ export {
   requestFieldRegeneration,
   runFieldRegeneration,
 } from "./regenerate";
+export { currentRenderState } from "./render-state";
 export {
   type AllowedAction,
   allowedActions,
