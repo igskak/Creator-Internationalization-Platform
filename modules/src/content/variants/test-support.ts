@@ -11,6 +11,7 @@ import {
   type TriggerOptions,
 } from "../../core";
 import { loadRenderInput } from "../../visuals";
+import { hashSnapshot } from "./approve";
 
 // Fixtures for the tests of the review and scheduling services (M4). Synthetic content only.
 
@@ -260,27 +261,33 @@ export async function reviewFixture(
   const makeVersion: ReviewFixture["makeVersion"] = async (variantId) => {
     const renderId = await makeRender(variantId);
     const v = await variant(variantId);
+    const files = await db
+      .select({ key: schema.renderedSlides.storageKey })
+      .from(schema.renderedSlides)
+      .where(eq(schema.renderedSlides.carouselRenderId, renderId))
+      .orderBy(schema.renderedSlides.slideIndex);
+    const snapshot = {
+      hook: v.hook ?? "",
+      hookType: v.hookType ?? "",
+      caption: v.caption ?? "",
+      cta: v.ctaJson ?? { type: "SAVE", text: "" },
+      hashtags: v.hashtags,
+      slides: v.slidesJson,
+      visualStyle: v.visualStyle ?? "",
+      templateSequence: v.templateSequence,
+      renderId,
+      renderedSlideKeys: files.map((f) => f.key),
+      knowledge: [],
+      generationVersion: v.generationVersion ?? "",
+    };
     const [version] = await db
       .insert(schema.contentVariantVersions)
       .values({
         contentVariantId: variantId,
         versionNo: 1,
-        snapshot: {
-          hook: v.hook ?? "",
-          hookType: v.hookType ?? "",
-          caption: v.caption ?? "",
-          cta: v.ctaJson ?? { type: "SAVE", text: "" },
-          hashtags: v.hashtags,
-          slides: v.slidesJson,
-          visualStyle: v.visualStyle ?? "",
-          templateSequence: v.templateSequence,
-          renderId,
-          renderedSlideKeys: [],
-          knowledge: [],
-          generationVersion: v.generationVersion ?? "",
-        },
+        snapshot,
         carouselRenderId: renderId,
-        contentHash: "hash",
+        contentHash: hashSnapshot(snapshot),
         approvedBy: userId,
       })
       .returning();

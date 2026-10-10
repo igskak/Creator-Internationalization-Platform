@@ -502,7 +502,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/content/drafts` table and filters; nav badges; dashboard counters (10 §10.2).
   - **Done when:** counts match fixture data.
 
-- [ ] **M4-08 · Scheduling service** · P0 · M · deps: M4-06
+- [x] **M4-08 · Scheduling service** · P0 · M · deps: M4-06
   - **Do:** `publishing/schedule.ts`: `schedulePublication`, `reschedulePublication`, `cancelPublication` (05 §5.8), idempotency key, min-gap warning, market-time-zone handling, audit.
   - **Done when:** tests (past time refused, second live publication refused, cancel restores APPROVED).
 

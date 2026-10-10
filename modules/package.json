@@ -14,6 +14,7 @@
     "./visuals/render": "./src/visuals/render/index.ts",
     "./offers": "./src/offers/index.ts",
     "./publishing": "./src/publishing/index.ts",
+    "./publishing/time": "./src/publishing/time.ts",
     "./instagram": "./src/instagram/index.ts",
     "./analytics": "./src/analytics/index.ts",
     "./job-handlers": "./src/job-handlers.ts",
