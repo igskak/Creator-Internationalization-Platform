@@ -52,6 +52,25 @@ describe("buildNav", () => {
   });
 });
 
+describe("nav badges", () => {
+  const items = (badges: Parameters<typeof buildNav>[2]) =>
+    buildNav(markets, undefined, badges).flatMap((s) => s.items);
+
+  it("adds a badge to the screens that have waiting work, and only when above zero", () => {
+    const found = items({ ideas: 3, drafts: 0, cards: 12, calendar: 1 });
+    const badge = (href: string) => found.find((i) => i.href === href)?.badge;
+    expect(badge("/content/ideas")).toBe(3);
+    expect(badge("/knowledge/cards")).toBe(12);
+    expect(badge("/content/calendar")).toBe(1);
+    expect(badge("/content/drafts")).toBeUndefined();
+    expect(badge("/content/published")).toBeUndefined();
+  });
+
+  it("has none by default", () => {
+    expect(items(undefined).every((i) => i.badge === undefined)).toBe(true);
+  });
+});
+
 describe("isActiveHref", () => {
   it("matches the page and its children only", () => {
     expect(isActiveHref("/content/ideas", "/content/ideas")).toBe(true);

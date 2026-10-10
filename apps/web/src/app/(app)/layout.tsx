@@ -1,3 +1,4 @@
+import { getWorkQueue } from "@rc/modules/content";
 import { listMarkets } from "@rc/modules/localization";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -17,7 +18,18 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
   const ctx = await requestContext({ type: "USER", userId: user.id, role: user.role });
   const { messages } = await getI18n();
-  const nav = buildNav(await listMarkets(ctx), { ...messages.nav, later: messages.shell.later });
+  const [markets, queue] = await Promise.all([listMarkets(ctx), getWorkQueue(ctx)]);
+  // What waits for a person (plan 10 §10.1): proposed ideas, cards to review, drafts to review.
+  const nav = buildNav(
+    markets,
+    { ...messages.nav, later: messages.shell.later },
+    {
+      ideas: queue.ideasProposed,
+      cards: queue.cardsToReview,
+      drafts: queue.draftsReady + queue.changesRequested,
+      calendar: queue.approvedNotScheduled,
+    },
+  );
   // Banner sources (kill switch, Instagram re-auth, token expiry) arrive with M4/M5 and H-01.
   const banners: Banner[] = [];
 

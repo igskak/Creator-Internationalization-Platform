@@ -89,6 +89,9 @@ export type MakeVariantOptions = {
   ctaType?: string;
   /** Default: a new idea of its own (one live variant per idea and market). */
   ideaId?: string;
+  /** Set at insert (the update trigger overwrites it afterwards). */
+  updatedAt?: Date;
+  qualityScore?: string;
 };
 
 /**
@@ -209,6 +212,8 @@ export async function reviewFixture(
         generationVersion: "1.2.0",
         flags: opts.flags ?? [],
         offerId,
+        ...(opts.updatedAt ? { updatedAt: opts.updatedAt } : {}),
+        ...(opts.qualityScore ? { qualityScore: opts.qualityScore } : {}),
       })
       .returning();
     return { variantId: row?.id ?? "", marketId: market?.id ?? "" };

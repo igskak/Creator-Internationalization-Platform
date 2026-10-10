@@ -41,6 +41,18 @@ export {
   valueSchema,
   writeField,
 } from "./field-path";
+export {
+  DEFAULT_DRAFTS_PAGE_SIZE,
+  DRAFT_TAB_KEYS,
+  DRAFT_TABS,
+  type DraftList,
+  type DraftRow,
+  type DraftTab,
+  getWorkQueue,
+  ListDraftsInput,
+  listDrafts,
+  type WorkQueue,
+} from "./queries";
 export { assertReasonCode } from "./reason";
 export {
   MAX_INSTRUCTION_CHARS,

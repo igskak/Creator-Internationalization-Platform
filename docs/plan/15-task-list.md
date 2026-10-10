@@ -498,7 +498,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** actions with guards (current READY render, blocking flags, checklists, offer for commercial intent); `content_variant_versions` snapshot with content hash and render; dialogs; audit.
   - **Done when:** tests for every guard; snapshot equals render hash.
 
-- [ ] **M4-07 · Drafts list and dashboard counters** · P0 · S · deps: M4-02
+- [x] **M4-07 · Drafts list and dashboard counters** · P0 · S · deps: M4-02
   - **Do:** `/content/drafts` table and filters; nav badges; dashboard counters (10 §10.2).
   - **Done when:** counts match fixture data.
 
