@@ -224,6 +224,39 @@ export async function renderCarousel(
   };
 }
 
+/** One slide as the PNG of its page (viewport, fit-text and fonts as in `renderCarousel`). */
+export async function renderSlidePng(
+  browser: Browser,
+  input: {
+    slide: SlideData;
+    assets: RenderAssets;
+    theme: Theme;
+    page?: { index: number; count: number };
+  },
+): Promise<Buffer> {
+  const context = await browser.newContext({
+    viewport: { width: EXPECTED.width, height: EXPECTED.height },
+    deviceScaleFactor: 1,
+    colorScheme: "light",
+  });
+  try {
+    const page = await context.newPage();
+    await page.setContent(
+      renderSlideHtml({
+        slide: input.slide,
+        theme: input.theme,
+        assets: input.assets,
+        page: input.page ?? { index: 1, count: 6 },
+      }),
+      { waitUntil: "load" },
+    );
+    await page.waitForSelector("html[data-fit-done]", { timeout: 15_000 });
+    return await page.screenshot({ type: "png", fullPage: false });
+  } finally {
+    await context.close();
+  }
+}
+
 async function toJpeg(png: Buffer, quality: number) {
   const { data, info } = await sharp(png)
     .toColourspace("srgb")

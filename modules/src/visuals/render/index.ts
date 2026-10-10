@@ -17,5 +17,6 @@ export {
   type RenderInputSlide,
   type RenderOptions,
   renderCarousel,
+  renderSlidePng,
   slotTexts,
 } from "./renderer";

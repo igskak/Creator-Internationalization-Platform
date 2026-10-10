@@ -453,7 +453,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** live preview matches the JPEG for fixtures; screenshots.
   - **Refs:** 08 §8.5.
 
-- [ ] **M3-14 · Visual regression tests** · P0 · S · deps: M3-09, M3-11
+- [x] **M3-14 · Visual regression tests** · P0 · S · deps: M3-09, M3-11
   - **Do:** golden PNGs per template × fixtures; pixelmatch compare; `pnpm test:visual --update`; CI job on `templates/**` changes + nightly.
   - **Done when:** CI job green; a deliberate CSS change fails it.
   - **Refs:** 08 §8.9.

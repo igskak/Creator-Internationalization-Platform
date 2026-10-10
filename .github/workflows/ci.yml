@@ -82,5 +82,5 @@ jobs:
   #     - run: pnpm exec playwright install --with-deps chromium
   #     - run: pnpm test:e2e
 
-  # Enable in M3-14: visual regression runs in its own workflow (visual.yml) with
-  # `on.pull_request.paths: [templates/**]` plus a nightly schedule (plan 08 §8.9, 13 §13.7).
+  # Visual regression runs in its own workflow (visual.yml, M3-14) on `templates/**` changes
+  # and nightly (plan 08 §8.9, 13 §13.7).

@@ -21,3 +21,6 @@ evals/results/
 # Playwright output (pnpm e2e)
 test-results/
 playwright-report/
+
+# Visual regression: actual and diff images of a failing run (pnpm test:visual)
+templates/__golden__/.actual/
