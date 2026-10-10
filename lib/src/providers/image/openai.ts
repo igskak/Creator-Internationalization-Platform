@@ -8,7 +8,8 @@ import type { GeneratedImage, ImageAspect, ImageProvider, ImageRequest } from ".
 // added to the prompt as an "Avoid:" sentence. A moderation block comes as
 // `error.code = "moderation_blocked"` and is permanent for that prompt.
 
-export const OPENAI_IMAGE_MODEL = "gpt-image-2.5-flare";
+/** Owner decision after the bake-off (M3-15, docs/decisions/image-provider.md). */
+export const OPENAI_IMAGE_MODEL = "gpt-image-2.5-sunburst";
 
 export type ImageQuality = "low" | "medium" | "high" | "xhigh" | "max" | "auto";
 

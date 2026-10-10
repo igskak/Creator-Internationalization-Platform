@@ -1,6 +1,6 @@
 # Image provider · bake-off [M3-15]
 
-**Status: REVIEW OPEN.** The images are made and the blind review page is published; the verdict waits for the ratings of Ihor and Sergey. Fill in the result below, then set the default model. Owners: Ihor and Sergey.
+**Status: DECIDED (2026-10-11).** Default model: **`gpt-image-2.5-sunburst`** (was `gpt-image-2.5-flare`). Decided by the owner on the owner's own blind ratings; Sergey had not rated when the decision was taken. Owners: Ihor and Sergey.
 
 ## Candidates
 
@@ -34,13 +34,19 @@ A carousel with 6–8 generated pictures costs about **$0.25–0.35** in images 
 
 ## Result
 
-To be filled in from the review page.
+Rule confirmed by the owner before the ratings were unblinded: sunburst replaces flare only if it wins more briefs on the reviewers' picks; on a tie flare stays, as it is twice as fast at the same price.
+
+Ratings of Ihor (all 8 briefs, unblinded 2026-10-11):
 
 | | flare | sunburst |
 |---|---|---|
-| Briefs won (Ihor) | | |
-| Briefs won (Sergey) | | |
-| Ties | | |
-| Mean score: appetite / realism / brief / light | | |
+| Briefs won | 1 | 2 |
+| Ties | 5 | 5 |
+| Mean score: appetite / realism / brief / light | 3.50 / 4.50 / 5.00 / 4.50 | 3.62 / 4.50 / 4.88 / 4.50 |
+| Mean of all scores | 4.38 | 4.38 |
 
-Decision: _open_. Proposed rule, to confirm with the owner before the ratings are read: sunburst replaces flare only if it wins clearly on the reviewers' picks (more briefs won by both reviewers); on a tie flare stays, as it is twice as fast at the same price.
+The two models are close: equal mean scores and 5 ties in 8. Sunburst won two briefs (one rated "a bit more realistic"); its one loss was a brief where its picture was rated a mess ("каша"). Appetite is the weakest point of both (3.5–3.6).
+
+Decision: the owner applied the rule to the owner's ratings alone and chose **sunburst** (2 wins against 1). `OPENAI_IMAGE_MODEL` is now `gpt-image-2.5-sunburst`; no second adapter is needed. The cost is unchanged; a picture takes about 30 s instead of 17 s, which matters only for a regeneration a person waits for.
+
+Limits of this result: one reviewer, 8 briefs, one picture per brief, a one-brief margin. Sergey's ratings, when they come, can be added to the table; if they clearly favour flare, revisit. The weak appetite scores are a prompt question as much as a model one: look at the visual director's prompts when the first real carousels are reviewed.

@@ -39,7 +39,7 @@ describe("OpenAI image provider", () => {
       aspect: "4:5",
     });
     expect(sent[0]?.body).toEqual({
-      model: "gpt-image-2.5-flare",
+      model: "gpt-image-2.5-sunburst",
       size: "1024x1536",
       quality: "high",
       output_format: "png",
