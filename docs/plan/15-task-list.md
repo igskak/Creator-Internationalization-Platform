@@ -448,7 +448,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** inline integration test; dev run in Trigger.dev renders a real variant.
   - **Refs:** 06 J8.
 
-- [ ] **M3-13 · Preview: slide route and carousel viewer** · P0 · M · deps: M3-12, M2-15
+- [x] **M3-13 · Preview: slide route and carousel viewer** · P0 · M · deps: M3-12, M2-15
   - **Do:** `/api/preview/slide` (same HTML as the renderer, draft values allowed, sandboxed iframe); carousel viewer (4:5 frame, swipe, thumbnails, 1:1 zoom, QA badges, stale-render state) in the review screen.
   - **Done when:** live preview matches the JPEG for fixtures; screenshots.
   - **Refs:** 08 §8.5.

@@ -4,6 +4,7 @@ import { format } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";
 import type { Messages } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+import { CarouselViewer } from "./carousel-viewer";
 import { CriticPanel } from "./critic-panel";
 
 type T = Messages["review"];
@@ -103,6 +104,14 @@ export function VariantColumn({
         ) : null
       ) : (
         <>
+          <Section title={t.viewer.label}>
+            <CarouselViewer
+              variantId={variant.id}
+              render={variant.render}
+              slideIds={variant.slides.map((s) => s.id)}
+            />
+          </Section>
+
           <Section title={t.hook}>
             <p className="text-base font-medium">{variant.hook}</p>
             {variant.hookType ? (

@@ -11,6 +11,7 @@ import sharp from "sharp";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext, type JobRunner, manualClock, type ServiceContext } from "../../core";
 import { generateVisualAssets } from "../generate-assets";
+import { getSlidePreviewHtml } from "../preview";
 import { loadRenderInput, requestRender } from "../render-input";
 import { renderVariantCarousel } from "./render-variant";
 import { launchBrowser } from "./renderer";
@@ -173,6 +174,31 @@ describe("render-carousel (J8)", () => {
     });
   });
 
+  describe("live preview (no browser)", () => {
+    it("is the page of the renderer, with the stored text and an unsaved draft on top", async () => {
+      const stored = await getSlidePreviewHtml(ctx, { variantId, slideId: "s1" });
+      expect(stored).toContain("<!doctype html>");
+      expect(stored).toContain("¿Por qué no lavar el arroz?");
+      expect(stored).toContain("data:image/webp;base64,"); // the generated picture, inlined
+      const draft = await getSlidePreviewHtml(ctx, {
+        variantId,
+        slideId: "s1",
+        slots: { headline: "Texto de borrador", nope: "<script>x</script>" },
+      });
+      expect(draft).toContain("Texto de borrador");
+      expect(draft).not.toContain("<script>x</script>");
+      // Nothing was saved.
+      expect((await variant()).slidesJson[0]?.slots.headline).toBe("¿Por qué no lavar el arroz?");
+    });
+
+    it("says what is wrong with an unknown slide or a bad id", async () => {
+      await expect(getSlidePreviewHtml(ctx, { variantId, slideId: "zz" })).rejects.toThrow(
+        "Slide not found",
+      );
+      await expect(getSlidePreviewHtml(ctx, { variantId: "x", slideId: "s1" })).rejects.toThrow();
+    });
+  });
+
   describe.skipIf(!browser)("rendering", () => {
     const render = () => renderVariantCarousel(ctx, { variantId }, { browser: browser as Browser });
 
@@ -208,6 +234,42 @@ describe("render-carousel (J8)", () => {
       expect((await t.db.select().from(schema.auditEvents)).map((a) => a.action)).toContain(
         "variant.rendered",
       );
+    }, 120_000);
+
+    it("shows in the live preview what the JPEG has: the same pixels but for glyph edges", async () => {
+      const result = await render();
+      const files = await t.db
+        .select()
+        .from(schema.renderedSlides)
+        .where(eq(schema.renderedSlides.carouselRenderId, result.renderId));
+      const page = await (browser as Browser).newPage({ viewport: { width: 1080, height: 1350 } });
+      try {
+        for (const file of files) {
+          await page.setContent(
+            await getSlidePreviewHtml(ctx, { variantId, slideId: file.slideId }),
+            {
+              waitUntil: "load",
+            },
+          );
+          await page.waitForSelector("html[data-fit-done]");
+          const png = await page.screenshot({ type: "png" });
+          const jpeg = await sharp(png)
+            .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
+            .toBuffer();
+          const stored = Buffer.from(await storage.getBytes(file.storageKey));
+          // Decoded pixels: the encoders agree, so a difference would come from the page. A page
+          // opened in another browser context may anti-alias a few glyph edges differently (about
+          // 0.007 % of the values here), so the bound is 0.1 %, far below any layout difference.
+          const [a, b] = await Promise.all(
+            [jpeg, stored].map((buf) => sharp(buf).raw().toBuffer()),
+          );
+          let diff = 0;
+          for (let i = 0; i < (a?.length ?? 0); i++) if (a?.[i] !== b?.[i]) diff++;
+          expect(diff / (a?.length ?? 1), `slide ${file.slideId}`).toBeLessThan(0.001);
+        }
+      } finally {
+        await page.close();
+      }
     }, 120_000);
 
     it("reuses a READY render of the same input", async () => {
