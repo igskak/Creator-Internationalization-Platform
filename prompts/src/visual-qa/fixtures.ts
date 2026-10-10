@@ -1,6 +1,6 @@
 import type { VisualQaInput, VisualQaOutput } from "./schema";
 
-// Synthetic input and output for the tests and the fake LLM provider. Not Reg.Chef content.
+// Synthetic input and output for the tests and the fake LLM provider. Not real content.
 
 export const FIXTURE_INPUT: VisualQaInput = {
   market: { code: "es-ES", displayName: "Spain" },

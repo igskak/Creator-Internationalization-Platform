@@ -17,7 +17,7 @@ export type SlideData = {
 export type RenderAssets = {
   /** Image slot name → data URL of the normalized picture. */
   images: Readonly<Record<string, string>>;
-  /** Data URL of the brand logo (SVG or PNG); without it a text mark is drawn. */
+  /** Data URL of the brand logo (SVG or PNG); without it no mark is drawn. */
   logo?: string;
 };
 

@@ -1,6 +1,6 @@
-# RegChef International Content Engine — MVP v0.1 implementation plan
+# International Content Engine — MVP v0.1 implementation plan
 
-Status: draft for review · Date: 2026-09-27 · Source of truth: *International Content Engine — Product & Technical Specification for MVP Implementation Planning*, v0.1 (27 Sep 2026), §23. Local copy: `docs/spec/RegChef_International_Content_Engine_MVP_Spec_v2.md` (git-ignored while the repository is public).
+Status: draft for review · Date: 2026-09-27 · Source of truth: *International Content Engine — Product & Technical Specification for MVP Implementation Planning*, v0.1 (27 Sep 2026), §23. Local copy: `docs/spec/International_Content_Engine_MVP_Spec_v2.md` (git-ignored while the repository is public).
 
 This plan follows spec §23. Files 01–17 map one-to-one to the output format required in §23.1.
 

@@ -59,7 +59,7 @@ Spec §23.1 item 13 (§23 item 14). Principle: CI is deterministic and free — 
 
 ## 13.6 Instagram test strategy (there is no Instagram sandbox)
 1. **CI**: MSW fixtures only (13.3).
-2. **Dev Meta app** (Development mode) + dedicated **test professional accounts** (e.g. `regchef_test_es`, `regchef_test_en`) with roles on the app. Professional accounts are public, so test posts are visible — keep test accounts low profile.
+2. **Dev Meta app** (Development mode) + dedicated **test professional accounts** (e.g. `kitchen_test_es`, `kitchen_test_en`) with roles on the app. Professional accounts are public, so test posts are visible — keep test accounts low profile.
 3. **Dry run** (`dry_run_only`): full flow up to container FINISHED, no post. Used on test accounts in CI-like manual runs and on production accounts before G2.
 4. **Smoke script** `pnpm ig:smoke --account <id> [--live]` (M5-10): token check → publishing limit → children + carousel container from a fixture render → status → (live) publish → permalink → insights call. Results recorded in `docs/runbooks/instagram-smoke.md`.
 5. **Idempotency drill** (G2): trigger `publish-content` twice for the same publication and kill the worker between PUBLISH and FINALIZE → exactly one post.
@@ -111,6 +111,6 @@ Spec §23.1 item 13 (§23 item 14). Principle: CI is deterministic and free — 
 | Human feedback | `review_events` structure + Operations tab queries |
 
 ## 13.9 Test data policy
-- Repository fixtures are synthetic culinary texts, images and posts written for tests. **No Reg.Chef IP in git** (the repository may be public; R-17).
+- Repository fixtures are synthetic culinary texts, images and posts written for tests. **No source IP in git** (the repository may be public; R-17).
 - Real data for evals and G1 lives in the dev environment (DB + R2) or private storage, referenced by path/ID.
 - `spikes/**/out/`, `evals/results/` and any file with real content are git-ignored.

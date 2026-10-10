@@ -56,18 +56,29 @@ describe("@rc/prompts", () => {
     expect(PACKAGE_NAME).toBe("@rc/prompts");
     expect(promptRegistry.list().map((p) => p.key)).toEqual([
       "knowledge-extractor@1",
+      "knowledge-extractor@2",
       "post-annotator@1",
+      "post-annotator@2",
       "page-transcriber@1",
+      "page-transcriber@2",
       "knowledge-gloss@1",
+      "knowledge-gloss@2",
       "idea-generator@1",
+      "idea-generator@2",
       "market-adapter@1",
+      "market-adapter@2",
       "content-writer@1",
       "content-writer@2",
+      "content-writer@3",
       "critic@1",
       "critic@2",
+      "critic@3",
       "eval-judge@1",
+      "eval-judge@2",
       "visual-director@1",
+      "visual-director@2",
       "visual-qa@1",
+      "visual-qa@2",
     ]);
   });
 });

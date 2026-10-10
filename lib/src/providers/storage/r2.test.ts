@@ -9,7 +9,7 @@ const config = {
   accountId: "0123456789abcdef0123456789abcdef",
   accessKeyId: "AKIASYNTHETIC",
   secretAccessKey: "synthetic-secret-access-key",
-  bucket: "regchef-dev",
+  bucket: "content-dev",
   jurisdiction: "eu" as const,
 };
 
@@ -38,7 +38,7 @@ describe("createR2Storage presigning", () => {
       expiresInSeconds: 900,
     });
     const url = new URL(upload.url);
-    expect(url.host).toBe(`regchef-dev.${config.accountId}.eu.r2.cloudflarestorage.com`);
+    expect(url.host).toBe(`content-dev.${config.accountId}.eu.r2.cloudflarestorage.com`);
     expect(url.pathname).toBe("/sources/s1/book.pdf");
     expect(url.searchParams.get("X-Amz-Expires")).toBe("900");
     expect(url.searchParams.get("X-Amz-SignedHeaders")?.split(";")).toEqual(

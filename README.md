@@ -1,6 +1,6 @@
-# RegChef International Content Engine
+# International Content Engine
 
-Internal tool that turns Reg.Chef's Russian-language culinary IP into original Spanish (es-ES) and English Instagram carousels. The implementation plan is in [`docs/plan/`](docs/plan/README.md); working rules for Claude Code are in [`CLAUDE.md`](CLAUDE.md).
+Internal tool that turns a chef's Russian-language culinary IP into original Spanish (es-ES) and English Instagram carousels. The implementation plan is in [`docs/plan/`](docs/plan/README.md); working rules for Claude Code are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Getting started
 

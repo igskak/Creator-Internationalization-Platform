@@ -60,7 +60,7 @@ describe("InlineJobRunner", () => {
       jobs: runner,
     });
 
-    const { runId } = await triggerJob(webCtx, "hello", { name: "Reg.Chef" });
+    const { runId } = await triggerJob(webCtx, "hello", { name: "Chef" });
 
     const rows = await t.db.select().from(schema.auditEvents);
     expect(rows).toEqual([
@@ -69,7 +69,7 @@ describe("InlineJobRunner", () => {
         actorType: "JOB",
         jobRunId: runId,
         requestId: "req-7",
-        data: { name: "Reg.Chef" },
+        data: { name: "Chef" },
       }),
     ]);
     expect(runner.getRun(runId)).toMatchObject({

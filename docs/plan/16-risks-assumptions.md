@@ -22,7 +22,7 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | R-14 | Rights are unclear, so real sources stay BLOCKED | High | Medium | Rights matrix (B-04) in week 1; explicit rights form; BLOCKED state visible with reason | Ihor + Sergey |
 | R-15 | Scope creep (Reels, France, ManyChat API, auto-publishing) | Medium | High | P0/P1/P2 labels; G1 before breadth; changes only through `decision-log.md` | Ihor |
 | R-16 | Architecture drifts across many Claude Code sessions | Medium | Medium | `CLAUDE.md`; small tasks with refs; CI gates; dependency rules (M0-20); PR review; decision log | Engineer |
-| R-17 | The repository is **public** today: internal plan, Reg.Chef IP or secrets could leak | High | Medium | Make the repo private (B-01) before adding the spec or any real content; synthetic fixtures only; secret scanning; git-ignored outputs | Ihor |
+| R-17 | The repository is **public** today: internal plan, source IP or secrets could leak | High | Medium | Make the repo private (B-01) before adding the spec or any real content; synthetic fixtures only; secret scanning; git-ignored outputs | Ihor |
 | R-18 | Outage of Trigger.dev, Vercel, Supabase or Meta | Medium | Low | Retries; visible failures; dispatcher recovery; manual-posting runbook (post by hand, record media id) | Engineer |
 | R-19 | Compliance gaps: AI imagery disclosure, food-safety claims, Meta data deletion | High | Medium | Legal review B-13 before G2; `SAFETY_REVIEW` flag and checklist; Meta callbacks; disclosure option (M5-12) | Ihor |
 | R-20 | Chef review is the bottleneck (cards pile up in NEEDS_REVIEW) | High | High | Review queue order (verified quotes first, focus categories); bulk approve for clean cards; agreed weekly review time (A-20); only cards needed for the next ideas are urgent | Sergey / Ihor |
@@ -32,7 +32,7 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | ID | Assumption | Impact if wrong |
 |---|---|---|
 | A-01 | 1 engineer (+ Claude Code), 2–5 app users (Ihor, Sergey, native reviewers). Estimates in 14 assume this | Timeline |
-| A-02 | Sources are mostly Russian PDFs/DOCX owned by Reg.Chef; some are scans | Extraction cost and quality |
+| A-02 | Sources are mostly Russian PDFs/DOCX owned by the chef; some are scans | Extraction cost and quality |
 | A-03 | Sergey approves knowledge and reads the source language | D-16 |
 | A-04 | Two new Instagram Professional accounts (ES, EN), one per market; the Russian account is not connected in MVP (historical posts via CSV) | Data model allows more later |
 | A-05 | Carousels only; 5–10 slides; 1080 × 1350 JPEG | Templates, export |

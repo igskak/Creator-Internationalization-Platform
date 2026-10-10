@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col gap-4 overflow-y-auto border-r p-4 md:flex">
         <Link href="/dashboard" className="px-2 font-semibold">
-          RegChef Content Engine
+          Content Engine
         </Link>
         <SidebarNav sections={nav} />
       </aside>
@@ -33,7 +33,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <header className="flex h-12 items-center justify-between gap-2 border-b px-4">
           <div className="flex items-center gap-2">
             <MobileNav sections={nav} />
-            <span className="font-semibold md:hidden">RegChef</span>
+            <span className="font-semibold md:hidden">Content Engine</span>
           </div>
           <UserMenu user={{ email: user.email, displayName: user.displayName, role: user.role }} />
         </header>

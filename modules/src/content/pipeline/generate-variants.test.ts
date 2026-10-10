@@ -150,7 +150,7 @@ describe("generateVariants", () => {
       hookType: "MISTAKE_CALLOUT",
       ctaType: "SAVE",
       criticVerdict: "PASS",
-      generationVersion: "p1.1.0",
+      generationVersion: "p1.2.0",
       lockVersion: 1,
       flags: [],
       lastError: null,
@@ -171,13 +171,13 @@ describe("generateVariants", () => {
       thresholdsVersion: "d1-placeholder",
     });
     expect(es.generationConfig).toMatchObject({
-      pipelineVersion: "1.1.0",
+      pipelineVersion: "1.2.0",
       embeddingModel: "fake-embedding",
       stages: {
-        MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 1 },
-        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 2 },
-        CRITIC: { promptId: "critic", promptVersion: 2 },
-        VISUAL_DIRECTION: { promptId: "visual-director", promptVersion: 1 },
+        MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 2 },
+        CONTENT_WRITING: { promptId: "content-writer", promptVersion: 3 },
+        CRITIC: { promptId: "critic", promptVersion: 3 },
+        VISUAL_DIRECTION: { promptId: "visual-director", promptVersion: 2 },
       },
     });
     expect(es.pipelineState).toMatchObject({ pipelineRunId: "run-1", stage: "DONE" });

@@ -61,7 +61,7 @@ B without `number` becomes a headline + body slide, so every role has a P0 templ
 - **Generation**: request the provider aspect closest to the slot (e.g. portrait 2:3 for a 4:5 slot) ⚠ V-19, with the visual director's prompt + negative prompt (no text, no logos, no packaging, no hands with deformed fingers).
 - **Normalization** (`visuals/images/normalize.ts`): auto-orient, convert to sRGB, crop to slot aspect with `sharp` attention strategy (P1: manual focal point), resize to slot pixels (hero 1080×1350), encode WebP q90 for storage; keep the original in `original_key`.
 - **Perceptual hash** of each image (P1 use: visual similarity ES vs EN).
-- **Library photos** (P1, M3-16): Reg.Chef photos uploaded as PHOTO sources become `visual_assets` (LIBRARY_PHOTO) with tags and a description; the visual director may choose them if rights allow visual transformation [S§6.2].
+- **Library photos** (P1, M3-16): The chef's photos uploaded as PHOTO sources become `visual_assets` (LIBRARY_PHOTO) with tags and a description; the visual director may choose them if rights allow visual transformation [S§6.2].
 - **AI flag**: `visual_assets.is_ai_generated = true` for generated images; the review UI shows it. Disclosure policy (caption note, slide badge or platform label) depends on the legal review (Track B B-13, ⚠ V-16, task M5-12).
 - **Embedding into HTML**: images are passed as data URLs → the render does not depend on network access.
 

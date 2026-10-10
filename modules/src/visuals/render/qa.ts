@@ -70,19 +70,20 @@ export type PageMeasurement = {
     box: { x: number; y: number; width: number; height: number };
     color: [number, number, number];
   }[];
-  /** The logo's box and what the template asked for. */
+  /** The logo's box and what the template asked for; `expected` is null when no logo is drawn. */
   logo: {
     box: { x: number; y: number; width: number; height: number } | null;
     expected: {
       anchor: "top-left" | "top-right" | "bottom-left" | "bottom-right";
       heightPx: number;
-    };
+    } | null;
     marginPx: number;
   };
 };
 
 export function logoPlacementOk(logo: PageMeasurement["logo"]): boolean {
   const { box, expected, marginPx } = logo;
+  if (!expected) return box === null;
   if (!box) return false;
   const tol = LOGO_TOLERANCE_PX;
   const near = (a: number, b: number) => Math.abs(a - b) <= tol;

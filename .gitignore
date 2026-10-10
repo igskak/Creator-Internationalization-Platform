@@ -11,7 +11,7 @@ coverage/
 .env*
 !.env.example
 
-# outputs that may contain real Reg.Chef content
+# outputs that may contain real source content
 spikes/**/out/
 evals/results/
 

@@ -10,7 +10,7 @@ import "./globals.css";
 // Brand fonts for carousels live in @rc/templates (M3).
 
 export const metadata: Metadata = {
-  title: "RegChef Content Engine",
+  title: "Content Engine",
   robots: { index: false, follow: false },
 };
 

@@ -1,5 +1,5 @@
 {
-  "name": "regchef-content-engine",
+  "name": "content-engine",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.6.0",

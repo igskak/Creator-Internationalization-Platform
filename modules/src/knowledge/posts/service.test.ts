@@ -63,7 +63,7 @@ describe("historical posts", () => {
     const { sourceAssetId } = await createPostsImport(ctx, {
       fileName,
       text,
-      accountHandle: "@RegChef_Official",
+      accountHandle: "@My_Kitchen",
       language: "ru",
     });
     return { sourceAssetId, outcome: await importHistoricalPosts(ctx, { sourceAssetId }) };
@@ -76,7 +76,7 @@ describe("historical posts", () => {
       const { sourceAssetId } = await createPostsImport(ctx, {
         fileName: "posts.csv",
         text: CSV,
-        accountHandle: "@RegChef_Official",
+        accountHandle: "@My_Kitchen",
       });
       const [source] = await t.db
         .select()
@@ -86,7 +86,7 @@ describe("historical posts", () => {
         type: "INSTAGRAM_POST",
         processingStatus: "QUEUED",
         originalLanguage: "ru",
-        metadataJson: expect.objectContaining({ accountHandle: "regchef_official" }),
+        metadataJson: expect.objectContaining({ accountHandle: "my_kitchen" }),
       });
       expect(triggered).toEqual([{ name: "import-historical-posts", payload: { sourceAssetId } }]);
       expect(source?.fileKey && (await ctx.storage.head(source.fileKey))?.size).toBe(
@@ -123,7 +123,7 @@ describe("historical posts", () => {
       expect(rows.map((p) => p.externalId)).toEqual(["p1", "p2"]);
       expect(rows[0]).toMatchObject({
         platform: "instagram",
-        accountHandle: "regchef_official",
+        accountHandle: "my_kitchen",
         format: "CAROUSEL",
         caption: "Гречка 🥣, без каши",
         language: "ru",

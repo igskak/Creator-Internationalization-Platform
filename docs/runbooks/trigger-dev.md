@@ -12,7 +12,7 @@ Plan: 01 D-05, 06 §6.1, §6.5. Verified against Trigger.dev docs on 2026-09-27 
 ```bash
 pnpm --filter @rc/jobs exec trigger login   # once per machine
 pnpm jobs:dev                               # dev worker; reads ../.env
-pnpm jobs:hello Reg.Chef                    # in another terminal
+pnpm jobs:hello Chef                        # in another terminal
 ```
 Expected: the run appears in the dashboard (dev environment) as `hello`, and `audit_events` gets a row with `action = 'job.hello'`, `actor_type = 'JOB'`, `job_run_id = <run id>`.
 

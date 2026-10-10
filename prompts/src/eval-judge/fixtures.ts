@@ -1,6 +1,6 @@
 import type { EvalJudgeInput, EvalJudgeOutput } from "./schema";
 
-// Synthetic input and output for the tests and the fake model. Not Reg.Chef content.
+// Synthetic input and output for the tests and the fake model. Not real content.
 
 export const FIXTURE_INPUT: EvalJudgeInput = {
   brandVoice: "Warm and precise. No hype.",

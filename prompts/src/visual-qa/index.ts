@@ -5,3 +5,4 @@ export {
   VisualQaOutput,
 } from "./schema";
 export { default as visualQaV1 } from "./v1";
+export { default as visualQaV2 } from "./v2";
