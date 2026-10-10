@@ -10,9 +10,11 @@ import {
   generateIdeas as generateService,
   getIdeasRequestStatus,
   RegenerateAllInput,
+  RegenerateVariantFieldInput,
   RegenerateVariantInput,
   RegenerateVisualBriefInput,
   regenerateVisualBrief as regenerateVisualBriefService,
+  requestFieldRegeneration,
   requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
@@ -153,4 +155,13 @@ export const editVariantField = defineAction({
       renderQueued: result.renderQueued,
     };
   },
+});
+
+// Plan 05 §5.7: the model redoes one field (job J6); the result arrives as a REGENERATE review event.
+
+export const regenerateVariantField = defineAction({
+  name: "regenerateVariantField",
+  input: RegenerateVariantFieldInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestFieldRegeneration(ctx, input),
 });

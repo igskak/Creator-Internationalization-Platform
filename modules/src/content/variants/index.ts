@@ -1,8 +1,10 @@
 export { columnsOf, contentOf, slotOrder, toDraft } from "./content";
 export {
+  applyFieldChange,
   EditVariantFieldInput,
   type EditVariantFieldResult,
   editVariantField,
+  type FieldChange,
   staleLockError,
   validateEdit,
 } from "./edit";
@@ -21,6 +23,14 @@ export {
   writeField,
 } from "./field-path";
 export { assertReasonCode } from "./reason";
+export {
+  MAX_INSTRUCTION_CHARS,
+  RegenerateFieldPayload,
+  RegenerateVariantFieldInput,
+  type RegenerationOutcome,
+  requestFieldRegeneration,
+  runFieldRegeneration,
+} from "./regenerate";
 export {
   type AllowedAction,
   allowedActions,

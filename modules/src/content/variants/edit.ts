@@ -192,7 +192,6 @@ export async function editVariantField(
 ): Promise<EditVariantFieldResult> {
   const input = parseInput(EditVariantFieldInput, raw);
   const field = parseFieldPath(input.field);
-  const path = formatFieldPath(field);
 
   const [variant] = await ctx.db
     .select()
@@ -232,7 +231,55 @@ export async function editVariantField(
   if (field.kind === "cta") await assertCta(ctx, variant, value as CtaSpec);
   if (field.kind === "image") await assertAsset(ctx, (value as { assetId?: string }).assetId);
 
-  const next = writeField(content, field, value);
+  return applyFieldChange(ctx, {
+    variant,
+    content,
+    field,
+    value,
+    original,
+    action: "EDIT",
+    lockVersion: input.lockVersion,
+    invalidates,
+    reasonCode: input.reasonCode,
+    reason: input.reason,
+    reviewerId: actorUserId(ctx),
+  });
+}
+
+export type FieldChange = {
+  variant: Variant;
+  content: NonNullable<ReturnType<typeof contentOf>>;
+  field: ParsedFieldPath;
+  /** Already checked against the field's shape. */
+  value: unknown;
+  original: unknown;
+  action: "EDIT" | "REGENERATE";
+  /** The lock version the change was made against. */
+  lockVersion: number;
+  /** The variant is approved: the change undoes it (the caller has the confirmation). */
+  invalidates: boolean;
+  reasonCode?: string | undefined;
+  reason?: string | undefined;
+  reviewerId: string | null;
+  generationRunId?: string | undefined;
+  /** The new content when it is not just `value` written at `field` (a picture plan). */
+  next?: NonNullable<ReturnType<typeof contentOf>> | undefined;
+  /** Queue the render afterwards (default true); a new picture queues it itself when it is made. */
+  queueRender?: boolean | undefined;
+};
+
+/**
+ * Writes a checked change of one field (shared by edits and regenerations): validates the new
+ * content, updates the variant under a row lock, records the review event, cancels the open
+ * publication when an approval is undone, and queues the render.
+ */
+export async function applyFieldChange(
+  ctx: ServiceContext,
+  change: FieldChange,
+): Promise<EditVariantFieldResult> {
+  const { variant, content, field, value, original, invalidates } = change;
+  const path = formatFieldPath(field);
+  const next = change.next ?? writeField(content, field, value);
   const { own, numericMismatch } = await validateEdit(ctx, variant, next, field);
   // A number the cards do not support is not refused: it raises NUMERIC_MISMATCH, which blocks
   // approval until the text is fixed (the closed-book rule of 07 §7.9.3).
@@ -263,7 +310,7 @@ export async function editVariantField(
       .where(eq(schema.contentVariants.id, variant.id))
       .for("update");
     if (!locked) throw new NotFoundError("Variant not found.");
-    if (locked.lockVersion !== input.lockVersion) throw await staleLockError(tx, locked);
+    if (locked.lockVersion !== change.lockVersion) throw await staleLockError(tx, locked);
     if (locked.status !== variant.status) {
       throw new InvalidStateError("The variant changed status in the meantime. Reload.");
     }
@@ -297,11 +344,11 @@ export async function editVariantField(
       if (!changed) throw new NotFoundError("Variant not found.");
       updated = changed;
       await audit(tx, {
-        action: "variant.edited",
+        action: change.action === "EDIT" ? "variant.edited" : "variant.field_regenerated",
         entityType: "content_variant",
         entityId: variant.id,
         marketId: variant.marketId,
-        data: { field: path, ...(input.reasonCode ? { reasonCode: input.reasonCode } : {}) },
+        data: { field: path, ...(change.reasonCode ? { reasonCode: change.reasonCode } : {}) },
       });
     }
 
@@ -309,21 +356,22 @@ export async function editVariantField(
       .insert(schema.reviewEvents)
       .values({
         contentVariantId: variant.id,
-        action: "EDIT",
+        action: change.action,
         field: path,
         originalValue: original ?? null,
         editedValue: value,
-        reviewerId: actorUserId(ctx),
-        reasonCode: input.reasonCode ?? null,
-        reason: input.reason || null,
-        variantLockVersion: input.lockVersion,
+        reviewerId: change.reviewerId,
+        reasonCode: change.reasonCode ?? null,
+        reason: change.reason || null,
+        generationRunId: change.generationRunId ?? null,
+        variantLockVersion: change.lockVersion,
       })
       .returning({ id: schema.reviewEvents.id });
     return { updated, eventId: event?.id ?? null, cancelled: open.map((p) => p.id) };
   });
 
   let renderQueued = false;
-  if (affectsRender(field)) {
+  if (affectsRender(field) && change.queueRender !== false) {
     try {
       await requestRender(ctx, variant.id, {
         ...(field.kind === "image" ? {} : { delaySeconds: RENDER_DEBOUNCE_SECONDS }),

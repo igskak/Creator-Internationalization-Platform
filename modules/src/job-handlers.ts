@@ -1,6 +1,11 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
-import { GenerateContentPayload, generateVariants } from "./content";
+import {
+  GenerateContentPayload,
+  generateVariants,
+  RegenerateFieldPayload,
+  runFieldRegeneration,
+} from "./content";
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
 import { defineJob, triggerJob } from "./core/job-runner";
@@ -191,11 +196,22 @@ export const runVisualQaJob = defineJob({
   run: (ctx, payload) => runVisualQa(ctx, payload),
 });
 
+/**
+ * J6 (plan 06 §6.2): the model writes a new value for one field of a draft and it is applied as a
+ * REGENERATE review event. A result the reviewer outran (the lock version moved), or that does
+ * not pass the checks, is an outcome, not an exception; transient errors are rethrown.
+ */
+export const regenerateFieldJob = defineJob({
+  payload: RegenerateFieldPayload,
+  run: (ctx, payload) => runFieldRegeneration(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
   "generate-ideas": generateIdeasJob,
   "generate-content": generateContentJob,
+  "regenerate-field": regenerateFieldJob,
   "generate-visual-assets": generateVisualAssetsJob,
   "render-carousel": renderCarouselJob,
   "import-library-photo": importLibraryPhotoJob,

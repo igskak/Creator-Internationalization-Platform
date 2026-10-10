@@ -486,7 +486,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests: edit, CONFLICT on stale lock, invalidation cancels a scheduled publication.
   - **Refs:** 04 §4.4 FieldPath, 05 §5.7.
 
-- [ ] **M4-04 · Field regeneration** · P0 · M · deps: M4-03
+- [x] **M4-04 · Field regeneration** · P0 · M · deps: M4-03
   - **Do:** `field-regenerator@1` + J6 + action `regenerateVariantField`; review event REGENERATE; validators; re-render.
   - **Done when:** fake tests for hook, slide, caption, CTA, image slot.
 

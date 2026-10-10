@@ -77,6 +77,7 @@ describe("@rc/prompts", () => {
       "eval-judge@2",
       "visual-director@1",
       "visual-director@2",
+      "field-regenerator@1",
       "visual-qa@1",
       "visual-qa@2",
     ]);

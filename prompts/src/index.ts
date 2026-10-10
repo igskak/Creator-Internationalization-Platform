@@ -1,6 +1,7 @@
 import { contentWriterV1, contentWriterV2, contentWriterV3 } from "./content-writer";
 import { criticV1, criticV2, criticV3 } from "./critic";
 import { evalJudgeV1, evalJudgeV2 } from "./eval-judge";
+import { fieldRegeneratorV1 } from "./field-regenerator";
 import { ideaGeneratorV1, ideaGeneratorV2 } from "./idea-generator";
 import { knowledgeExtractorV1, knowledgeExtractorV2 } from "./knowledge-extractor";
 import { knowledgeGlossV1, knowledgeGlossV2 } from "./knowledge-gloss";
@@ -31,6 +32,7 @@ export {
   type SystemBlock,
 } from "./define";
 export * as evalJudge from "./eval-judge";
+export * as fieldRegenerator from "./field-regenerator";
 export * as ideaGenerator from "./idea-generator";
 export * as knowledgeExtractor from "./knowledge-extractor";
 export * as knowledgeGloss from "./knowledge-gloss";
@@ -75,6 +77,7 @@ export const promptRegistry = createRegistry([
   evalJudgeV2,
   visualDirectorV1,
   visualDirectorV2,
+  fieldRegeneratorV1,
   visualQaV1,
   visualQaV2,
 ]);
