@@ -1,3 +1,26 @@
+export { columnsOf, contentOf, slotOrder, toDraft } from "./content";
+export {
+  EditVariantFieldInput,
+  type EditVariantFieldResult,
+  editVariantField,
+  staleLockError,
+  validateEdit,
+} from "./edit";
+export {
+  affectsRender,
+  formatFieldPath,
+  isWithin,
+  MAX_HASHTAGS_HARD,
+  MAX_HOOK_CHARS,
+  type ParsedFieldPath,
+  parseFieldPath,
+  readField,
+  tryParseFieldPath,
+  type VariantContent,
+  valueSchema,
+  writeField,
+} from "./field-path";
+export { assertReasonCode } from "./reason";
 export {
   type AllowedAction,
   allowedActions,

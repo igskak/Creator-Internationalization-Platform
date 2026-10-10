@@ -3,7 +3,13 @@ import type { Slide } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
 import { createLogger } from "@rc/lib/logging";
 import { createMemoryStorage } from "@rc/lib/providers/storage";
-import { createServiceContext, manualClock, type ServiceContext } from "../../core";
+import {
+  createServiceContext,
+  type JobRunner,
+  manualClock,
+  type ServiceContext,
+  type TriggerOptions,
+} from "../../core";
 import { loadRenderInput } from "../../visuals";
 
 // Fixtures for the tests of the review and scheduling services (M4). Synthetic content only.
@@ -17,6 +23,23 @@ export const testLogger = createLogger({
   level: "fatal",
   destination: { write: () => {} },
 });
+
+export type RecordedJob = { name: string; payload: unknown; options?: TriggerOptions };
+
+/** A job runner that only records what was queued. */
+export function recordingJobs(): { runner: JobRunner; calls: RecordedJob[] } {
+  const calls: RecordedJob[] = [];
+  return {
+    calls,
+    runner: {
+      trigger: async (name, payload, options) => {
+        calls.push({ name, payload, ...(options ? { options } : {}) });
+        return { runId: `run-${calls.length}` };
+      },
+      triggerAndWaitAll: async () => [],
+    },
+  };
+}
 
 const slide = (
   id: string,
@@ -46,6 +69,14 @@ export type ReviewFixture = {
   /** Inserts a READY render of the variant's current content and makes it the current one. */
   makeRender: (variantId: string) => Promise<string>;
   variant: (variantId: string) => Promise<typeof schema.contentVariants.$inferSelect>;
+  /** Writes an approved snapshot of the variant bound to a fresh render and points the variant at it. */
+  makeVersion: (variantId: string) => Promise<{ versionId: string; renderId: string }>;
+  /** Inserts a publication of the variant's approved version. */
+  makePublication: (
+    variantId: string,
+    versionId: string,
+    over?: Partial<typeof schema.publications.$inferInsert>,
+  ) => Promise<string>;
 };
 
 export type MakeVariantOptions = {
@@ -56,6 +87,7 @@ export type MakeVariantOptions = {
   /** Add a product offer for the market and link it to the variant. */
   withOffer?: boolean;
   ctaType?: string;
+  /** Default: a new idea of its own (one live variant per idea and market). */
   ideaId?: string;
 };
 
@@ -63,7 +95,10 @@ export type MakeVariantOptions = {
  * Seeds (seedDatabase must have run) an ACCEPTED idea, an owner and helpers to make variants and
  * renders. Time is a manual clock at 2026-10-10 12:00 UTC.
  */
-export async function reviewFixture(db: Db): Promise<ReviewFixture> {
+export async function reviewFixture(
+  db: Db,
+  options: { jobs?: JobRunner } = {},
+): Promise<ReviewFixture> {
   const storage = createMemoryStorage();
   const clock = manualClock("2026-10-10T12:00:00Z");
   const [owner] = await db.select().from(schema.appUsers);
@@ -74,6 +109,7 @@ export async function reviewFixture(db: Db): Promise<ReviewFixture> {
       logger: testLogger,
       clock,
       storage,
+      ...(options.jobs ? { jobs: options.jobs } : {}),
       actor: { type: "USER", userId, role },
     });
   const ctx = make("owner");
@@ -106,23 +142,22 @@ export async function reviewFixture(db: Db): Promise<ReviewFixture> {
     const [market] = opts.marketCode
       ? await db.select().from(schema.markets).where(eq(schema.markets.code, opts.marketCode))
       : [es];
-    let ideaForVariant = opts.ideaId ?? ideaId;
-    if (opts.commercial) {
-      const [commercial] = await db
-        .insert(schema.masterIdeas)
-        .values({
-          brandId: brand?.id ?? "",
-          topic: "Sell",
-          category: "GRAINS_RICE_PASTA",
-          angle: "COMMON_MISTAKE",
-          coreMessage: "Buy the guide.",
-          status: "ACCEPTED",
-          origin: "MANUAL",
-          commercialIntent: "LEAD_MAGNET",
-        })
-        .returning();
-      ideaForVariant = commercial?.id ?? "";
-    }
+    const [own] = opts.ideaId
+      ? [{ id: opts.ideaId }]
+      : await db
+          .insert(schema.masterIdeas)
+          .values({
+            brandId: brand?.id ?? "",
+            topic: "Rice",
+            category: "GRAINS_RICE_PASTA",
+            angle: "COMMON_MISTAKE",
+            coreMessage: "Do not rinse risotto rice.",
+            status: "ACCEPTED",
+            origin: "MANUAL",
+            commercialIntent: opts.commercial ? "LEAD_MAGNET" : "NONE",
+          })
+          .returning();
+    const ideaForVariant = own?.id ?? "";
     let offerId: string | null = null;
     if (opts.withOffer) {
       const [product] = await db
@@ -217,6 +252,60 @@ export async function reviewFixture(db: Db): Promise<ReviewFixture> {
     return id;
   };
 
+  const makeVersion: ReviewFixture["makeVersion"] = async (variantId) => {
+    const renderId = await makeRender(variantId);
+    const v = await variant(variantId);
+    const [version] = await db
+      .insert(schema.contentVariantVersions)
+      .values({
+        contentVariantId: variantId,
+        versionNo: 1,
+        snapshot: {
+          hook: v.hook ?? "",
+          hookType: v.hookType ?? "",
+          caption: v.caption ?? "",
+          cta: v.ctaJson ?? { type: "SAVE", text: "" },
+          hashtags: v.hashtags,
+          slides: v.slidesJson,
+          visualStyle: v.visualStyle ?? "",
+          templateSequence: v.templateSequence,
+          renderId,
+          renderedSlideKeys: [],
+          knowledge: [],
+          generationVersion: v.generationVersion ?? "",
+        },
+        carouselRenderId: renderId,
+        contentHash: "hash",
+        approvedBy: userId,
+      })
+      .returning();
+    await db
+      .update(schema.contentVariants)
+      .set({ approvedVersionId: version?.id ?? null })
+      .where(eq(schema.contentVariants.id, variantId));
+    return { versionId: version?.id ?? "", renderId };
+  };
+
+  let publicationCount = 0;
+  const makePublication: ReviewFixture["makePublication"] = async (variantId, versionId, over) => {
+    const v = await variant(variantId);
+    publicationCount += 1;
+    const [pub] = await db
+      .insert(schema.publications)
+      .values({
+        contentVariantId: variantId,
+        contentVariantVersionId: versionId,
+        marketId: v.marketId,
+        mode: "SCHEDULED",
+        scheduledAt: new Date("2026-12-01T10:00:00Z"),
+        status: "SCHEDULED",
+        idempotencyKey: `pub:test-${publicationCount}:0`,
+        ...over,
+      })
+      .returning();
+    return pub?.id ?? "";
+  };
+
   return {
     ctx,
     as: make,
@@ -228,5 +317,7 @@ export async function reviewFixture(db: Db): Promise<ReviewFixture> {
     makeVariant,
     makeRender,
     variant,
+    makeVersion,
+    makePublication,
   };
 }

@@ -243,7 +243,7 @@ export function writerInput(
 }
 
 /** Everything the numeric-fidelity check may match a number in the copy against (07 §7.9.3). */
-export function numericReference(c: PipelineContext): NumericReference {
+export function numericReference(c: Pick<PipelineContext, "cards">): NumericReference {
   return {
     temperatures: c.cards.flatMap((card) => card.temperatures),
     timings: c.cards.flatMap((card) => timingsOf(card.timings)),

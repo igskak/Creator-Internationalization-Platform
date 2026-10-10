@@ -481,7 +481,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `content/variants/state.ts`: transition table (10 §10.4.3), guards, side-effect hooks, "allowed actions" for the UI.
   - **Done when:** full transition matrix tests.
 
-- [ ] **M4-03 · Field paths and edit service** · P0 · M · deps: M4-02, M3-12
+- [x] **M4-03 · Field paths and edit service** · P0 · M · deps: M4-02, M3-12
   - **Do:** `FieldPath` parse/get/set, per-field validation (template limits, caption, hashtags), optimistic locking, `review_events` (original vs edited), approval invalidation (cancel open publication, audit), debounced re-render; action `editVariantField`.
   - **Done when:** tests: edit, CONFLICT on stale lock, invalidation cancels a scheduled publication.
   - **Refs:** 04 §4.4 FieldPath, 05 §5.7.

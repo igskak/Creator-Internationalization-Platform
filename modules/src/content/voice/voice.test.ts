@@ -383,11 +383,26 @@ describe("voice examples", () => {
         await draft({ status: "READY_FOR_REVIEW", hook: "En revisión" });
         await draft({ status: "REJECTED", hook: "Rechazado" });
         await draft({ marketId: enId, hook: "English hook" });
-        await draft({
-          lockVersion: 5,
+        const edited = await draft({
           statusChangedAt: new Date(base + 9 * 86_400_000),
           hook: "Muy editado",
         });
+        // Three edits are one too many; two would still do.
+        await t.db.insert(schema.reviewEvents).values(
+          [1, 2, 3].map((n) => ({
+            contentVariantId: edited,
+            action: n === 3 ? ("REGENERATE" as const) : ("EDIT" as const),
+            variantLockVersion: n,
+          })),
+        );
+        // Approvals and comments are not edits.
+        await t.db.insert(schema.reviewEvents).values(
+          ["APPROVE", "COMMENT"].map((action) => ({
+            contentVariantId: ids[4] as string,
+            action: action as "APPROVE" | "COMMENT",
+            variantLockVersion: 1,
+          })),
+        );
         const found = (await selectExemplars(owner, esId)).filter((e) => e.kind === "EXEMPLAR");
         expect(found).toHaveLength(MAX_APPROVED_EXEMPLARS);
         expect(found.map((e) => e.text?.split("\n")[0])).toEqual([

@@ -3,6 +3,8 @@
 import {
   CreateManualIdeaInput,
   createManualIdea as createManualService,
+  EditVariantFieldInput,
+  editVariantField as editVariantFieldService,
   GenerateIdeasInput,
   GenerateVariantsInput,
   generateIdeas as generateService,
@@ -130,5 +132,25 @@ export const runVisualQa = defineAction({
   handler: async (ctx, input) => {
     const { runId } = await triggerJob(ctx, "run-visual-qa", input);
     return { jobRunId: runId };
+  },
+});
+
+// Plan 05 §5.7: one field of a variant is edited; the service checks the value, the lock version
+// and (for an approved variant) the confirmation.
+
+export const editVariantField = defineAction({
+  name: "editVariantField",
+  input: EditVariantFieldInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const result = await editVariantFieldService(ctx, input);
+    return {
+      status: result.variant.status,
+      lockVersion: result.variant.lockVersion,
+      reviewEventId: result.reviewEventId,
+      warnings: result.warnings,
+      cancelledPublicationIds: result.cancelledPublicationIds,
+      renderQueued: result.renderQueued,
+    };
   },
 });
