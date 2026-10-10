@@ -27,6 +27,7 @@ export {
 } from "./request";
 export {
   getReviewBundle,
+  type PendingRegeneration,
   type RenderView,
   type ReviewBundle,
   type VariantView,

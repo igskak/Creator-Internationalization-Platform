@@ -490,7 +490,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `field-regenerator@1` + J6 + action `regenerateVariantField`; review event REGENERATE; validators; re-render.
   - **Done when:** fake tests for hook, slide, caption, CTA, image slot.
 
-- [ ] **M4-05 · Review screen v1** · P0 · L · deps: M4-03, M4-04, M3-13
+- [x] **M4-05 · Review screen v1** · P0 · L · deps: M4-03, M4-04, M3-13
   - **Do:** full UX (10 §10.3): inline edit + regenerate per field with instruction and reason code, keep/undo, slide drawer with live preview, critic panel with jump-to-field, knowledge references, conflict handling, allowed-actions driven buttons.
   - **Done when:** manual walkthrough in dev; screenshots; component tests for key interactions.
 

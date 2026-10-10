@@ -5,15 +5,18 @@ import { useEffect, useRef } from "react";
 import { getStatuses } from "@/server/actions/statuses";
 
 const EVERY_MS = 3000;
+const GIVE_UP_MS = 15 * 60 * 1000;
 
 /**
  * Polls `getStatuses` every 3 seconds while a draft is being written (or waits for the job to
- * start) and refreshes the page when a status or the running stage changes (plan 10 §10.5).
+ * start) and refreshes the page when a status or the running stage changes (plan 10 §10.5). While
+ * a carousel is rendering (or stale after an edit) the page is refreshed every 3 seconds too, so
+ * the new images appear; both stop after 15 minutes.
  */
 export function ReviewPoller({
   variants,
 }: {
-  variants: { id: string; status: string; inProgress: boolean }[];
+  variants: { id: string; status: string; inProgress: boolean; rendering?: boolean }[];
 }) {
   const router = useRouter();
   const known = useRef(new Map<string, string>());
@@ -22,6 +25,17 @@ export function ReviewPoller({
     .filter((v) => v.inProgress)
     .map((v) => v.id)
     .join(",");
+  const rendering = variants.some((v) => v.rendering);
+
+  useEffect(() => {
+    if (!rendering) return;
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (Date.now() - started > GIVE_UP_MS) clearInterval(timer);
+      else router.refresh();
+    }, EVERY_MS);
+    return () => clearInterval(timer);
+  }, [rendering, router]);
 
   useEffect(() => {
     if (!key) return;

@@ -27,6 +27,8 @@ export type StatusEntry = {
   error?: string;
   /** Where a running pipeline is: `ADAPT`, `WRITE:0`, `CRITIC:1` … (variants only). */
   stage?: string;
+  /** Goes up with every change of a variant (an edit, a regeneration, a status change). */
+  lockVersion?: number;
 };
 
 /** Current status per requested id. Ids that are unknown (or not visible) are left out. */
@@ -56,12 +58,14 @@ export async function getStatuses(ctx: ServiceContext, input: StatusesInput): Pr
         flags: schema.contentVariants.flags,
         lastError: schema.contentVariants.lastError,
         pipelineState: schema.contentVariants.pipelineState,
+        lockVersion: schema.contentVariants.lockVersion,
       })
       .from(schema.contentVariants)
       .where(inArray(schema.contentVariants.id, input.variantIds));
     for (const v of rows) {
       statuses[v.id] = {
         status: v.status,
+        lockVersion: v.lockVersion,
         ...(v.flags.length > 0 ? { flags: v.flags } : {}),
         ...(v.lastError ? { error: v.lastError.message } : {}),
         ...(v.status === "GENERATING" && v.pipelineState ? { stage: v.pipelineState.stage } : {}),
