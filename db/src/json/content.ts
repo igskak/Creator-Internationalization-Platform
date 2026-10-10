@@ -267,5 +267,9 @@ export const QaReport = z.object({
   logoPlacementOk: z.boolean(),
   fileSizes: z.array(z.number().int().nonnegative()),
   durationMs: z.number().nonnegative(),
+  /** Text whose contrast with the picture or background under it is below 4.5:1 (a warning, 08 §8.6). */
+  lowContrast: z
+    .array(z.object({ slideId: z.string(), slot: z.string(), ratio: z.number().nonnegative() }))
+    .optional(),
 });
 export type QaReport = z.infer<typeof QaReport>;

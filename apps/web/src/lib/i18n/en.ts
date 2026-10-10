@@ -794,6 +794,7 @@ export const en = {
         brandVoice: "Brand voice",
         structure: "Structure",
         cta: "CTA",
+        hook: "Hook",
         overall: "Overall",
       },
       unsupported: "Unsupported claims",

@@ -466,7 +466,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** PHOTO sources → `visual_assets` (LIBRARY_PHOTO) with tags/description (manual + optional AI tags); rights check; library candidates for the visual director.
   - **Done when:** director can pick a library photo in a test.
 
-- [ ] **M3-17 · Visual QA with vision** · P1 · M · deps: M3-12
+- [x] **M3-17 · Visual QA with vision** · P1 · M · deps: M3-12
   - **Do:** `visual-qa@1` on rendered JPEGs (legibility, AI artifacts, text inside images, brand consistency) → issues added to the critic report; contrast check.
   - **Done when:** fake tests; real run on 5 variants logged.
 

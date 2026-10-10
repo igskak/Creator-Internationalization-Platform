@@ -18,3 +18,8 @@ export {
   requestRender,
   templatesVersionOf,
 } from "./render-input";
+export {
+  RunVisualQaPayload,
+  runVisualQa,
+  type VisualQaResult,
+} from "./visual-qa";

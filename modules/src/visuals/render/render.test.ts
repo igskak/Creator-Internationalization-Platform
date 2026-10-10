@@ -5,7 +5,14 @@ import { buildTheme } from "@rc/templates/render";
 import type { Browser } from "playwright-core";
 import sharp from "sharp";
 import { afterAll, describe, expect, it } from "vitest";
-import { buildQaReport, judgeQa, logoPlacementOk, type PageMeasurement } from "./qa";
+import {
+  buildQaReport,
+  contrastRatio,
+  judgeQa,
+  logoPlacementOk,
+  type PageMeasurement,
+  worstContrast,
+} from "./qa";
 import { launchBrowser, type RenderInputSlide, renderCarousel } from "./renderer";
 
 // Rendering needs a Chromium: the pre-installed one in cloud sessions, the one CI installs, a local
@@ -32,12 +39,44 @@ const inputFor = (templateId: string, name: string, withImages = true): RenderIn
   return { slide, assets: { images } };
 };
 
+describe("contrast (no browser)", () => {
+  it("computes the WCAG ratio: 21:1 for black on white, 1:1 for the same colour", () => {
+    expect(contrastRatio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21, 5);
+    expect(contrastRatio([120, 130, 140], [120, 130, 140])).toBe(1);
+    // The reference pair from WCAG: #767676 on white is 4.54:1.
+    expect(contrastRatio([0x76, 0x76, 0x76], [255, 255, 255])).toBeCloseTo(4.54, 1);
+  });
+
+  it("takes the worst 5 % of the pixels under a box, not one stray pixel", () => {
+    const width = 40;
+    const height = 40;
+    const data = new Uint8Array(width * height * 3).fill(255); // white
+    // Text is black: 21:1 everywhere, except a dark patch of 10 % of the box.
+    const dark = (x: number, y: number) => {
+      const i = (y * width + x) * 3;
+      data[i] = data[i + 1] = data[i + 2] = 10;
+    };
+    for (let y = 0; y < 40; y += 1) for (let x = 0; x < 4; x += 1) dark(x, y);
+    const image = { data, width, height, channels: 3 };
+    const box = { x: 0, y: 0, width, height };
+    expect(worstContrast([0, 0, 0], box, image, 1)).toBeLessThan(2);
+    // A single dark pixel is not enough to fail the slot.
+    const one = new Uint8Array(width * height * 3).fill(255);
+    one[0] = one[1] = one[2] = 10;
+    expect(worstContrast([0, 0, 0], box, { data: one, width, height, channels: 3 }, 1)).toBeCloseTo(
+      21,
+      0,
+    );
+  });
+});
+
 describe("QA decisions (no browser)", () => {
   const measurement = (over: Partial<PageMeasurement> = {}): PageMeasurement => ({
     slideId: "s1",
     overflow: [],
     missingRequiredImages: [],
     brokenImages: [],
+    slots: [],
     logo: {
       box: { x: 72, y: 1230, width: 200, height: 48 },
       expected: { anchor: "bottom-left", heightPx: 48 },
@@ -147,6 +186,31 @@ describe.skipIf(!browser)("renderCarousel", () => {
     ]);
     expect(result.verdict).toMatchObject({ ok: false, flags: ["TEXT_OVERFLOW"] });
   }, 60_000);
+
+  it("warns about text with too little contrast, but does not block the render", async () => {
+    // Light text on a light background: the slide is readable by nobody.
+    const faint = buildTheme({
+      colors: { ...buildTheme({}).colors, text: "#F4EFE6" },
+      fonts: { display: "fraunces", body: "inter" },
+      logo: { assetKey: "", minHeightPx: 48 },
+      spacing: { safeMarginPx: 72 },
+      themeVariants: {},
+    });
+    const result = await renderCarousel(
+      { slides: [inputFor("F", "en-short")], theme: faint },
+      { browser: needBrowser() },
+    );
+    expect(result.qa.lowContrast?.map((c) => c.slot).sort()).toEqual(["body", "headline"]);
+    expect(result.qa.lowContrast?.[0]?.ratio).toBeLessThan(2);
+    expect(result.verdict.ok).toBe(true);
+    expect(result.verdict.warnings[0]).toContain("Low contrast");
+  }, 60_000);
+
+  it("finds no contrast problem in the regular fixtures", async () => {
+    const slides = ["A", "B", "C", "D", "E", "F"].map((id) => inputFor(id, "es-long"));
+    const result = await renderCarousel({ slides, theme }, { browser: needBrowser() });
+    expect(result.qa.lowContrast).toBeUndefined();
+  }, 120_000);
 
   it("reports a required picture that is missing", async () => {
     const slides = [inputFor("A", "es-long", false)];

@@ -17,8 +17,10 @@ import {
   EXPECTED,
   judgeQa,
   MAX_JPEG_BYTES,
+  MIN_CONTRAST,
   type PageMeasurement,
   type QaVerdict,
+  worstContrast,
 } from "./qa";
 
 // The carousel renderer (plan 08 §8.6, §8.7, M3-11): one Chromium for the whole run, a 1080 × 1350
@@ -115,7 +117,17 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
     .map((img) => img.getAttribute("data-image") || "");
   const logo = document.querySelector("[data-logo]");
   const box = logo ? logo.getBoundingClientRect() : null;
+  const slots = [...document.querySelectorAll("[data-slot]")].map((el) => {
+    const r = el.getBoundingClientRect();
+    const m = /rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/.exec(getComputedStyle(el).color);
+    return {
+      slot: el.getAttribute("data-slot") || "",
+      box: { x: r.x, y: r.y, width: r.width, height: r.height },
+      color: m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0],
+    };
+  });
   return {
+    slots,
     overflow,
     missingRequiredImages,
     brokenImages,
@@ -157,6 +169,7 @@ export async function renderCarousel(
   const measurements: PageMeasurement[] = [];
   const missingImages: { slideId: string; slot: string }[] = [];
   const brokenImages: { slideId: string; slot: string }[] = [];
+  const lowContrast: { slideId: string; slot: string; ratio: number }[] = [];
   try {
     const context = await browser.newContext({
       viewport: { width: EXPECTED.width, height: EXPECTED.height },
@@ -187,6 +200,27 @@ export async function renderCarousel(
           for (const slot of measured.brokenImages) brokenImages.push({ slideId: slide.id, slot });
 
           const png = await page.screenshot({ type: "png", fullPage: false });
+          // Contrast: the picture and background with the text hidden, sampled under each text box.
+          await page.addStyleTag({ content: "[data-slot]{visibility:hidden !important}" });
+          const bare = await sharp(await page.screenshot({ type: "png", fullPage: false }))
+            .removeAlpha()
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+          for (const s of measured.slots) {
+            const ratio = worstContrast(s.color, s.box, {
+              data: bare.data,
+              width: bare.info.width,
+              height: bare.info.height,
+              channels: bare.info.channels,
+            });
+            if (ratio < MIN_CONTRAST) {
+              lowContrast.push({
+                slideId: slide.id,
+                slot: s.slot,
+                ratio: Math.round(ratio * 100) / 100,
+              });
+            }
+          }
           let jpeg = await toJpeg(png, 90);
           // Size guard (08 §8.6): one re-encode at q85 when the file is too large.
           if (jpeg.data.byteLength > MAX_JPEG_BYTES) jpeg = await toJpeg(png, 85);
@@ -216,6 +250,7 @@ export async function renderCarousel(
     files: rendered,
     missingGlyphs: [],
     durationMs: Date.now() - started,
+    lowContrast,
   });
   return {
     slides: rendered,

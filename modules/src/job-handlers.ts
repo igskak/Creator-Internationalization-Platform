@@ -18,7 +18,9 @@ import {
   generateVisualAssets,
   importLibraryPhoto,
   RenderCarouselPayload,
+  RunVisualQaPayload,
   requestRender,
+  runVisualQa,
 } from "./visuals";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
@@ -180,6 +182,15 @@ export const importLibraryPhotoJob = defineJob({
   run: (ctx, payload) => importLibraryPhoto(ctx, payload),
 });
 
+/**
+ * J21 (plan 07 §7.6.1): the vision check of a variant's rendered slides. Findings are added to the
+ * critic report; a variant that cannot be checked yet is an error the person sees.
+ */
+export const runVisualQaJob = defineJob({
+  payload: RunVisualQaPayload,
+  run: (ctx, payload) => runVisualQa(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -188,6 +199,7 @@ export const jobHandlers = {
   "generate-visual-assets": generateVisualAssetsJob,
   "render-carousel": renderCarouselJob,
   "import-library-photo": importLibraryPhotoJob,
+  "run-visual-qa": runVisualQaJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

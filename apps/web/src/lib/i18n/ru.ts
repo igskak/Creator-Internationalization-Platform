@@ -814,6 +814,7 @@ export const ru: Messages = {
         brandVoice: "Голос бренда",
         structure: "Структура",
         cta: "Призыв",
+        hook: "Хук",
         overall: "Общая",
       },
       unsupported: "Утверждения без опоры",

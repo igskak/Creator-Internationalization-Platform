@@ -22,7 +22,7 @@ import {
   updateIdea as updateService,
 } from "@rc/modules/content";
 import { triggerJob } from "@rc/modules/core";
-import { GenerateVisualAssetsPayload } from "@rc/modules/visuals";
+import { GenerateVisualAssetsPayload, RunVisualQaPayload } from "@rc/modules/visuals";
 import { z } from "zod";
 import { defineAction } from "./_define";
 
@@ -118,6 +118,17 @@ export const generateVisualAssets = defineAction({
   roles: ["owner", "editor", "chef"],
   handler: async (ctx, input) => {
     const { runId } = await triggerJob(ctx, "generate-visual-assets", input);
+    return { jobRunId: runId };
+  },
+});
+
+/** Starts the vision check (J21) of a variant's rendered slides; the findings join its critic report. */
+export const runVisualQa = defineAction({
+  name: "runVisualQa",
+  input: RunVisualQaPayload,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => {
+    const { runId } = await triggerJob(ctx, "run-visual-qa", input);
     return { jobRunId: runId };
   },
 });

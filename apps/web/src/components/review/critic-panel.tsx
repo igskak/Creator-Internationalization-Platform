@@ -15,6 +15,7 @@ const SCORE_ORDER = [
   "brandVoice",
   "structure",
   "cta",
+  "hook",
   "overall",
 ] as const;
 
@@ -69,10 +70,10 @@ export function CriticPanel({
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
-        {SCORE_ORDER.map((name) => (
+        {SCORE_ORDER.filter((name) => report.scores[name] !== undefined).map((name) => (
           <div key={name} className="flex items-baseline justify-between gap-2">
             <dt className="text-muted-foreground">{c.scores[name]}</dt>
-            <dd className={cn("font-medium tabular-nums", scoreStyle(report.scores[name]))}>
+            <dd className={cn("font-medium tabular-nums", scoreStyle(report.scores[name] ?? 0))}>
               {report.scores[name]}
             </dd>
           </div>
