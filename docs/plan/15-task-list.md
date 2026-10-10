@@ -462,7 +462,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** 10 real visual briefs × 2 models (OpenAI + one alternative through a throwaway script); blind review by Ihor/Sergey on a "premium macro food" rubric; `docs/decisions/image-provider.md`; set the default model (add a second adapter task if the alternative wins).
   - **Done when:** decision recorded.
 
-- [ ] **M3-16 · Photo library** · P1 · M · deps: M3-04, M1-04
+- [x] **M3-16 · Photo library** · P1 · M · deps: M3-04, M1-04
   - **Do:** PHOTO sources → `visual_assets` (LIBRARY_PHOTO) with tags/description (manual + optional AI tags); rights check; library candidates for the visual director.
   - **Done when:** director can pick a library photo in a test.
 

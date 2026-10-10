@@ -8,6 +8,7 @@ import { registry } from "@rc/templates";
 import { z } from "zod";
 import { audit, type ServiceContext } from "../core";
 import { assetKeys, normalizeImage, perceptualHash, type SlotAspect } from "./images";
+import { assertLibraryPhotoUsable } from "./library";
 
 // The `generate-visual-assets` job (plan 06 J7, M3-05): for every picture of a variant's visual
 // brief a provider call, normalization, two objects in storage and a `visual_assets` row; the
@@ -104,6 +105,20 @@ export async function generateVisualAssets(
     if (entry.source === "LIBRARY") {
       if (!entry.libraryAssetId) {
         outcomes.push({ slideId, slot, status: "FAILED", error: "No library photo given." });
+        return;
+      }
+      // The rights may have changed since the brief was made: check again before using it.
+      const usable = await assertLibraryPhotoUsable(ctx, entry.libraryAssetId).then(
+        () => true,
+        () => false,
+      );
+      if (!usable) {
+        outcomes.push({
+          slideId,
+          slot,
+          status: "FAILED",
+          error: "The library photo is no longer available.",
+        });
         return;
       }
       setImage(slideId, slot, entry.libraryAssetId);

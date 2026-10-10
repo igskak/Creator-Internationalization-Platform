@@ -16,6 +16,7 @@ import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcr
 import {
   GenerateVisualAssetsPayload,
   generateVisualAssets,
+  importLibraryPhoto,
   RenderCarouselPayload,
   requestRender,
 } from "./visuals";
@@ -170,6 +171,15 @@ export const renderCarouselJob = defineJob({
   },
 });
 
+/**
+ * J20 (plan 08 §8.4): turns an uploaded PHOTO source into a library photo (`visual_assets`). A file
+ * that is not an image ends the source as FAILED and returns normally.
+ */
+export const importLibraryPhotoJob = defineJob({
+  payload: z.object({ sourceAssetId: z.uuid(), attempt: z.number().int().positive() }),
+  run: (ctx, payload) => importLibraryPhoto(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -177,6 +187,7 @@ export const jobHandlers = {
   "generate-content": generateContentJob,
   "generate-visual-assets": generateVisualAssetsJob,
   "render-carousel": renderCarouselJob,
+  "import-library-photo": importLibraryPhotoJob,
   "extract-knowledge-batch": extractKnowledgeBatchJob,
   "embed-knowledge-items": embedKnowledgeItemsJob,
   "import-historical-posts": importHistoricalPostsJob,

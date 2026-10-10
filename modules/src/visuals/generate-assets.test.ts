@@ -210,19 +210,60 @@ describe("generateVisualAssets", () => {
     expect((await variant()).flags).toContain("VISUAL_MISSING");
   });
 
-  it("uses a library photo without calling the provider", async () => {
-    await setBrief([
-      entry("s1", "hero", {
-        source: "LIBRARY",
-        libraryAssetId: "11111111-1111-4111-8111-111111111111",
-      }),
-    ]);
-    const result = await generateVisualAssets(ctx, { variantId });
-    expect(images.calls).toHaveLength(0);
-    expect(result.outcomes[0]).toMatchObject({ status: "LIBRARY" });
-    expect((await variant()).slidesJson[0]?.images.hero?.assetId).toBe(
-      "11111111-1111-4111-8111-111111111111",
-    );
+  describe("library photos", () => {
+    const makePhoto = async (visuallyTransform: "ALLOWED" | "UNKNOWN" = "ALLOWED") => {
+      const [brand] = await t.db.select().from(schema.brands);
+      const [source] = await t.db
+        .insert(schema.sourceAssets)
+        .values({
+          brandId: brand?.id ?? "",
+          type: "PHOTO",
+          title: "Rice",
+          originalLanguage: "ru",
+          rights: {
+            use: "ALLOWED",
+            translate: "ALLOWED",
+            adapt: "ALLOWED",
+            visuallyTransform,
+            sell: "UNKNOWN",
+            aiProcessing: "DENIED",
+            improvePrompts: "DENIED",
+          },
+        })
+        .returning();
+      const [asset] = await t.db
+        .insert(schema.visualAssets)
+        .values({
+          brandId: brand?.id ?? "",
+          kind: "LIBRARY_PHOTO",
+          status: "READY",
+          sourceAssetId: source?.id ?? null,
+          storageKey: "library/x.webp",
+          mimeType: "image/webp",
+        })
+        .returning();
+      return { assetId: asset?.id ?? "", sourceId: source?.id ?? "" };
+    };
+
+    it("uses a library photo without calling the provider", async () => {
+      const { assetId } = await makePhoto();
+      await setBrief([entry("s1", "hero", { source: "LIBRARY", libraryAssetId: assetId })]);
+      const result = await generateVisualAssets(ctx, { variantId });
+      expect(images.calls).toHaveLength(0);
+      expect(result.outcomes[0]).toMatchObject({ status: "LIBRARY", assetId });
+      expect((await variant()).slidesJson[0]?.images.hero?.assetId).toBe(assetId);
+    });
+
+    it("fails the slot when the rights no longer allow the photo", async () => {
+      const { assetId } = await makePhoto("UNKNOWN");
+      await setBrief([entry("s1", "hero", { source: "LIBRARY", libraryAssetId: assetId })]);
+      const result = await generateVisualAssets(ctx, { variantId });
+      expect(result.outcomes[0]).toMatchObject({
+        status: "FAILED",
+        error: "The library photo is no longer available.",
+      });
+      expect(result.visualMissing).toBe(true);
+    });
   });
 
   it("flags VISUAL_MISSING when there is no brief, and refuses a variant that is not open", async () => {

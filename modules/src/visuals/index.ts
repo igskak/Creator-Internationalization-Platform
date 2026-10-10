@@ -8,6 +8,7 @@ export {
   type SlotOutcome,
 } from "./generate-assets";
 export * from "./images";
+export * from "./library";
 export { getSlidePreviewHtml, SlidePreviewInput } from "./preview";
 export {
   loadRenderAssets,

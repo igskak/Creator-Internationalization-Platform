@@ -181,6 +181,40 @@ describe("source upload services", () => {
       expect(await audits()).toEqual(["source.uploaded"]);
     });
 
+    it("sends a photo to the library import even when AI processing is not allowed", async () => {
+      const { sourceAssetId } = await createSourceUpload(
+        ctx,
+        upload({
+          type: "PHOTO",
+          fileName: "rice.JPG",
+          mimeType: "image/jpeg",
+          rights: unknown,
+        }),
+      );
+      await put((await source(sourceAssetId)).fileKey ?? "", 1000);
+
+      expect(await completeSourceUpload(ctx, { sourceAssetId })).toEqual({ status: "QUEUED" });
+      expect(triggered).toEqual([
+        {
+          name: "import-library-photo",
+          payload: { sourceAssetId, attempt: 1 },
+          idempotencyKey: `photo:${sourceAssetId}:1`,
+        },
+      ]);
+    });
+
+    it("accepts only image formats for a photo", async () => {
+      await expect(
+        createSourceUpload(ctx, upload({ type: "PHOTO", fileName: "rice.pdf", mimeType: PDF })),
+      ).rejects.toBeInstanceOf(ValidationError);
+      await expect(
+        createSourceUpload(
+          ctx,
+          upload({ type: "PHOTO", fileName: "rice.png", mimeType: "image/jpeg" }),
+        ),
+      ).rejects.toBeInstanceOf(ValidationError);
+    });
+
     it("blocks the source and starts no job when AI processing is not allowed", async () => {
       const { sourceAssetId } = await createSourceUpload(ctx, upload({ rights: unknown }));
       await put((await source(sourceAssetId)).fileKey ?? "", 1000);

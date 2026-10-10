@@ -182,6 +182,76 @@ describe("regenerateVisualBrief", () => {
     expect(runs.every((r) => r.contentVariantId === variantId)).toBe(true);
   });
 
+  it("offers the library photos whose rights allow it, and lets the director pick one", async () => {
+    const [brand] = await t.db.select().from(schema.brands);
+    const [source] = await t.db
+      .insert(schema.sourceAssets)
+      .values({
+        brandId: brand?.id ?? "",
+        type: "PHOTO",
+        title: "Rice bowl",
+        originalLanguage: "ru",
+        rights: {
+          use: "ALLOWED",
+          translate: "ALLOWED",
+          adapt: "ALLOWED",
+          visuallyTransform: "ALLOWED",
+          sell: "UNKNOWN",
+          aiProcessing: "DENIED",
+          improvePrompts: "DENIED",
+        },
+      })
+      .returning();
+    const [photo] = await t.db
+      .insert(schema.visualAssets)
+      .values({
+        brandId: brand?.id ?? "",
+        kind: "LIBRARY_PHOTO",
+        status: "READY",
+        sourceAssetId: source?.id ?? null,
+        storageKey: "library/p.webp",
+        description: "A bowl of rice on slate",
+        tags: ["rice"],
+      })
+      .returning();
+    const photoId = photo?.id ?? "";
+    let seen = "";
+    answer = (text) => {
+      seen = text;
+      const brief = scriptedVisualBrief(text);
+      // The director chooses the library photo for the first slot.
+      return {
+        ...brief,
+        slides: brief.slides.map((e, i) =>
+          i === 0
+            ? {
+                slideId: e.slideId,
+                slot: e.slot,
+                source: "LIBRARY",
+                libraryAssetId: photoId,
+                composition: "Library photo.",
+                aspect: e.aspect,
+              }
+            : e,
+        ),
+      };
+    };
+    const { visualBrief } = await regenerateVisualBrief(ctx, { variantId });
+    expect(seen).toContain(`<photo id="${photoId}"`);
+    expect(seen).toContain("A bowl of rice on slate");
+    expect(visualBrief.slides[0]).toMatchObject({ source: "LIBRARY", libraryAssetId: photoId });
+
+    // A photo whose source forbids the transform is not offered, and picking it is refused.
+    await t.db
+      .update(schema.sourceAssets)
+      .set({ rights: { ...source?.rights, visuallyTransform: "UNKNOWN" } as never })
+      .where(eq(schema.sourceAssets.id, source?.id ?? ""));
+    await expect(regenerateVisualBrief(ctx, { variantId })).rejects.toBeInstanceOf(
+      InvalidStateError,
+    );
+    expect(seen).not.toContain(`<photo id="${photoId}"`);
+  });
+
   it("keeps the old brief when the answer is not usable", async () => {
     await regenerateVisualBrief(ctx, { variantId });
     const before = (await row()).visualBriefJson;
