@@ -191,8 +191,12 @@ export async function renderCarousel(
           await page.setContent(html, { waitUntil: "load" });
           await page.waitForSelector("html[data-fit-done]", { timeout: 15_000 });
           const logoHeight = Math.max(template.logo.heightPx, input.theme.logo.minHeightPx);
+          // Without a logo asset the slide has no mark, and none is expected.
+          const expectedLogo = assets.logo
+            ? { anchor: template.logo.anchor, heightPx: logoHeight }
+            : null;
           const measured = (await page.evaluate(
-            `(${MEASURE_SOURCE})(${JSON.stringify({ anchor: template.logo.anchor, heightPx: logoHeight })}, ${input.theme.safeMarginPx})`,
+            `(${MEASURE_SOURCE})(${JSON.stringify(expectedLogo)}, ${input.theme.safeMarginPx})`,
           )) as Measured;
           measurements.push({ slideId: slide.id, ...measured });
           for (const slot of measured.missingRequiredImages)

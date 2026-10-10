@@ -4,7 +4,7 @@ import { z } from "zod";
 
 // The format of an eval case (plan 07 §7.12): an idea, the approved cards it rests on, the markets,
 // and what the drafts must and must not contain. Cases in the repository are synthetic; real
-// Reg.Chef cases live outside git and are loaded by path.
+// Real cases live outside git and are loaded by path.
 
 const Card = z.object({
   /** A short name used by `expect.mustCite`; the run gives the card its own id. */

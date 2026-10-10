@@ -28,16 +28,16 @@ const stage = (
 ): StageConfig => ({ promptId, version, model: DEFAULT_MODEL, effort, maxTokens, ...extra });
 
 export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
-  KNOWLEDGE_EXTRACTION: stage("knowledge-extractor", "medium", 32_000, { stream: true }),
-  IDEA_GENERATION: stage("idea-generator", "high", 16_000),
-  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000),
-  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 2),
-  CRITIC: stage("critic", "high", 16_000, {}, 2),
-  VISUAL_DIRECTION: stage("visual-director", "medium", 16_000),
+  KNOWLEDGE_EXTRACTION: stage("knowledge-extractor", "medium", 32_000, { stream: true }, 2),
+  IDEA_GENERATION: stage("idea-generator", "high", 16_000, {}, 2),
+  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 2),
+  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 3),
+  CRITIC: stage("critic", "high", 16_000, {}, 3),
+  VISUAL_DIRECTION: stage("visual-director", "medium", 16_000, {}, 2),
   FIELD_REGENERATION: stage("field-regenerator", "high", 8_000),
-  POST_ANNOTATION: stage("post-annotator", "low", 4_000),
-  KNOWLEDGE_GLOSS: stage("knowledge-gloss", "low", 4_000),
-  VISUAL_QA: stage("visual-qa", "medium", 8_000),
-  EVAL_JUDGE: stage("eval-judge", "high", 8_000),
-  PAGE_TRANSCRIPTION: stage("page-transcriber", "low", 16_000),
+  POST_ANNOTATION: stage("post-annotator", "low", 4_000, {}, 2),
+  KNOWLEDGE_GLOSS: stage("knowledge-gloss", "low", 4_000, {}, 2),
+  VISUAL_QA: stage("visual-qa", "medium", 8_000, {}, 2),
+  EVAL_JUDGE: stage("eval-judge", "high", 8_000, {}, 2),
+  PAGE_TRANSCRIPTION: stage("page-transcriber", "low", 16_000, {}, 2),
 };

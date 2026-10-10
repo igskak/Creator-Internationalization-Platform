@@ -416,7 +416,7 @@ describe("validateTextRules", () => {
     ).toEqual(["EMOJI_IN_SLIDE"]);
     expect(
       validateTextRules(
-        withSlides(replace("s2", { slots: { body: "Reg.Chef™ © 2026, 180 °C, e.g. fine" } })),
+        withSlides(replace("s2", { slots: { body: "Chef™ © 2026, 180 °C, e.g. fine" } })),
         context(),
       ),
     ).toEqual([]);

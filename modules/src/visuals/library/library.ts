@@ -9,7 +9,7 @@ import { z } from "zod";
 import { audit, type ServiceContext, transition } from "../../core";
 import { perceptualHash } from "../images";
 
-// The photo library (plan 08 §8.4, M3-16): Reg.Chef's own photos, uploaded as PHOTO sources, become
+// The photo library (plan 08 §8.4, M3-16): the chef's own photos, uploaded as PHOTO sources, become
 // `visual_assets` (LIBRARY_PHOTO) with a description and tags. The visual director may choose one
 // for an image slot, but only when the rights allow a visual transform (spec §6.2): the slide
 // crops it, puts text over it and may darken it. AI tagging is optional and not done here.

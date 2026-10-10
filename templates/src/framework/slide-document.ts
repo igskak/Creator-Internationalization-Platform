@@ -53,7 +53,7 @@ html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;over
 .slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
 .img{display:block;object-fit:cover}
 .img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center;font-family:var(--rc-font-display);font-weight:700;letter-spacing:.02em;color:var(--rc-text)}
+.rc-logo{position:absolute;display:flex;align-items:center}
 .rc-logo img{display:block;height:100%;width:auto}
 .rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}`;
 
@@ -66,9 +66,10 @@ export function renderSlideHtml(input: RenderSlideInput): string {
 
   const context: RenderContext = { slide, template, theme, assets, page };
   const logoHeight = Math.max(template.logo.heightPx, theme.logo.minHeightPx);
+  // The accounts are independent: without a logo of the brand theme the corner stays empty.
   const logo = assets.logo
     ? `<div class="rc-logo" data-logo style="${LOGO_ANCHORS[template.logo.anchor]}height:${logoHeight}px"><img alt="" src="${assets.logo}"></div>`
-    : `<div class="rc-logo" data-logo style="${LOGO_ANCHORS[template.logo.anchor]}height:${logoHeight}px;font-size:${Math.round(logoHeight * 0.6)}px">Reg.Chef</div>`;
+    : "";
   const fonts = [...new Set([theme.fonts.display, theme.fonts.body])].map(fontFaceCss).join("\n");
 
   return `<!doctype html>

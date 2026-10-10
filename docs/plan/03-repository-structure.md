@@ -87,7 +87,7 @@ Spec §23.1 item 3. The layout keeps the top-level folders suggested in [S§15] 
 │  └─ src/ env/ · logging/ · errors/ · security/{crypto,redact,hmac}.ts · validation/ ·
 │          providers/{llm,embeddings,image,storage}/{types.ts,anthropic.ts|openai.ts|r2.ts,fake.ts}
 ├─ evals/                        # @rc/evals — datasets (synthetic or private), runner, judge, reports
-│  └─ sets/ · run.ts · results/ (git-ignored if they contain real Reg.Chef content)
+│  └─ sets/ · run.ts · results/ (git-ignored if they contain real source content)
 └─ spikes/                       # throwaway experiments (S-01); outputs git-ignored
 ```
 
@@ -110,7 +110,7 @@ Spec §23.1 item 3. The layout keeps the top-level folders suggested in [S§15] 
 - **Naming.** Files `kebab-case.ts`; React components `PascalCase.tsx`; DB columns `snake_case`; TS properties `camelCase` (Drizzle maps them).
 - **Service signature.** `export async function approveVariant(ctx: ServiceContext, input: ApproveVariantInput): Promise<ApproveVariantResult>`. Services never read env or globals; everything comes from `ctx`.
 - **Tests.** Co-located `*.test.ts`. Integration tests that need a DB use `createTestDb()` (PGlite with all migrations). No test calls a paid API.
-- **Fixtures.** Synthetic culinary texts written for tests. No Reg.Chef intellectual property in the repository (it may be public; see 16 R-17).
+- **Fixtures.** Synthetic culinary texts written for tests. No source intellectual property in the repository (it may be public; see 16 R-17).
 - **Env.** Only `@rc/lib/env` reads `process.env`. Every new variable goes into `.env.example` in the same PR.
 - **Migrations.** Generated with drizzle-kit, reviewed by hand, never edited after merge. Custom SQL (RLS, triggers, special indexes) in the same numbered migration.
 - **Commits.** `type(scope): summary [TASK-ID]`, e.g. `feat(knowledge): verify quotes against page text [M1-14]`.

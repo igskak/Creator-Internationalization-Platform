@@ -2,7 +2,7 @@ import type { SlideData } from "./framework/types";
 
 // Fixture slides for the renderers' snapshot tests, the preview and the visual regression tests
 // (08 §8.9): Spanish long text, English short text, maximum-length slots, special characters and
-// a missing optional slot. Synthetic text, not Reg.Chef content.
+// a missing optional slot. Synthetic text, not real content.
 
 const slide = (
   templateId: string,

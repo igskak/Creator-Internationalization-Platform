@@ -57,14 +57,14 @@ console.log(`cards: ${verified.length}, quotes verified verbatim: ${verified.fil
 const picked = verified.filter((c) => c.quote_verified).slice(0, 5);
 const idea = await call(
   "2-idea",
-  "Ты контент-стратег шефа Reg.Chef. Отвечай на русском.",
+  "Ты контент-стратег шефа. Отвечай на русском.",
   `Вот 5 карточек знаний:\n${JSON.stringify(picked, null, 2)}\n\nСтиль аккаунта:\n${style}\n\nПредложи ОДНУ Master Idea для карусели Instagram: hook (вопрос-крючок), тезис, 5–7 слайдов (заголовок + 1–2 строки, что показать на макро-фото), CTA. Опирайся только на карточки.`,
 );
 
 const brief = (lang, market) =>
   `Master Idea:\n${idea}\n\nКарточки:\n${JSON.stringify(picked, null, 2)}\n\nСтиль оригинала:\n${style}\n\nСделай ОРИГИНАЛЬНУЮ карусель для рынка ${market} (${lang}), не дословный перевод: ту же идею подай так, как её подал бы носитель языка-автор. Сохрани все числа и температуры точно, переведи единицы только если рынок ими не пользуется. Выдай: слайды (заголовок, подпись, промпт для макро-фото), caption для Instagram, 5 хэштегов, CTA. В конце список «Что изменено для рынка и почему».`;
 
-const sys = "You are the native-language content editor for chef Reg.Chef's international Instagram accounts. Never invent facts beyond the cards.";
+const sys = "You are the native-language content editor for the chef's international Instagram accounts. Never invent facts beyond the cards.";
 await call("3-es", sys, brief("español, es-ES", "Испания"));
 await call("3-en", sys, brief("English", "англоязычная аудитория"));
 

@@ -30,15 +30,15 @@ export async function seedDatabase(
       .values(brand)
       .onConflictDoNothing()
       .returning({ id: schema.brands.id });
-    const [regchef] = await tx
+    const [seededBrand] = await tx
       .select({ id: schema.brands.id })
       .from(schema.brands)
       .where(eq(schema.brands.slug, BRAND_SLUG));
-    if (!regchef) throw new Error("seed: brand row missing after insert");
+    if (!seededBrand) throw new Error("seed: brand row missing after insert");
 
     const insertedMarkets = await tx
       .insert(schema.markets)
-      .values(marketSeeds.map((m) => ({ ...m, brandId: regchef.id })))
+      .values(marketSeeds.map((m) => ({ ...m, brandId: seededBrand.id })))
       .onConflictDoNothing()
       .returning({ id: schema.markets.id });
 

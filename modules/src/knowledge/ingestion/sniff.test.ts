@@ -12,7 +12,7 @@ import { createServiceContext, type ServiceContext } from "../../core";
 import { assertNotDuplicate, detectTextEncoding, SourceRejectedError, sniffSource } from "./sniff";
 import { cp1251, zip } from "./test-fixtures";
 
-// Tiny synthetic fixtures built in code; no real Reg.Chef files.
+// Tiny synthetic fixtures built in code; no real source files.
 
 const logger = createLogger({
   service: "web",

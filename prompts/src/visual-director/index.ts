@@ -6,3 +6,4 @@ export {
   visualDirectorOutputFor,
 } from "./schema";
 export { default as visualDirectorV1 } from "./v1";
+export { default as visualDirectorV2 } from "./v2";

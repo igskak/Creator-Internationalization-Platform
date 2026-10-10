@@ -72,11 +72,11 @@ const report = [];
 for (let n = 0; n < 3; n++) {
   const picked = groups[n](verified.filter((c) => c.quote_verified));
   const P = JSON.stringify(picked, null, 2);
-  const idea = await call(`2-idea-${n}`, "Ты контент-стратег шефа Reg.Chef. Отвечай на русском. " + BAN,
+  const idea = await call(`2-idea-${n}`, "Ты контент-стратег шефа. Отвечай на русском. " + BAN,
     `Карточки:\n${P}\n\nСтиль аккаунта:\n${style}\n\nПредложи ОДНУ Master Idea для карусели Instagram: hook, тезис, 5–7 слайдов, CTA. Опирайся только на карточки.`);
   const brief = (lang, market, extra = "") =>
     `Master Idea:\n${idea}\n\nКарточки:\n${P}\n\nСтиль оригинала:\n${style}\n\nСделай ОРИГИНАЛЬНУЮ карусель для рынка ${market} (${lang}). Ту же идею подай иначе, чем в другом языке: другая структура caption и другой крючок, как у местного автора. Числа и температуры точно. Выдай слайды (заголовок, подпись, промпт фото), caption, 5 хэштегов, CTA. ${extra}`;
-  const sys = "You are the native-language editor for chef Reg.Chef's international Instagram accounts. " + BAN;
+  const sys = "You are the native-language editor for the chef's international Instagram accounts. " + BAN;
   let es = await call(`3-es-${n}`, sys, brief("español, es-ES", "Испания"));
   let en = await call(`3-en-${n}`, sys, brief("English", "англоязычный рынок"));
 

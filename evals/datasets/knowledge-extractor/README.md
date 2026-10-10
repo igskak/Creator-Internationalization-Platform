@@ -1,6 +1,6 @@
 # Knowledge extractor: synthetic fixture and expected cards
 
-Input: the four pages in `prompts/src/knowledge-extractor/fixtures.ts` (`FIXTURE_PAGES`, text mode, taxonomy `FIXTURE_TAXONOMY`). The pages are written for this project; they are not Reg.Chef material. A reference extraction is `FIXTURE_OUTPUT` in the same file. The eval harness (M2-16) scores a model run against the notes below, not against exact text.
+Input: the four pages in `prompts/src/knowledge-extractor/fixtures.ts` (`FIXTURE_PAGES`, text mode, taxonomy `FIXTURE_TAXONOMY`). The pages are written for this project; they are not real source material. A reference extraction is `FIXTURE_OUTPUT` in the same file. The eval harness (M2-16) scores a model run against the notes below, not against exact text.
 
 ## Expected cards
 

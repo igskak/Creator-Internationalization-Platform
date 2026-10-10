@@ -280,7 +280,7 @@ Thresholds are placeholders (A-18). Both variants share the same core message, s
 - Every `review_events` row keeps original and final values, so it can become eval data (P2-15).
 
 ## 7.12 Evals (`evals/`)
-- **Sets**: `evals/sets/<name>/cases/*.json` — idea + cards + market + expectations (cards that must be cited, forbidden phrases, numeric facts, "hook type must differ from sibling"). Cases in the repo are synthetic. Real Reg.Chef cases live outside git (private storage) and are loaded by path.
+- **Sets**: `evals/sets/<name>/cases/*.json` — idea + cards + market + expectations (cards that must be cited, forbidden phrases, numeric facts, "hook type must differ from sibling"). Cases in the repo are synthetic. Real cases live outside git (private storage) and are loaded by path.
 - **Metrics**: schema-valid rate, citation coverage, numeric fidelity pass rate, unsupported claims (judge), localization score (judge + human), differentiation scores, voice score (judge), cost and latency per idea.
 - **Judge**: `eval-judge@1` — a different prompt from the pipeline critic; humans spot-check 20 %.
 - **Human export**: blind ES/EN pairs as CSV/Markdown for native reviewers (Gate G1 scoring sheet).

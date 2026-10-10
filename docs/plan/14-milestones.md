@@ -29,7 +29,7 @@ Spec §23.1 item 14 (§23 items 15 and 16). Milestones follow the spec phases [S
   - `pnpm check` is green in CI on `main`; CI runs on every PR.
   - Dev environment works: Vercel Preview + dev Supabase + dev R2 + Trigger.dev dev; `/api/health` returns ok.
   - Magic-link login works for allowlisted users; unknown emails are refused.
-  - Seeds exist: Reg.Chef brand, es-ES and en active, fr-FR inactive, taxonomy, owner users, default settings (publishing disabled).
+  - Seeds exist: the brand, es-ES and en active, fr-FR inactive, taxonomy, owner users, default settings (publishing disabled).
   - A test job triggered from the app writes an audit event, in both `inline` and `trigger` modes.
   - Logs are JSON with request ids; redaction tests pass; Sentry receives a test error without secrets.
   - Brand voice and market profiles can be edited in the UI (audited).
@@ -135,7 +135,7 @@ Record: `docs/decisions/G2.md`.
 
 | ID | Item | Owner (proposed) | Needed by | Blocks |
 |---|---|---|---|---|
-| B-01 | Decide repository visibility (make it private before adding the spec or any Reg.Chef content) | Ihor | now | pushing plan/spec (R-17) |
+| B-01 | Decide repository visibility (make it private before adding the spec or any real content) | Ihor | now | pushing plan/spec (R-17) |
 | B-02 | Cloud accounts + billing: Vercel, Supabase (EU), Cloudflare R2, Trigger.dev, Sentry | Ihor | M0 week 1 | M0-09 … M0-19 |
 | B-03 | AI vendor accounts and keys (Anthropic, OpenAI); check data-use / retention terms against the partnership's rules | Ihor | S-01 / M1 | S-01, M1-08+ |
 | B-04 | Rights matrix per source class [S§6.2] (use, translate, adapt, visually transform, sell, AI processing, prompt improvement) | Ihor + Sergey | M1 start | real ingestion |
@@ -180,6 +180,6 @@ Parallel: Track B · S-01 · M3-06/M3-07 (templates) during M2 · M5-00…M5-05 
 2. Tests added or updated; `pnpm check` is green; E2E / visual tests updated when behavior or templates change.
 3. Migrations generated, reviewed and applied in tests; `.env.example` updated for new variables.
 4. Status changes use the transition helper and write audit events.
-5. No secrets, tokens, presigned URLs or Reg.Chef IP in logs, fixtures or git.
+5. No secrets, tokens, presigned URLs or source IP in logs, fixtures or git.
 6. UI tasks: loading, empty and error states; screenshots in the PR.
 7. Plan kept current: checkbox ticked in `15-task-list.md`; deviations and verification results in `decision-log.md`.

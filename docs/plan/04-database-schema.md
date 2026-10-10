@@ -280,7 +280,7 @@ create table historical_posts (                  -- seed dataset [S§20] (P1 fea
 
 ### 0003_content (M2-01)
 ```sql
-create table products (                          -- original Reg.Chef catalog (spec: offers.source_product_id) [C-01]
+create table products (                          -- original product catalog (spec: offers.source_product_id) [C-01]
   pk, brand_id uuid not null references brands,
   code text not null unique, name text not null,
   type text not null check (type in ('GUIDE','RECIPE_COLLECTION','COURSE','BUNDLE','OTHER')),

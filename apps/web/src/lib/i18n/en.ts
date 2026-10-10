@@ -4,7 +4,7 @@ import type { PluralForms } from "./format";
 
 export const en = {
   shell: {
-    appName: "RegChef Content Engine",
+    appName: "Content Engine",
     userMenu: "User menu",
     role: "Role: {role}",
     signOut: "Sign out",
@@ -313,7 +313,7 @@ export const en = {
         "Upload a CSV or JSON file. Required columns: external_id, posted_at, caption. Posts you import again are updated.",
       file: "File (.csv or .json)",
       handle: "Instagram account",
-      handleHint: "Without @, for example regchef_official.",
+      handleHint: "Without @, for example my_kitchen.",
       language: "Language of the captions",
       allowAi: "These are posts of my own account, and the AI model may read the captions",
       allowAiHint: "Only the owner can allow this. Without it the model never sees your posts.",
@@ -589,7 +589,7 @@ export const en = {
   offers: {
     title: "Products and offers",
     subtitle:
-      "The Reg.Chef products and what is sold in each market. Ideas and posts take their offers from here.",
+      "The original products and what is sold in each market. Ideas and posts take their offers from here.",
     addProduct: "Add product",
     addOffer: "Add offer",
     editProduct: "Edit product",
@@ -625,7 +625,7 @@ export const en = {
     productForm: {
       createTitle: "Add product",
       editTitle: "Edit product",
-      description: "The original Reg.Chef product. Offers per market are added below it.",
+      description: "The original product. Offers per market are added below it.",
       code: "Code",
       codeHint: "A short unique code, for example GUIDE-PASTA.",
       name: "Name",

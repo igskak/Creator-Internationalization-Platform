@@ -9,3 +9,4 @@ export {
   UNIT_SYSTEMS,
 } from "./schema";
 export { default as marketAdapterV1 } from "./v1";
+export { default as marketAdapterV2 } from "./v2";

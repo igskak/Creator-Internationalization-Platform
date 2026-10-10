@@ -5,7 +5,7 @@ import type { PluralForms } from "./format";
 
 export const ru: Messages = {
   shell: {
-    appName: "RegChef Content Engine",
+    appName: "Content Engine",
     userMenu: "Меню пользователя",
     role: "Роль: {role}",
     signOut: "Выйти",
@@ -326,7 +326,7 @@ export const ru: Messages = {
         "Загрузите файл CSV или JSON. Обязательные колонки: external_id, posted_at, caption. Посты, которые вы импортируете снова, обновляются.",
       file: "Файл (.csv или .json)",
       handle: "Аккаунт Instagram",
-      handleHint: "Без @, например regchef_official.",
+      handleHint: "Без @, например my_kitchen.",
       language: "Язык подписей",
       allowAi: "Это посты моего аккаунта, и модель ИИ может читать подписи",
       allowAiHint: "Разрешить может только владелец. Без этого модель не увидит ваши посты.",
@@ -603,7 +603,7 @@ export const ru: Messages = {
   offers: {
     title: "Продукты и офферы",
     subtitle:
-      "Продукты Reg.Chef и то, что продаётся на каждом рынке. Идеи и посты берут офферы отсюда.",
+      "Оригинальные продукты и то, что продаётся на каждом рынке. Идеи и посты берут офферы отсюда.",
     addProduct: "Добавить продукт",
     addOffer: "Добавить оффер",
     editProduct: "Изменить продукт",
@@ -639,7 +639,7 @@ export const ru: Messages = {
     productForm: {
       createTitle: "Добавить продукт",
       editTitle: "Изменить продукт",
-      description: "Оригинальный продукт Reg.Chef. Офферы по рынкам добавляются под ним.",
+      description: "Оригинальный продукт. Офферы по рынкам добавляются под ним.",
       code: "Код",
       codeHint: "Короткий уникальный код, например GUIDE-PASTA.",
       name: "Название",

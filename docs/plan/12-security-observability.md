@@ -105,6 +105,6 @@ Audit data is redacted with the same scrubber as logs. The Health page and entit
 
 ## 12.10 Backups and recovery
 - Supabase daily backups; point-in-time recovery depends on the plan ⚠ V-20 (recommended for prod).
-- Sources can be re-uploaded (originals stay with Reg.Chef); renders can be rebuilt from approved snapshots and assets.
+- Sources can be re-uploaded (originals stay with the chef); renders can be rebuilt from approved snapshots and assets.
 - Migrations are forward-only; rollback = new migration.
 - Runbooks (H-03): publishing incident (kill switch → investigate → reconcile), token re-auth, re-ingestion, prompt rollback (switch active version in `ai/config.ts`), cost spike.

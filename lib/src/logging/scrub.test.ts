@@ -24,11 +24,11 @@ describe("scrubUrl", () => {
 
   it("redacts every X-Amz-* parameter of a presigned URL", () => {
     const presigned =
-      "https://acc.r2.cloudflarestorage.com/regchef-dev/renders/a/1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256" +
+      "https://acc.r2.cloudflarestorage.com/content-dev/renders/a/1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256" +
       "&X-Amz-Credential=AKIAEXAMPLE%2F20260927%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260927T120000Z" +
       "&X-Amz-Expires=7200&X-Amz-SignedHeaders=host&X-Amz-Signature=deadbeefcafe";
     const scrubbed = scrubUrl(new URL(presigned));
-    expect(scrubbed).toContain("https://acc.r2.cloudflarestorage.com/regchef-dev/renders/a/1.jpg?");
+    expect(scrubbed).toContain("https://acc.r2.cloudflarestorage.com/content-dev/renders/a/1.jpg?");
     for (const secret of ["AKIAEXAMPLE", "deadbeefcafe", "AWS4-HMAC-SHA256", "20260927T120000Z"]) {
       expect(scrubbed).not.toContain(secret);
     }

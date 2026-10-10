@@ -21,7 +21,7 @@ export function MobileNav({ sections }: { sections: NavSection[] }) {
       </SheetTrigger>
       <SheetContent side="left" className="overflow-y-auto p-4">
         <SheetHeader className="p-0">
-          <SheetTitle>RegChef Content Engine</SheetTitle>
+          <SheetTitle>Content Engine</SheetTitle>
         </SheetHeader>
         <SidebarNav sections={sections} onNavigate={() => setOpen(false)} />
       </SheetContent>

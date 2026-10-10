@@ -5,7 +5,7 @@ const key = (fill: number) => Buffer.alloc(32, fill).toString("base64");
 
 // Synthetic values only.
 const base = {
-  DATABASE_URL: "postgresql://postgres:pw@localhost:5432/regchef",
+  DATABASE_URL: "postgresql://postgres:pw@localhost:5432/content",
   SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_ANON_KEY: "anon-key",
   TOKEN_ENCRYPTION_KEYS: `v1:${key(1)}`,
@@ -27,7 +27,7 @@ const production = {
   R2_ACCOUNT_ID: "account",
   R2_ACCESS_KEY_ID: "access",
   R2_SECRET_ACCESS_KEY: "r2-secret-value",
-  R2_BUCKET: "regchef-prod",
+  R2_BUCKET: "content-prod",
   R2_JURISDICTION: "eu",
 };
 
@@ -71,7 +71,7 @@ describe("loadServerEnv: valid", () => {
     expect(env.jobs).toEqual({ mode: "trigger", triggerSecretKey: "tr_prod_secret" });
     expect(env.storage).toMatchObject({
       provider: "r2",
-      bucket: "regchef-prod",
+      bucket: "content-prod",
       jurisdiction: "eu",
     });
     expect(env.instagram).toMatchObject({
@@ -126,7 +126,7 @@ describe("loadServerEnv: invalid", () => {
   it("reports invalid values without printing them", () => {
     const error = problemsOf({
       ...base,
-      DATABASE_URL: "mysql://user:hunter2-password@db/regchef",
+      DATABASE_URL: "mysql://user:hunter2-password@db/content",
       OAUTH_STATE_SECRET: "short-secret-value",
       JOBS_MODE: "cron",
       TOKEN_ENCRYPTION_KEYS: "v1:bm90LTMyLWJ5dGVz",

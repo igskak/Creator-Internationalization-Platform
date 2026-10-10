@@ -4,7 +4,7 @@ import { loadServerEnv, runtimeDatabaseUrl } from "@rc/lib/env";
 
 // Database helpers of the E2E tests: a user to sign in as, and removal of what a test created.
 
-export const E2E_EMAIL = "e2e-chef@regchef.test";
+export const E2E_EMAIL = "e2e-chef@content.test";
 
 try {
   // The repository's .env has the dev project's database and Supabase settings.
@@ -19,7 +19,7 @@ export function openDb() {
   return createDb(url, { pooled: isPoolerUrl(url), max: 1 });
 }
 
-export const E2E_EDITOR_EMAIL = "e2e-editor@regchef.test";
+export const E2E_EDITOR_EMAIL = "e2e-editor@content.test";
 
 /** An active user the tests sign in as (the magic-link allowlist is the `app_users` table); a chef by default. */
 export async function ensureE2eUser(

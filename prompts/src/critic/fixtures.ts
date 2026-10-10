@@ -1,7 +1,7 @@
 import { FIXTURE_OUTPUT as DRAFT, FIXTURE_INPUT as WRITER_INPUT } from "../content-writer/fixtures";
 import type { CriticAnswer, CriticInput } from "./schema";
 
-// Synthetic input and output for the tests and the fake LLM provider. Not Reg.Chef content.
+// Synthetic input and output for the tests and the fake LLM provider. Not real content.
 
 export const FIXTURE_INPUT: CriticInput = {
   brandVoice: WRITER_INPUT.brandVoice,

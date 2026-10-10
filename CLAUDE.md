@@ -1,10 +1,10 @@
-# CLAUDE.md — RegChef International Content Engine
+# CLAUDE.md — International Content Engine
 
-Internal tool that turns Reg.Chef's Russian-language culinary IP into original Spanish (es-ES) and English Instagram carousels: Source → Knowledge → Master Idea → local variants → visuals → QA → human approval → Instagram → analytics → learning.
+Internal tool that turns a chef's Russian-language culinary IP into original Spanish (es-ES) and English Instagram carousels: Source → Knowledge → Master Idea → local variants → visuals → QA → human approval → Instagram → analytics → learning.
 
 ## Sources of truth
 - Implementation plan: `docs/plan/` (start with `docs/plan/README.md`). Task list with checkboxes: `docs/plan/15-task-list.md`.
-- Product spec v0.1: `docs/spec/RegChef_International_Content_Engine_MVP_Spec_v2.md` (Markdown copy of the `.docx`). `docs/spec/.gitignore` keeps it out of git while the GitHub repository is public — never force-add it.
+- Product spec v0.1: `docs/spec/International_Content_Engine_MVP_Spec_v2.md` (Markdown copy of the `.docx`). `docs/spec/.gitignore` keeps it out of git while the GitHub repository is public — never force-add it.
 - Deviations and verification results: `docs/plan/decision-log.md`.
 
 ## How to work on a task
@@ -26,7 +26,7 @@ Internal tool that turns Reg.Chef's Russian-language culinary IP into original S
 
 ## Safety rules
 - Never log or persist tokens, OAuth codes, API keys or full presigned URLs. Use the redaction helpers.
-- No Reg.Chef intellectual property, real outputs or secrets in git. Fixtures are synthetic. `spikes/**/out` and `evals/results` are git-ignored.
+- No source intellectual property, real outputs or secrets in git. Fixtures are synthetic. `spikes/**/out` and `evals/results` are git-ignored.
 - Tests must not call paid APIs or Meta. Use fakes and MSW.
 - In cloud sessions use the pre-installed Chromium (`PLAYWRIGHT_BROWSERS_PATH`); never run `playwright install`.
 

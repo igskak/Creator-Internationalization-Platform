@@ -17,7 +17,7 @@ export default async function LoginPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">RegChef Content Engine</h1>
+        <h1 className="text-2xl font-semibold">Content Engine</h1>
         <p className="text-sm text-muted-foreground">Sign in with a link sent to your email.</p>
       </div>
       {message && (

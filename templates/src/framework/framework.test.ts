@@ -55,15 +55,15 @@ describe("renderSlideHtml", () => {
     expect(html.match(/<script>/g)).toHaveLength(1);
   });
 
-  it("puts the logo at the template's anchor, or a text mark without a logo asset", () => {
-    expect(renderSlideHtml(input)).toContain(
-      "bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px",
-    );
-    expect(renderSlideHtml(input)).toContain(">Reg.Chef</div>");
+  it("puts the logo at the template's anchor, and no mark without a logo asset", () => {
+    expect(renderSlideHtml(input)).not.toContain("data-logo");
     const withLogo = renderSlideHtml({
       ...input,
       assets: { ...input.assets, logo: "data:image/svg+xml;base64,PHN2Zy8+" },
     });
+    expect(withLogo).toContain(
+      "bottom:var(--rc-safe-margin);left:var(--rc-safe-margin);height:48px",
+    );
     expect(withLogo).toContain('<img alt="" src="data:image/svg+xml;base64,PHN2Zy8+">');
   });
 

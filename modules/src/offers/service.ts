@@ -4,7 +4,7 @@ import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/error
 import { z } from "zod";
 import { audit, type ServiceContext, withTransaction } from "../core";
 
-// Products and market offers (plan 05 §5.5, M2-02). A product is the Reg.Chef original; an offer
+// Products and market offers (plan 05 §5.5, M2-02). A product is the original; an offer
 // is what is sold in one market, with its own price, currency, landing page and priority.
 
 type Product = typeof schema.products.$inferSelect;

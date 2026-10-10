@@ -28,9 +28,7 @@ const AccountHandle = z
   .string()
   .trim()
   .transform((v) => v.replace(/^@/u, "").toLowerCase())
-  .pipe(
-    z.string().regex(/^[a-z0-9._]{1,30}$/u, "Use the Instagram handle, like regchef_official."),
-  );
+  .pipe(z.string().regex(/^[a-z0-9._]{1,30}$/u, "Use the Instagram handle, like my_kitchen."));
 
 export const CreatePostsImportInput = z.object({
   fileName: z.string().trim().min(1).max(255),

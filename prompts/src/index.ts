@@ -1,15 +1,15 @@
-import { contentWriterV1, contentWriterV2 } from "./content-writer";
-import { criticV1, criticV2 } from "./critic";
-import { evalJudgeV1 } from "./eval-judge";
-import { ideaGeneratorV1 } from "./idea-generator";
-import { knowledgeExtractorV1 } from "./knowledge-extractor";
-import { knowledgeGlossV1 } from "./knowledge-gloss";
-import { marketAdapterV1 } from "./market-adapter";
-import { pageTranscriberV1 } from "./page-transcriber";
-import { postAnnotatorV1 } from "./post-annotator";
+import { contentWriterV1, contentWriterV2, contentWriterV3 } from "./content-writer";
+import { criticV1, criticV2, criticV3 } from "./critic";
+import { evalJudgeV1, evalJudgeV2 } from "./eval-judge";
+import { ideaGeneratorV1, ideaGeneratorV2 } from "./idea-generator";
+import { knowledgeExtractorV1, knowledgeExtractorV2 } from "./knowledge-extractor";
+import { knowledgeGlossV1, knowledgeGlossV2 } from "./knowledge-gloss";
+import { marketAdapterV1, marketAdapterV2 } from "./market-adapter";
+import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
+import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
 import { createRegistry } from "./registry";
-import { visualDirectorV1 } from "./visual-director";
-import { visualQaV1 } from "./visual-qa";
+import { visualDirectorV1, visualDirectorV2 } from "./visual-director";
+import { visualQaV1, visualQaV2 } from "./visual-qa";
 
 export const PACKAGE_NAME = "@rc/prompts";
 
@@ -54,16 +54,27 @@ export {
 /** Every released prompt version. Each prompt task adds its `vN.ts` here. */
 export const promptRegistry = createRegistry([
   knowledgeExtractorV1,
+  knowledgeExtractorV2,
   postAnnotatorV1,
+  postAnnotatorV2,
   pageTranscriberV1,
+  pageTranscriberV2,
   knowledgeGlossV1,
+  knowledgeGlossV2,
   ideaGeneratorV1,
+  ideaGeneratorV2,
   marketAdapterV1,
+  marketAdapterV2,
   contentWriterV1,
   contentWriterV2,
+  contentWriterV3,
   criticV1,
   criticV2,
+  criticV3,
   evalJudgeV1,
+  evalJudgeV2,
   visualDirectorV1,
+  visualDirectorV2,
   visualQaV1,
+  visualQaV2,
 ]);

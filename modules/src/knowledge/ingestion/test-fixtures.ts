@@ -1,6 +1,6 @@
 import { crc32 } from "node:zlib";
 
-// Tiny synthetic file builders shared by the ingestion tests; no real Reg.Chef files.
+// Tiny synthetic file builders shared by the ingestion tests; no real source files.
 
 /** Stored (uncompressed) ZIP with the given entries: enough for file-type to see a DOCX. */
 export function zip(entries: Record<string, string>): Uint8Array {

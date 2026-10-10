@@ -72,7 +72,7 @@ const createdAt = () => timestamp({ withTimezone: true }).notNull().defaultNow()
 /** Kept current by the set_updated_at() trigger. */
 const updatedAt = () => timestamp({ withTimezone: true }).notNull().defaultNow();
 
-/** Original Reg.Chef catalog (spec: offers.source_product_id) [C-01]. */
+/** Original product catalog (spec: offers.source_product_id) [C-01]. */
 export const products = pgTable(
   "products",
   {

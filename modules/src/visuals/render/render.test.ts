@@ -133,6 +133,9 @@ describe("QA decisions (no browser)", () => {
       true,
     );
     expect(logoPlacementOk({ ...moved, box: null })).toBe(false);
+    // No logo asset: no mark is drawn, and a stray one is wrong.
+    expect(logoPlacementOk({ ...moved, expected: null, box: null })).toBe(true);
+    expect(logoPlacementOk({ ...moved, expected: null })).toBe(false);
     const right = {
       box: { x: 808, y: 72, width: 200, height: 48 },
       expected: { anchor: "top-right" as const, heightPx: 48 },

@@ -1,7 +1,7 @@
 import type { ExtractorInput, ExtractorOutput } from "./schema";
 
 // Synthetic Russian culinary pages for tests and evals. The text is written for this project and
-// is not taken from any Reg.Chef material. The expected cards are in
+// is not taken from any real source material. The expected cards are in
 // evals/datasets/knowledge-extractor/README.md.
 
 export const FIXTURE_PAGES = [

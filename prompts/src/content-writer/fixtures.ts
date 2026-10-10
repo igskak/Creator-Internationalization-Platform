@@ -4,7 +4,7 @@ import {
 } from "../market-adapter/fixtures";
 import type { ContentWriterInput, ContentWriterOutput } from "./schema";
 
-// Synthetic input and output for the tests and the fake LLM provider. Not Reg.Chef content.
+// Synthetic input and output for the tests and the fake LLM provider. Not real content.
 
 export const FIXTURE_INPUT: ContentWriterInput = {
   brandVoice: "# Voz\nCercana, clara y precisa. Sin dramatismo.",

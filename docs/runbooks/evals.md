@@ -15,7 +15,7 @@ A live run costs money, so it never runs in PR CI. The fake run is what the unit
 
 ## A case (`<set>/cases/*.json`)
 
-An idea, the approved cards it rests on (`key`, role, claim, numbers), the markets (default `es-ES` and `en`), optional market notes (tone, vocabulary, forbidden patterns) and expectations: `mustCite` (card keys every draft must cite), `forbiddenPhrases`, `requiredText` (for example a numeric fact such as `180 °C`), `hookTypesDiffer`. The schema is `evals/src/case.ts`. Cases in the repository are synthetic (`evals/sets/synthetic`); real Reg.Chef cases live outside git and are passed with `--set <folder>`.
+An idea, the approved cards it rests on (`key`, role, claim, numbers), the markets (default `es-ES` and `en`), optional market notes (tone, vocabulary, forbidden patterns) and expectations: `mustCite` (card keys every draft must cite), `forbiddenPhrases`, `requiredText` (for example a numeric fact such as `180 °C`), `hookTypesDiffer`. The schema is `evals/src/case.ts`. Cases in the repository are synthetic (`evals/sets/synthetic`); real cases live outside git and are passed with `--set <folder>`.
 
 ## Metrics
 
