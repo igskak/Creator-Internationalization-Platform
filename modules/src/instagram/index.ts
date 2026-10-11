@@ -70,6 +70,14 @@ export {
   startInstagramOAuth,
 } from "./oauth";
 export {
+  formatSmokeReport,
+  makeSmokeSlides,
+  runInstagramSmoke,
+  type SmokeInput,
+  type SmokeReport,
+  type SmokeStep,
+} from "./smoke";
+export {
   type AccountHealth,
   accountHealth,
   DisconnectAccountInput,

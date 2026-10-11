@@ -564,6 +564,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 - [ ] **M5-10 · Smoke script and runbook** · P0 · S · deps: M5-07
   - **Do:** `scripts/ig-smoke.ts` (`pnpm ig:smoke --account <id> [--live]`) and `docs/runbooks/instagram-smoke.md` (13 §13.6).
   - **Done when:** dry-run smoke passes on a test account (manual, logged).
+  - **Status 2026-10-11:** the script, the service behind it (tested on the mock Graph API) and both runbooks are done; the manual run is waiting for the Meta dev app and a connected test account (B-11). Tick this box after the first logged run.
 
 - [ ] **M5-11 · Gate G2 and first live posts** · P0 · S · deps: M5-08, M5-09, M5-10, B-12, B-13
   - **Do:** run G2 checklist (14 §14.3): live smoke on test account, idempotency drill, dry runs on production accounts, kill switch, token refresh; first 3 posts per market with Sergey's approval; `docs/decisions/G2.md`.
