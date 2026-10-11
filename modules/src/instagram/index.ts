@@ -1,6 +1,15 @@
 export const MODULE_NAME = "instagram";
 
 export {
+  decryptAccessToken,
+  encryptAccessToken,
+  INSTAGRAM_SCOPES,
+  LONG_LIVED_TOKEN_SECONDS,
+  type SocialAccount,
+  type SocialAccountView,
+  toAccountView,
+} from "./accounts";
+export {
   classifyInstagramError,
   containerError,
   describeInstagramError,
@@ -25,3 +34,11 @@ export {
   pathOnly,
   requireInstagramApp,
 } from "./http";
+export {
+  completeInstagramOAuth,
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_TTL_MS,
+  type OAuthFailureReason,
+  type OAuthResult,
+  startInstagramOAuth,
+} from "./oauth";

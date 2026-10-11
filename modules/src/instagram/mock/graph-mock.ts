@@ -108,6 +108,8 @@ export function createMockGraphApi(options: MockGraphOptions = {}) {
     tokens,
     quotaUsage: options.quotaUsage ?? 0,
 
+    hasAccount: (id: string) => accounts.has(id),
+
     addAccount(account: MockAccount) {
       accounts.set(account.id, account);
       return account;

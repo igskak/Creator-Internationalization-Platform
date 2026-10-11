@@ -5,6 +5,7 @@ import { createLogger } from "@rc/lib/logging";
 import { createMemoryStorage } from "@rc/lib/providers/storage";
 import {
   createServiceContext,
+  type InstagramRuntime,
   type JobRunner,
   manualClock,
   type ServiceContext,
@@ -101,7 +102,7 @@ export type MakeVariantOptions = {
  */
 export async function reviewFixture(
   db: Db,
-  options: { jobs?: JobRunner } = {},
+  options: { jobs?: JobRunner; instagram?: InstagramRuntime } = {},
 ): Promise<ReviewFixture> {
   const storage = createMemoryStorage();
   const clock = manualClock("2026-10-10T12:00:00Z");
@@ -114,6 +115,7 @@ export async function reviewFixture(
       clock,
       storage,
       ...(options.jobs ? { jobs: options.jobs } : {}),
+      ...(options.instagram ? { instagram: options.instagram } : {}),
       actor: { type: "USER", userId, role },
     });
   const ctx = make("owner");

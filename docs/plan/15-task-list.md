@@ -529,7 +529,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** migration 0006 (`publish_attempts`, `integration_events`); `instagram/http.ts` (timeouts, JSON, error normalization, path-only logging, token transport), `errors.ts` (09 §9.4.4), config (`META_GRAPH_API_VERSION`, `INSTAGRAM_GRAPH_BASE_URL` — points to the mock Graph API in E2E), MSW fixtures for every call and error class (also served over HTTP as the E2E mock).
   - **Done when:** classification tests; wrapper never logs tokens (test).
 
-- [ ] **M5-02 · OAuth connect flow** · P0 · M · deps: M5-01, M0-15
+- [x] **M5-02 · OAuth connect flow** · P0 · M · deps: M5-01, M0-15
   - **Do:** `/api/instagram/oauth/start` and `/callback` (09 §9.2): state cookie + HMAC, code → short → long-lived token, `/me`, professional check, market binding check, encryption (AAD = row id), audit.
   - **Done when:** MSW tests: happy, tampered state, expired state, non-professional account, account bound to another market.
 

@@ -1,5 +1,8 @@
+import { randomUUID } from "node:crypto";
+import { schema } from "@rc/db";
 import { createLogger, type Logger } from "@rc/lib/logging";
-import type { InstagramRuntime, PublishMode } from "../core";
+import type { InstagramRuntime, PublishMode, ServiceContext } from "../core";
+import { encryptAccessToken } from "./accounts";
 import { createMockGraphApi, type MockGraphApi, type MockGraphOptions } from "./mock/graph-mock";
 
 // Fixtures for the Instagram tests (M5). Synthetic keys and secrets only.
@@ -46,4 +49,39 @@ export function capturingLogger(): { logger: Logger; lines: string[] } {
     destination: { write: (line: string) => void lines.push(line) },
   });
   return { logger, lines };
+}
+
+/** Inserts an ACTIVE account for a market with a real (mock-issued) encrypted token. */
+export async function connectTestAccount(
+  ctx: ServiceContext,
+  mock: MockGraphApi,
+  input: {
+    marketId: string;
+    accountId: string;
+    username?: string;
+    over?: Partial<typeof schema.socialAccounts.$inferInsert>;
+  },
+) {
+  if (!mock.hasAccount(input.accountId)) {
+    mock.addAccount({ id: input.accountId, username: input.username ?? `acct_${input.accountId}` });
+  }
+  const id = randomUUID();
+  const token = mock.issueToken(input.accountId);
+  const [row] = await ctx.db
+    .insert(schema.socialAccounts)
+    .values({
+      id,
+      marketId: input.marketId,
+      username: input.username ?? `acct_${input.accountId}`,
+      instagramAccountId: input.accountId,
+      accountType: "BUSINESS",
+      accessTokenEncrypted: encryptAccessToken(ctx, id, token),
+      tokenExpiresAt: new Date(ctx.clock.now().getTime() + 50 * 86_400_000),
+      tokenLastRefreshedAt: ctx.clock.now(),
+      scopes: ["instagram_business_basic", "instagram_business_content_publish"],
+      ...input.over,
+    })
+    .returning();
+  if (!row) throw new Error("no account row");
+  return { account: row, token };
 }
