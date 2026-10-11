@@ -8,6 +8,24 @@ import { CtaSpec, Slide, UtmSpec } from "./content";
  * content_variant_versions.snapshot: the exact content a reviewer approved, bound to one render
  * [S§19]. Immutable once written; the scheduler and the publisher read it, never the live variant.
  */
+/** What is added because the post uses generated images (M5-12): decided at approval, part of the snapshot. */
+export const AI_DISCLOSURE_MODES = [
+  "NONE",
+  "CAPTION_NOTE",
+  "SLIDE_BADGE",
+  "PLATFORM_LABEL",
+] as const;
+export const SnapshotDisclosure = z.object({
+  mode: z.enum(AI_DISCLOSURE_MODES),
+  /** Appended to the caption (CAPTION_NOTE). */
+  captionNote: z.string().min(1).optional(),
+  /** The slides with generated images carry a badge (SLIDE_BADGE); it is part of the render. */
+  badge: z.boolean().optional(),
+  /** Instagram's AI info label is requested at publishing (PLATFORM_LABEL). */
+  platformLabel: z.boolean().optional(),
+});
+export type SnapshotDisclosure = z.infer<typeof SnapshotDisclosure>;
+
 export const ApprovedSnapshot = z.object({
   hook: z.string(),
   hookType: z.string(),
@@ -24,6 +42,7 @@ export const ApprovedSnapshot = z.object({
   renderedSlideKeys: z.array(z.string()),
   knowledge: z.array(z.object({ id: z.string().min(1), version: z.number().int().positive() })),
   generationVersion: z.string(),
+  disclosure: SnapshotDisclosure.optional(),
 });
 export type ApprovedSnapshot = z.infer<typeof ApprovedSnapshot>;
 

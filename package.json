@@ -22,6 +22,7 @@
     "typecheck": "pnpm -r typecheck",
     "deps:check": "depcruise apps/web/src jobs/src cli/src modules/src lib/src db/src prompts templates --config .dependency-cruiser.cjs",
     "rc": "pnpm --filter @rc/cli rc",
+    "ig:smoke": "tsx --env-file-if-exists=.env scripts/ig-smoke.ts",
     "e2e": "pnpm build && pnpm --filter @rc/web e2e",
     "test:visual": "pnpm --filter @rc/modules test:visual",
     "eval": "pnpm --filter @rc/evals eval"

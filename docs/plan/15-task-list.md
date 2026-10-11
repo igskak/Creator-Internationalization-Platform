@@ -521,55 +521,57 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M5 · Instagram → Gate G2
 
-- [ ] **M5-00 · Meta verification pass** · P0 · S · deps: B-11, B-14
+- [x] **M5-00 · Meta verification pass** · P0 · S · deps: B-11, B-14
   - **Do:** check V-01 … V-16 against the official docs ([S§24] links); record findings and plan changes in `decision-log.md`; update 09 if needed. Needs network access to `developers.facebook.com` (B-14) or run locally.
   - **Done when:** every ⚠ Meta item has a verified value or a documented decision.
 
-- [ ] **M5-01 · Instagram module foundation (+ 0006)** · P0 · M · deps: M4-01, M0-07, M5-00
+- [x] **M5-01 · Instagram module foundation (+ 0006)** · P0 · M · deps: M4-01, M0-07, M5-00
   - **Do:** migration 0006 (`publish_attempts`, `integration_events`); `instagram/http.ts` (timeouts, JSON, error normalization, path-only logging, token transport), `errors.ts` (09 §9.4.4), config (`META_GRAPH_API_VERSION`, `INSTAGRAM_GRAPH_BASE_URL` — points to the mock Graph API in E2E), MSW fixtures for every call and error class (also served over HTTP as the E2E mock).
   - **Done when:** classification tests; wrapper never logs tokens (test).
 
-- [ ] **M5-02 · OAuth connect flow** · P0 · M · deps: M5-01, M0-15
+- [x] **M5-02 · OAuth connect flow** · P0 · M · deps: M5-01, M0-15
   - **Do:** `/api/instagram/oauth/start` and `/callback` (09 §9.2): state cookie + HMAC, code → short → long-lived token, `/me`, professional check, market binding check, encryption (AAD = row id), audit.
   - **Done when:** MSW tests: happy, tampered state, expired state, non-professional account, account bound to another market.
 
-- [ ] **M5-03 · Settings → Instagram UI and banners** · P0 · S · deps: M5-02
+- [x] **M5-03 · Settings → Instagram UI and banners** · P0 · S · deps: M5-02
   - **Do:** `/settings/instagram` per market (connect/reconnect/disconnect, token status and expiry, quota, last publish, last error); app-shell banners (NEEDS_REAUTH, expiring < 7 days).
   - **Done when:** states render from fixtures; screenshots.
 
-- [ ] **M5-04 · Token refresh and account health jobs** · P0 · M · deps: M5-02, M0-14
+- [x] **M5-04 · Token refresh and account health jobs** · P0 · M · deps: M5-02, M0-14
   - **Do:** J13 and J14 (06 §6.3), `integration_events`, status transitions (VALID/EXPIRING/INVALID).
   - **Done when:** MSW tests (refresh ok, 190 → NEEDS_REAUTH, not refreshed if < 24 h old).
 
-- [ ] **M5-05 · Meta callbacks** · P0 · S · deps: M5-02 · ⚠ V-13
+- [x] **M5-05 · Meta callbacks** · P0 · S · deps: M5-02 · ⚠ V-13
   - **Do:** `/api/meta/deauthorize` and `/api/meta/data-deletion` with `signed_request` verification; status page for deletion codes.
   - **Done when:** tests with signed fixtures (valid, invalid signature).
 
-- [ ] **M5-06 · Publish state machine** · P0 · L · deps: M5-01, M4-08
+- [x] **M5-06 · Publish state machine** · P0 · L · deps: M5-01, M4-08
   - **Do:** `publishing/publish-machine.ts` (09 §9.4): steps, persisted progress, safeguards, presigned URLs for renders, reconciliation, dry run, `publish_attempts` per call.
   - **Done when:** MSW tests for every path in 13 §13.3 (incl. crash after `media_publish` → no second publish, wrong-market account refused).
 
-- [ ] **M5-07 · Dispatcher and publish task** · P0 · M · deps: M5-06
+- [x] **M5-07 · Dispatcher and publish task** · P0 · M · deps: M5-06
   - **Do:** J9 cron (SKIP LOCKED claim, kill switch, stuck recovery) and J10 (queue per account, retries, `AbortTaskRunError` on permanent errors, global idempotency key); `retryPublication`; concurrency test on real Postgres (CI service container).
   - **Done when:** tests: one claim per publication under parallel dispatchers; retry creates a new key.
 
-- [ ] **M5-08 · Environment guards and kill switch** · P0 · S · deps: M5-07
+- [x] **M5-08 · Environment guards and kill switch** · P0 · S · deps: M5-07
   - **Do:** `INSTAGRAM_PUBLISH_MODE`, `INSTAGRAM_ACCOUNT_ALLOWLIST`, `setPublishingEnabled` (owner, audited), header indicator.
   - **Done when:** tests: `off` blocks, `dry_run_only` blocks live, unknown account refused.
 
-- [ ] **M5-09 · Publish UX** · P0 · M · deps: M5-07, M4-09
+- [x] **M5-09 · Publish UX** · P0 · M · deps: M5-07, M4-09
   - **Do:** "Publish now", "Schedule", "Dry run" in review and calendar; publication drawer (attempt timeline, readable errors with next steps, permalink); retry/cancel.
   - **Done when:** flows work against MSW-backed dev; screenshots.
 
 - [ ] **M5-10 · Smoke script and runbook** · P0 · S · deps: M5-07
   - **Do:** `scripts/ig-smoke.ts` (`pnpm ig:smoke --account <id> [--live]`) and `docs/runbooks/instagram-smoke.md` (13 §13.6).
   - **Done when:** dry-run smoke passes on a test account (manual, logged).
+  - **Status 2026-10-11:** the script, the service behind it (tested on the mock Graph API) and both runbooks are done; the manual run is waiting for the Meta dev app and a connected test account (B-11). Tick this box after the first logged run.
 
 - [ ] **M5-11 · Gate G2 and first live posts** · P0 · S · deps: M5-08, M5-09, M5-10, B-12, B-13
   - **Do:** run G2 checklist (14 §14.3): live smoke on test account, idempotency drill, dry runs on production accounts, kill switch, token refresh; first 3 posts per market with Sergey's approval; `docs/decisions/G2.md`.
   - **Done when:** G2 recorded; first production posts have media ids and permalinks.
+  - **Status 2026-10-11:** prepared (`docs/decisions/G2.md` with the order of work and empty record tables; `pnpm rc g2-check` for the items the database can show). The run itself waits for B-11, B-12, B-13 and Sergey's approval. Tick this box when G2 is recorded.
 
-- [ ] **M5-12 · AI imagery disclosure option** · P0 if B-13 requires it, else P1 · S · deps: M3-05, B-13 · ⚠ V-16
+- [x] **M5-12 · AI imagery disclosure option** · P0 if B-13 requires it, else P1 · S · deps: M3-05, B-13 · ⚠ V-16
   - **Do:** per-market setting `ai_imagery_disclosure` = `NONE | CAPTION_NOTE | SLIDE_BADGE` (and platform label if the API supports it); applied when a variant uses generated photo-realistic images.
   - **Done when:** tests; the reviewer sees what will be added.
 

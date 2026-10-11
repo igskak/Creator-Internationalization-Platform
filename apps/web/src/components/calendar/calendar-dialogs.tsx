@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FieldBlock } from "@/components/knowledge/field-block";
+import { PublicationDrawer } from "@/components/publishing/publication-drawer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -220,6 +221,7 @@ export function PostButton({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [details, setDetails] = useState(false);
   const [reason, setReason] = useState("");
   const at = new Date(post.at);
   const picker = useTimePicker(post.market, at);
@@ -249,136 +251,157 @@ export function PostButton({
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<button type="button" className={className} />}>
-        {children}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{format(t.postTitle, { market: post.market.name })}</DialogTitle>
-          <DialogDescription>
-            {post.title} · {slot(at, post.market.timeZone)}
-          </DialogDescription>
-        </DialogHeader>
-        <Warnings
-          warnings={[...post.warnings, ...warnings.map((w) => w.code)]
-            .filter((code, i, all) => all.indexOf(code) === i)
-            .map((code) => ({ code, message: code }))}
-        />
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/content/review/${post.ideaId}`}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            {t.openReview}
-          </Link>
-          {post.permalink ? (
-            <a
-              href={post.permalink}
-              target="_blank"
-              rel="noreferrer"
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger render={<button type="button" className={className} />}>
+          {children}
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{format(t.postTitle, { market: post.market.name })}</DialogTitle>
+            <DialogDescription>
+              {post.title} · {slot(at, post.market.timeZone)}
+            </DialogDescription>
+          </DialogHeader>
+          <Warnings
+            warnings={[...post.warnings, ...warnings.map((w) => w.code)]
+              .filter((code, i, all) => all.indexOf(code) === i)
+              .map((code) => ({ code, message: code }))}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/content/review/${post.ideaId}`}
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
-              {t.permalink}
-            </a>
+              {t.openReview}
+            </Link>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setDetails(true);
+              }}
+            >
+              {messages.publish.panel.details}
+            </Button>
+            {post.permalink ? (
+              <a
+                href={post.permalink}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                {t.permalink}
+              </a>
+            ) : null}
+          </div>
+
+          {!canSchedule && (movable || cancellable) ? (
+            <p className="text-sm text-muted-foreground">{t.readOnly}</p>
           ) : null}
-        </div>
 
-        {!canSchedule && (movable || cancellable) ? (
-          <p className="text-sm text-muted-foreground">{t.readOnly}</p>
-        ) : null}
+          {canSchedule && movable ? (
+            <form
+              className="flex flex-col gap-3 border-t pt-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!picker.resolved) return;
+                void move.run({
+                  publicationId: post.publicationId,
+                  scheduledAt: picker.resolved.utc.toISOString(),
+                });
+              }}
+            >
+              <p className="font-medium">{t.moveTitle}</p>
+              <TimeField
+                id={`move-${post.publicationId}`}
+                market={post.market}
+                picker={picker}
+                error={
+                  move.fieldErrors?.scheduledAt?.[0] ??
+                  (move.error && !move.fieldErrors ? move.error.message : undefined)
+                }
+              />
+              <div>
+                <Button type="submit" size="sm" disabled={!picker.resolved || move.pending}>
+                  {move.pending ? t.working : t.move}
+                </Button>
+              </div>
+            </form>
+          ) : null}
 
-        {canSchedule && movable ? (
-          <form
-            className="flex flex-col gap-3 border-t pt-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!picker.resolved) return;
-              void move.run({
-                publicationId: post.publicationId,
-                scheduledAt: picker.resolved.utc.toISOString(),
-              });
-            }}
-          >
-            <p className="font-medium">{t.moveTitle}</p>
-            <TimeField
-              id={`move-${post.publicationId}`}
-              market={post.market}
-              picker={picker}
-              error={
-                move.fieldErrors?.scheduledAt?.[0] ??
-                (move.error && !move.fieldErrors ? move.error.message : undefined)
-              }
-            />
-            <div>
-              <Button type="submit" size="sm" disabled={!picker.resolved || move.pending}>
-                {move.pending ? t.working : t.move}
-              </Button>
-            </div>
-          </form>
-        ) : null}
-
-        {canSchedule && cancellable ? (
-          <form
-            className="flex flex-col gap-3 border-t pt-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void cancel.run({ publicationId: post.publicationId, reason: reason.trim() });
-            }}
-          >
-            {cancelling ? (
-              <>
-                <p className="text-sm text-muted-foreground">{t.cancelHint}</p>
-                <FieldBlock
-                  label={t.cancelReason}
-                  htmlFor={`cancel-${post.publicationId}`}
-                  error={
-                    cancel.fieldErrors?.reason?.[0] ??
-                    (cancel.error && !cancel.fieldErrors ? cancel.error.message : undefined)
-                  }
-                >
-                  <Textarea
-                    id={`cancel-${post.publicationId}`}
-                    rows={2}
-                    maxLength={500}
-                    value={reason}
-                    onChange={(event) => setReason(event.target.value)}
-                  />
-                </FieldBlock>
-                <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    variant="destructive"
-                    disabled={!reason.trim() || cancel.pending}
+          {canSchedule && cancellable ? (
+            <form
+              className="flex flex-col gap-3 border-t pt-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void cancel.run({ publicationId: post.publicationId, reason: reason.trim() });
+              }}
+            >
+              {cancelling ? (
+                <>
+                  <p className="text-sm text-muted-foreground">{t.cancelHint}</p>
+                  <FieldBlock
+                    label={t.cancelReason}
+                    htmlFor={`cancel-${post.publicationId}`}
+                    error={
+                      cancel.fieldErrors?.reason?.[0] ??
+                      (cancel.error && !cancel.fieldErrors ? cancel.error.message : undefined)
+                    }
                   >
-                    {cancel.pending ? t.working : t.cancelSubmit}
-                  </Button>
+                    <Textarea
+                      id={`cancel-${post.publicationId}`}
+                      rows={2}
+                      maxLength={500}
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                    />
+                  </FieldBlock>
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="destructive"
+                      disabled={!reason.trim() || cancel.pending}
+                    >
+                      {cancel.pending ? t.working : t.cancelSubmit}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCancelling(false)}
+                    >
+                      {t.cancel}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => setCancelling(false)}
+                    onClick={() => setCancelling(true)}
                   >
-                    {t.cancel}
+                    {t.cancelTitle}
                   </Button>
                 </div>
-              </>
-            ) : (
-              <div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCancelling(true)}
-                >
-                  {t.cancelTitle}
-                </Button>
-              </div>
-            )}
-          </form>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+              )}
+            </form>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+      {details ? (
+        <PublicationDrawer
+          publicationId={post.publicationId}
+          open
+          onOpenChange={(next) => !next && setDetails(false)}
+          canManage={canSchedule}
+        />
+      ) : null}
+    </>
   );
 }

@@ -3,7 +3,7 @@ import { safeEqual } from "@rc/lib/security";
 // Pure auth rules, unit-tested (plan 12 §12.5). No Next.js or Supabase imports here.
 
 /** Paths reachable without a session. Everything else needs one (pages redirect, APIs get 401). */
-const PUBLIC_PREFIXES = ["/login", "/auth/", "/api/health", "/api/meta/"];
+const PUBLIC_PREFIXES = ["/login", "/auth/", "/api/health", "/api/meta/", "/data-deletion"];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) =>

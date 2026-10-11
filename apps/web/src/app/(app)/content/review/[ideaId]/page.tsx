@@ -1,5 +1,7 @@
 import { NotFoundError } from "@rc/lib/errors";
 import { getReviewBundle } from "@rc/modules/content";
+import { listMarkets } from "@rc/modules/localization";
+import { listVariantPublications } from "@rc/modules/publishing";
 import { listTaxonomyTerms } from "@rc/modules/settings";
 import { registry } from "@rc/templates";
 import { ArrowLeftIcon } from "lucide-react";
@@ -15,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { format } from "@/lib/i18n/format";
 import { getI18n } from "@/lib/i18n/server";
+import { toVariantPublicationsDto } from "@/lib/publication-dto";
 import { requireUser } from "@/server/auth/session";
 import { requestContext } from "@/server/context";
 
@@ -41,6 +44,13 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     listTaxonomyTerms(ctx),
   ]);
   const { idea: detail, variants, costUsd } = bundle;
+  const [markets, publications] = await Promise.all([
+    listMarkets(ctx),
+    listVariantPublications(
+      ctx,
+      variants.map((v) => v.id),
+    ),
+  ]);
   const { idea, product, cards } = detail;
   const label = (kind: string, code: string) =>
     terms.find((term) => term.kind === kind && term.code === code)?.label ?? code;
@@ -78,6 +88,23 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     )[0];
   const canRegenerate =
     variants.length > 0 && variants.every((v) => REGENERABLE.has(v.status)) && reasons.length > 0;
+  const publishProps = (variant: (typeof variants)[number]) => {
+    const market = markets.find((m) => m.code === variant.marketCode);
+    if (!market) return {};
+    return {
+      publish: {
+        ideaId: idea.id,
+        market: {
+          code: market.code,
+          name: market.displayName,
+          flagEmoji: market.flagEmoji,
+          timeZone: market.timezone,
+        },
+        canManage: user.role === "owner" || user.role === "editor",
+        publications: toVariantPublicationsDto(publications[variant.id]),
+      },
+    };
+  };
   const generationVersion = variants.find((v) => v.generationVersion)?.generationVersion;
 
   return (
@@ -216,6 +243,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
                 reasons={reasons}
                 templates={templates}
                 ctaTypes={ctaTypes}
+                {...publishProps(variant)}
               />
             ))}
           </div>

@@ -8,10 +8,12 @@ import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import {
   createServiceContext,
   createTriggerDevJobRunner,
+  instagramRuntimeFromEnv,
   type JobMeta,
   type JobRunner,
   type ServiceContext,
 } from "@rc/modules/core";
+import { wait } from "@trigger.dev/sdk";
 
 type Runtime = {
   logger: Logger;
@@ -72,6 +74,11 @@ export function jobContext(runId: string, taskId: string, meta: JobMeta): Servic
     llm,
     embeddings,
     images,
+    instagram: instagramRuntimeFromEnv(jobEnv()),
+    // Inside a run: waits are checkpointed and cost no compute (plan 06 §6.3 J10).
+    sleep: async (ms) => {
+      await wait.for({ seconds: Math.max(1, Math.ceil(ms / 1000)) });
+    },
     ...(meta.requestId ? { requestId: meta.requestId } : {}),
     ...(jobs ? { jobs } : {}),
   });

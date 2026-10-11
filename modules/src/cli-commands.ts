@@ -12,6 +12,7 @@ import { embedAndSuggest, indexSourceChunks } from "./knowledge/embedding";
 import { canProcessWithAI } from "./knowledge/rights";
 import { completeSourceUpload, createSourceUpload, getSourceReport } from "./knowledge/sources";
 import { transcribeSourcePages } from "./knowledge/transcription";
+import { checkG2Readiness, formatG2Readiness } from "./publishing";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   ".pdf": "application/pdf",
@@ -50,6 +51,14 @@ export const cliCommands: CliCommands = {
         auditEventId: number;
       };
       console.log(`rc hello: wrote audit event ${result.auditEventId}`);
+    },
+  },
+  "g2-check": {
+    description:
+      "What the database says about Gate G2 (dry runs, kill switch, allowlist, token refresh, first posts)",
+    usage: "g2-check",
+    run: async (ctx) => {
+      console.log(formatG2Readiness(await checkG2Readiness(ctx)));
     },
   },
   "voice-import": {

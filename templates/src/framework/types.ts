@@ -19,6 +19,8 @@ export type RenderAssets = {
   images: Readonly<Record<string, string>>;
   /** Data URL of the brand logo (SVG or PNG); without it no mark is drawn. */
   logo?: string;
+  /** Draw the "AI" badge: this slide carries a generated image and the market asks for a badge (M5-12). */
+  aiBadge?: boolean;
 };
 
 export type RenderContext = {

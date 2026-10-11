@@ -87,7 +87,7 @@ ${renderer.css}
 <div class="rc-slide" data-slide-id="${escapeHtml(slide.id)}" data-template="${escapeHtml(template.id)}" style="${escapeHtml(cssVariablesText(theme))}">
 ${renderer.body(context)}
 ${logo}
-<div class="rc-page" data-page>${page.index}/${page.count}</div>
+<div class="rc-page" data-page>${page.index}/${page.count}</div>${assets.aiBadge ? `<div class="rc-ai-badge" data-ai-badge style="position:absolute;right:var(--rc-safe-margin);top:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:22px;font-weight:700;line-height:1;letter-spacing:.06em;color:#fff;background:rgba(20,20,20,.72);padding:8px 14px;border-radius:999px">AI</div>` : ""}
 </div>
 <script>${FIT_TEXT_SCRIPT}</script>
 </body>

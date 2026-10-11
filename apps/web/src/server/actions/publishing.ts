@@ -3,11 +3,18 @@
 import {
   CancelPublicationInput,
   cancelPublication as cancelService,
+  GetPublicationInput,
+  getPublicationDetails,
   ReschedulePublicationInput,
+  RetryPublicationInput,
   reschedulePublication as rescheduleService,
+  retryPublication as retryService,
   SchedulePublicationInput,
+  SetPublishingEnabledInput,
   schedulePublication as scheduleService,
+  setPublishingEnabled as setEnabledService,
 } from "@rc/modules/publishing";
+import { toPublicationDto } from "@/lib/publication-dto";
 import { defineAction } from "./_define";
 
 // Plan 05 §5.8. Scheduling, moving and cancelling are for owners and editors (10 §10.6); a chef
@@ -44,4 +51,26 @@ export const cancelPublication = defineAction({
   input: CancelPublicationInput,
   roles: ["owner", "editor"],
   handler: async (ctx, input) => slim(await cancelService(ctx, input)),
+});
+
+export const retryPublication = defineAction({
+  name: "retryPublication",
+  input: RetryPublicationInput,
+  roles: ["owner", "editor"],
+  handler: async (ctx, input) => slim(await retryService(ctx, input)),
+});
+
+export const setPublishingEnabled = defineAction({
+  name: "setPublishingEnabled",
+  input: SetPublishingEnabledInput,
+  roles: ["owner"],
+  handler: (ctx, input) => setEnabledService(ctx, input),
+});
+
+/** The drawer's data (plan 05 §5.8 `getPublication`); every signed-in role may read it. */
+export const getPublication = defineAction({
+  name: "getPublication",
+  input: GetPublicationInput,
+  roles: ["owner", "editor", "chef"],
+  handler: async (ctx, input) => toPublicationDto(await getPublicationDetails(ctx, input)),
 });

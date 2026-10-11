@@ -9,6 +9,12 @@ import {
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
 import { defineJob, triggerJob } from "./core/job-runner";
+import {
+  CheckHealthInput,
+  checkInstagramAccountHealth,
+  RefreshTokensInput,
+  refreshInstagramTokens,
+} from "./instagram";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
@@ -18,6 +24,7 @@ import {
   importHistoricalPosts,
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
+import { dispatchDuePublications, runPublication } from "./publishing";
 import {
   GenerateVisualAssetsPayload,
   generateVisualAssets,
@@ -206,6 +213,44 @@ export const regenerateFieldJob = defineJob({
   run: (ctx, payload) => runFieldRegeneration(ctx, payload),
 });
 
+/**
+ * J13 (plan 06 §6.3): refreshes the long-lived Instagram tokens that are due (daily cron). A token
+ * Instagram refuses makes the account NEEDS_REAUTH and returns normally; a transient failure is
+ * rethrown after the other accounts are done, and the retry touches only what is still due.
+ */
+export const refreshInstagramTokensJob = defineJob({
+  payload: RefreshTokensInput,
+  run: (ctx, payload) => refreshInstagramTokens(ctx, payload),
+});
+
+/**
+ * J14 (plan 06 §6.3): asks each ACTIVE account for its profile and publishing limit (every six
+ * hours, or by hand). Failures are recorded on the account, not thrown.
+ */
+export const checkAccountHealthJob = defineJob({
+  payload: CheckHealthInput,
+  run: (ctx, payload) => checkInstagramAccountHealth(ctx, payload),
+});
+
+/**
+ * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
+ * ones that were lost. It never fails the cron run for one bad publication.
+ */
+export const publishDispatcherJob = defineJob({
+  payload: z.object({}).default({}),
+  run: (ctx) => dispatchDuePublications(ctx),
+});
+
+/**
+ * J10 (plan 06 §6.3): the publish state machine for one publication (09 §9.4). A post that could
+ * not be published ends as FAILED in the database and the job returns normally (the person retries
+ * it); a failure that may pass is rethrown so Trigger.dev retries, and the run resumes at its step.
+ */
+export const publishContentJob = defineJob({
+  payload: z.object({ publicationId: z.uuid() }),
+  run: (ctx, payload) => runPublication(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -221,6 +266,10 @@ export const jobHandlers = {
   "import-historical-posts": importHistoricalPostsJob,
   "annotate-historical-posts": annotateHistoricalPostsJob,
   "transcribe-pages": transcribePagesJob,
+  "refresh-instagram-tokens": refreshInstagramTokensJob,
+  "check-account-health": checkAccountHealthJob,
+  "publish-dispatcher": publishDispatcherJob,
+  "publish-content": publishContentJob,
 };
 
 type JobHandlers = typeof jobHandlers;

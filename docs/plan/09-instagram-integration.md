@@ -10,7 +10,7 @@ Spec §23.1 item 9 (§23 item 9). Official Meta / Instagram API only [S§9, §21
 - Two Meta apps: `regchef-content-dev` (Development mode, test accounts) and `regchef-content-prod` (Live mode).
 - App settings needed: OAuth redirect URIs (`https://<app>/api/instagram/oauth/callback` per environment), deauthorize callback URL, data deletion request URL ⚠ V-13, privacy policy URL (Track B B-13).
 - Scopes ⚠ V-02: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_insights`. Not requested in MVP: comments, messages (ManyChat handles DMs [S§9.3]).
-- Graph API version pinned in env `META_GRAPH_API_VERSION` ⚠ V-04; upgraded deliberately with a smoke test.
+- Graph API version pinned in env `META_GRAPH_API_VERSION` (**v25.0**, verified 2026-10-11; latest is v26.0); upgraded deliberately with a smoke test.
 
 ## 9.2 Connection and tokens
 
@@ -32,7 +32,7 @@ Owner clicks "Connect" for a market
 - **Refresh** (J13, daily): refresh when the token is ≥ 24 h old and expires within 20 days (or was not refreshed for 7 days) ⚠ V-03. Refreshed tokens are valid ~60 days from refresh.
 - **Health** (J14, every 6 h): `/me` + publishing limit → `social_accounts.last_health`.
 - **Failure**: error code 190 (invalid/expired) → `NEEDS_REAUTH`, token status INVALID, red banner in the app shell and on the calendar; scheduled publications for that market show "will fail: reconnect account" [S§11.1].
-- **Token transport**: prefer the `Authorization: Bearer` header if graph.instagram.com accepts it ⚠ V-04; otherwise the `access_token` query parameter. Either way the HTTP wrapper logs only the path, never the full URL.
+- **Token transport**: the `Authorization: Bearer` header (shown in the publishing docs' samples, V-04 verified 2026-10-11); if a call answers with an OAuth error to the header, fall back to the `access_token` query parameter. Either way the HTTP wrapper logs only the path, never the full URL.
 
 ## 9.3 Publishing flow [S§9.2]
 Rendered JPEGs are in the private R2 bucket. For each slide the adapter creates a **presigned GET URL (TTL 2 h)** that Meta fetches ⚠ V-14. If Meta rejects presigned URLs, switch renders to a public bucket/custom domain with unguessable keys (config flag `RENDERS_PUBLIC_BASE_URL`), still never exposing sources [S§19].
@@ -52,7 +52,7 @@ IN_PROGRESS steps (persisted in publications.step, resumable):
                     → persist children[i] immediately (one row update per child)
   CREATE_PARENT   if no container: POST /{ig-user-id}/media  media_type=CAROUSEL, children=<ids>, caption=<snapshot caption>
                     → persist ig_container_id
-  WAIT_READY      GET /{container-id}?fields=status_code  every 30–60 s, max 10 min (wait.for) ⚠ V-07
+  WAIT_READY      GET /{container-id}?fields=status_code  every 30 s for 3 min, then every 60 s, max 10 min (wait.for; docs advise once a minute for 5 min)
                     FINISHED → next · IN_PROGRESS → wait · EXPIRED → clear ids, back to CREATE_CHILDREN (once)
                     ERROR → FAILED (INVALID_MEDIA)
                     dry run → stop here: DRY_RUN_PASSED (containers expire unused after ~24 h ⚠ V-07)
@@ -87,7 +87,7 @@ Whether Meta rejects a second `media_publish` for the same container is checked 
 | Signal | Class | Action |
 |---|---|---|
 | HTTP 5xx, network error, timeout; codes 1, 2 | TRANSIENT | retry with backoff |
-| HTTP 429; codes 4, 17, 32, 613; "request limit reached" | RATE_LIMIT | retry after ≥ 60 s (longer if usage headers show 100 %) |
+| HTTP 429; codes 4, 17, 32, 341, 368, 613; "request limit reached" | RATE_LIMIT | retry after ≥ 60 s (longer if usage headers show 100 %) |
 | code 190 (invalid / expired token) | AUTH | stop; account NEEDS_REAUTH; publication FAILED |
 | code 10, 200–299 (permission) | PERMISSION | stop; FAILED; UI shows the missing scope |
 | code 100 with media-related subcodes (format, aspect ratio, size, fetch) | INVALID_MEDIA | stop; FAILED with a human explanation. Media fetch failure: re-presign once, then stop |

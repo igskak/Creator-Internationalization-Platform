@@ -38,6 +38,7 @@ export default async function MarketPage({ params }: { params: Promise<{ marketC
           timezone: market.timezone,
           measurementSystem: market.measurementSystem,
           isActive: market.isActive,
+          aiImageryDisclosure: market.aiImageryDisclosure,
           toneNotes: market.toneNotes,
           foodCultureNotes: market.foodCultureNotes,
           preferredVocabulary: market.preferredVocabulary,

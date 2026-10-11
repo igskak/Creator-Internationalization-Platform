@@ -7,6 +7,7 @@ import { z } from "zod";
 import { type ServiceContext, withTransaction } from "../../core";
 import { getIdeaCards } from "../../knowledge/retrieval";
 import { planCampaign } from "../../offers";
+import { planDisclosure } from "../../visuals";
 import { contentOf } from "./content";
 import { staleLockError, validateDraftContent } from "./edit";
 import { currentRenderState } from "./render-state";
@@ -134,6 +135,10 @@ export async function approveVariant(
     .orderBy(asc(schema.renderedSlides.slideIndex));
   const cards = await getIdeaCards(ctx, variant.masterIdeaId);
   const cited = new Set(content.slides.flatMap((s) => s.knowledgeIds));
+  const disclosure = await planDisclosure(ctx, {
+    marketId: variant.marketId,
+    slides: content.slides,
+  });
   const snapshot: ApprovedSnapshot = ApprovedSnapshot.parse({
     hook: content.hook,
     hookType: variant.hookType ?? "",
@@ -149,6 +154,7 @@ export async function approveVariant(
     renderedSlideKeys: files.map((f) => f.key),
     knowledge: cards.filter((c) => cited.has(c.id)).map((c) => ({ id: c.id, version: c.version })),
     generationVersion: variant.generationVersion ?? "",
+    ...(disclosure ? { disclosure } : {}),
   });
 
   return withTransaction(ctx, async (tx) => {

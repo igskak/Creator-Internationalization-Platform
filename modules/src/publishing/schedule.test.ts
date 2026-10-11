@@ -93,20 +93,24 @@ describe("scheduling", () => {
     });
   });
 
-  it("needs a time, and does not publish now or dry-run before the Instagram integration", async () => {
+  it("needs a time for a scheduled post", async () => {
     const { variantId } = await approved();
     await expect(schedulePublication(fx.ctx, { variantId, mode: "SCHEDULED" })).rejects.toThrow(
       ValidationError,
     );
+    await expect(
+      schedulePublication(fx.ctx, { variantId, scheduledAt: "tomorrow" }),
+    ).rejects.toThrow(ValidationError);
+  });
+
+  it("refuses to publish now or dry-run while Instagram is off in this environment", async () => {
+    const { variantId } = await approved();
     await expect(schedulePublication(fx.ctx, { variantId, mode: "IMMEDIATE" })).rejects.toThrow(
-      /arrive with the Instagram integration/,
+      /switched off in this environment/,
     );
     await expect(
       schedulePublication(fx.ctx, { variantId, scheduledAt: at(DAY), dryRun: true }),
     ).rejects.toThrow(InvalidStateError);
-    await expect(
-      schedulePublication(fx.ctx, { variantId, scheduledAt: "tomorrow" }),
-    ).rejects.toThrow(ValidationError);
   });
 
   it("refuses a second live post for the same draft", async () => {

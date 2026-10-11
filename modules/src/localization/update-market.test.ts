@@ -43,6 +43,19 @@ describe("updateMarket", () => {
 
   const auditRows = () => t.db.select().from(schema.auditEvents);
 
+  it("lets only an owner choose the AI imagery disclosure, and starts with NONE", async () => {
+    expect((await getMarketProfile(owner, "es-ES"))?.aiImageryDisclosure).toBe("NONE");
+    await expect(
+      updateMarket(editor, { marketId, aiImageryDisclosure: "CAPTION_NOTE" }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    const market = await updateMarket(owner, { marketId, aiImageryDisclosure: "PLATFORM_LABEL" });
+    expect(market.aiImageryDisclosure).toBe("PLATFORM_LABEL");
+    expect((await auditRows()).at(-1)?.data).toEqual({ fields: ["aiImageryDisclosure"] });
+    await expect(
+      updateMarket(owner, { marketId, aiImageryDisclosure: "SHOUT" as "NONE" }),
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
   it("persists profile fields and audits only the fields that changed", async () => {
     const market = await updateMarket(editor, {
       marketId,

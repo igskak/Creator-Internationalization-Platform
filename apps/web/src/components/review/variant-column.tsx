@@ -1,13 +1,17 @@
 import type { VariantView } from "@rc/modules/content";
+import type { MarketInfo } from "@/components/calendar/calendar-dialogs";
+import { PUBLISHABLE_STATUSES, PublishPanel } from "@/components/publishing/publish-panel";
 import { Badge } from "@/components/ui/badge";
 import { format } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";
 import type { Messages } from "@/lib/i18n/messages";
+import type { VariantPublicationsDto } from "@/lib/publication-dto";
 import { cn } from "@/lib/utils";
 import { CampaignPanel } from "./campaign-panel";
 import { CarouselViewer } from "./carousel-viewer";
 import { ConflictBanner } from "./conflict-banner";
 import { CriticPanel } from "./critic-panel";
+import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
@@ -59,6 +63,7 @@ export function VariantColumn({
   reasons,
   templates,
   ctaTypes,
+  publish,
 }: {
   variant: VariantView;
   cardTitles: ReadonlyMap<string, string>;
@@ -67,6 +72,13 @@ export function VariantColumn({
   reasons: { code: string; label: string }[];
   templates: TemplateInfo;
   ctaTypes: { code: string; label: string }[];
+  /** Publishing facts of this draft's market and post; absent where publishing is not shown. */
+  publish?: {
+    ideaId: string;
+    market: MarketInfo;
+    canManage: boolean;
+    publications: VariantPublicationsDto;
+  };
 }) {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
@@ -187,6 +199,8 @@ export function VariantColumn({
             />
           </Section>
 
+          {variant.disclosure ? <DisclosureNote disclosure={variant.disclosure} /> : null}
+
           <Section title={t.cta}>
             <EditableCta
               cta={variant.cta}
@@ -205,7 +219,23 @@ export function VariantColumn({
 
           <CriticPanel report={variant.critic} t={t} locale={locale} />
 
-          <VariantActions allowed={variant.allowed} flagLabels={t.flags} />
+          <VariantActions
+            allowed={variant.allowed}
+            flagLabels={t.flags}
+            disclosure={variant.disclosure}
+          />
+
+          {publish && PUBLISHABLE_STATUSES.includes(variant.status) ? (
+            <PublishPanel
+              variantId={variant.id}
+              ideaId={publish.ideaId}
+              title={variant.hook ?? variant.marketName}
+              variantStatus={variant.status}
+              market={publish.market}
+              canManage={publish.canManage}
+              publications={publish.publications}
+            />
+          ) : null}
         </VariantProvider>
       )}
       {variant.hasContent ? (

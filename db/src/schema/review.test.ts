@@ -10,7 +10,7 @@ import {
   voiceExamples,
 } from "./content";
 import { appUsers, brands, markets } from "./core";
-import { publications, socialAccounts } from "./publishing";
+import { integrationEvents, publications, publishAttempts, socialAccounts } from "./publishing";
 
 // Synthetic data only.
 describe("0006_review_scheduling", () => {
@@ -328,5 +328,68 @@ describe("0006_review_scheduling", () => {
     await t.db
       .insert(socialAccounts)
       .values({ ...base, username: "other", instagramAccountId: "ig-2" });
+  });
+
+  it("records publish attempts and integration events (0007_instagram_ops)", async () => {
+    const result = await t.db.execute<{ relrowsecurity: boolean }>(
+      sql`select relrowsecurity from pg_class where relname in ('publish_attempts', 'integration_events')`,
+    );
+    expect(result.rows).toHaveLength(2);
+    expect(result.rows.every((r) => r.relrowsecurity)).toBe(true);
+
+    const v = await newVariant("en-IE");
+    const versionId = await newVersion(v);
+    const [pub] = await newPublication(v, versionId, "pub:att:0");
+    const publicationId = pub?.id ?? "";
+    const [attempt] = await t.db
+      .insert(publishAttempts)
+      .values({
+        publicationId,
+        attemptNo: 1,
+        step: "PUBLISH",
+        endpoint: "/17841/media_publish",
+        outcome: "AMBIGUOUS",
+        request: { creation_id: "c1" },
+      })
+      .returning();
+    expect(attempt).toMatchObject({ outcome: "AMBIGUOUS", httpStatus: null });
+    expect(typeof attempt?.id).toBe("number");
+    await expect(
+      t.db.insert(publishAttempts).values({
+        publicationId,
+        attemptNo: 2,
+        step: "PUBLISH",
+        endpoint: "/x",
+        outcome: "MAYBE" as "OK",
+      }),
+    ).rejects.toThrow();
+    await expect(
+      t.db.insert(publishAttempts).values({
+        publicationId: "00000000-0000-4000-8000-000000000000",
+        attemptNo: 1,
+        step: "PUBLISH",
+        endpoint: "/x",
+        outcome: "OK",
+      }),
+    ).rejects.toThrow();
+
+    const [event] = await t.db
+      .insert(integrationEvents)
+      .values({
+        integration: "instagram",
+        severity: "ERROR",
+        code: "190",
+        message: "Token expired",
+      })
+      .returning();
+    expect(event).toMatchObject({ resolvedAt: null, socialAccountId: null });
+    await expect(
+      t.db.insert(integrationEvents).values({
+        integration: "instagram",
+        severity: "FATAL" as "ERROR",
+        code: "x",
+        message: "m",
+      }),
+    ).rejects.toThrow();
   });
 });

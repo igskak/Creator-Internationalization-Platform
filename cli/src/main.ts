@@ -10,6 +10,7 @@ import {
   cliHelp,
   createInlineJobRunner,
   createServiceContext,
+  instagramRuntimeFromEnv,
   runCliCommand,
 } from "@rc/modules/core";
 import { jobHandlers } from "@rc/modules/job-handlers";
@@ -50,6 +51,7 @@ const providers = {
   llm: createLlmProvider(env.ai),
   embeddings: createEmbeddingProvider(env.ai),
   images: createImageProvider(env.ai),
+  instagram: instagramRuntimeFromEnv(env),
 };
 // Jobs run in-process, one after the other, so a command can wait for ingestion to finish.
 const jobs: ReturnType<typeof createInlineJobRunner> = createInlineJobRunner({

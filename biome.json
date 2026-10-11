@@ -51,6 +51,7 @@
     {
       "includes": [
         "**/*.live.test.ts",
+        "**/*.postgres.test.ts",
         "jobs/trigger.config.ts",
         "apps/web/next.config.ts",
         "apps/web/playwright.config.ts",
