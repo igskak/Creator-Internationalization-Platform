@@ -65,6 +65,8 @@ export async function connectTestAccount(
     marketId: string;
     accountId: string;
     username?: string;
+    /** When the mock issued the token (matters for its 24-hour refresh rule). */
+    tokenIssuedAt?: Date;
     over?: Partial<typeof schema.socialAccounts.$inferInsert>;
   },
 ) {
@@ -72,7 +74,7 @@ export async function connectTestAccount(
     mock.addAccount({ id: input.accountId, username: input.username ?? `acct_${input.accountId}` });
   }
   const id = randomUUID();
-  const token = mock.issueToken(input.accountId);
+  const token = mock.issueToken(input.accountId, input.tokenIssuedAt);
   const [row] = await ctx.db
     .insert(schema.socialAccounts)
     .values({

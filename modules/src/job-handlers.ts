@@ -9,6 +9,12 @@ import {
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
 import { defineJob, triggerJob } from "./core/job-runner";
+import {
+  CheckHealthInput,
+  checkInstagramAccountHealth,
+  RefreshTokensInput,
+  refreshInstagramTokens,
+} from "./instagram";
 import { embedAndSuggest } from "./knowledge/embedding";
 import { extractBatch } from "./knowledge/extraction";
 import { ingestSource } from "./knowledge/ingest-source";
@@ -206,6 +212,25 @@ export const regenerateFieldJob = defineJob({
   run: (ctx, payload) => runFieldRegeneration(ctx, payload),
 });
 
+/**
+ * J13 (plan 06 §6.3): refreshes the long-lived Instagram tokens that are due (daily cron). A token
+ * Instagram refuses makes the account NEEDS_REAUTH and returns normally; a transient failure is
+ * rethrown after the other accounts are done, and the retry touches only what is still due.
+ */
+export const refreshInstagramTokensJob = defineJob({
+  payload: RefreshTokensInput,
+  run: (ctx, payload) => refreshInstagramTokens(ctx, payload),
+});
+
+/**
+ * J14 (plan 06 §6.3): asks each ACTIVE account for its profile and publishing limit (every six
+ * hours, or by hand). Failures are recorded on the account, not thrown.
+ */
+export const checkAccountHealthJob = defineJob({
+  payload: CheckHealthInput,
+  run: (ctx, payload) => checkInstagramAccountHealth(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -221,6 +246,8 @@ export const jobHandlers = {
   "import-historical-posts": importHistoricalPostsJob,
   "annotate-historical-posts": annotateHistoricalPostsJob,
   "transcribe-pages": transcribePagesJob,
+  "refresh-instagram-tokens": refreshInstagramTokensJob,
+  "check-account-health": checkAccountHealthJob,
 };
 
 type JobHandlers = typeof jobHandlers;

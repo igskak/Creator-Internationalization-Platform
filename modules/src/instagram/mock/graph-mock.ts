@@ -121,9 +121,9 @@ export function createMockGraphApi(options: MockGraphOptions = {}) {
       return code;
     },
     /** A long-lived token for an account, as if it had been connected earlier. */
-    issueToken(accountId: string): string {
+    issueToken(accountId: string, issuedAt: Date = now()): string {
       const token = `igl-${accountId}-${++counter}`;
-      tokens.set(token, { accountId, kind: "long", issuedAt: now() });
+      tokens.set(token, { accountId, kind: "long", issuedAt });
       return token;
     },
     revokeToken(token: string) {
@@ -166,13 +166,14 @@ export function createMockGraphApi(options: MockGraphOptions = {}) {
 
       const fault = takeFault(method, path);
       if (fault && "dropBeforeEffect" in fault) throw new TypeError("fetch failed (mock)");
-      const result = route(method, path, query, body, record.authorization);
-      if (fault && "dropAfterEffect" in fault) throw new TypeError("fetch failed (mock)");
+      // An HTTP error answers before the call has any effect.
       if (fault && "status" in fault) {
         const answer = { status: fault.status, body: { error: errorBody(fault.error) } };
         record.response = answer;
         return json(answer.status, answer.body);
       }
+      const result = route(method, path, query, body, record.authorization);
+      if (fault && "dropAfterEffect" in fault) throw new TypeError("fetch failed (mock)");
       record.response = result;
       return json(result.status, result.body);
     },

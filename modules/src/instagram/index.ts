@@ -22,6 +22,12 @@ export {
   retryAfterMs,
 } from "./errors";
 export {
+  type IntegrationEventInput,
+  recordIntegrationEvent,
+  resolveIntegrationEvents,
+} from "./events";
+export { CheckHealthInput, checkInstagramAccountHealth, type HealthCheckResult } from "./health";
+export {
   authorizeUrl,
   createGraphClient,
   DEFAULT_TIMEOUT_MS,
@@ -54,3 +60,14 @@ export {
   type InstagramMarketRow,
   type InstagramOverview,
 } from "./status";
+export {
+  MIN_REFRESH_AGE_MS,
+  REFRESH_AT_AGE_DAYS,
+  REFRESH_WHEN_EXPIRING_DAYS,
+  type RefreshDecision,
+  RefreshTokensInput,
+  refreshDecision,
+  refreshInstagramTokens,
+  type TokenRefreshOutcome,
+  type TokenRefreshResult,
+} from "./tokens";

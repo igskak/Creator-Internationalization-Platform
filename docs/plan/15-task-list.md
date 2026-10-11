@@ -537,7 +537,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/settings/instagram` per market (connect/reconnect/disconnect, token status and expiry, quota, last publish, last error); app-shell banners (NEEDS_REAUTH, expiring < 7 days).
   - **Done when:** states render from fixtures; screenshots.
 
-- [ ] **M5-04 · Token refresh and account health jobs** · P0 · M · deps: M5-02, M0-14
+- [x] **M5-04 · Token refresh and account health jobs** · P0 · M · deps: M5-02, M0-14
   - **Do:** J13 and J14 (06 §6.3), `integration_events`, status transitions (VALID/EXPIRING/INVALID).
   - **Done when:** MSW tests (refresh ok, 190 → NEEDS_REAUTH, not refreshed if < 24 h old).
 
