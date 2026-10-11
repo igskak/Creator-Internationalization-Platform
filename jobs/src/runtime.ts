@@ -8,6 +8,7 @@ import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
 import {
   createServiceContext,
   createTriggerDevJobRunner,
+  instagramRuntimeFromEnv,
   type JobMeta,
   type JobRunner,
   type ServiceContext,
@@ -72,6 +73,7 @@ export function jobContext(runId: string, taskId: string, meta: JobMeta): Servic
     llm,
     embeddings,
     images,
+    instagram: instagramRuntimeFromEnv(jobEnv()),
     ...(meta.requestId ? { requestId: meta.requestId } : {}),
     ...(jobs ? { jobs } : {}),
   });

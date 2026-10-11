@@ -525,7 +525,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** check V-01 … V-16 against the official docs ([S§24] links); record findings and plan changes in `decision-log.md`; update 09 if needed. Needs network access to `developers.facebook.com` (B-14) or run locally.
   - **Done when:** every ⚠ Meta item has a verified value or a documented decision.
 
-- [ ] **M5-01 · Instagram module foundation (+ 0006)** · P0 · M · deps: M4-01, M0-07, M5-00
+- [x] **M5-01 · Instagram module foundation (+ 0006)** · P0 · M · deps: M4-01, M0-07, M5-00
   - **Do:** migration 0006 (`publish_attempts`, `integration_events`); `instagram/http.ts` (timeouts, JSON, error normalization, path-only logging, token transport), `errors.ts` (09 §9.4.4), config (`META_GRAPH_API_VERSION`, `INSTAGRAM_GRAPH_BASE_URL` — points to the mock Graph API in E2E), MSW fixtures for every call and error class (also served over HTTP as the E2E mock).
   - **Done when:** classification tests; wrapper never logs tokens (test).
 

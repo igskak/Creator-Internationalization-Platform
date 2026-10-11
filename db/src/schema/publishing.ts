@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigserial,
   boolean,
   check,
   index,
@@ -138,5 +139,64 @@ export const publications = pgTable(
       ),
     index("publications_due_idx").on(t.status, t.scheduledAt),
     check("publications_mode_check", sql`${t.mode} in ('IMMEDIATE', 'SCHEDULED')`),
+  ],
+).enableRLS();
+
+/**
+ * One row per Graph API call of the publish machine [S§11.1]: the audit trail the idempotency
+ * drill and the G2 checks read. `endpoint` is the path only; request and response are redacted
+ * before they get here (0007_instagram_ops, plan 04 §4.3).
+ */
+export const publishAttempts = pgTable(
+  "publish_attempts",
+  {
+    id: bigserial({ mode: "number" }).primaryKey(),
+    publicationId: uuid()
+      .notNull()
+      .references(() => publications.id),
+    attemptNo: integer().notNull(),
+    step: text().notNull(),
+    endpoint: text().notNull(),
+    request: jsonb().$type<Record<string, unknown>>(),
+    httpStatus: integer(),
+    response: jsonb().$type<Record<string, unknown>>(),
+    /** AMBIGUOUS: the call was sent and its result is unknown (a crash or a timeout). */
+    outcome: text().$type<"OK" | "TRANSIENT_ERROR" | "PERMANENT_ERROR" | "AMBIGUOUS">().notNull(),
+    errorCode: text(),
+    errorSubcode: text(),
+    fbtraceId: text(),
+    durationMs: integer(),
+    triggerRunId: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("publish_attempts_pub_idx").on(t.publicationId, t.createdAt),
+    check(
+      "publish_attempts_outcome_check",
+      sql`${t.outcome} in ('OK', 'TRANSIENT_ERROR', 'PERMANENT_ERROR', 'AMBIGUOUS')`,
+    ),
+  ],
+).enableRLS();
+
+/** External API errors and health findings, shown on the Health page (0007_instagram_ops). */
+export const integrationEvents = pgTable(
+  "integration_events",
+  {
+    id: bigserial({ mode: "number" }).primaryKey(),
+    /** instagram | anthropic | openai | r2 | trigger. */
+    integration: text().notNull(),
+    socialAccountId: uuid().references(() => socialAccounts.id),
+    severity: text().$type<"INFO" | "WARN" | "ERROR">().notNull(),
+    code: text().notNull(),
+    message: text().notNull(),
+    details: jsonb().$type<Record<string, unknown>>(),
+    occurredAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    index("integration_events_open_idx")
+      .on(t.integration, t.occurredAt.desc())
+      .where(sql`${t.resolvedAt} is null`),
+    check("integration_events_severity_check", sql`${t.severity} in ('INFO', 'WARN', 'ERROR')`),
   ],
 ).enableRLS();

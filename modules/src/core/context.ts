@@ -1,10 +1,12 @@
 import type { AnyDatabase } from "@rc/db";
+import type { ServerEnv } from "@rc/lib/env";
 import { PermanentError } from "@rc/lib/errors";
 import type { Logger } from "@rc/lib/logging";
 import type { EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import type { ImageProvider } from "@rc/lib/providers/image";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import type { StorageProvider } from "@rc/lib/providers/storage";
+import type { KeyRing } from "@rc/lib/security";
 import { type Clock, systemClock } from "./clock";
 import { disabledJobRunner, type JobRunner } from "./job-runner";
 
@@ -15,6 +17,69 @@ export type Actor =
   | { type: "USER"; userId: string; role: UserRole }
   | { type: "SYSTEM" }
   | { type: "JOB"; jobRunId: string };
+
+export type PublishMode = "off" | "dry_run_only" | "live";
+
+/** The Meta app of this environment (plan 09 §9.1); only present when publishing is not `off`. */
+export type InstagramApp = {
+  appId: string;
+  appSecret: string;
+  redirectUri: string;
+  graphApiVersion: string;
+  /** `https://graph.instagram.com`, or the mock Graph API in E2E (`INSTAGRAM_GRAPH_BASE_URL`). */
+  graphBaseUrl: string;
+  /** Instagram account ids this environment may publish to (plan 09 §9.8). */
+  accountAllowlist: readonly string[];
+};
+
+/**
+ * Instagram settings and secrets for the services of `modules/instagram` (plan 09). `app` is
+ * undefined while `INSTAGRAM_PUBLISH_MODE=off`. `fetch` is a test and E2E hook; production uses
+ * the global one.
+ */
+export type InstagramRuntime = {
+  publishMode: PublishMode;
+  app: InstagramApp | undefined;
+  /** Token encryption keys (D-18); undefined in contexts that never touch tokens. */
+  keyRing: KeyRing | undefined;
+  /** HMAC secret of the OAuth `state` (plan 09 §9.2). */
+  stateSecret: string | undefined;
+  fetch: typeof fetch | undefined;
+};
+
+/** Default for contexts that do not talk to Instagram. */
+export const disabledInstagram: InstagramRuntime = {
+  publishMode: "off",
+  app: undefined,
+  keyRing: undefined,
+  stateSecret: undefined,
+  fetch: undefined,
+};
+
+/** Builds the Instagram settings of a context from the validated environment. */
+export function instagramRuntimeFromEnv(env: ServerEnv): InstagramRuntime {
+  const ig = env.instagram;
+  return {
+    publishMode: ig.publishMode,
+    app:
+      ig.publishMode === "off"
+        ? undefined
+        : {
+            appId: ig.appId,
+            appSecret: ig.appSecret,
+            redirectUri: ig.redirectUri,
+            graphApiVersion: ig.graphApiVersion,
+            graphBaseUrl: ig.graphBaseUrl,
+            accountAllowlist: ig.accountAllowlist,
+          },
+    keyRing: {
+      keys: env.security.tokenEncryptionKeys,
+      activeKeyId: env.security.activeKeyId,
+    },
+    stateSecret: env.security.oauthStateSecret,
+    fetch: undefined,
+  };
+}
 
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
@@ -36,6 +101,8 @@ export type ServiceContext = {
   embeddings: EmbeddingProvider;
   /** Image generation (M3-03). */
   images: ImageProvider;
+  /** Instagram app, publish mode and token keys (M5). */
+  instagram: InstagramRuntime;
 };
 
 export type CreateServiceContextInput = {
@@ -54,6 +121,8 @@ export type CreateServiceContextInput = {
   embeddings?: EmbeddingProvider;
   /** Default: a provider that refuses every call. */
   images?: ImageProvider;
+  /** Default: publishing off. */
+  instagram?: InstagramRuntime;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -73,6 +142,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     llm: input.llm ?? disabledLlm,
     embeddings: input.embeddings ?? disabledEmbeddings,
     images: input.images ?? disabledImages,
+    instagram: input.instagram ?? disabledInstagram,
   };
 }
 
