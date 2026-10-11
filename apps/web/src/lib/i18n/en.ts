@@ -949,6 +949,85 @@ export const en = {
       working: "Working…",
     },
   },
+  instagram: {
+    title: "Instagram",
+    subtitle:
+      "One professional account per market. Connect it here; the access token stays on the server.",
+    mode: {
+      label: "Publishing mode",
+      off: "Off: nothing is published",
+      dry_run_only: "Dry runs only: nothing goes live",
+      live: "Live",
+    },
+    notConfigured:
+      "Instagram is not set up in this environment, so accounts cannot be connected here yet.",
+    ownersOnly: "Only owners can connect or disconnect accounts.",
+    health: {
+      NOT_CONNECTED: "Not connected",
+      OK: "Connected",
+      EXPIRING: "Token expires soon",
+      NEEDS_REAUTH: "Needs to be reconnected",
+      DISCONNECTED: "Disconnected",
+    },
+    fields: {
+      account: "Account",
+      type: "Account type",
+      token: "Access token",
+      quota: "Publishing quota",
+      lastPublish: "Last post",
+      lastError: "Last problem",
+      connectedAt: "Connected since",
+    },
+    tokenDays: {
+      one: "valid for {count} more day",
+      other: "valid for {count} more days",
+    } as PluralForms,
+    tokenExpired: "expired",
+    tokenUnknown: "expiry unknown",
+    quota: "{used} of {total} posts in the last 24 hours",
+    quotaUnknown: "not checked yet",
+    never: "No post yet",
+    noProblem: "None",
+    viewPost: "Open on Instagram",
+    actions: {
+      connect: "Connect",
+      reconnect: "Reconnect",
+      disconnect: "Disconnect",
+    },
+    disconnectDialog: {
+      title: "Disconnect @{username}?",
+      description:
+        "The access token is destroyed. Posts that are already scheduled stay in the calendar but will wait until an account is connected again.",
+      confirm: "Disconnect",
+      cancel: "Cancel",
+    },
+    results: {
+      connected: "Connected @{username}.",
+      disconnected: "Disconnected.",
+    },
+    errors: {
+      invalid_state: "The connection request was not valid. Start again.",
+      expired_state: "The connection request expired. Start again.",
+      state_mismatch: "The connection request did not match this browser. Start again.",
+      denied: "Instagram access was not granted.",
+      exchange_failed: "Instagram did not accept the connection. Try again in a few minutes.",
+      not_professional:
+        "This Instagram account is not a professional account. Switch it to Business or Creator in the Instagram app, then connect again.",
+      bound_to_other_market: "This Instagram account is already connected to another market.",
+      market_has_other_account:
+        "This market already has a connected Instagram account. Disconnect it first.",
+      market_not_found: "That market no longer exists.",
+      not_configured: "Instagram is not set up in this environment.",
+    },
+  },
+  banners: {
+    open: "Open",
+    reauth: "Instagram for {market} must be reconnected. Posts to it will fail until then.",
+    expiring: {
+      one: "The Instagram connection for {market} expires in {count} day. Reconnect it soon.",
+      other: "The Instagram connection for {market} expires in {count} days. Reconnect it soon.",
+    } as PluralForms,
+  },
   calendar: {
     title: "Calendar",
     subtitle:

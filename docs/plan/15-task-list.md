@@ -533,7 +533,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/api/instagram/oauth/start` and `/callback` (09 §9.2): state cookie + HMAC, code → short → long-lived token, `/me`, professional check, market binding check, encryption (AAD = row id), audit.
   - **Done when:** MSW tests: happy, tampered state, expired state, non-professional account, account bound to another market.
 
-- [ ] **M5-03 · Settings → Instagram UI and banners** · P0 · S · deps: M5-02
+- [x] **M5-03 · Settings → Instagram UI and banners** · P0 · S · deps: M5-02
   - **Do:** `/settings/instagram` per market (connect/reconnect/disconnect, token status and expiry, quota, last publish, last error); app-shell banners (NEEDS_REAUTH, expiring < 7 days).
   - **Done when:** states render from fixtures; screenshots.
 

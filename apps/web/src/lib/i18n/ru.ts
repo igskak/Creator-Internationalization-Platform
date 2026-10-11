@@ -969,6 +969,91 @@ export const ru: Messages = {
       working: "Работаю…",
     },
   },
+  instagram: {
+    title: "Instagram",
+    subtitle:
+      "Один профессиональный аккаунт на рынок. Подключайте его здесь; токен доступа остаётся на сервере.",
+    mode: {
+      label: "Режим публикации",
+      off: "Выключен: ничего не публикуется",
+      dry_run_only: "Только пробные запуски: в эфир ничего не идёт",
+      live: "Боевой",
+    },
+    notConfigured:
+      "Instagram в этом окружении не настроен, поэтому подключить аккаунты здесь пока нельзя.",
+    ownersOnly: "Подключать и отключать аккаунты могут только владельцы.",
+    health: {
+      NOT_CONNECTED: "Не подключён",
+      OK: "Подключён",
+      EXPIRING: "Токен скоро истечёт",
+      NEEDS_REAUTH: "Нужно переподключить",
+      DISCONNECTED: "Отключён",
+    },
+    fields: {
+      account: "Аккаунт",
+      type: "Тип аккаунта",
+      token: "Токен доступа",
+      quota: "Лимит публикаций",
+      lastPublish: "Последний пост",
+      lastError: "Последняя проблема",
+      connectedAt: "Подключён с",
+    },
+    tokenDays: {
+      one: "действует ещё {count} день",
+      few: "действует ещё {count} дня",
+      many: "действует ещё {count} дней",
+      other: "действует ещё {count} дня",
+    } satisfies PluralForms,
+    tokenExpired: "истёк",
+    tokenUnknown: "срок неизвестен",
+    quota: "{used} из {total} постов за последние 24 часа",
+    quotaUnknown: "ещё не проверялся",
+    never: "Постов ещё не было",
+    noProblem: "Нет",
+    viewPost: "Открыть в Instagram",
+    actions: {
+      connect: "Подключить",
+      reconnect: "Переподключить",
+      disconnect: "Отключить",
+    },
+    disconnectDialog: {
+      title: "Отключить @{username}?",
+      description:
+        "Токен доступа будет уничтожен. Уже запланированные посты останутся в календаре, но будут ждать, пока аккаунт снова не подключат.",
+      confirm: "Отключить",
+      cancel: "Отмена",
+    },
+    results: {
+      connected: "Аккаунт @{username} подключён.",
+      disconnected: "Аккаунт отключён.",
+    },
+    errors: {
+      invalid_state: "Запрос на подключение недействителен. Начните заново.",
+      expired_state: "Запрос на подключение истёк. Начните заново.",
+      state_mismatch: "Запрос на подключение не совпал с этим браузером. Начните заново.",
+      denied: "Доступ к Instagram не был предоставлен.",
+      exchange_failed: "Instagram не принял подключение. Попробуйте через несколько минут.",
+      not_professional:
+        "Это не профессиональный аккаунт Instagram. Переключите его на Business или Creator в приложении Instagram и подключите снова.",
+      bound_to_other_market: "Этот аккаунт Instagram уже подключён к другому рынку.",
+      market_has_other_account:
+        "У этого рынка уже есть подключённый аккаунт Instagram. Сначала отключите его.",
+      market_not_found: "Этого рынка больше нет.",
+      not_configured: "Instagram в этом окружении не настроен.",
+    },
+  },
+  banners: {
+    open: "Открыть",
+    reauth:
+      "Instagram для рынка {market} нужно переподключить. До этого посты в него будут завершаться ошибкой.",
+    expiring: {
+      one: "Подключение Instagram для рынка {market} истекает через {count} день. Переподключите его заранее.",
+      few: "Подключение Instagram для рынка {market} истекает через {count} дня. Переподключите его заранее.",
+      many: "Подключение Instagram для рынка {market} истекает через {count} дней. Переподключите его заранее.",
+      other:
+        "Подключение Instagram для рынка {market} истекает через {count} дня. Переподключите его заранее.",
+    } satisfies PluralForms,
+  },
   calendar: {
     title: "Календарь",
     subtitle:
