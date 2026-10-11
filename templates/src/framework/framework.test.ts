@@ -78,6 +78,14 @@ describe("renderSlideHtml", () => {
     expect(html).toContain("--rc-safe-margin:72px;");
   });
 
+  it("draws the AI badge only when asked (a slide with a generated image, M5-12)", () => {
+    expect(renderSlideHtml(input)).not.toContain("data-ai-badge");
+    const html = renderSlideHtml({ ...input, assets: { ...input.assets, aiBadge: true } });
+    expect(html).toContain('<div class="rc-ai-badge" data-ai-badge style="');
+    expect(html).toContain(">AI</div>");
+    expect(html).toContain("top:var(--rc-safe-margin)");
+  });
+
   it("fails clearly for an unknown template or one without a renderer", () => {
     expect(() => renderSlideHtml({ ...input, slide: { ...slide, templateId: "Z" } })).toThrow(
       'Unknown template "Z"',

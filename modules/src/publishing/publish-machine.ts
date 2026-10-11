@@ -364,6 +364,8 @@ class Machine {
       const id = await createCarouselContainer(this.graph(), this.account.instagramAccountId, {
         childIds: this.publication.igChildrenContainerIds,
         caption: this.pc.caption,
+        // Instagram's own "AI info" label, when the approved snapshot asks for it (V-16).
+        isAiGenerated: this.pc.snapshot.disclosure?.platformLabel === true,
       });
       await this.save({ igContainerId: id, igContainerStatus: "IN_PROGRESS" });
     }

@@ -11,6 +11,7 @@ import { CampaignPanel } from "./campaign-panel";
 import { CarouselViewer } from "./carousel-viewer";
 import { ConflictBanner } from "./conflict-banner";
 import { CriticPanel } from "./critic-panel";
+import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
@@ -198,6 +199,8 @@ export function VariantColumn({
             />
           </Section>
 
+          {variant.disclosure ? <DisclosureNote disclosure={variant.disclosure} /> : null}
+
           <Section title={t.cta}>
             <EditableCta
               cta={variant.cta}
@@ -216,7 +219,11 @@ export function VariantColumn({
 
           <CriticPanel report={variant.critic} t={t} locale={locale} />
 
-          <VariantActions allowed={variant.allowed} flagLabels={t.flags} />
+          <VariantActions
+            allowed={variant.allowed}
+            flagLabels={t.flags}
+            disclosure={variant.disclosure}
+          />
 
           {publish && PUBLISHABLE_STATUSES.includes(variant.status) ? (
             <PublishPanel

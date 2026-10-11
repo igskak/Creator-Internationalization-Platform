@@ -77,33 +77,47 @@ export const brands = pgTable("brands", {
   updatedAt: updatedAt(),
 }).enableRLS();
 
-export const markets = pgTable("markets", {
-  id: id(),
-  brandId: uuid()
-    .notNull()
-    .references(() => brands.id),
-  /** 'es-ES' | 'en' | 'fr-FR' (spec: locale). */
-  code: text().notNull().unique(),
-  displayName: text().notNull(),
-  flagEmoji: text(),
-  /** ISO 3166-1 alpha-2 or 'GLOBAL'. */
-  country: text().notNull(),
-  /** ISO 639-1. */
-  language: text().notNull(),
-  currency: char({ length: 3 }).notNull(),
-  /** IANA time zone, e.g. 'Europe/Madrid'. */
-  timezone: text().notNull(),
-  measurementSystem: measurementSystem().notNull(),
-  foodCultureNotes: text().notNull().default(""),
-  toneNotes: text().notNull().default(""),
-  preferredVocabulary: jsonb().$type<VocabularyEntry[]>().notNull().default(sql`'[]'::jsonb`),
-  forbiddenPatterns: jsonb().$type<ForbiddenPattern[]>().notNull().default(sql`'[]'::jsonb`),
-  visualHypotheses: jsonb().$type<VisualHypothesis[]>().notNull().default(sql`'[]'::jsonb`),
-  isActive: boolean().notNull().default(false),
-  sortOrder: integer().notNull().default(0),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-}).enableRLS();
+export const markets = pgTable(
+  "markets",
+  {
+    id: id(),
+    brandId: uuid()
+      .notNull()
+      .references(() => brands.id),
+    /** 'es-ES' | 'en' | 'fr-FR' (spec: locale). */
+    code: text().notNull().unique(),
+    displayName: text().notNull(),
+    flagEmoji: text(),
+    /** ISO 3166-1 alpha-2 or 'GLOBAL'. */
+    country: text().notNull(),
+    /** ISO 639-1. */
+    language: text().notNull(),
+    currency: char({ length: 3 }).notNull(),
+    /** IANA time zone, e.g. 'Europe/Madrid'. */
+    timezone: text().notNull(),
+    measurementSystem: measurementSystem().notNull(),
+    foodCultureNotes: text().notNull().default(""),
+    toneNotes: text().notNull().default(""),
+    preferredVocabulary: jsonb().$type<VocabularyEntry[]>().notNull().default(sql`'[]'::jsonb`),
+    forbiddenPatterns: jsonb().$type<ForbiddenPattern[]>().notNull().default(sql`'[]'::jsonb`),
+    visualHypotheses: jsonb().$type<VisualHypothesis[]>().notNull().default(sql`'[]'::jsonb`),
+    /** What is added when a post uses generated images: NONE | CAPTION_NOTE | SLIDE_BADGE | PLATFORM_LABEL (M5-12). */
+    aiImageryDisclosure: text()
+      .$type<"NONE" | "CAPTION_NOTE" | "SLIDE_BADGE" | "PLATFORM_LABEL">()
+      .notNull()
+      .default("NONE"),
+    isActive: boolean().notNull().default(false),
+    sortOrder: integer().notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check(
+      "markets_ai_imagery_disclosure_check",
+      sql`${t.aiImageryDisclosure} in ('NONE', 'CAPTION_NOTE', 'SLIDE_BADGE', 'PLATFORM_LABEL')`,
+    ),
+  ],
+).enableRLS();
 
 export const taxonomyTerms = pgTable(
   "taxonomy_terms",

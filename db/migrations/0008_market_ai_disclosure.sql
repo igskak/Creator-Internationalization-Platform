@@ -1,0 +1,2 @@
+ALTER TABLE "markets" ADD COLUMN "ai_imagery_disclosure" text DEFAULT 'NONE' NOT NULL;--> statement-breakpoint
+ALTER TABLE "markets" ADD CONSTRAINT "markets_ai_imagery_disclosure_check" CHECK ("markets"."ai_imagery_disclosure" in ('NONE', 'CAPTION_NOTE', 'SLIDE_BADGE', 'PLATFORM_LABEL'));

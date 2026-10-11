@@ -7,11 +7,18 @@ export const MAX_CAPTION_CHARS = 2200;
 export const MAX_CAPTION_HASHTAGS = 30;
 export const MAX_CAPTION_MENTIONS = 20;
 
-/** The caption, a blank line, then the hashtags in one line. */
-export function composeCaption(snapshot: Pick<ApprovedSnapshot, "caption" | "hashtags">): string {
+/**
+ * The caption, the AI-imagery note if the market asks for one (M5-12; it is in the approved
+ * snapshot, so the reviewer saw it), then the hashtags in one line, each part after a blank line.
+ */
+export function composeCaption(
+  snapshot: Pick<ApprovedSnapshot, "caption" | "hashtags"> &
+    Partial<Pick<ApprovedSnapshot, "disclosure">>,
+): string {
   const tags = snapshot.hashtags.map((t) => (t.startsWith("#") ? t : `#${t}`)).join(" ");
-  const caption = snapshot.caption.trim();
-  return tags ? `${caption}\n\n${tags}` : caption;
+  return [snapshot.caption.trim(), snapshot.disclosure?.captionNote, tags]
+    .filter((part): part is string => Boolean(part))
+    .join("\n\n");
 }
 
 export type CaptionStats = { chars: number; hashtags: number; mentions: number };

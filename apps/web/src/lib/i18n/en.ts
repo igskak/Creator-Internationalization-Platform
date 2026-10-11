@@ -895,6 +895,13 @@ export const en = {
       copied: "Copied.",
       copyFailed: "Could not copy. Select the text and copy it by hand.",
     },
+    disclosure: {
+      title: "Generated images",
+      captionNote: "This post uses generated images. A note is added to the caption: “{note}”",
+      badge: "This post uses generated images. The slides that have one carry an “AI” badge.",
+      platformLabel:
+        "This post uses generated images. Instagram's “AI info” label is requested when it is published.",
+    },
     actions: {
       approve: "Approve",
       approveTitle: "Approve this draft",

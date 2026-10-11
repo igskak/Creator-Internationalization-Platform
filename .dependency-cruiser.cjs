@@ -82,7 +82,7 @@ module.exports = {
       severity: "error",
       from: {
         path: "^(apps/web/src|jobs/src|cli/src)/",
-        pathNot: "^((apps/web/src/server|jobs/src)/runtime|cli/src/main)\\.ts$",
+        pathNot: "^((apps/web/src/server|jobs/src)/runtime|cli/src/(main|ig-smoke))\\.ts$",
       },
       to: { path: "^db/", dependencyTypesNot: ["type-only"] },
     },

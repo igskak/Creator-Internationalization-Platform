@@ -189,6 +189,76 @@ describe("publish machine", () => {
     );
   });
 
+  describe("AI imagery disclosure (M5-12)", () => {
+    /** Puts a disclosure into the approved snapshot, the way approval does, keeping the hash true. */
+    async function withDisclosure(
+      versionId: string,
+      disclosure: NonNullable<
+        (typeof schema.contentVariantVersions.$inferSelect)["snapshot"]["disclosure"]
+      >,
+    ) {
+      const { hashSnapshot } = await import("../content/variants/approve");
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, versionId));
+      const snapshot = { ...(version as NonNullable<typeof version>).snapshot, disclosure };
+      await t.db
+        .update(schema.contentVariantVersions)
+        .set({ snapshot, contentHash: hashSnapshot(snapshot) })
+        .where(eq(schema.contentVariantVersions.id, versionId));
+    }
+
+    it("sends the caption note from the snapshot, between the caption and the hashtags", async () => {
+      const { publicationId, versionId } = await queued();
+      mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
+      await withDisclosure(versionId, {
+        mode: "CAPTION_NOTE",
+        captionNote: "Imágenes generadas con IA.",
+      });
+      expect((await runPublication(jobCtx, { publicationId })).status).toBe("PUBLISHED");
+      const parent = mock.calls.find((c) => c.body.media_type === "CAROUSEL");
+      expect(parent?.body.caption).toBe("Un pie de foto.\n\nImágenes generadas con IA.\n\n#cocina");
+      expect(parent?.body).not.toHaveProperty("is_ai_generated");
+    });
+
+    it("asks Instagram for its AI info label on the carousel container only", async () => {
+      const { publicationId, versionId } = await queued();
+      mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
+      await withDisclosure(versionId, { mode: "PLATFORM_LABEL", platformLabel: true });
+      await runPublication(jobCtx, { publicationId });
+      const containers = mock.calls.filter((c) => c.method === "POST" && /\/media$/.test(c.path));
+      expect(containers.filter((c) => c.body.is_ai_generated === true)).toHaveLength(1);
+      expect(containers.find((c) => c.body.media_type === "CAROUSEL")?.body.is_ai_generated).toBe(
+        true,
+      );
+      expect(mock.publishedMedia()[0]?.isAiGenerated).toBe(true);
+    });
+
+    it("counts the note in the caption limit", async () => {
+      const { publicationId, versionId, variantId } = await queued();
+      const { hashSnapshot } = await import("../content/variants/approve");
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, versionId));
+      const snapshot = {
+        ...(version as NonNullable<typeof version>).snapshot,
+        caption: "a".repeat(2190),
+        disclosure: { mode: "CAPTION_NOTE" as const, captionNote: "Images created with AI." },
+      };
+      await t.db
+        .update(schema.contentVariantVersions)
+        .set({ snapshot, contentHash: hashSnapshot(snapshot) })
+        .where(eq(schema.contentVariantVersions.id, versionId));
+      void variantId;
+      expect(await runPublication(jobCtx, { publicationId })).toMatchObject({
+        status: "FAILED",
+        error: { type: "GUARD_CAPTION_INVALID" },
+      });
+    });
+  });
+
   it("does nothing the second time a finished publication is run (the idempotency drill)", async () => {
     const { publicationId } = await queued();
     mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
