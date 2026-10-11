@@ -117,7 +117,8 @@ test("edit the hook, regenerate a slide, approve, schedule and see it in the cal
   await expect(page.getByText(/Scheduled for/)).toBeVisible();
   // Publishing is switched off and no account is connected: the dialog says so.
   await expect(schedule.getByRole("status")).toContainText("Publishing is switched off.");
-  await schedule.getByRole("button", { name: "Close" }).click();
+  await page.keyboard.press("Escape");
+  await expect(schedule).toBeHidden();
 
   await page.goto(`/content/calendar?week=${day}`);
   const post = page.locator(`[data-date='${day}']`).getByRole("button", { name: /Gancho editado/ });

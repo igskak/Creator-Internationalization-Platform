@@ -172,10 +172,13 @@ export default async function CalendarPage({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+      <div className="flex flex-col gap-4 min-[1700px]:flex-row min-[1700px]:items-start">
         <div className="min-w-0 flex-1">
           {filters.view === "week" ? (
-            <div data-testid="week-grid" className="grid gap-2 md:grid-cols-4 lg:grid-cols-7">
+            <div
+              data-testid="week-grid"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-4 min-[1700px]:grid-cols-7"
+            >
               {range.days.map((date) => {
                 const dayItems = byDay.get(date) ?? [];
                 return (
@@ -198,7 +201,7 @@ export default async function CalendarPage({
                         post={postInfo(item)}
                         canSchedule={canSchedule}
                         className={cn(
-                          "flex flex-col gap-1 rounded-md border border-l-4 bg-background p-2 text-left text-xs transition-colors hover:bg-muted",
+                          "flex min-w-0 flex-col gap-1 overflow-hidden rounded-md border border-l-4 bg-background p-2 text-left text-xs transition-colors hover:bg-muted",
                           MARKET_COLORS[item.market.order % MARKET_COLORS.length],
                         )}
                       >
@@ -299,7 +302,7 @@ export default async function CalendarPage({
         <aside
           aria-label={t.sidebar.title}
           data-testid="approved-sidebar"
-          className="flex w-full flex-col gap-2 rounded-xl border bg-muted/30 p-3 xl:w-80 xl:shrink-0"
+          className="flex w-full flex-col gap-2 rounded-xl border bg-muted/30 p-3 min-[1700px]:w-80 min-[1700px]:shrink-0"
         >
           <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {t.sidebar.title} <span className="tabular-nums">({waiting.length})</span>

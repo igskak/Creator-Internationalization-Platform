@@ -510,7 +510,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/content/calendar` week grid (market colors/flags), list view, "approved, not scheduled" sidebar, schedule dialog (market time zone), status and warnings.
   - **Done when:** schedule/reschedule/cancel work in dev; screenshots.
 
-- [ ] **M4-10 · Review → schedule E2E** · P0 · S · deps: M4-09
+- [x] **M4-10 · Review → schedule E2E** · P0 · S · deps: M4-09
   - **Do:** E2E spec 3 (13 §13.4).
   - **Done when:** green in CI.
 
