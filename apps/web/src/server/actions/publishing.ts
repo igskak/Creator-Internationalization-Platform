@@ -8,7 +8,9 @@ import {
   reschedulePublication as rescheduleService,
   retryPublication as retryService,
   SchedulePublicationInput,
+  SetPublishingEnabledInput,
   schedulePublication as scheduleService,
+  setPublishingEnabled as setEnabledService,
 } from "@rc/modules/publishing";
 import { defineAction } from "./_define";
 
@@ -53,4 +55,11 @@ export const retryPublication = defineAction({
   input: RetryPublicationInput,
   roles: ["owner", "editor"],
   handler: async (ctx, input) => slim(await retryService(ctx, input)),
+});
+
+export const setPublishingEnabled = defineAction({
+  name: "setPublishingEnabled",
+  input: SetPublishingEnabledInput,
+  roles: ["owner"],
+  handler: (ctx, input) => setEnabledService(ctx, input),
 });

@@ -1,5 +1,7 @@
 import { getInstagramOverview } from "@rc/modules/instagram";
+import { getPublishingStatus } from "@rc/modules/publishing";
 import { InstagramMarketCard } from "@/components/instagram/market-card";
+import { PublishingSwitch } from "@/components/instagram/publishing-switch";
 import { Badge } from "@/components/ui/badge";
 import { format } from "@/lib/i18n/format";
 import { getI18n } from "@/lib/i18n/server";
@@ -25,7 +27,10 @@ export default async function InstagramPage({
   const connected = first(params.connected);
   const error = first(params.error);
 
-  const overview = await getInstagramOverview(ctx);
+  const [overview, publishing] = await Promise.all([
+    getInstagramOverview(ctx),
+    getPublishingStatus(ctx),
+  ]);
   const isOwner = user.role === "owner";
 
   return (
@@ -60,6 +65,13 @@ export default async function InstagramPage({
         </p>
       )}
       {!isOwner && <p className="text-sm text-muted-foreground">{t.ownersOnly}</p>}
+
+      <PublishingSwitch
+        enabled={publishing.enabled}
+        mode={publishing.mode}
+        allowlist={publishing.allowlist}
+        isOwner={isOwner}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         {overview.markets.map((row) => (

@@ -26,6 +26,12 @@ export {
   STUCK_AFTER_MS,
 } from "./dispatcher";
 export {
+  getPublishingStatus,
+  type PublishingStatus,
+  SetPublishingEnabledInput,
+  setPublishingEnabled,
+} from "./kill-switch";
+export {
   MAX_PUBLISH_ATTEMPTS,
   PUBLISH_LEASE_MS,
   PUBLISH_STEPS,

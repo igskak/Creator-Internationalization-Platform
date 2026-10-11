@@ -1035,6 +1035,49 @@ export const en = {
     code: "Confirmation code {code}",
     unknown: "We have no data deletion request with this confirmation code.",
   },
+  publishing: {
+    indicator: {
+      label: "Publishing",
+      off: "Off here",
+      paused: "Paused",
+      dryRun: "Dry runs only",
+      live: "Live",
+      titleOff: "This environment does not publish (INSTAGRAM_PUBLISH_MODE=off).",
+      titlePaused: "An owner switched publishing off. Open Settings → Instagram.",
+      titleDryRun: "This environment only runs dry runs: nothing goes live.",
+      titleLive: "Posts are published to Instagram.",
+    },
+    banner: {
+      paused: "Publishing is switched off. Scheduled posts wait until an owner switches it on.",
+    },
+    switch: {
+      title: "Publishing switch",
+      description:
+        "The owner's stop button. Off: nothing goes live, scheduled posts wait and a post on its way stops before it is sent. Dry runs still work.",
+      on: "On",
+      off: "Off",
+      turnOn: "Switch on",
+      turnOff: "Switch off",
+      dialogOnTitle: "Switch publishing on?",
+      dialogOffTitle: "Switch publishing off?",
+      dialogOnDescription: "Scheduled posts that are due will be published within a minute.",
+      dialogOffDescription: "Nothing will go live until an owner switches it on again.",
+      reasonLabel: "Reason",
+      reasonPlaceholder: "For example: first posts approved, or: wrong caption on the first post",
+      confirm: "Confirm",
+      cancel: "Cancel",
+      ownersOnly: "Only owners can use the switch.",
+      environmentOff:
+        "This environment does not publish at all (INSTAGRAM_PUBLISH_MODE=off), whatever the switch says.",
+      environmentDryRun:
+        "This environment only allows dry runs (INSTAGRAM_PUBLISH_MODE=dry_run_only): the switch has no effect on live posts here.",
+      allowlist: "Accounts this environment may post to: {ids}",
+      noAllowlist:
+        "No account is allowed in this environment yet (INSTAGRAM_ACCOUNT_ALLOWLIST), so nothing can be published.",
+      switchedOn: "Publishing is on.",
+      switchedOff: "Publishing is off.",
+    },
+  },
   calendar: {
     title: "Calendar",
     subtitle:

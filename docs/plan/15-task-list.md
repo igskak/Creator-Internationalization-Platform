@@ -553,7 +553,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** J9 cron (SKIP LOCKED claim, kill switch, stuck recovery) and J10 (queue per account, retries, `AbortTaskRunError` on permanent errors, global idempotency key); `retryPublication`; concurrency test on real Postgres (CI service container).
   - **Done when:** tests: one claim per publication under parallel dispatchers; retry creates a new key.
 
-- [ ] **M5-08 · Environment guards and kill switch** · P0 · S · deps: M5-07
+- [x] **M5-08 · Environment guards and kill switch** · P0 · S · deps: M5-07
   - **Do:** `INSTAGRAM_PUBLISH_MODE`, `INSTAGRAM_ACCOUNT_ALLOWLIST`, `setPublishingEnabled` (owner, audited), header indicator.
   - **Done when:** tests: `off` blocks, `dry_run_only` blocks live, unknown account refused.
 
