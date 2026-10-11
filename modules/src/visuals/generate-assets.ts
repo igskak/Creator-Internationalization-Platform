@@ -6,7 +6,7 @@ import { InvalidStateError, NotFoundError, TransientError } from "@rc/lib/errors
 import type { ImageAspect } from "@rc/lib/providers/image";
 import { registry } from "@rc/templates";
 import { z } from "zod";
-import { audit, type ServiceContext } from "../core";
+import { audit, type ServiceContext, withTransaction } from "../core";
 import { assetKeys, normalizeImage, perceptualHash, type SlotAspect } from "./images";
 import { assertLibraryPhotoUsable } from "./library";
 
@@ -86,9 +86,12 @@ export async function generateVisualAssets(
     (e) => !slots || slots.some((s) => s.slideId === e.slideId && s.slot === e.slot),
   );
 
+  /** The pictures this run made current, applied to the row's latest slides at the end. */
+  const assigned: { slideId: string; slot: string; assetId: string }[] = [];
   const setImage = (slideId: string, slot: string, assetId: string) => {
     const slide = slides.find((s) => s.id === slideId);
     if (slide) slide.images = { ...slide.images, [slot]: { assetId } };
+    assigned.push({ slideId, slot, assetId });
   };
 
   const one = async (entry: VisualBrief["slides"][number]): Promise<void> => {
@@ -229,24 +232,35 @@ export async function generateVisualAssets(
     }),
   );
 
-  // Which required slots are still empty, over the whole variant.
-  const visualMissing = slides.some((slide) =>
-    Object.entries(registry.get(slide.templateId)?.imageSlots ?? {}).some(
-      ([name, spec]) => spec.required && !slide.images[name]?.assetId,
-    ),
-  );
-  const flags = new Set<VariantFlag>(variant.flags as VariantFlag[]);
-  if (visualMissing) flags.add("VISUAL_MISSING");
-  else flags.delete("VISUAL_MISSING");
-
-  await ctx.db
-    .update(schema.contentVariants)
-    .set({
-      slidesJson: slides,
-      flags: [...flags],
-      lockVersion: sql`${schema.contentVariants.lockVersion} + 1`,
-    })
-    .where(eq(schema.contentVariants.id, variantId));
+  // The job runs for a while and a person may have edited the draft meanwhile: the pictures are
+  // put into the latest slides of the row, under a lock, and the lock version is left alone (it
+  // guards the reviewers' edits, not the system's).
+  const visualMissing = await withTransaction(ctx, async (tx) => {
+    const [fresh] = await tx.db
+      .select({ slides: schema.contentVariants.slidesJson, flags: schema.contentVariants.flags })
+      .from(schema.contentVariants)
+      .where(eq(schema.contentVariants.id, variantId))
+      .for("update");
+    const latest: Slide[] = structuredClone(fresh?.slides ?? slides);
+    for (const { slideId, slot, assetId } of assigned) {
+      const slide = latest.find((s) => s.id === slideId);
+      if (slide) slide.images = { ...slide.images, [slot]: { assetId } };
+    }
+    // Which required slots are still empty, over the whole variant.
+    const missing = latest.some((slide) =>
+      Object.entries(registry.get(slide.templateId)?.imageSlots ?? {}).some(
+        ([name, spec]) => spec.required && !slide.images[name]?.assetId,
+      ),
+    );
+    const flags = new Set<VariantFlag>((fresh?.flags ?? variant.flags) as VariantFlag[]);
+    if (missing) flags.add("VISUAL_MISSING");
+    else flags.delete("VISUAL_MISSING");
+    await tx.db
+      .update(schema.contentVariants)
+      .set({ slidesJson: latest, flags: [...flags] })
+      .where(eq(schema.contentVariants.id, variantId));
+    return missing;
+  });
   await audit(ctx, {
     action: "variant.visual_assets_generated",
     entityType: "content_variant",

@@ -303,15 +303,23 @@ export async function applyFieldChange(
   }
   const warnings = own.filter((i) => !blocking.includes(i));
 
-  const flags = [
-    ...variant.flags.filter((f) => f !== "NUMERIC_MISMATCH"),
-    ...(numericMismatch ? ["NUMERIC_MISMATCH"] : []),
-  ];
   const offerId = field.kind === "cta" ? ((value as CtaSpec).offerId ?? null) : null;
-  const columns = {
-    ...columnsOf(next, null),
-    flags,
-    ...(offerId ? { offerId } : {}),
+  /**
+   * The columns to write: the new content and the flags. Built from the row as it is under the
+   * lock, so a render or picture job that finished meanwhile (it changes the images and the flags
+   * it owns) is not overwritten by the copy this call read before.
+   */
+  const columnsFor = (base: Variant) => {
+    const fresh = contentOf(base);
+    const content2 = change.next ?? (fresh ? writeField(fresh, field, value) : next);
+    return {
+      ...columnsOf(content2, null),
+      flags: [
+        ...base.flags.filter((f) => f !== "NUMERIC_MISMATCH"),
+        ...(numericMismatch ? ["NUMERIC_MISMATCH"] : []),
+      ],
+      ...(offerId ? { offerId } : {}),
+    };
   };
 
   const done = await withTransaction(ctx, async (tx) => {
@@ -326,6 +334,7 @@ export async function applyFieldChange(
       throw new InvalidStateError("The variant changed status in the meantime. Reload.");
     }
 
+    const columns = columnsFor(locked);
     const open = invalidates
       ? await tx.db
           .select({ id: schema.publications.id })
