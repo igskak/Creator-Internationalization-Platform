@@ -506,7 +506,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `publishing/schedule.ts`: `schedulePublication`, `reschedulePublication`, `cancelPublication` (05 §5.8), idempotency key, min-gap warning, market-time-zone handling, audit.
   - **Done when:** tests (past time refused, second live publication refused, cancel restores APPROVED).
 
-- [ ] **M4-09 · Calendar UI** · P0 · M · deps: M4-08
+- [x] **M4-09 · Calendar UI** · P0 · M · deps: M4-08
   - **Do:** `/content/calendar` week grid (market colors/flags), list view, "approved, not scheduled" sidebar, schedule dialog (market time zone), status and warnings.
   - **Done when:** schedule/reschedule/cancel work in dev; screenshots.
 

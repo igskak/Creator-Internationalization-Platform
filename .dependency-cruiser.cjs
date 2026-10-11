@@ -67,12 +67,12 @@ module.exports = {
     {
       name: "web-and-jobs-via-public-api",
       comment:
-        "apps/web and jobs reach domain code only through @rc/modules subpaths (package exports), never deep files.",
+        "apps/web and jobs reach domain code only through @rc/modules subpaths (package exports), never deep files. publishing/time.ts is a package export of its own: pure functions the calendar's client code uses without loading the services.",
       severity: "error",
       from: { path: "^(apps/web/src|jobs/src|cli/src)/" },
       to: {
         path: "^modules/src/",
-        pathNot: "^modules/src/(([^/]+)/index|job-handlers|cli-commands)\\.ts$",
+        pathNot: "^modules/src/(([^/]+)/index|job-handlers|cli-commands|publishing/time)\\.ts$",
       },
     },
     {

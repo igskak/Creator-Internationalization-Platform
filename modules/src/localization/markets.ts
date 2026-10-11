@@ -10,6 +10,8 @@ export type MarketSummary = {
   code: string;
   displayName: string;
   flagEmoji: string | null;
+  /** IANA time zone. */
+  timezone: string;
   isActive: boolean;
 };
 
@@ -18,6 +20,7 @@ const summary = {
   code: schema.markets.code,
   displayName: schema.markets.displayName,
   flagEmoji: schema.markets.flagEmoji,
+  timezone: schema.markets.timezone,
   isActive: schema.markets.isActive,
 };
 

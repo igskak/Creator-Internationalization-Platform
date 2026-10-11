@@ -1,6 +1,15 @@
 export const MODULE_NAME = "publishing";
 
 export {
+  type ApprovedDraft,
+  CALENDAR_STATUSES,
+  type CalendarItem,
+  type CalendarWarning,
+  GetCalendarInput,
+  getCalendar,
+  listApprovedNotScheduled,
+} from "./calendar";
+export {
   CancelPublicationInput,
   cancelPublication,
   describeSlot,
