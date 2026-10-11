@@ -5,16 +5,15 @@ import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { ForbiddenError } from "@rc/lib/errors";
 import { signToken } from "@rc/lib/security";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { type ReviewFixture, reviewFixture } from "../content/variants/test-support";
 import { decryptAccessToken } from "./accounts";
 import { completeInstagramOAuth, startInstagramOAuth } from "./oauth";
-import { mockRuntime, newMock, TEST_STATE_SECRET } from "./test-support";
+import { instagramFixture, newMock, TEST_STATE_SECRET } from "./test-support";
 
 // The OAuth connect flow (M5-02): state, code exchange, profile checks, market binding, storage.
 
 describe("Instagram OAuth", () => {
   let t: TestDb;
-  let fx: ReviewFixture;
+  let fx: Awaited<ReturnType<typeof instagramFixture>> & { marketId: string };
   let mock: ReturnType<typeof newMock>;
   let en: string;
 
@@ -28,9 +27,9 @@ describe("Instagram OAuth", () => {
         { id: "1786", username: "just_a_person", accountType: "PERSONAL" },
       ],
     });
-    fx = await reviewFixture(t.db, { instagram: mockRuntime(mock) });
-    const [market] = await t.db.select().from(schema.markets).where(eq(schema.markets.code, "en"));
-    en = market?.id ?? "";
+    const base = await instagramFixture(t.db, mock);
+    fx = { ...base, marketId: base.marketIds["es-ES"] ?? "" };
+    en = base.marketIds.en ?? "";
   });
   afterEach(async () => {
     await t.close();

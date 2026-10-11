@@ -1,7 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
 import { createLogger, type Logger } from "@rc/lib/logging";
-import type { InstagramRuntime, PublishMode, ServiceContext } from "../core";
+import {
+  createServiceContext,
+  type InstagramRuntime,
+  manualClock,
+  type PublishMode,
+  type ServiceContext,
+} from "../core";
 import { encryptAccessToken } from "./accounts";
 import { createMockGraphApi, type MockGraphApi, type MockGraphOptions } from "./mock/graph-mock";
 
@@ -84,4 +90,27 @@ export async function connectTestAccount(
     .returning();
   if (!row) throw new Error("no account row");
   return { account: row, token };
+}
+
+/**
+ * A context for the instagram module's own tests (the module may not import another domain's
+ * fixtures): an owner of the seeded database, a manual clock at 2026-10-10 12:00 UTC, the mock.
+ * `seedDatabase` must have run.
+ */
+export async function instagramFixture(db: ServiceContext["db"], mock: MockGraphApi) {
+  const clock = manualClock("2026-10-10T12:00:00Z");
+  const [owner] = await db.select().from(schema.appUsers);
+  const userId = owner?.id ?? "";
+  const as = (role: "owner" | "editor" | "chef") =>
+    createServiceContext({
+      db,
+      logger: capturingLogger().logger,
+      clock,
+      instagram: mockRuntime(mock),
+      actor: { type: "USER", userId, role },
+    });
+  const marketIds = Object.fromEntries(
+    (await db.select().from(schema.markets)).map((m) => [m.code, m.id]),
+  ) as Record<string, string>;
+  return { ctx: as("owner"), as, userId, clock, marketIds };
 }
