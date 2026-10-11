@@ -4,7 +4,9 @@ import {
   CancelPublicationInput,
   cancelPublication as cancelService,
   ReschedulePublicationInput,
+  RetryPublicationInput,
   reschedulePublication as rescheduleService,
+  retryPublication as retryService,
   SchedulePublicationInput,
   schedulePublication as scheduleService,
 } from "@rc/modules/publishing";
@@ -44,4 +46,11 @@ export const cancelPublication = defineAction({
   input: CancelPublicationInput,
   roles: ["owner", "editor"],
   handler: async (ctx, input) => slim(await cancelService(ctx, input)),
+});
+
+export const retryPublication = defineAction({
+  name: "retryPublication",
+  input: RetryPublicationInput,
+  roles: ["owner", "editor"],
+  handler: async (ctx, input) => slim(await retryService(ctx, input)),
 });

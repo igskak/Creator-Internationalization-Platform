@@ -1,5 +1,5 @@
 import { schema } from "@rc/db";
-import { eq } from "@rc/db/orm";
+import { eq, sql } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { TransientError } from "@rc/lib/errors";
@@ -333,7 +333,12 @@ describe("publish machine", () => {
     expect(failure).toBeInstanceOf(TransientError);
     expect(failure).toMatchObject({ code: "RATE_LIMITED", retryAfterMs: 5 * 60_000 });
     const mid = await publication(publicationId);
-    expect(mid).toMatchObject({ status: "IN_PROGRESS", step: "CREATE_CHILDREN" });
+    // Progress is kept and the publication is let go, so the retry can take it up at once.
+    expect(mid).toMatchObject({
+      status: "IN_PROGRESS",
+      step: "CREATE_CHILDREN",
+      triggerRunId: null,
+    });
     expect(mid.igChildrenContainerIds).toHaveLength(1);
     expect((await attempts(publicationId)).at(-1)).toMatchObject({
       outcome: "TRANSIENT_ERROR",
@@ -549,6 +554,58 @@ describe("publish machine", () => {
       const again = await runPublication(as("run-2"), { publicationId: publicationId });
       expect(mock.callsTo(/media_publish$/, "POST")).toHaveLength(1);
       expect(again.status).toBe("FAILED");
+    });
+  });
+
+  describe("two runs on one publication", () => {
+    it("steps aside while another run has saved progress a moment ago", async () => {
+      const { publicationId } = await queued();
+      await t.db
+        .update(schema.publications)
+        .set({ status: "IN_PROGRESS", step: "CREATE_CHILDREN", triggerRunId: "someone-else" })
+        .where(eq(schema.publications.id, publicationId));
+      expect(await runPublication(as("run-2"), { publicationId })).toEqual({ status: "IN_FLIGHT" });
+      expect(graphCalls()).toHaveLength(0);
+      expect((await publication(publicationId)).attemptCount).toBe(0);
+    });
+
+    it("takes over a run that has been silent for three minutes", async () => {
+      const { publicationId } = await queued();
+      mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
+      // The update trigger stamps the real time, so it is switched off to age the row.
+      await t.db.execute(sql`alter table publications disable trigger publications_set_updated_at`);
+      await t.db
+        .update(schema.publications)
+        .set({
+          status: "IN_PROGRESS",
+          step: "GUARDS",
+          triggerRunId: "dead",
+          updatedAt: new Date(Date.now() - 4 * 60_000),
+        })
+        .where(eq(schema.publications.id, publicationId));
+      await t.db.execute(sql`alter table publications enable trigger publications_set_updated_at`);
+      expect((await runPublication(as("run-2"), { publicationId })).status).toBe("PUBLISHED");
+    });
+
+    it("lets the same run id continue (a retry of the same Trigger.dev run)", async () => {
+      const { publicationId } = await queued();
+      mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
+      await t.db
+        .update(schema.publications)
+        .set({ status: "IN_PROGRESS", step: "GUARDS", triggerRunId: "run-7" })
+        .where(eq(schema.publications.id, publicationId));
+      expect((await runPublication(as("run-7"), { publicationId })).status).toBe("PUBLISHED");
+    });
+
+    it("does not post twice when two runs race through every step", async () => {
+      const { publicationId } = await queued();
+      mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es" });
+      const outcomes = await Promise.all([
+        runPublication(as("run-a"), { publicationId }),
+        runPublication(as("run-b"), { publicationId }),
+      ]);
+      expect(outcomes.map((o) => o.status).sort()).toEqual(["IN_FLIGHT", "PUBLISHED"]);
+      expect(mock.publishedMedia()).toHaveLength(1);
     });
   });
 

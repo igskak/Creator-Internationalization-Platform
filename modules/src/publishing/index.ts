@@ -19,6 +19,13 @@ export {
   normalizeCaption,
 } from "./caption";
 export {
+  DISPATCH_BATCH,
+  type DispatchResult,
+  dispatchDuePublications,
+  ORPHAN_AFTER_MS,
+  STUCK_AFTER_MS,
+} from "./dispatcher";
+export {
   MAX_PUBLISH_ATTEMPTS,
   PUBLISH_LEASE_MS,
   PUBLISH_STEPS,
@@ -27,6 +34,8 @@ export {
   runPublication,
   WAIT_READY_MAX_MS,
 } from "./publish-machine";
+export { startPublishJob } from "./queue";
+export { RetryPublicationInput, retryPublication } from "./retry";
 export { GUARD_CODES, type GuardCode, GuardFailure } from "./safeguards";
 export {
   CancelPublicationInput,

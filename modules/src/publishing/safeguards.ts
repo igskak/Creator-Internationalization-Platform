@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { schema } from "@rc/db";
 import type { ApprovedSnapshot } from "@rc/db/json";
-import { asc, eq } from "@rc/db/orm";
+import { and, asc, eq } from "@rc/db/orm";
 import { NotFoundError } from "@rc/lib/errors";
 import { verifyApprovedVersion } from "../content";
 import type { ServiceContext } from "../core";
@@ -155,9 +155,18 @@ export async function checkState(ctx: ServiceContext, pc: PublishContext): Promi
   if (publication.instagramMediaId && !publication.dryRun) {
     refuse("ALREADY_PUBLISHED", "This post has already been published.");
   }
+  return checkAccount(ctx, account, variant.marketId);
+}
+
+/** The account that will post: it exists, is ACTIVE, has a valid token, is the market's and is allowed here. */
+export function checkAccount(
+  ctx: ServiceContext,
+  account: SocialAccount | null,
+  marketId: string,
+): SocialAccount {
   if (!account) refuse("NO_ACCOUNT", "This market has no connected Instagram account.");
   const acct = account as SocialAccount;
-  if (acct.marketId !== variant.marketId) {
+  if (acct.marketId !== marketId) {
     refuse(
       "MARKET_MISMATCH",
       "The Instagram account belongs to another market: nothing is posted there.",
@@ -184,6 +193,29 @@ export async function checkState(ctx: ServiceContext, pc: PublishContext): Promi
     );
   }
   return acct;
+}
+
+/**
+ * Before a post or a dry run is queued by hand: the environment lets it through, the market has
+ * an account that can post. Throws a GuardFailure whose message is fit to show.
+ */
+export async function assertReadyToPublish(
+  ctx: ServiceContext,
+  marketId: string,
+  dryRun: boolean,
+): Promise<SocialAccount> {
+  await checkSwitches(ctx, dryRun);
+  const [account = null] = await ctx.db
+    .select()
+    .from(schema.socialAccounts)
+    .where(
+      and(
+        eq(schema.socialAccounts.marketId, marketId),
+        eq(schema.socialAccounts.platform, "instagram"),
+        eq(schema.socialAccounts.status, "ACTIVE"),
+      ),
+    );
+  return checkAccount(ctx, account, marketId);
 }
 
 const MIN_SLIDES = 2;

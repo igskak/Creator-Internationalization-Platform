@@ -549,7 +549,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `publishing/publish-machine.ts` (09 §9.4): steps, persisted progress, safeguards, presigned URLs for renders, reconciliation, dry run, `publish_attempts` per call.
   - **Done when:** MSW tests for every path in 13 §13.3 (incl. crash after `media_publish` → no second publish, wrong-market account refused).
 
-- [ ] **M5-07 · Dispatcher and publish task** · P0 · M · deps: M5-06
+- [x] **M5-07 · Dispatcher and publish task** · P0 · M · deps: M5-06
   - **Do:** J9 cron (SKIP LOCKED claim, kill switch, stuck recovery) and J10 (queue per account, retries, `AbortTaskRunError` on permanent errors, global idempotency key); `retryPublication`; concurrency test on real Postgres (CI service container).
   - **Done when:** tests: one claim per publication under parallel dispatchers; retry creates a new key.
 

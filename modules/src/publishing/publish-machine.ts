@@ -74,6 +74,14 @@ export type PublishOutcome =
   /** Another run holds the `media_publish` call; this one stepped aside. */
   | { status: "IN_FLIGHT" };
 
+/**
+ * A run that has saved progress within this long, under a different run id, is alive. The machine
+ * saves at least every poll (a minute) and a Graph call times out in 30 s, so three minutes of
+ * silence mean the run is gone. A retried run keeps its id; a run that stops with a retryable
+ * error lets go of the publication (see `handleFailure`).
+ */
+export const RUN_ALIVE_MS = 3 * 60_000;
+
 type Publication = typeof schema.publications.$inferSelect;
 
 /** The publish result is unknown and the post cannot be found: a person must look (09 §9.4.3). */
@@ -127,6 +135,7 @@ export async function runPublication(
   const runId = ctx.actor.type === "JOB" ? ctx.actor.jobRunId : `local-${ctx.requestId ?? "run"}`;
   const claimed = await claim(ctx, input.publicationId, runId);
   if ("noop" in claimed) return { status: "NOOP", publicationStatus: claimed.noop };
+  if ("inFlight" in claimed) return { status: "IN_FLIGHT" };
   let pc = claimed.context;
 
   try {
@@ -144,16 +153,26 @@ async function claim(
   ctx: ServiceContext,
   publicationId: string,
   runId: string,
-): Promise<{ context: PublishContext } | { noop: string }> {
+): Promise<{ context: PublishContext } | { noop: string } | { inFlight: true }> {
   return withTransaction(ctx, async (tx) => {
     const [current] = await tx.db
-      .select()
+      .select({ row: schema.publications, now: sql<Date>`now()` })
       .from(schema.publications)
       .where(eq(schema.publications.id, publicationId))
-      .for("update");
+      .for("update")
+      .then((rows) => rows.map((r) => ({ ...r.row, dbNow: new Date(r.now) })));
     if (!current) throw new InvalidStateError("Publication not found.");
     if (current.status !== "QUEUED" && current.status !== "IN_PROGRESS") {
       return { noop: current.status };
+    }
+    // Another run is working on it: do not start a second one alongside.
+    if (
+      current.status === "IN_PROGRESS" &&
+      current.triggerRunId !== null &&
+      current.triggerRunId !== runId &&
+      current.dbNow.getTime() - current.updatedAt.getTime() < RUN_ALIVE_MS
+    ) {
+      return { inFlight: true as const };
     }
     await tx.db
       .update(schema.publications)
@@ -694,6 +713,12 @@ class Machine {
     const finishedAt =
       publishedAt && !Number.isNaN(publishedAt.getTime()) ? publishedAt : this.ctx.clock.now();
     await withTransaction(this.ctx, async (tx) => {
+      const [locked] = await tx.db
+        .select({ status: schema.publications.status })
+        .from(schema.publications)
+        .where(eq(schema.publications.id, this.publication.id))
+        .for("update");
+      if (locked?.status === "PUBLISHED") return true;
       await tx.db
         .update(schema.publications)
         .set({
@@ -753,7 +778,12 @@ async function handleFailure(
     if ((row?.attemptCount ?? 0) >= MAX_PUBLISH_ATTEMPTS) {
       return fail(ctx, publicationId, error.error);
     }
-    // Leave IN_PROGRESS: the runner retries and the run resumes at the saved step.
+    // Leave IN_PROGRESS: the runner retries and the run resumes at the saved step. Let go of the
+    // publication so that the retry, whatever its run id, can take it up at once.
+    await ctx.db
+      .update(schema.publications)
+      .set({ triggerRunId: null })
+      .where(eq(schema.publications.id, publicationId));
     throw error.toAppError();
   }
   throw error;

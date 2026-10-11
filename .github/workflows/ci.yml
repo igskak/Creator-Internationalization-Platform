@@ -49,6 +49,36 @@ jobs:
       - run: pnpm --filter @rc/modules exec playwright-core install --with-deps chromium
       - run: pnpm test
 
+  # Locks, SKIP LOCKED and unique indexes under a race need a real Postgres (plan 13 §13.3, M5-07);
+  # PGlite has one connection. The tests skip themselves without TEST_POSTGRES_URL.
+  concurrency:
+    name: Concurrency (real Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @rc/modules exec vitest run src/publishing/concurrency.postgres.test.ts
+
   build:
     name: Build (web)
     runs-on: ubuntu-latest

@@ -12,6 +12,14 @@ type HandlerTaskOptions = {
   queue: Queue;
   machine?: Machine;
   maxDuration?: number;
+  /** Replaces the default retry policy of trigger.config.ts (plan 06 §6.2 column "Retries"). */
+  retry?: {
+    maxAttempts: number;
+    factor?: number;
+    minTimeoutInMs?: number;
+    maxTimeoutInMs?: number;
+    randomize?: boolean;
+  };
 };
 
 /** What a scheduled run receives is Trigger.dev's schedule payload, not our envelope. */
@@ -36,6 +44,7 @@ export function handlerTask(name: JobName, options: HandlerTaskOptions) {
     queue: options.queue,
     ...(options.machine ? { machine: options.machine } : {}),
     ...(options.maxDuration ? { maxDuration: options.maxDuration } : {}),
+    ...(options.retry ? { retry: options.retry } : {}),
     run: async (envelope: JobEnvelope, { ctx }) => runHandler(name, ctx.run.id, envelope),
   });
 }
@@ -51,6 +60,7 @@ export function cronHandlerTask(name: JobName, cron: string, options: HandlerTas
     queue: options.queue,
     ...(options.machine ? { machine: options.machine } : {}),
     ...(options.maxDuration ? { maxDuration: options.maxDuration } : {}),
+    ...(options.retry ? { retry: options.retry } : {}),
     run: async (incoming: unknown, { ctx }) => runHandler(name, ctx.run.id, incoming),
   });
 }

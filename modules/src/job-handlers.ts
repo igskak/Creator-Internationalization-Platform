@@ -24,6 +24,7 @@ import {
   importHistoricalPosts,
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
+import { dispatchDuePublications, runPublication } from "./publishing";
 import {
   GenerateVisualAssetsPayload,
   generateVisualAssets,
@@ -231,6 +232,25 @@ export const checkAccountHealthJob = defineJob({
   run: (ctx, payload) => checkInstagramAccountHealth(ctx, payload),
 });
 
+/**
+ * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
+ * ones that were lost. It never fails the cron run for one bad publication.
+ */
+export const publishDispatcherJob = defineJob({
+  payload: z.object({}).default({}),
+  run: (ctx) => dispatchDuePublications(ctx),
+});
+
+/**
+ * J10 (plan 06 §6.3): the publish state machine for one publication (09 §9.4). A post that could
+ * not be published ends as FAILED in the database and the job returns normally (the person retries
+ * it); a failure that may pass is rethrown so Trigger.dev retries, and the run resumes at its step.
+ */
+export const publishContentJob = defineJob({
+  payload: z.object({ publicationId: z.uuid() }),
+  run: (ctx, payload) => runPublication(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -248,6 +268,8 @@ export const jobHandlers = {
   "transcribe-pages": transcribePagesJob,
   "refresh-instagram-tokens": refreshInstagramTokensJob,
   "check-account-health": checkAccountHealthJob,
+  "publish-dispatcher": publishDispatcherJob,
+  "publish-content": publishContentJob,
 };
 
 type JobHandlers = typeof jobHandlers;
