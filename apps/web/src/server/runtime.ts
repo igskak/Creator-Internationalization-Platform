@@ -26,7 +26,11 @@ export function serverEnv(): ServerEnv {
 export function serverDb(): AnyDatabase {
   const env = serverEnv();
   const url = runtimeDatabaseUrl(env.db, env.appEnv);
-  db ??= createDb(url, { pooled: isPoolerUrl(url), max: 5 }).db;
+  // Every serverless instance has its own pool, and a page makes several requests at once (the
+  // sidebar prefetches), so five connections per instance exhaust the pooler's client limit and
+  // queries start to fail at random. A small pool queues instead of failing.
+  const max = env.appEnv === "production" ? 2 : 5;
+  db ??= createDb(url, { pooled: isPoolerUrl(url), max }).db;
   return db;
 }
 
