@@ -55,10 +55,14 @@ test("generate ideas, accept one, write one by hand and reject it", async ({
   await page.screenshot({ path: info.outputPath("ideas-list.png") });
   await generated.click();
   await expect(page.getByText("Suggested by the model")).toBeVisible();
+  // The scripted model builds the idea on the first of the two seeded cards it is shown; which one
+  // that is depends on the order the database returns them in.
   await expect(
-    page.getByRole("heading", { name: "E2E card A: rinsing rice", exact: true }),
+    page.getByRole("heading", { name: /^E2E card [AB]: (rinsing rice|water ratio)$/ }),
   ).toBeVisible();
-  await expect(page.getByText("the surface starch makes it creamy")).toBeVisible();
+  await expect(
+    page.getByText(/the surface starch makes it creamy|two parts water to one part rice/),
+  ).toBeVisible();
   await page.screenshot({ path: info.outputPath("idea-detail.png"), fullPage: true });
 
   await page.getByRole("button", { name: "Accept" }).click();
@@ -84,8 +88,10 @@ test("generate ideas, accept one, write one by hand and reject it", async ({
   // --- reject it ----------------------------------------------------------------------------
   await page.getByRole("button", { name: "Reject" }).click();
   const reject = page.getByRole("dialog");
-  await expect(reject.getByRole("button", { name: "Reject" })).toBeEnabled();
+  // A rejection needs its reason: the button stays off until there is one.
+  await expect(reject.getByRole("button", { name: "Reject" })).toBeDisabled();
   await reject.getByLabel("Reason").fill("Too basic");
+  await expect(reject.getByRole("button", { name: "Reject" })).toBeEnabled();
   await reject.getByRole("button", { name: "Reject" }).click();
   await expect(page.getByText("Idea rejected.")).toBeVisible();
   await expect(page.getByText("Rejected: Too basic")).toBeVisible();

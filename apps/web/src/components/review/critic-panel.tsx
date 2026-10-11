@@ -4,6 +4,7 @@ import { plural } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";
 import type { Messages } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+import { IssueJump } from "./issue-jump";
 
 type T = Messages["review"];
 
@@ -95,6 +96,7 @@ export function CriticPanel({
               // biome-ignore lint/suspicious/noArrayIndexKey: a static list of the report
               <li key={i}>
                 “{claim.text}” <span className="text-muted-foreground">— {claim.reason}</span>
+                <IssueJump path={claim.fieldPath} />
               </li>
             ))}
           </ul>
@@ -115,6 +117,7 @@ export function CriticPanel({
                 {issue.suggestedFix ? (
                   <span className="text-muted-foreground"> → {issue.suggestedFix}</span>
                 ) : null}
+                <IssueJump path={issue.fieldPath} />
               </li>
             ))}
           </ul>
@@ -132,6 +135,7 @@ export function CriticPanel({
                   {c.severity[issue.severity]}
                 </span>{" "}
                 <span className="font-mono text-xs">{issue.code}</span> {issue.message}
+                <IssueJump path={issue.fieldPath} />
               </li>
             ))}
           </ul>

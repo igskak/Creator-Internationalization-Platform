@@ -36,13 +36,21 @@ export async function renderVariantCarousel(
   const { variant, inputHash } = input;
 
   const setFlags = async (flags: readonly VariantFlag[], currentRenderId?: string) => {
-    const kept = (variant.flags as VariantFlag[]).filter((f) => !RENDER_FLAGS.includes(f));
+    // The render takes a while: keep the flags the row has now (a reviewer's edit may have
+    // changed them), replace only the ones the render owns. The lock version is left alone: it
+    // guards the reviewers' edits, not the system's.
+    const [fresh] = await ctx.db
+      .select({ flags: schema.contentVariants.flags })
+      .from(schema.contentVariants)
+      .where(eq(schema.contentVariants.id, variantId));
+    const kept = ((fresh?.flags ?? variant.flags) as VariantFlag[]).filter(
+      (f) => !RENDER_FLAGS.includes(f),
+    );
     await ctx.db
       .update(schema.contentVariants)
       .set({
         flags: [...new Set([...kept, ...flags])],
         ...(currentRenderId ? { currentRenderId } : {}),
-        lockVersion: sql`${schema.contentVariants.lockVersion} + 1`,
       })
       .where(eq(schema.contentVariants.id, variantId));
   };

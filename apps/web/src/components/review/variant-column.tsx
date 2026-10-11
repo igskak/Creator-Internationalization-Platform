@@ -4,8 +4,17 @@ import { format } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";
 import type { Messages } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+import { CampaignPanel } from "./campaign-panel";
 import { CarouselViewer } from "./carousel-viewer";
+import { ConflictBanner } from "./conflict-banner";
 import { CriticPanel } from "./critic-panel";
+import { EditableCta } from "./editable-cta";
+import { EditableHashtags } from "./editable-hashtags";
+import { EditableText } from "./editable-text";
+import { SlideCard } from "./slide-card";
+import { SlideDrawer } from "./slide-drawer";
+import { VariantActions } from "./variant-actions";
+import { type ConfirmKind, type TemplateInfo, VariantProvider } from "./variant-state";
 
 type T = Messages["review"];
 
@@ -36,16 +45,28 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 /** One market's draft as read-only text: hook, slides, caption, CTA, hashtags, critic, flags. */
+const CONFIRM_KIND: Partial<Record<string, ConfirmKind>> = {
+  APPROVED: "approved",
+  SCHEDULED: "scheduled",
+  FAILED: "failed",
+};
+
 export function VariantColumn({
   variant,
   cardTitles,
   t,
   locale,
+  reasons,
+  templates,
+  ctaTypes,
 }: {
   variant: VariantView;
   cardTitles: ReadonlyMap<string, string>;
   t: T;
   locale: Locale;
+  reasons: { code: string; label: string }[];
+  templates: TemplateInfo;
+  ctaTypes: { code: string; label: string }[];
 }) {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
@@ -55,6 +76,10 @@ export function VariantColumn({
     variant.status === "GENERATING" ||
     (variant.status === "DRAFT" && !variant.hasContent && !variant.lastError);
   const d = variant.differentiation;
+  const cardRecord = Object.fromEntries(cardTitles);
+  const edit = variant.allowed.find((a) => a.action === "edit");
+  const editBlocker = !edit ? t.edit.noEdit : (edit.blockers[0]?.message ?? null);
+  const confirmKind = edit?.confirm ? (CONFIRM_KIND[variant.status] ?? null) : null;
 
   return (
     <article
@@ -103,7 +128,22 @@ export function VariantColumn({
           </p>
         ) : null
       ) : (
-        <>
+        <VariantProvider
+          variantId={variant.id}
+          lockVersion={variant.lockVersion}
+          editBlocker={editBlocker}
+          confirmKind={confirmKind}
+          reasons={reasons}
+          templates={templates}
+          regenerations={variant.regenerations.map((r) => ({
+            reviewEventId: r.reviewEventId,
+            field: r.field,
+            original: r.original,
+            edited: r.edited,
+          }))}
+        >
+          <ConflictBanner />
+
           <Section title={t.viewer.label}>
             <CarouselViewer
               variantId={variant.id}
@@ -113,7 +153,13 @@ export function VariantColumn({
           </Section>
 
           <Section title={t.hook}>
-            <p className="text-base font-medium">{variant.hook}</p>
+            <EditableText
+              path="hook"
+              label={t.hook}
+              fieldLabel={t.edit.field.hook}
+              value={variant.hook ?? ""}
+              textClassName="text-base font-medium"
+            />
             {variant.hookType ? (
               <p className="text-xs text-muted-foreground">
                 {t.hookType}: <span className="font-mono">{variant.hookType}</span>
@@ -124,80 +170,46 @@ export function VariantColumn({
           <Section title={`${t.slides} (${variant.slides.length})`}>
             <ol className="flex flex-col gap-2">
               {variant.slides.map((slide, i) => (
-                <li key={slide.id} className="flex flex-col gap-1.5 rounded-lg border p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">
-                      {format(t.slide, { n: i + 1 })}
-                    </span>
-                    <span>
-                      {format(t.slideMeta, { role: slide.role, template: slide.templateId })}
-                    </span>
-                  </div>
-                  <dl className="flex flex-col gap-1">
-                    {Object.entries(slide.slots).map(([slot, text]) => (
-                      <div key={slot}>
-                        <dt className="font-mono text-[11px] text-muted-foreground">{slot}</dt>
-                        <dd className="whitespace-pre-line">{text}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <div className="flex flex-wrap gap-1.5 text-xs">
-                    {slide.knowledgeIds.length > 0 ? (
-                      <>
-                        <span className="text-muted-foreground">{t.cites}:</span>
-                        {slide.knowledgeIds.map((id) => (
-                          <Badge key={id} variant="outline">
-                            {cardTitles.get(id) ?? id}
-                          </Badge>
-                        ))}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">{t.notFactual}</span>
-                    )}
-                  </div>
-                </li>
+                <SlideCard key={slide.id} slide={slide} index={i} cardTitles={cardRecord} />
               ))}
             </ol>
+            <SlideDrawer slides={variant.slides} cardTitles={cardRecord} />
           </Section>
 
           <Section title={t.caption}>
-            <p className="whitespace-pre-line">{variant.caption}</p>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {format(t.captionCount, {
-                count: new Intl.NumberFormat(locale).format([...(variant.caption ?? "")].length),
-              })}
-            </p>
+            <EditableText
+              path="caption"
+              label={t.caption}
+              fieldLabel={t.edit.field.caption}
+              value={variant.caption ?? ""}
+              maxChars={2200}
+              rows={6}
+            />
           </Section>
 
           <Section title={t.cta}>
-            <p>
-              <span className="font-mono text-xs">{variant.cta?.type}</span> · {variant.cta?.text}
-              {variant.cta?.keyword ? (
-                <span className="text-muted-foreground">
-                  {" "}
-                  ({format(t.ctaKeyword, { keyword: variant.cta.keyword })})
-                </span>
-              ) : null}
-            </p>
-            {variant.offer ? (
-              <p className="text-xs text-muted-foreground">
-                {t.idea.offer}: {variant.offer.name}
-              </p>
-            ) : null}
+            <EditableCta
+              cta={variant.cta}
+              ctaTypes={ctaTypes}
+              offerName={variant.offer?.name ?? null}
+            />
           </Section>
 
+          {variant.commercial || variant.campaign ? (
+            <CampaignPanel campaign={variant.campaign} />
+          ) : null}
+
           <Section title={t.hashtags}>
-            <p className="flex flex-wrap gap-1.5">
-              {variant.hashtags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </p>
+            <EditableHashtags value={variant.hashtags} />
           </Section>
 
           <CriticPanel report={variant.critic} t={t} locale={locale} />
 
+          <VariantActions allowed={variant.allowed} flagLabels={t.flags} />
+        </VariantProvider>
+      )}
+      {variant.hasContent ? (
+        <>
           {d ? (
             <Section title={t.idea.differentiation}>
               <p className="text-sm">
@@ -264,7 +276,7 @@ export function VariantColumn({
             </p>
           ) : null}
         </>
-      )}
+      ) : null}
     </article>
   );
 }

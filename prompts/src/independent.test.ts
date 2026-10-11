@@ -17,6 +17,11 @@ const INDEPENDENT: [id: string, version: number, intro: string][] = [
   ["eval-judge", 2, INTROS.judge.to],
 ];
 
+// Prompts that were written after the decision and never had a brand name.
+const WRITTEN_INDEPENDENT: [id: string, version: number, intro: string][] = [
+  ["field-regenerator", 1, CONTENT_INTRO],
+];
+
 /** The first system block after its opening sentence(s). */
 const tail = (prompt: AnyPrompt, intro: RegExp | string) =>
   (prompt.system[0]?.text ?? "").replace(intro, "");
@@ -41,7 +46,16 @@ describe("independent prompt versions", () => {
 
   it("covers every prompt id", () => {
     const ids = new Set(promptRegistry.list().map((p) => p.id));
-    expect(INDEPENDENT.map(([id]) => id).sort()).toEqual([...ids].sort());
+    expect(
+      [...INDEPENDENT.map(([id]) => id), ...WRITTEN_INDEPENDENT.map(([id]) => id)].sort(),
+    ).toEqual([...ids].sort());
+  });
+
+  it.each(WRITTEN_INDEPENDENT)("%s@%i was written without a brand name", (id, version, to) => {
+    const prompt = promptRegistry.get(id, version);
+    expect(promptRegistry.latest(id)).toBe(prompt);
+    expect(prompt.system[0]?.text.startsWith(to)).toBe(true);
+    expect(prompt.system.map((b) => b.text).join("\n")).not.toMatch(/Reg\.?Chef/i);
   });
 
   it("refuses a released prompt whose opening has moved", () => {

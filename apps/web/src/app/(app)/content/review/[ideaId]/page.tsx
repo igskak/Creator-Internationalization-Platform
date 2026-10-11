@@ -1,6 +1,7 @@
 import { NotFoundError } from "@rc/lib/errors";
 import { getReviewBundle } from "@rc/modules/content";
 import { listTaxonomyTerms } from "@rc/modules/settings";
+import { registry } from "@rc/templates";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +10,7 @@ import { GenerateDraftsButton } from "@/components/review/generate-drafts-button
 import { RegenerateAllDialog } from "@/components/review/regenerate-all-dialog";
 import { ReviewPoller } from "@/components/review/review-poller";
 import { VariantColumn } from "@/components/review/variant-column";
+import type { TemplateInfo } from "@/components/review/variant-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { format } from "@/lib/i18n/format";
@@ -17,7 +19,7 @@ import { requireUser } from "@/server/auth/session";
 import { requestContext } from "@/server/context";
 
 // /content/review/[ideaId] (plan 10 §10.3, M2-15): the idea and every market's draft side by side.
-// Read-only: field editing, approval and scheduling arrive with M4.
+// Fields are edited or regenerated one at a time (M4-05); approval and scheduling come with M4-06+.
 export const dynamic = "force-dynamic";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -45,6 +47,23 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
   const reasons = terms
     .filter((term) => term.kind === "reason_code" && term.isActive)
     .map(({ code, label: text }) => ({ code, label: text }));
+  const ctaTypes = terms
+    .filter((term) => term.kind === "cta_type" && term.isActive)
+    .map(({ code, label: text }) => ({ code, label: text }));
+  const templates: TemplateInfo = Object.fromEntries(
+    registry.list().map((template) => [
+      template.id,
+      {
+        textSlots: Object.entries(template.textSlots).map(([name, slot]) => ({
+          name,
+          maxChars: slot.maxChars,
+          maxLines: slot.maxLines,
+          required: slot.required,
+        })),
+        imageSlots: Object.keys(template.imageSlots ?? {}),
+      },
+    ]),
+  );
   const cardTitles = new Map(cards.map((card) => [card.id, card.title]));
   const money = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
@@ -94,6 +113,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
           status: v.status,
           inProgress:
             v.status === "GENERATING" || (v.status === "DRAFT" && !v.hasContent && !v.lastError),
+          rendering: v.render.state === "RENDERING" || v.render.state === "STALE",
         }))}
       />
 
@@ -193,6 +213,9 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
                 cardTitles={cardTitles}
                 t={t}
                 locale={locale}
+                reasons={reasons}
+                templates={templates}
+                ctaTypes={ctaTypes}
               />
             ))}
           </div>

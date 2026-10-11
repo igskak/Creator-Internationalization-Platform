@@ -1,5 +1,5 @@
 import { schema } from "@rc/db";
-import { and, desc, eq, inArray, isNull, or } from "@rc/db/orm";
+import { and, count, desc, eq, inArray, isNull, or } from "@rc/db/orm";
 import type { ServiceContext } from "../../core";
 
 // What the writer is shown to learn a market's voice (plan 07 §7.11 v1, M2-17): the standing
@@ -109,8 +109,7 @@ export async function selectExemplars(ctx: ServiceContext, marketId: string): Pr
     );
 
   // Approved drafts: the newest first, few edits, and nothing built on a source that denies it.
-  // Until review events exist (M4) the edits of a draft are counted from its lock version, which
-  // goes up by one for the generation and by one for every later change.
+  // An edit is a review event of the kind EDIT or REGENERATE.
   const approved = await ctx.db
     .select()
     .from(schema.contentVariants)
@@ -121,8 +120,27 @@ export async function selectExemplars(ctx: ServiceContext, marketId: string): Pr
       ),
     )
     .orderBy(desc(schema.contentVariants.statusChangedAt), desc(schema.contentVariants.id));
+  const edits = new Map(
+    approved.length === 0
+      ? []
+      : (
+          await ctx.db
+            .select({ id: schema.reviewEvents.contentVariantId, edits: count() })
+            .from(schema.reviewEvents)
+            .where(
+              and(
+                inArray(
+                  schema.reviewEvents.contentVariantId,
+                  approved.map((v) => v.id),
+                ),
+                inArray(schema.reviewEvents.action, ["EDIT", "REGENERATE"]),
+              ),
+            )
+            .groupBy(schema.reviewEvents.contentVariantId)
+        ).map((row) => [row.id, Number(row.edits)] as const),
+  );
   const candidates = approved.filter(
-    (v) => v.hook && v.slidesJson.length > 0 && v.lockVersion - 1 <= MAX_EDITS_OF_EXEMPLAR,
+    (v) => v.hook && v.slidesJson.length > 0 && (edits.get(v.id) ?? 0) <= MAX_EDITS_OF_EXEMPLAR,
   );
   const denied = await deniedSources(ctx, candidates.flatMap(citedCards));
   const drafts = candidates

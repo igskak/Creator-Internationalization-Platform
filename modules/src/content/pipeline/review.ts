@@ -9,12 +9,13 @@ import type {
   Slide,
   VisualBrief,
 } from "@rc/db/json";
-import { asc, desc, eq, sql } from "@rc/db/orm";
+import { asc, desc, eq, inArray, sql } from "@rc/db/orm";
 import { PRESIGN_TTL } from "@rc/lib/providers/storage";
 import { registry } from "@rc/templates";
 import type { ServiceContext } from "../../core";
 import { loadRenderInput } from "../../visuals";
 import { getIdeaDetail, type IdeaDetail } from "../ideas";
+import { type AllowedAction, allowedActions } from "../variants/state";
 
 // What the review screen reads (plan 05 §5.7 `getReviewBundle`, 10 §10.3; read-only in M2-15):
 // the idea with the approved text of its cards, and every market's variant with its critic report,
@@ -32,6 +33,30 @@ export type RenderView = {
   slides: { index: number; slideId: string; url: string }[];
   qa: QaReport | null;
   error: string | null;
+};
+
+/** The tracking of a commercial post (plan 11 §11.7): what the ManyChat flow is set up with. */
+export type CampaignView = {
+  /** Also the name of the ManyChat flow. */
+  campaignId: string;
+  /** The CTA's comment/DM keyword, if it has one. */
+  keyword: string | null;
+  /** The offer's landing page with the UTM tags: the link the flow sends. */
+  url: string | null;
+};
+
+/**
+ * A field the model redid and the reviewer has not touched since: the screen shows the old and the
+ * new value with Keep and Undo (plan 10 §10.3). Undo is an ordinary edit back.
+ */
+export type PendingRegeneration = {
+  reviewEventId: string;
+  /** FieldPath. */
+  field: string;
+  original: unknown;
+  edited: unknown;
+  reasonCode: string | null;
+  at: Date;
 };
 
 export type VariantView = {
@@ -62,6 +87,14 @@ export type VariantView = {
   hasContent: boolean;
   lockVersion: number;
   updatedAt: Date;
+  /** What the person may do now, with the reasons for what they may not (variants/state.ts). */
+  allowed: AllowedAction[];
+  /** Regenerated fields waiting for Keep or Undo, newest first. */
+  regenerations: PendingRegeneration[];
+  /** The idea sells something: approval creates a campaign id and a link. */
+  commercial: boolean;
+  /** Null until a commercial variant is approved. */
+  campaign: CampaignView | null;
 };
 
 export type ReviewBundle = {
@@ -174,6 +207,10 @@ export async function getReviewBundle(
     .where(eq(schema.generationRuns.masterIdeaId, masterIdeaId));
 
   const live = rows.filter((r) => r.v.status !== "REJECTED");
+  const pending = await pendingRegenerations(
+    ctx,
+    live.map((r) => r.v.id),
+  );
   const renders = new Map(
     await Promise.all(live.map(async (r) => [r.v.id, await renderView(ctx, r.v)] as const)),
   );
@@ -206,7 +243,63 @@ export async function getReviewBundle(
       hasContent: v.slidesJson.length > 0,
       lockVersion: v.lockVersion,
       updatedAt: v.updatedAt,
+      allowed: allowedActions(
+        {
+          status: v.status,
+          flags: v.flags,
+          render: (renders.get(v.id) as RenderView).state,
+          hasContent: v.slidesJson.length > 0,
+          commercial: idea.idea.commercialIntent !== "NONE",
+          hasOffer: v.offerId !== null,
+          ctaType: v.ctaType,
+        },
+        ctx.actor.type === "USER" ? ctx.actor.role : undefined,
+      ),
+      regenerations: pending.get(v.id) ?? [],
+      commercial: idea.idea.commercialIntent !== "NONE",
+      campaign: v.campaignId
+        ? {
+            campaignId: v.campaignId,
+            keyword: v.ctaJson?.keyword ?? null,
+            url: v.utmJson?.url ?? null,
+          }
+        : null,
     })),
     costUsd: cost?.total == null ? null : Number(cost.total),
   };
+}
+
+/** Per variant, the fields whose latest review event is a regeneration (nothing came after it). */
+async function pendingRegenerations(
+  ctx: ServiceContext,
+  variantIds: readonly string[],
+): Promise<Map<string, PendingRegeneration[]>> {
+  const result = new Map<string, PendingRegeneration[]>();
+  if (variantIds.length === 0) return result;
+  const events = await ctx.db
+    .select()
+    .from(schema.reviewEvents)
+    .where(
+      sql`${inArray(schema.reviewEvents.contentVariantId, [...variantIds])} and ${schema.reviewEvents.action} in ('EDIT', 'REGENERATE') and ${schema.reviewEvents.field} is not null`,
+    )
+    .orderBy(desc(schema.reviewEvents.createdAt), desc(schema.reviewEvents.id));
+  const seen = new Set<string>();
+  for (const e of events) {
+    const key = `${e.contentVariantId}:${e.field}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (e.action !== "REGENERATE" || !e.field) continue;
+    result.set(e.contentVariantId, [
+      ...(result.get(e.contentVariantId) ?? []),
+      {
+        reviewEventId: e.id,
+        field: e.field,
+        original: e.originalValue,
+        edited: e.editedValue,
+        reasonCode: e.reasonCode,
+        at: e.createdAt,
+      },
+    ]);
+  }
+  return result;
 }

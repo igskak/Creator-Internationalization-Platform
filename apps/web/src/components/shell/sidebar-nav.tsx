@@ -17,6 +17,13 @@ function ItemLink({
 }) {
   const note = item.note ? (
     <span className="ml-auto text-xs text-muted-foreground">{item.note}</span>
+  ) : item.badge ? (
+    <span
+      data-testid="nav-badge"
+      className="ml-auto min-w-5 rounded-full bg-primary px-1.5 text-center text-xs font-medium text-primary-foreground tabular-nums"
+    >
+      {item.badge > 99 ? "99+" : item.badge}
+    </span>
   ) : null;
   const icon = item.icon ? <span aria-hidden="true">{item.icon}</span> : null;
   if (item.disabled) {

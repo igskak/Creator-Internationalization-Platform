@@ -472,49 +472,49 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M4 · Review + Calendar
 
-- [ ] **M4-01 · Review and scheduling schema (0005)** · P0 · M · deps: M3-01
+- [x] **M4-01 · Review and scheduling schema (0005)** · P0 · M · deps: M3-01
   - **Do:** `review_events`, `content_variant_versions`, `social_accounts`, `publications`; `content_variants.approved_version_id`; `voice_examples` FK; `ApprovedSnapshot`, `InstagramError` types.
   - **Done when:** migration + tests (partial unique indexes).
   - **Refs:** 04 §4.3 (0005).
 
-- [ ] **M4-02 · Variant state machine** · P0 · M · deps: M4-01
+- [x] **M4-02 · Variant state machine** · P0 · M · deps: M4-01
   - **Do:** `content/variants/state.ts`: transition table (10 §10.4.3), guards, side-effect hooks, "allowed actions" for the UI.
   - **Done when:** full transition matrix tests.
 
-- [ ] **M4-03 · Field paths and edit service** · P0 · M · deps: M4-02, M3-12
+- [x] **M4-03 · Field paths and edit service** · P0 · M · deps: M4-02, M3-12
   - **Do:** `FieldPath` parse/get/set, per-field validation (template limits, caption, hashtags), optimistic locking, `review_events` (original vs edited), approval invalidation (cancel open publication, audit), debounced re-render; action `editVariantField`.
   - **Done when:** tests: edit, CONFLICT on stale lock, invalidation cancels a scheduled publication.
   - **Refs:** 04 §4.4 FieldPath, 05 §5.7.
 
-- [ ] **M4-04 · Field regeneration** · P0 · M · deps: M4-03
+- [x] **M4-04 · Field regeneration** · P0 · M · deps: M4-03
   - **Do:** `field-regenerator@1` + J6 + action `regenerateVariantField`; review event REGENERATE; validators; re-render.
   - **Done when:** fake tests for hook, slide, caption, CTA, image slot.
 
-- [ ] **M4-05 · Review screen v1** · P0 · L · deps: M4-03, M4-04, M3-13
+- [x] **M4-05 · Review screen v1** · P0 · L · deps: M4-03, M4-04, M3-13
   - **Do:** full UX (10 §10.3): inline edit + regenerate per field with instruction and reason code, keep/undo, slide drawer with live preview, critic panel with jump-to-field, knowledge references, conflict handling, allowed-actions driven buttons.
   - **Done when:** manual walkthrough in dev; screenshots; component tests for key interactions.
 
-- [ ] **M4-06 · Approve, reject, request changes, unapprove** · P0 · M · deps: M4-02, M4-05
+- [x] **M4-06 · Approve, reject, request changes, unapprove** · P0 · M · deps: M4-02, M4-05
   - **Do:** actions with guards (current READY render, blocking flags, checklists, offer for commercial intent); `content_variant_versions` snapshot with content hash and render; dialogs; audit.
   - **Done when:** tests for every guard; snapshot equals render hash.
 
-- [ ] **M4-07 · Drafts list and dashboard counters** · P0 · S · deps: M4-02
+- [x] **M4-07 · Drafts list and dashboard counters** · P0 · S · deps: M4-02
   - **Do:** `/content/drafts` table and filters; nav badges; dashboard counters (10 §10.2).
   - **Done when:** counts match fixture data.
 
-- [ ] **M4-08 · Scheduling service** · P0 · M · deps: M4-06
+- [x] **M4-08 · Scheduling service** · P0 · M · deps: M4-06
   - **Do:** `publishing/schedule.ts`: `schedulePublication`, `reschedulePublication`, `cancelPublication` (05 §5.8), idempotency key, min-gap warning, market-time-zone handling, audit.
   - **Done when:** tests (past time refused, second live publication refused, cancel restores APPROVED).
 
-- [ ] **M4-09 · Calendar UI** · P0 · M · deps: M4-08
+- [x] **M4-09 · Calendar UI** · P0 · M · deps: M4-08
   - **Do:** `/content/calendar` week grid (market colors/flags), list view, "approved, not scheduled" sidebar, schedule dialog (market time zone), status and warnings.
   - **Done when:** schedule/reschedule/cancel work in dev; screenshots.
 
-- [ ] **M4-10 · Review → schedule E2E** · P0 · S · deps: M4-09
+- [x] **M4-10 · Review → schedule E2E** · P0 · S · deps: M4-09
   - **Do:** E2E spec 3 (13 §13.4).
   - **Done when:** green in CI.
 
-- [ ] **M4-11 · Campaign IDs, UTM links and ManyChat checklist** · P0 · S · deps: M4-06, M2-02
+- [x] **M4-11 · Campaign IDs, UTM links and ManyChat checklist** · P0 · S · deps: M4-06, M2-02
   - **Do:** `offers/campaigns.ts` (`rc-{market}-{yymmdd}-{6}` at approval of commercial variants), `offers/utm.ts`, review-screen panel with copyable keyword, DM link and flow name; checklist item "ManyChat flow set up" for keyword CTAs.
   - **Done when:** tests (format, uniqueness, UTM encoding); panel visible.
   - **Refs:** 11 §11.7.

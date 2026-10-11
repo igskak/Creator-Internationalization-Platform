@@ -272,9 +272,10 @@ describe("generateVariants and regenerateVariant actions", () => {
         .where(eq(schema.contentVariants.id, b));
       const unknown = crypto.randomUUID();
       const statuses = await getStatuses(user, { variantIds: [a, b, unknown] });
-      expect(statuses[a]).toEqual({ status: "GENERATING", stage: "WRITE:0" });
+      expect(statuses[a]).toEqual({ status: "GENERATING", stage: "WRITE:0", lockVersion: 0 });
       expect(statuses[b]).toEqual({
         status: "DRAFT",
+        lockVersion: 0,
         flags: ["GENERATION_FAILED"],
         error: "The WRITE:0 step did not produce a valid answer.",
       });

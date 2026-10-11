@@ -171,8 +171,23 @@ export async function seedApprovedCards(sourceTitle: string): Promise<{ cardTitl
   }
 }
 
-/** Removes the ideas that use the cards of a source the test seeded, with their links and model runs. */
+/**
+ * Removes the ideas that use the cards of a source the test seeded, with their links and model
+ * runs. A test can end while the server's inline jobs (pictures, renders) are still writing rows
+ * for the drafts, so a refusal because such a row appeared meanwhile is retried a few times.
+ */
 export async function removeIdeasOfSource(sourceTitle: string): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await removeIdeasOfSourceOnce(sourceTitle);
+    } catch (error) {
+      if (attempt >= 6) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  }
+}
+
+async function removeIdeasOfSourceOnce(sourceTitle: string): Promise<void> {
   const { db, close } = openDb();
   try {
     const sources = await db
@@ -199,6 +214,35 @@ export async function removeIdeasOfSource(sourceTitle: string): Promise<void> {
       .where(inArray(schema.masterIdeas.id, ideaIds));
     const runIds = ideas.flatMap((i) => (i.runId ? [i.runId] : []));
     // Drafts of the ideas and every model run of their pipelines (linked to the idea and the variant).
+    // The drafts, with what hangs on them: posts, review events, approved versions, renders and
+    // pictures. The variants point at a render and a version, so those links go first.
+    const variants = await db
+      .select({ id: schema.contentVariants.id })
+      .from(schema.contentVariants)
+      .where(inArray(schema.contentVariants.masterIdeaId, ideaIds));
+    const variantIds = variants.map((v) => v.id);
+    if (variantIds.length > 0) {
+      await db
+        .delete(schema.publications)
+        .where(inArray(schema.publications.contentVariantId, variantIds));
+      await db
+        .update(schema.contentVariants)
+        .set({ currentRenderId: null, approvedVersionId: null })
+        .where(inArray(schema.contentVariants.id, variantIds));
+      await db
+        .delete(schema.reviewEvents)
+        .where(inArray(schema.reviewEvents.contentVariantId, variantIds));
+      await db
+        .delete(schema.contentVariantVersions)
+        .where(inArray(schema.contentVariantVersions.contentVariantId, variantIds));
+      await db
+        .delete(schema.carouselRenders)
+        .where(inArray(schema.carouselRenders.contentVariantId, variantIds));
+      await db
+        .delete(schema.visualAssets)
+        .where(inArray(schema.visualAssets.contentVariantId, variantIds));
+    }
+    // Model runs of the pipelines (review events of regenerations point at them, so they went first).
     await db
       .delete(schema.generationRuns)
       .where(inArray(schema.generationRuns.masterIdeaId, ideaIds));

@@ -4,6 +4,7 @@ import { and, eq, inArray, ne } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
 import { z } from "zod";
 import { audit, type ServiceContext, triggerJob } from "../../core";
+import { assertReasonCode } from "../variants/reason";
 
 // The `generateVariants` and `regenerateVariant` actions (plan 05 §5.6, §5.7) and the payload of
 // J5 `generate-content` (plan 06 §6.2, M2-14). The actions validate, make the DRAFT variants and
@@ -138,24 +139,6 @@ export async function requestVariants(
   });
   const { jobRunId } = await queue(ctx, { masterIdeaId, variantIds, pipelineRunId });
   return { variantIds, jobRunId, pipelineRunId };
-}
-
-async function assertReasonCode(ctx: ServiceContext, reasonCode: string): Promise<void> {
-  const [reason] = await ctx.db
-    .select({ code: schema.taxonomyTerms.code })
-    .from(schema.taxonomyTerms)
-    .where(
-      and(
-        eq(schema.taxonomyTerms.kind, "reason_code"),
-        eq(schema.taxonomyTerms.code, reasonCode),
-        eq(schema.taxonomyTerms.isActive, true),
-      ),
-    );
-  if (!reason) {
-    throw new ValidationError(`"${reasonCode}" is not a reason code.`, {
-      fieldErrors: { reasonCode: [`"${reasonCode}" is not a reason code.`] },
-    });
-  }
 }
 
 /**

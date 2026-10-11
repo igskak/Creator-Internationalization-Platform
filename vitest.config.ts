@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 // Vitest 5 has no vitest.workspace.ts; every workspace package is a test project and inherits
@@ -15,7 +16,14 @@ const packages = {
   "@rc/evals": "evals",
 };
 
+// The web app's component tests (`*.test.tsx`) pick jsdom with a `// @vitest-environment jsdom`
+// line. JSX is compiled with the automatic runtime because apps/web/tsconfig.json says
+// `jsx: preserve` for Next.js, and `@/` is the web app's src.
 export default defineConfig({
+  oxc: { jsx: { runtime: "automatic" } },
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./apps/web/src", import.meta.url)) },
+  },
   test: {
     hookTimeout: 60_000,
     testTimeout: 30_000,

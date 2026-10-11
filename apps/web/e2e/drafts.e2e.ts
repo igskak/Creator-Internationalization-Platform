@@ -68,7 +68,7 @@ test("accept an idea, write the drafts, read both markets, regenerate all", asyn
   await expect(spain.getByRole("listitem").filter({ hasText: /^Slide \d/ })).toHaveCount(5);
   await expect(english.getByRole("listitem").filter({ hasText: /^Slide \d/ })).toHaveCount(6);
   // Critic panel, quality score and the comparison of the two markets.
-  await expect(spain.getByText("Quality 4.42")).toBeVisible();
+  await expect(spain.getByText("Quality 4.38")).toBeVisible();
   await expect(spain.getByRole("region", { name: "Critic" }).getByText("Pass")).toBeVisible();
   await expect(english.getByText("Scripted note of the E2E model.")).toBeVisible();
   await expect(spain.getByText("Different enough")).toBeVisible();

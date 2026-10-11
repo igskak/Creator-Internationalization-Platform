@@ -146,6 +146,8 @@ export type NavItem = {
   screen?: ScreenKey;
   disabled?: boolean;
   note?: string;
+  /** How many things wait here (the work queue); shown as a badge when above zero. */
+  badge?: number;
 };
 export type NavSection = { label: string; href?: string; items: NavItem[] };
 
@@ -160,9 +162,17 @@ export type NavMarket = {
 export type NavLabels = Messages["nav"] & { later: string };
 const ENGLISH_LABELS: NavLabels = { ...en.nav, later: en.shell.later };
 
-/** Sidebar (10 §10.1). Markets come from the database; inactive ones are shown disabled. */
-export function buildNav(markets: NavMarket[], labels: NavLabels = ENGLISH_LABELS): NavSection[] {
+/**
+ * Sidebar (10 §10.1). Markets come from the database; inactive ones are shown disabled. `badges`
+ * are the work-queue counts of the screens that have one.
+ */
+export function buildNav(
+  markets: NavMarket[],
+  labels: NavLabels = ENGLISH_LABELS,
+  badges: Partial<Record<ScreenKey, number>> = {},
+): NavSection[] {
   const item = (key: ScreenKey): NavItem => ({
+    ...((badges[key] ?? 0) > 0 ? { badge: badges[key] as number } : {}),
     label:
       key in labels.screens
         ? labels.screens[key as keyof NavLabels["screens"]]

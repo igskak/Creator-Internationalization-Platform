@@ -163,6 +163,47 @@ describe("generateVisualAssets", () => {
     );
   });
 
+  it("keeps a reviewer's edit made while the pictures were being made, and leaves the lock version alone", async () => {
+    const before = await variant();
+    let edited = false;
+    const slowCtx = createServiceContext({
+      db: t.db,
+      logger: createLogger({
+        service: "jobs",
+        env: "test",
+        level: "fatal",
+        destination: { write: () => {} },
+      }),
+      clock: manualClock("2026-10-10T12:00:00Z"),
+      storage,
+      actor: { type: "SYSTEM" },
+      images: {
+        ...images,
+        generate: async (request) => {
+          if (!edited) {
+            edited = true;
+            // A reviewer saves a new text and the draft's lock version goes up, mid-run.
+            const slides = structuredClone((await variant()).slidesJson);
+            (slides[1] as Slide).slots.headline = "Edited by a person";
+            await t.db
+              .update(schema.contentVariants)
+              .set({ slidesJson: slides, lockVersion: 7, flags: ["NUMERIC_MISMATCH"] })
+              .where(eq(schema.contentVariants.id, variantId));
+          }
+          return images.generate(request);
+        },
+      },
+    });
+    await generateVisualAssets(slowCtx, { variantId });
+    const after = await variant();
+    expect(after.slidesJson[1]?.slots.headline).toBe("Edited by a person");
+    expect(after.slidesJson[0]?.images.hero?.assetId).toBeTruthy();
+    expect(after.slidesJson[1]?.images.side?.assetId).toBeTruthy();
+    expect(after.flags).toEqual(["NUMERIC_MISMATCH"]);
+    expect(before.lockVersion).toBe(0);
+    expect(after.lockVersion).toBe(7);
+  });
+
   it("is idempotent: a rerun pays for nothing and creates no duplicates", async () => {
     await generateVisualAssets(ctx, { variantId });
     const calls = images.calls.length;

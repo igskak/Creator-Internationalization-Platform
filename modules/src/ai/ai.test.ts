@@ -424,8 +424,12 @@ describe("runStage", () => {
 
   it("fails clearly when the active prompt is not registered yet", async () => {
     await expect(
-      runStage(ctxWith(scripted(good)), { stage: "FIELD_REGENERATION", input: {} }),
-    ).rejects.toThrow("Unknown prompt field-regenerator@1");
+      runStage(ctxWith(scripted(good)), {
+        stage: "FIELD_REGENERATION",
+        input: {},
+        config: { version: 99 },
+      }),
+    ).rejects.toThrow("Unknown prompt field-regenerator@99");
   });
 
   it("sends the per-call output schema from outputFor and checks the answer against it", async () => {
