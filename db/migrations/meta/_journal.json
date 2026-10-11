@@ -50,6 +50,20 @@
       "when": 1791672260100,
       "tag": "0006_review_scheduling",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791728627313,
+      "tag": "0007_instagram_ops",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791800000000,
+      "tag": "0008_market_ai_disclosure",
+      "breakpoints": true
     }
   ]
 }

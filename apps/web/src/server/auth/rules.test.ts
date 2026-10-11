@@ -2,10 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { isPublicPath, isTestLoginAllowed, requestMagicLinkFor, safeNextPath } from "./rules";
 
 describe("isPublicPath", () => {
-  it.each(["/login", "/auth/confirm", "/auth/sign-out", "/api/health", "/api/meta/deauthorize"])(
-    "%s is public",
-    (path) => expect(isPublicPath(path)).toBe(true),
-  );
+  it.each([
+    "/login",
+    "/auth/confirm",
+    "/auth/sign-out",
+    "/api/health",
+    "/api/meta/deauthorize",
+    "/api/meta/data-deletion",
+    "/data-deletion",
+  ])("%s is public", (path) => expect(isPublicPath(path)).toBe(true));
   it.each([
     "/",
     "/content/ideas",

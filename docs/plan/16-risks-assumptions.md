@@ -73,22 +73,22 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 
 | ID | Item to verify | Before task | Where |
 |---|---|---|---|
-| V-01 | "Instagram API with Instagram Login" setup; Standard Access covers own accounts (roles / business portfolio); App Review not needed | M5-00 (start with B-11 in week 1) | Instagram Platform overview, access levels |
-| V-02 | Scope names: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_insights` | M5-00 | Instagram Login docs |
-| V-03 | OAuth endpoints; short → long-lived exchange; token lifetime (~60 days); refresh rules (≥ 24 h old) | M5-00 | Business Login for Instagram; refresh_access_token reference |
-| V-04 | Graph API version to pin; host `graph.instagram.com`; `Authorization` header support | M5-00 | API reference |
-| V-05 | JPEG only; aspect 4:5–1.91:1; width 320–1440; ≤ 8 MB; carousel 2–10 items; crop to first item; caption ≤ 2,200 chars; ≤ 30 hashtags | M3-07 (export spec) and M5-00 | Content publishing docs |
-| V-06 | Publishing limit (100 vs 50 per 24 h) and `content_publishing_limit` fields | M5-00 | Content publishing docs |
-| V-07 | Container status values; polling guidance; container expiry (~24 h) | M5-00 | Content publishing docs |
-| V-08 | Behavior of `media_publish` on an already-published container | M5-00 / M5-10 | Docs + smoke test |
-| V-09 | Error codes and subcodes for publishing failures (rate limit, media fetch, invalid media, token) | M5-00 | Error reference + smoke test |
+| V-01 | "Instagram API with Instagram Login" setup; Standard Access covers own accounts (roles / business portfolio); App Review not needed | M5-00 (start with B-11 in week 1) | Instagram Platform overview, access levels **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-02 | Scope names: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_insights` | M5-00 | Instagram Login docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-03 | OAuth endpoints; short → long-lived exchange; token lifetime (~60 days); refresh rules (≥ 24 h old) | M5-00 | Business Login for Instagram; refresh_access_token reference **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-04 | Graph API version to pin; host `graph.instagram.com`; `Authorization` header support | M5-00 | API reference **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-05 | JPEG only; aspect 4:5–1.91:1; width 320–1440; ≤ 8 MB; carousel 2–10 items; crop to first item; caption ≤ 2,200 chars; ≤ 30 hashtags | M3-07 (export spec) and M5-00 | Content publishing docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-06 | Publishing limit (100 vs 50 per 24 h) and `content_publishing_limit` fields | M5-00 | Content publishing docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-07 | Container status values; polling guidance; container expiry (~24 h) | M5-00 | Content publishing docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-08 | Behavior of `media_publish` on an already-published container | M5-00 / M5-10 | Docs + smoke test **Checked 2026-10-11: open (smoke)**, see decision log (M5-00). |
+| V-09 | Error codes and subcodes for publishing failures (rate limit, media fetch, invalid media, token) | M5-00 | Error reference + smoke test **Checked 2026-10-11: partly**, see decision log (M5-00). |
 | V-10 | Media insights metric names for carousels; deprecated metrics (impressions, plays, video_views); new metrics | M6-02 | Insights docs (Instagram Login) |
 | V-11 | Account insights metrics, `follow_type` breakdown, `metric_type=total_value`, follower thresholds | M6-02 | Insights docs |
-| V-12 | Business Use Case rate limits for the Instagram Platform | M5-00 | Rate limiting docs |
-| V-13 | Deauthorize and data-deletion callback requirements; `signed_request` format | M5-05 | App settings / data deletion docs |
-| V-14 | Meta accepts presigned R2 URLs (with query strings) as `image_url` | M5-10 | Smoke test |
-| V-15 | Whether media can be deleted through the API (assumed not) | M5-00 | API reference |
-| V-16 | AI-content labeling options through the API; handling of provenance metadata | M5-12 / B-13 | Meta policy + API reference |
+| V-12 | Business Use Case rate limits for the Instagram Platform | M5-00 | Rate limiting docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-13 | Deauthorize and data-deletion callback requirements; `signed_request` format | M5-05 | App settings / data deletion docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-14 | Meta accepts presigned R2 URLs (with query strings) as `image_url` | M5-10 | Smoke test **Checked 2026-10-11: open (smoke)**, see decision log (M5-00). |
+| V-15 | Whether media can be deleted through the API (assumed not) | M5-00 | API reference **Checked 2026-10-11: ✓**, see decision log (M5-00). |
+| V-16 | AI-content labeling options through the API; handling of provenance metadata | M5-12 / B-13 | Meta policy + API reference **Checked 2026-10-11: ✓**, see decision log (M5-00). |
 | V-17 | Trigger.dev: current major version; idempotency key scopes (raw strings = run scope since v4.3.1) and TTL (default 30 days); behavior when re-triggering after a failed run; Playwright extension; machine presets; `wait.for`; `batchTriggerAndWait`; regions | M0-14, M3-12 | Trigger.dev docs. **Playwright extension checked 2026-10-10** (see decision log) |
 | V-18 | Anthropic: model ids (`claude-opus-5`), `messages.parse` + `zodOutputFormat`, PDF limits (32 MB, page limits), citations vs structured outputs, sampling params removed, refusal fallback | M1-08 | `claude-api` skill + Anthropic docs. **Verified 2026-10-03**, see decision-log |
 | V-19 | OpenAI: embedding model and `dimensions`; image model name, sizes, pricing, usage policy; API data terms | M1-11, M3-03 | OpenAI docs. **Embeddings part verified 2026-10-03** (see decision log); **image part verified 2026-10-10** (see decision log) |

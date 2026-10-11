@@ -5,6 +5,7 @@ import {
   createInlineJobRunner,
   createServiceContext,
   createTriggerDevJobRunner,
+  instagramRuntimeFromEnv,
   type JobRunner,
   type ServiceContext,
 } from "@rc/modules/core";
@@ -45,6 +46,7 @@ function jobRunner(): JobRunner {
         llm: serverLlm(),
         embeddings: serverEmbeddings(),
         images: serverImages(),
+        instagram: instagramRuntimeFromEnv(serverEnv()),
       }),
   });
   jobs = runner;
@@ -68,5 +70,6 @@ export async function requestContext(actor: Actor, requestId?: string): Promise<
     llm: serverLlm(),
     embeddings: serverEmbeddings(),
     images: serverImages(),
+    instagram: instagramRuntimeFromEnv(serverEnv()),
   });
 }

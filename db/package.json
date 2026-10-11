@@ -10,6 +10,7 @@
     "./orm": "./src/orm.ts",
     "./pg-core": "./src/pg-core.ts",
     "./test-db": "./src/test-db.ts",
+    "./test-db-postgres": "./src/test-db-postgres.ts",
     "./seed": "./src/seed/index.ts",
     "./schema": "./src/schema/index.ts"
   },

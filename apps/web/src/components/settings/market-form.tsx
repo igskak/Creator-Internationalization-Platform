@@ -20,6 +20,7 @@ export type MarketFormValues = {
   timezone: string;
   measurementSystem: "METRIC" | "IMPERIAL" | "DUAL";
   isActive: boolean;
+  aiImageryDisclosure: "NONE" | "CAPTION_NOTE" | "SLIDE_BADGE" | "PLATFORM_LABEL";
   toneNotes: string;
   foodCultureNotes: string;
   preferredVocabulary: VocabularyEntry[];
@@ -142,6 +143,9 @@ export function MarketForm({
       })),
       visualHypotheses: fromHypothesisRows(hypotheses),
       ...(canActivate && values.isActive !== market.isActive ? { isActive: values.isActive } : {}),
+      ...(canActivate && values.aiImageryDisclosure !== market.aiImageryDisclosure
+        ? { aiImageryDisclosure: values.aiImageryDisclosure }
+        : {}),
     });
   }
 
@@ -200,6 +204,32 @@ export function MarketForm({
               <option value="IMPERIAL">Imperial</option>
               <option value="DUAL">Dual (imperial first, metric in brackets)</option>
             </select>
+          </div>
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <Label htmlFor="aiImageryDisclosure">
+              AI imagery disclosure {canActivate ? "" : "(owner only)"}
+            </Label>
+            <select
+              id="aiImageryDisclosure"
+              value={values.aiImageryDisclosure}
+              disabled={!canActivate || pending}
+              onChange={(e) =>
+                setValues({
+                  ...values,
+                  aiImageryDisclosure: e.target.value as MarketFormValues["aiImageryDisclosure"],
+                })
+              }
+              className="h-8 rounded-lg border bg-transparent px-2 text-sm"
+            >
+              <option value="NONE">None: nothing is added</option>
+              <option value="CAPTION_NOTE">A note at the end of the caption</option>
+              <option value="SLIDE_BADGE">An "AI" badge on slides with a generated image</option>
+              <option value="PLATFORM_LABEL">Instagram's "AI info" label</option>
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Applies to posts with a generated image, from the next approval on. The reviewer sees
+              what will be added before approving. The policy is a legal decision (B-13).
+            </p>
           </div>
           <label htmlFor="isActive" className="flex items-center gap-2 self-end text-sm">
             <input

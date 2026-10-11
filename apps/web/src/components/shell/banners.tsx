@@ -10,6 +10,8 @@ export type Banner = {
   tone: "info" | "warning" | "danger";
   message: string;
   href?: string;
+  /** Text of the link (default "Open"). */
+  linkLabel?: string;
 };
 
 const tones: Record<Banner["tone"], string> = {
@@ -32,7 +34,7 @@ export function Banners({ banners }: { banners: Banner[] }) {
           {banner.message}
           {banner.href && (
             <Link href={banner.href} className="ml-2 underline underline-offset-4">
-              Open
+              {banner.linkLabel ?? "Open"}
             </Link>
           )}
         </div>

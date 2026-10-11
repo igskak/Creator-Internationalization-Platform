@@ -74,6 +74,8 @@ export const UpdateMarketInput = z.object({
   timezone: z.string().refine(isTimeZone, "Unknown IANA time zone, e.g. Europe/Madrid").optional(),
   measurementSystem: z.enum(["METRIC", "IMPERIAL", "DUAL"]).optional(),
   isActive: z.boolean().optional(),
+  /** Owner only: a legal decision (B-13), applied at approval. */
+  aiImageryDisclosure: z.enum(["NONE", "CAPTION_NOTE", "SLIDE_BADGE", "PLATFORM_LABEL"]).optional(),
 });
 export type UpdateMarketInput = z.input<typeof UpdateMarketInput>;
 
@@ -89,11 +91,12 @@ export async function updateMarket(
   if (!parsed.success)
     throw ValidationError.fromZod(parsed.error, "Some market fields are invalid.");
   const { marketId, ...changes } = parsed.data;
-  if (
-    changes.isActive !== undefined &&
-    !(ctx.actor.type === "USER" && ctx.actor.role === "owner")
-  ) {
+  const isOwner = ctx.actor.type === "USER" && ctx.actor.role === "owner";
+  if (changes.isActive !== undefined && !isOwner) {
     throw new ForbiddenError("Only owners can activate or deactivate a market.");
+  }
+  if (changes.aiImageryDisclosure !== undefined && !isOwner) {
+    throw new ForbiddenError("Only owners can change the AI imagery disclosure of a market.");
   }
 
   return withTransaction(ctx, async (tx) => {

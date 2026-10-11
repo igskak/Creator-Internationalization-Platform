@@ -5,13 +5,16 @@ import { ConflictError, InvalidStateError, NotFoundError, ValidationError } from
 import { z } from "zod";
 import { transitionVariant, verifyApprovedVersion } from "../content";
 import { audit, type ServiceContext, withTransaction } from "../core";
+import { startPublishJobSafely } from "./queue";
+import { assertReadyToPublish, GuardFailure } from "./safeguards";
 import { formatLocalDateTime, offsetLabel } from "./time";
 
 type Publication = typeof schema.publications.$inferSelect;
 
 // Scheduling (plan 05 §5.8, 10 §10.4.3 rows 11 and 13, M4-08): an approved variant gets a
 // publication at a time; the time can change, and a publication that has not left can be called
-// off. The dispatcher and "publish now" arrive with M5; until then only `SCHEDULED` is accepted.
+// off. "Publish now" and dry runs (M5-07) queue the publish job at once; a scheduled post waits
+// for the dispatcher (publishing/dispatcher.ts).
 
 /** The earliest a post can be scheduled for, from now (10 §10.4.3 row 11). */
 export const MIN_LEAD_MINUTES = 5;
@@ -168,11 +171,7 @@ export async function schedulePublication(
   raw: SchedulePublicationInput,
 ): Promise<ScheduleResult> {
   const input = parse(SchedulePublicationInput, raw);
-  if (input.mode === "IMMEDIATE" || input.dryRun) {
-    throw new InvalidStateError(
-      "Publishing now and dry runs arrive with the Instagram integration. Schedule a time for now.",
-    );
-  }
+  if (input.mode === "IMMEDIATE" || input.dryRun) return publishNow(ctx, input);
   if (!input.scheduledAt) {
     throw new ValidationError("Pick a time.", { fieldErrors: { scheduledAt: ["Pick a time."] } });
   }
@@ -352,4 +351,95 @@ export async function cancelPublication(
 /** "Tue 20 Oct 13:00 (UTC+2)" in the market's zone: the wording of confirmations and warnings. */
 export function describeSlot(at: Date, timeZone: string): string {
   return `${formatLocalDateTime(at, timeZone).replace("T", " ")} (${offsetLabel(at, timeZone)})`;
+}
+
+/**
+ * "Publish now" (APPROVED → PUBLISHING) and dry runs: the publication is QUEUED at once and its
+ * job started. Refused up front, in words a person can act on, when the environment or the market
+ * is not ready (mode, kill switch, no usable account). A dry run needs an APPROVED or SCHEDULED
+ * draft, leaves it as it is, and may be repeated; a live post needs an APPROVED one.
+ */
+async function publishNow(
+  ctx: ServiceContext,
+  input: z.output<typeof SchedulePublicationInput>,
+): Promise<ScheduleResult> {
+  const dryRun = input.dryRun;
+  const [variant] = await ctx.db
+    .select()
+    .from(schema.contentVariants)
+    .where(eq(schema.contentVariants.id, input.variantId));
+  if (!variant) throw new NotFoundError("Variant not found.", { details: { id: input.variantId } });
+  const allowed = dryRun ? ["APPROVED", "SCHEDULED"] : ["APPROVED"];
+  if (!allowed.includes(variant.status) || !variant.approvedVersionId) {
+    throw new InvalidStateError(
+      variant.status === "SCHEDULED"
+        ? "This draft is already scheduled. Call the schedule off first, or change its time."
+        : `Only an approved draft can be ${dryRun ? "tested" : "published"}, this one is ${variant.status}.`,
+      { details: { variantId: variant.id, status: variant.status } },
+    );
+  }
+  const check = await verifyApprovedVersion(ctx, variant.approvedVersionId);
+  if (!check.ok) {
+    throw new InvalidStateError("The approved version does not match its images any more.", {
+      details: { problems: check.problems },
+    });
+  }
+  let accountId: string;
+  try {
+    accountId = (await assertReadyToPublish(ctx, variant.marketId, dryRun)).id;
+  } catch (error) {
+    if (error instanceof GuardFailure) {
+      throw new InvalidStateError(error.message, { details: { guard: error.code } });
+    }
+    throw error;
+  }
+
+  const publicationId = randomUUID();
+  const publication = await withTransaction(ctx, async (tx) => {
+    let row: Publication | undefined;
+    try {
+      [row] = await tx.db
+        .insert(schema.publications)
+        .values({
+          id: publicationId,
+          contentVariantId: variant.id,
+          contentVariantVersionId: variant.approvedVersionId as string,
+          marketId: variant.marketId,
+          socialAccountId: accountId,
+          mode: "IMMEDIATE",
+          status: "QUEUED",
+          dryRun,
+          idempotencyKey: `pub:${publicationId}:0`,
+          createdBy: actorUserId(ctx),
+        })
+        .returning();
+    } catch (error) {
+      if (violates(error, "publications_one_live_per_variant_uq")) {
+        throw new ConflictError("This draft already has a post. Reload.");
+      }
+      throw error;
+    }
+    if (!row) throw new Error("Insert returned no row.");
+    if (!dryRun) {
+      await transitionVariant(tx, {
+        variantId: variant.id,
+        event: "PUBLISH_NOW",
+        data: { publicationId },
+      });
+    }
+    await audit(tx, {
+      action: dryRun ? "publication.dry_run_requested" : "publication.publish_requested",
+      entityType: "publication",
+      entityId: publicationId,
+      marketId: variant.marketId,
+      data: { variantId: variant.id, versionId: variant.approvedVersionId },
+    });
+    return row;
+  });
+  await startPublishJobSafely(ctx, publication);
+  const [fresh] = await ctx.db
+    .select()
+    .from(schema.publications)
+    .where(eq(schema.publications.id, publicationId));
+  return { publication: fresh ?? publication, warnings: [] };
 }

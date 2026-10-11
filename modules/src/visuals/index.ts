@@ -1,6 +1,12 @@
 export const MODULE_NAME = "visuals";
 
 export {
+  DISCLOSURE_NOTES,
+  disclosureNote,
+  planDisclosure,
+  slidesWithGeneratedImages,
+} from "./disclosure";
+export {
   GenerateVisualAssetsPayload,
   type GenerateVisualAssetsResult,
   generateVisualAssets,

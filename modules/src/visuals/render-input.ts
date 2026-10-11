@@ -7,6 +7,7 @@ import { registry } from "@rc/templates";
 import { buildTheme, type RenderAssets, type Theme } from "@rc/templates/render";
 import { z } from "zod";
 import { type ServiceContext, triggerJob } from "../core";
+import { slidesWithGeneratedImages } from "./disclosure";
 
 // What a render is made of and the hash that says whether it is already made (plan 06 J8 step 1,
 // M3-12). No browser here: the web app may compute the hash and queue the job.
@@ -23,6 +24,8 @@ export type RenderInput = {
   variant: typeof schema.contentVariants.$inferSelect;
   slides: Slide[];
   theme: Theme;
+  /** Slides that carry the "AI" badge: the market asks for one and the slide has a generated image. */
+  aiBadgeSlides: ReadonlySet<string>;
   /** Ready asset rows used by the slides, by id. */
   assets: Map<string, typeof schema.visualAssets.$inferSelect>;
   templatesVersion: string;
@@ -62,7 +65,10 @@ export async function loadRenderInput(
     .from(schema.brands)
     .where(eq(schema.brands.id, idea?.brandId ?? ""));
   const [market] = await ctx.db
-    .select({ visualHypotheses: schema.markets.visualHypotheses })
+    .select({
+      visualHypotheses: schema.markets.visualHypotheses,
+      disclosure: schema.markets.aiImageryDisclosure,
+    })
     .from(schema.markets)
     .where(eq(schema.markets.id, variant.marketId));
   // The theme variant of the hypothesis the visual brief applied, if it names one.
@@ -87,6 +93,10 @@ export async function loadRenderInput(
     rows.filter((r) => r.status === "READY" && r.storageKey).map((r) => [r.id, r]),
   );
 
+  const aiBadgeSlides =
+    market?.disclosure === "SLIDE_BADGE"
+      ? await slidesWithGeneratedImages(ctx, variant.slidesJson)
+      : new Set<string>();
   const templatesVersion = templatesVersionOf(variant.slidesJson);
   const inputHash = createHash("sha256")
     .update(
@@ -105,10 +115,20 @@ export async function loadRenderInput(
         ]),
         theme,
         templatesVersion,
+        // Only when a badge is drawn, so renders made before M5-12 keep their hash.
+        ...(aiBadgeSlides.size > 0 ? [{ aiBadge: [...aiBadgeSlides].sort() }] : []),
       ]),
     )
     .digest("hex");
-  return { variant, slides: variant.slidesJson, theme, assets, templatesVersion, inputHash };
+  return {
+    variant,
+    slides: variant.slidesJson,
+    theme,
+    aiBadgeSlides,
+    assets,
+    templatesVersion,
+    inputHash,
+  };
 }
 
 /**
@@ -149,7 +169,13 @@ export async function loadRenderAssets(
         images[slot] =
           `data:${asset.mimeType ?? "image/webp"};base64,${Buffer.from(bytes).toString("base64")}`;
       }
-      return { assets: { images, ...(logo ? { logo } : {}) } };
+      return {
+        assets: {
+          images,
+          ...(logo ? { logo } : {}),
+          ...(input.aiBadgeSlides.has(slide.id) ? { aiBadge: true } : {}),
+        },
+      };
     }),
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import type { SnapshotDisclosure } from "@rc/db/json";
 import type { AllowedAction } from "@rc/modules/content";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
@@ -27,6 +28,7 @@ import {
   triggerRender,
   unapproveVariant,
 } from "@/server/actions/content";
+import { DisclosureNote } from "./disclosure-note";
 import { useVariant } from "./variant-state";
 
 type Checklist = "factsChecked" | "safetyChecked" | "manychatConfigured";
@@ -42,9 +44,11 @@ const RERENDER = new Set(["RENDER_MISSING", "RENDER_STALE", "RENDER_FAILED"]);
 export function VariantActions({
   allowed,
   flagLabels,
+  disclosure = null,
 }: {
   allowed: AllowedAction[];
   flagLabels: Record<string, string>;
+  disclosure?: SnapshotDisclosure | null;
 }) {
   const { messages } = useI18n();
   const t = messages.review.actions;
@@ -127,6 +131,7 @@ export function VariantActions({
         open={open === "approve"}
         onClose={() => setOpen(null)}
         checklist={(approve?.checklist ?? ["factsChecked"]) as Checklist[]}
+        disclosure={disclosure}
       />
       <ReasonDialog
         open={open === "changes"}
@@ -185,10 +190,12 @@ function ApproveDialog({
   open,
   onClose,
   checklist,
+  disclosure,
 }: {
   open: boolean;
   onClose: () => void;
   checklist: Checklist[];
+  disclosure: SnapshotDisclosure | null;
 }) {
   const { messages } = useI18n();
   const t = messages.review.actions;
@@ -235,6 +242,7 @@ function ApproveDialog({
             });
           }}
         >
+          <DisclosureNote disclosure={disclosure} />
           <ul className="flex flex-col gap-2">
             {checklist.map((item) => (
               <li key={item}>

@@ -7,13 +7,14 @@ import type {
   MarketBrief,
   QaReport,
   Slide,
+  SnapshotDisclosure,
   VisualBrief,
 } from "@rc/db/json";
 import { asc, desc, eq, inArray, sql } from "@rc/db/orm";
 import { PRESIGN_TTL } from "@rc/lib/providers/storage";
 import { registry } from "@rc/templates";
 import type { ServiceContext } from "../../core";
-import { loadRenderInput } from "../../visuals";
+import { loadRenderInput, planDisclosure } from "../../visuals";
 import { getIdeaDetail, type IdeaDetail } from "../ideas";
 import { type AllowedAction, allowedActions } from "../variants/state";
 
@@ -91,6 +92,8 @@ export type VariantView = {
   allowed: AllowedAction[];
   /** Regenerated fields waiting for Keep or Undo, newest first. */
   regenerations: PendingRegeneration[];
+  /** What the market's AI-imagery setting will add to this post, if anything (M5-12). */
+  disclosure: SnapshotDisclosure | null;
   /** The idea sells something: approval creates a campaign id and a link. */
   commercial: boolean;
   /** Null until a commercial variant is approved. */
@@ -214,6 +217,18 @@ export async function getReviewBundle(
   const renders = new Map(
     await Promise.all(live.map(async (r) => [r.v.id, await renderView(ctx, r.v)] as const)),
   );
+  // What the market's AI-imagery setting adds to each draft (M5-12): the reviewer sees it before approving.
+  const disclosures = new Map(
+    await Promise.all(
+      live.map(
+        async (r) =>
+          [
+            r.v.id,
+            (await planDisclosure(ctx, { marketId: r.v.marketId, slides: r.v.slidesJson })) ?? null,
+          ] as const,
+      ),
+    ),
+  );
 
   return {
     idea,
@@ -256,6 +271,7 @@ export async function getReviewBundle(
         ctx.actor.type === "USER" ? ctx.actor.role : undefined,
       ),
       regenerations: pending.get(v.id) ?? [],
+      disclosure: disclosures.get(v.id) ?? null,
       commercial: idea.idea.commercialIntent !== "NONE",
       campaign: v.campaignId
         ? {

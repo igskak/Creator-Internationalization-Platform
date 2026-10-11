@@ -9,7 +9,11 @@ import { jobHandlers } from "@rc/modules/job-handlers";
 import { AbortTaskRunError } from "@trigger.dev/sdk";
 import { describe, expect, it } from "vitest";
 import { classifyJobError } from "./errors";
+import { checkAccountHealth } from "./tasks/check-account-health";
 import { hello } from "./tasks/hello";
+import { publishContent } from "./tasks/publish-content";
+import { publishDispatcher } from "./tasks/publish-dispatcher";
+import { refreshInstagramTokens } from "./tasks/refresh-instagram-tokens";
 
 describe("classifyJobError (plan 06 §6.1)", () => {
   it.each([new TransientError("503"), new Error("ECONNRESET")])(
@@ -42,5 +46,18 @@ describe("tasks", () => {
   it("use the handler name as the task id", () => {
     expect(hello.id).toBe("hello");
     expect(Object.keys(jobHandlers)).toContain(hello.id);
+  });
+
+  it("registers the Instagram cron tasks under their handler names", () => {
+    for (const scheduled of [
+      refreshInstagramTokens,
+      checkAccountHealth,
+      publishDispatcher,
+      publishContent,
+    ]) {
+      expect(Object.keys(jobHandlers)).toContain(scheduled.id);
+    }
+    expect(refreshInstagramTokens.id).toBe("refresh-instagram-tokens");
+    expect(checkAccountHealth.id).toBe("check-account-health");
   });
 });
