@@ -1,6 +1,7 @@
 import type { VariantView } from "@rc/modules/content";
 import type { MarketInfo } from "@/components/calendar/calendar-dialogs";
-import { PUBLISHABLE_STATUSES, PublishPanel } from "@/components/publishing/publish-panel";
+import { PublishPanel } from "@/components/publishing/publish-panel";
+import { PUBLISHABLE_STATUSES } from "@/components/publishing/statuses";
 import { Badge } from "@/components/ui/badge";
 import { format } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";

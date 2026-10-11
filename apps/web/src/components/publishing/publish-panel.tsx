@@ -26,9 +26,6 @@ import { cn } from "@/lib/utils";
 import { retryPublication, schedulePublication } from "@/server/actions/publishing";
 import { PublicationDrawer } from "./publication-drawer";
 
-/** Draft statuses for which the panel has something to say. */
-export const PUBLISHABLE_STATUSES = ["APPROVED", "SCHEDULED", "PUBLISHING", "PUBLISHED", "FAILED"];
-
 const WATCH_EVERY_MS = 5000;
 
 /**
