@@ -99,12 +99,8 @@
           "name": "carousel_renders_content_variant_id_content_variants_id_fk",
           "tableFrom": "carousel_renders",
           "tableTo": "content_variants",
-          "columnsFrom": [
-            "content_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -114,10 +110,7 @@
         "carousel_renders_variant_input_uq": {
           "name": "carousel_renders_variant_input_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "content_variant_id",
-            "input_hash"
-          ]
+          "columns": ["content_variant_id", "input_hash"]
         }
       },
       "policies": {},
@@ -185,12 +178,8 @@
           "name": "content_variant_versions_content_variant_id_content_variants_id_fk",
           "tableFrom": "content_variant_versions",
           "tableTo": "content_variants",
-          "columnsFrom": [
-            "content_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -198,12 +187,8 @@
           "name": "content_variant_versions_carousel_render_id_carousel_renders_id_fk",
           "tableFrom": "content_variant_versions",
           "tableTo": "carousel_renders",
-          "columnsFrom": [
-            "carousel_render_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["carousel_render_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -211,12 +196,8 @@
           "name": "content_variant_versions_approved_by_app_users_id_fk",
           "tableFrom": "content_variant_versions",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "approved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -226,10 +207,7 @@
         "content_variant_versions_variant_no_uq": {
           "name": "content_variant_versions_variant_no_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "content_variant_id",
-            "version_no"
-          ]
+          "columns": ["content_variant_id", "version_no"]
         }
       },
       "policies": {},
@@ -548,12 +526,8 @@
           "name": "content_variants_master_idea_id_master_ideas_id_fk",
           "tableFrom": "content_variants",
           "tableTo": "master_ideas",
-          "columnsFrom": [
-            "master_idea_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["master_idea_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -561,12 +535,8 @@
           "name": "content_variants_market_id_markets_id_fk",
           "tableFrom": "content_variants",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -574,12 +544,8 @@
           "name": "content_variants_current_render_id_carousel_renders_id_fk",
           "tableFrom": "content_variants",
           "tableTo": "carousel_renders",
-          "columnsFrom": [
-            "current_render_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["current_render_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -587,12 +553,8 @@
           "name": "content_variants_approved_version_id_content_variant_versions_id_fk",
           "tableFrom": "content_variants",
           "tableTo": "content_variant_versions",
-          "columnsFrom": [
-            "approved_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -600,12 +562,8 @@
           "name": "content_variants_offer_id_offers_id_fk",
           "tableFrom": "content_variants",
           "tableTo": "offers",
-          "columnsFrom": [
-            "offer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["offer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -615,9 +573,7 @@
         "content_variants_campaignId_unique": {
           "name": "content_variants_campaignId_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "campaign_id"
-          ]
+          "columns": ["campaign_id"]
         }
       },
       "policies": {},
@@ -659,12 +615,8 @@
           "name": "master_idea_knowledge_master_idea_id_master_ideas_id_fk",
           "tableFrom": "master_idea_knowledge",
           "tableTo": "master_ideas",
-          "columnsFrom": [
-            "master_idea_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["master_idea_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -672,12 +624,8 @@
           "name": "master_idea_knowledge_knowledge_item_id_knowledge_items_id_fk",
           "tableFrom": "master_idea_knowledge",
           "tableTo": "knowledge_items",
-          "columnsFrom": [
-            "knowledge_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["knowledge_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -685,10 +633,7 @@
       "compositePrimaryKeys": {
         "master_idea_knowledge_master_idea_id_knowledge_item_id_pk": {
           "name": "master_idea_knowledge_master_idea_id_knowledge_item_id_pk",
-          "columns": [
-            "master_idea_id",
-            "knowledge_item_id"
-          ]
+          "columns": ["master_idea_id", "knowledge_item_id"]
         }
       },
       "uniqueConstraints": {},
@@ -852,12 +797,8 @@
           "name": "master_ideas_brand_id_brands_id_fk",
           "tableFrom": "master_ideas",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -865,12 +806,8 @@
           "name": "master_ideas_product_id_products_id_fk",
           "tableFrom": "master_ideas",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -878,12 +815,8 @@
           "name": "master_ideas_generation_run_id_generation_runs_id_fk",
           "tableFrom": "master_ideas",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "generation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["generation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -891,12 +824,8 @@
           "name": "master_ideas_created_by_app_users_id_fk",
           "tableFrom": "master_ideas",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1028,12 +957,8 @@
           "name": "offers_market_id_markets_id_fk",
           "tableFrom": "offers",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1041,12 +966,8 @@
           "name": "offers_product_id_products_id_fk",
           "tableFrom": "offers",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1147,12 +1068,8 @@
           "name": "products_brand_id_brands_id_fk",
           "tableFrom": "products",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1160,12 +1077,8 @@
           "name": "products_source_asset_id_source_assets_id_fk",
           "tableFrom": "products",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1175,9 +1088,7 @@
         "products_code_unique": {
           "name": "products_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "policies": {},
@@ -1316,12 +1227,8 @@
           "name": "review_events_content_variant_id_content_variants_id_fk",
           "tableFrom": "review_events",
           "tableTo": "content_variants",
-          "columnsFrom": [
-            "content_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1329,12 +1236,8 @@
           "name": "review_events_reviewer_id_app_users_id_fk",
           "tableFrom": "review_events",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "reviewer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1342,12 +1245,8 @@
           "name": "review_events_generation_run_id_generation_runs_id_fk",
           "tableFrom": "review_events",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "generation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["generation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1445,12 +1344,8 @@
           "name": "voice_examples_market_id_markets_id_fk",
           "tableFrom": "voice_examples",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1458,12 +1353,8 @@
           "name": "voice_examples_review_event_id_review_events_id_fk",
           "tableFrom": "voice_examples",
           "tableTo": "review_events",
-          "columnsFrom": [
-            "review_event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1519,12 +1410,8 @@
           "name": "app_settings_updated_by_app_users_id_fk",
           "tableFrom": "app_settings",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1617,9 +1504,7 @@
         "app_users_auth_user_id_unique": {
           "name": "app_users_auth_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "auth_user_id"
-          ]
+          "columns": ["auth_user_id"]
         }
       },
       "policies": {},
@@ -1766,12 +1651,8 @@
           "name": "audit_events_actor_user_id_app_users_id_fk",
           "tableFrom": "audit_events",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1779,12 +1660,8 @@
           "name": "audit_events_market_id_markets_id_fk",
           "tableFrom": "audit_events",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1860,9 +1737,7 @@
         "brands_slug_unique": {
           "name": "brands_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -2005,12 +1880,8 @@
           "name": "markets_brand_id_brands_id_fk",
           "tableFrom": "markets",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2020,9 +1891,7 @@
         "markets_code_unique": {
           "name": "markets_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "policies": {},
@@ -2106,10 +1975,7 @@
         "taxonomy_terms_kind_code_uq": {
           "name": "taxonomy_terms_kind_code_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "kind",
-            "code"
-          ]
+          "columns": ["kind", "code"]
         }
       },
       "policies": {},
@@ -2193,12 +2059,8 @@
           "name": "rendered_slides_carousel_render_id_carousel_renders_id_fk",
           "tableFrom": "rendered_slides",
           "tableTo": "carousel_renders",
-          "columnsFrom": [
-            "carousel_render_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["carousel_render_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2208,10 +2070,7 @@
         "rendered_slides_render_index_uq": {
           "name": "rendered_slides_render_index_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "carousel_render_id",
-            "slide_index"
-          ]
+          "columns": ["carousel_render_id", "slide_index"]
         }
       },
       "policies": {},
@@ -2472,12 +2331,8 @@
           "name": "visual_assets_brand_id_brands_id_fk",
           "tableFrom": "visual_assets",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2485,12 +2340,8 @@
           "name": "visual_assets_source_asset_id_source_assets_id_fk",
           "tableFrom": "visual_assets",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2498,12 +2349,8 @@
           "name": "visual_assets_content_variant_id_content_variants_id_fk",
           "tableFrom": "visual_assets",
           "tableTo": "content_variants",
-          "columnsFrom": [
-            "content_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2511,12 +2358,8 @@
           "name": "visual_assets_generation_run_id_generation_runs_id_fk",
           "tableFrom": "visual_assets",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "generation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["generation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2742,12 +2585,8 @@
           "name": "generation_runs_parent_run_id_generation_runs_id_fk",
           "tableFrom": "generation_runs",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "parent_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2755,12 +2594,8 @@
           "name": "generation_runs_source_asset_id_source_assets_id_fk",
           "tableFrom": "generation_runs",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2899,12 +2734,8 @@
           "name": "historical_posts_brand_id_brands_id_fk",
           "tableFrom": "historical_posts",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2912,12 +2743,8 @@
           "name": "historical_posts_source_asset_id_source_assets_id_fk",
           "tableFrom": "historical_posts",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2927,10 +2754,7 @@
         "historical_posts_platform_external_uq": {
           "name": "historical_posts_platform_external_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform",
-            "external_id"
-          ]
+          "columns": ["platform", "external_id"]
         }
       },
       "policies": {},
@@ -3037,12 +2861,8 @@
           "name": "knowledge_extraction_batches_source_asset_id_source_assets_id_fk",
           "tableFrom": "knowledge_extraction_batches",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3050,12 +2870,8 @@
           "name": "knowledge_extraction_batches_generation_run_id_generation_runs_id_fk",
           "tableFrom": "knowledge_extraction_batches",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "generation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["generation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3065,11 +2881,7 @@
         "knowledge_batches_attempt_index_uq": {
           "name": "knowledge_batches_attempt_index_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "source_asset_id",
-            "processing_attempt",
-            "batch_index"
-          ]
+          "columns": ["source_asset_id", "processing_attempt", "batch_index"]
         }
       },
       "policies": {},
@@ -3143,12 +2955,8 @@
           "name": "knowledge_item_versions_knowledge_item_id_knowledge_items_id_fk",
           "tableFrom": "knowledge_item_versions",
           "tableTo": "knowledge_items",
-          "columnsFrom": [
-            "knowledge_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["knowledge_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3156,12 +2964,8 @@
           "name": "knowledge_item_versions_changed_by_app_users_id_fk",
           "tableFrom": "knowledge_item_versions",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["changed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3171,10 +2975,7 @@
         "knowledge_versions_item_version_uq": {
           "name": "knowledge_versions_item_version_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "knowledge_item_id",
-            "version"
-          ]
+          "columns": ["knowledge_item_id", "version"]
         }
       },
       "policies": {},
@@ -3504,12 +3305,8 @@
           "name": "knowledge_items_brand_id_brands_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3517,12 +3314,8 @@
           "name": "knowledge_items_source_asset_id_source_assets_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3530,12 +3323,8 @@
           "name": "knowledge_items_approved_by_app_users_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "approved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3543,12 +3332,8 @@
           "name": "knowledge_items_duplicate_of_id_knowledge_items_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "knowledge_items",
-          "columnsFrom": [
-            "duplicate_of_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["duplicate_of_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3556,12 +3341,8 @@
           "name": "knowledge_items_extraction_batch_id_knowledge_extraction_batches_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "knowledge_extraction_batches",
-          "columnsFrom": [
-            "extraction_batch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["extraction_batch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3569,12 +3350,8 @@
           "name": "knowledge_items_generation_run_id_generation_runs_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "generation_runs",
-          "columnsFrom": [
-            "generation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["generation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3582,12 +3359,8 @@
           "name": "knowledge_items_created_by_app_users_id_fk",
           "tableFrom": "knowledge_items",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3597,10 +3370,7 @@
         "knowledge_items_batch_ordinal_uq": {
           "name": "knowledge_items_batch_ordinal_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "extraction_batch_id",
-            "ordinal_in_batch"
-          ]
+          "columns": ["extraction_batch_id", "ordinal_in_batch"]
         }
       },
       "policies": {},
@@ -3805,12 +3575,8 @@
           "name": "source_assets_brand_id_brands_id_fk",
           "tableFrom": "source_assets",
           "tableTo": "brands",
-          "columnsFrom": [
-            "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["brand_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3818,12 +3584,8 @@
           "name": "source_assets_created_by_app_users_id_fk",
           "tableFrom": "source_assets",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3941,12 +3703,8 @@
           "name": "source_chunks_source_asset_id_source_assets_id_fk",
           "tableFrom": "source_chunks",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3956,10 +3714,7 @@
         "source_chunks_asset_chunk_uq": {
           "name": "source_chunks_asset_chunk_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "source_asset_id",
-            "chunk_index"
-          ]
+          "columns": ["source_asset_id", "chunk_index"]
         }
       },
       "policies": {},
@@ -4041,12 +3796,8 @@
           "name": "source_pages_source_asset_id_source_assets_id_fk",
           "tableFrom": "source_pages",
           "tableTo": "source_assets",
-          "columnsFrom": [
-            "source_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4056,10 +3807,7 @@
         "source_pages_asset_page_uq": {
           "name": "source_pages_asset_page_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "source_asset_id",
-            "page_number"
-          ]
+          "columns": ["source_asset_id", "page_number"]
         }
       },
       "policies": {},
@@ -4155,12 +3903,8 @@
           "name": "integration_events_social_account_id_social_accounts_id_fk",
           "tableFrom": "integration_events",
           "tableTo": "social_accounts",
-          "columnsFrom": [
-            "social_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["social_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4395,12 +4139,8 @@
           "name": "publications_content_variant_id_content_variants_id_fk",
           "tableFrom": "publications",
           "tableTo": "content_variants",
-          "columnsFrom": [
-            "content_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4408,12 +4148,8 @@
           "name": "publications_content_variant_version_id_content_variant_versions_id_fk",
           "tableFrom": "publications",
           "tableTo": "content_variant_versions",
-          "columnsFrom": [
-            "content_variant_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_variant_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4421,12 +4157,8 @@
           "name": "publications_market_id_markets_id_fk",
           "tableFrom": "publications",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4434,12 +4166,8 @@
           "name": "publications_social_account_id_social_accounts_id_fk",
           "tableFrom": "publications",
           "tableTo": "social_accounts",
-          "columnsFrom": [
-            "social_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["social_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4447,12 +4175,8 @@
           "name": "publications_created_by_app_users_id_fk",
           "tableFrom": "publications",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4460,12 +4184,8 @@
           "name": "publications_cancelled_by_app_users_id_fk",
           "tableFrom": "publications",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "cancelled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cancelled_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4475,16 +4195,12 @@
         "publications_idempotency_key_unique": {
           "name": "publications_idempotency_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "idempotency_key"
-          ]
+          "columns": ["idempotency_key"]
         },
         "publications_instagram_media_id_unique": {
           "name": "publications_instagram_media_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "instagram_media_id"
-          ]
+          "columns": ["instagram_media_id"]
         }
       },
       "policies": {},
@@ -4620,12 +4336,8 @@
           "name": "publish_attempts_publication_id_publications_id_fk",
           "tableFrom": "publish_attempts",
           "tableTo": "publications",
-          "columnsFrom": [
-            "publication_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publication_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4799,12 +4511,8 @@
           "name": "social_accounts_market_id_markets_id_fk",
           "tableFrom": "social_accounts",
           "tableTo": "markets",
-          "columnsFrom": [
-            "market_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["market_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -4812,12 +4520,8 @@
           "name": "social_accounts_connected_by_app_users_id_fk",
           "tableFrom": "social_accounts",
           "tableTo": "app_users",
-          "columnsFrom": [
-            "connected_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connected_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4827,10 +4531,7 @@
         "social_accounts_platform_account_uq": {
           "name": "social_accounts_platform_account_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform",
-            "instagram_account_id"
-          ]
+          "columns": ["platform", "instagram_account_id"]
         }
       },
       "policies": {},
@@ -4842,41 +4543,22 @@
     "public.commercial_intent": {
       "name": "commercial_intent",
       "schema": "public",
-      "values": [
-        "NONE",
-        "LEAD_MAGNET",
-        "PRODUCT_SALE",
-        "NURTURE"
-      ]
+      "values": ["NONE", "LEAD_MAGNET", "PRODUCT_SALE", "NURTURE"]
     },
     "public.critic_verdict": {
       "name": "critic_verdict",
       "schema": "public",
-      "values": [
-        "PASS",
-        "REQUEST_REWRITE",
-        "FLAG_FOR_HUMAN"
-      ]
+      "values": ["PASS", "REQUEST_REWRITE", "FLAG_FOR_HUMAN"]
     },
     "public.idea_status": {
       "name": "idea_status",
       "schema": "public",
-      "values": [
-        "PROPOSED",
-        "ACCEPTED",
-        "REJECTED",
-        "ARCHIVED"
-      ]
+      "values": ["PROPOSED", "ACCEPTED", "REJECTED", "ARCHIVED"]
     },
     "public.render_status": {
       "name": "render_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "RENDERING",
-        "READY",
-        "FAILED"
-      ]
+      "values": ["PENDING", "RENDERING", "READY", "FAILED"]
     },
     "public.review_action": {
       "name": "review_action",
@@ -4911,59 +4593,32 @@
     "public.actor_type": {
       "name": "actor_type",
       "schema": "public",
-      "values": [
-        "USER",
-        "SYSTEM",
-        "JOB"
-      ]
+      "values": ["USER", "SYSTEM", "JOB"]
     },
     "public.measurement_system": {
       "name": "measurement_system",
       "schema": "public",
-      "values": [
-        "METRIC",
-        "IMPERIAL",
-        "DUAL"
-      ]
+      "values": ["METRIC", "IMPERIAL", "DUAL"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "owner",
-        "editor",
-        "chef"
-      ]
+      "values": ["owner", "editor", "chef"]
     },
     "public.asset_status": {
       "name": "asset_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "READY",
-        "FAILED",
-        "REJECTED"
-      ]
+      "values": ["PENDING", "READY", "FAILED", "REJECTED"]
     },
     "public.batch_status": {
       "name": "batch_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "RUNNING",
-        "SUCCEEDED",
-        "FAILED",
-        "SKIPPED"
-      ]
+      "values": ["PENDING", "RUNNING", "SUCCEEDED", "FAILED", "SKIPPED"]
     },
     "public.content_format": {
       "name": "content_format",
       "schema": "public",
-      "values": [
-        "CAROUSEL",
-        "REEL",
-        "SINGLE_IMAGE"
-      ]
+      "values": ["CAROUSEL", "REEL", "SINGLE_IMAGE"]
     },
     "public.generation_stage": {
       "name": "generation_stage",
@@ -4986,55 +4641,27 @@
     "public.knowledge_origin": {
       "name": "knowledge_origin",
       "schema": "public",
-      "values": [
-        "SOURCE_EXTRACTED",
-        "MANUAL",
-        "EXTERNAL_RESEARCH"
-      ]
+      "values": ["SOURCE_EXTRACTED", "MANUAL", "EXTERNAL_RESEARCH"]
     },
     "public.knowledge_status": {
       "name": "knowledge_status",
       "schema": "public",
-      "values": [
-        "EXTRACTED",
-        "NEEDS_REVIEW",
-        "CHEF_APPROVED",
-        "ARCHIVED"
-      ]
+      "values": ["EXTRACTED", "NEEDS_REVIEW", "CHEF_APPROVED", "ARCHIVED"]
     },
     "public.processing_status": {
       "name": "processing_status",
       "schema": "public",
-      "values": [
-        "PENDING_UPLOAD",
-        "UPLOADED",
-        "QUEUED",
-        "PROCESSING",
-        "READY",
-        "FAILED",
-        "BLOCKED"
-      ]
+      "values": ["PENDING_UPLOAD", "UPLOADED", "QUEUED", "PROCESSING", "READY", "FAILED", "BLOCKED"]
     },
     "public.rights_status": {
       "name": "rights_status",
       "schema": "public",
-      "values": [
-        "UNKNOWN",
-        "PENDING_REVIEW",
-        "CLEARED",
-        "RESTRICTED"
-      ]
+      "values": ["UNKNOWN", "PENDING_REVIEW", "CLEARED", "RESTRICTED"]
     },
     "public.run_status": {
       "name": "run_status",
       "schema": "public",
-      "values": [
-        "SUCCEEDED",
-        "REPAIRED",
-        "INVALID_OUTPUT",
-        "REFUSED",
-        "FAILED"
-      ]
+      "values": ["SUCCEEDED", "REPAIRED", "INVALID_OUTPUT", "REFUSED", "FAILED"]
     },
     "public.source_type": {
       "name": "source_type",
@@ -5067,22 +4694,12 @@
     "public.social_account_status": {
       "name": "social_account_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "NEEDS_REAUTH",
-        "DISABLED",
-        "REVOKED"
-      ]
+      "values": ["ACTIVE", "NEEDS_REAUTH", "DISABLED", "REVOKED"]
     },
     "public.token_status": {
       "name": "token_status",
       "schema": "public",
-      "values": [
-        "VALID",
-        "EXPIRING",
-        "INVALID",
-        "REVOKED"
-      ]
+      "values": ["VALID", "EXPIRING", "INVALID", "REVOKED"]
     }
   },
   "schemas": {},

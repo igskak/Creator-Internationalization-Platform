@@ -50,6 +50,18 @@ export function requireInstagramApp(rt: InstagramRuntime): InstagramApp {
   return rt.app;
 }
 
+/** A stored request must never hold a link that works: URLs lose their query (a presigned signature). */
+function withoutUrlQueries(values: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      key,
+      typeof value === "string" && /^[a-z][a-z0-9+.-]*:\/\//i.test(value)
+        ? value.split(/[?#]/)[0]
+        : value,
+    ]),
+  );
+}
+
 const clean = (params: GraphParams | undefined): Record<string, string | number | boolean> =>
   Object.fromEntries(
     Object.entries(params ?? {}).filter(
@@ -129,7 +141,7 @@ export function createGraphClient(rt: InstagramRuntime, options: GraphClientOpti
     const record: GraphCallRecord = {
       method,
       endpoint,
-      request: redact(values) as Record<string, unknown>,
+      request: redact(withoutUrlQueries(values)) as Record<string, unknown>,
       httpStatus,
       response: redact(asRecord(body)) as Record<string, unknown> | undefined,
       durationMs,

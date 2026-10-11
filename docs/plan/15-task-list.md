@@ -545,7 +545,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `/api/meta/deauthorize` and `/api/meta/data-deletion` with `signed_request` verification; status page for deletion codes.
   - **Done when:** tests with signed fixtures (valid, invalid signature).
 
-- [ ] **M5-06 · Publish state machine** · P0 · L · deps: M5-01, M4-08
+- [x] **M5-06 · Publish state machine** · P0 · L · deps: M5-01, M4-08
   - **Do:** `publishing/publish-machine.ts` (09 §9.4): steps, persisted progress, safeguards, presigned URLs for renders, reconciliation, dry run, `publish_attempts` per call.
   - **Done when:** MSW tests for every path in 13 §13.3 (incl. crash after `media_publish` → no second publish, wrong-market account refused).
 

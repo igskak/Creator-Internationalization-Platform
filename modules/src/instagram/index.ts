@@ -10,6 +10,19 @@ export {
   toAccountView,
 } from "./accounts";
 export {
+  CONTAINER_STATUSES,
+  type ContainerStatus,
+  createCarouselContainer,
+  createChildContainer,
+  getContainerStatus,
+  getFollowerCount,
+  getMedia,
+  getPublishingLimit,
+  listRecentMedia,
+  publishContainer,
+  type RecentMediaItem,
+} from "./api";
+export {
   DELETION_CODE_PATTERN,
   type DeletionStatus,
   getDeletionStatus,
@@ -70,6 +83,7 @@ export {
 } from "./status";
 export {
   MIN_REFRESH_AGE_MS,
+  markAccountNeedsReauth,
   REFRESH_AT_AGE_DAYS,
   REFRESH_WHEN_EXPIRING_DAYS,
   type RefreshDecision,

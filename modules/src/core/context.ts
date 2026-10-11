@@ -47,6 +47,8 @@ export type InstagramRuntime = {
   fetch: typeof fetch | undefined;
 };
 
+const timerSleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
 /** Default for contexts that do not talk to Instagram. */
 export const disabledInstagram: InstagramRuntime = {
   publishMode: "off",
@@ -103,6 +105,11 @@ export type ServiceContext = {
   images: ImageProvider;
   /** Instagram app, publish mode and token keys (M5). */
   instagram: InstagramRuntime;
+  /**
+   * Waits without using compute where the runtime can (Trigger.dev `wait.for` in a job); a timer
+   * elsewhere. Tests pass a function that advances their manual clock.
+   */
+  sleep: (ms: number) => Promise<void>;
 };
 
 export type CreateServiceContextInput = {
@@ -123,6 +130,8 @@ export type CreateServiceContextInput = {
   images?: ImageProvider;
   /** Default: publishing off. */
   instagram?: InstagramRuntime;
+  /** Default: a timer. */
+  sleep?: (ms: number) => Promise<void>;
 };
 
 /** Builds a context and binds requestId and actor to its logger. */
@@ -143,6 +152,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     embeddings: input.embeddings ?? disabledEmbeddings,
     images: input.images ?? disabledImages,
     instagram: input.instagram ?? disabledInstagram,
+    sleep: input.sleep ?? timerSleep,
   };
 }
 

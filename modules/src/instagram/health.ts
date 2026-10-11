@@ -4,6 +4,7 @@ import { and, eq, inArray } from "@rc/db/orm";
 import { z } from "zod";
 import type { ServiceContext } from "../core";
 import { decryptAccessToken } from "./accounts";
+import { getPublishingLimit } from "./api";
 import { InstagramCallError } from "./errors";
 import { recordIntegrationEvent, resolveIntegrationEvents } from "./events";
 import { createGraphClient } from "./http";
@@ -19,17 +20,6 @@ const Me = z.object({
   username: z.string().optional(),
   account_type: z.string().optional(),
 });
-const Limit = z.object({
-  data: z
-    .array(
-      z.object({
-        quota_usage: z.number().int().nonnegative().optional(),
-        config: z.object({ quota_total: z.number().int().nonnegative().optional() }).optional(),
-      }),
-    )
-    .optional(),
-});
-
 export type HealthCheckResult = {
   socialAccountId: string;
   marketId: string;
@@ -77,16 +67,7 @@ export async function checkInstagramAccountHealth(
         logger: ctx.logger,
       });
       const me = Me.parse(await client.get("/me", { fields: "user_id,username,account_type" }));
-      const limit = Limit.parse(
-        await client.get(`/${account.instagramAccountId}/content_publishing_limit`, {
-          fields: "quota_usage,config",
-        }),
-      );
-      const entry = limit.data?.[0];
-      const quota =
-        entry?.quota_usage !== undefined && entry.config?.quota_total !== undefined
-          ? { used: entry.quota_usage, total: entry.config.quota_total }
-          : undefined;
+      const quota = await getPublishingLimit(client, account.instagramAccountId);
       const type = me.account_type?.toUpperCase();
       const stillProfessional = !type || type === "BUSINESS" || type === "MEDIA_CREATOR";
       const snapshot: AccountHealthSnapshot = {

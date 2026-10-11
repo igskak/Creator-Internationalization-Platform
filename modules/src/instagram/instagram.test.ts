@@ -196,6 +196,8 @@ describe("the Graph client", () => {
     // The stored record is redacted too: presigned signatures and tokens are gone.
     const stored = JSON.stringify(records);
     expect(stored).not.toContain("abcdef");
+    expect(stored).not.toContain("X-Amz");
+    expect(stored).toContain("https://r2.test/a.jpg");
     expect(stored).not.toContain(token);
     expect(stored).not.toContain(TOKEN);
     expect(records[0]?.endpoint).toBe("/me");

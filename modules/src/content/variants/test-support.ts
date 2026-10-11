@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { schema } from "@rc/db";
 import type { Slide } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
@@ -250,7 +251,8 @@ export async function reviewFixture(
         width: 1080,
         height: 1350,
         bytes: 1,
-        sha256: `sha-${i}`,
+        // The sha of the stored bytes ("x"): the publisher checks the file against it.
+        sha256: createHash("sha256").update("x").digest("hex"),
       });
     }
     await db

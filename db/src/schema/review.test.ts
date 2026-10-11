@@ -384,14 +384,12 @@ describe("0006_review_scheduling", () => {
       .returning();
     expect(event).toMatchObject({ resolvedAt: null, socialAccountId: null });
     await expect(
-      t.db
-        .insert(integrationEvents)
-        .values({
-          integration: "instagram",
-          severity: "FATAL" as "ERROR",
-          code: "x",
-          message: "m",
-        }),
+      t.db.insert(integrationEvents).values({
+        integration: "instagram",
+        severity: "FATAL" as "ERROR",
+        code: "x",
+        message: "m",
+      }),
     ).rejects.toThrow();
   });
 });
