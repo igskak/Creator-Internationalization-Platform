@@ -569,6 +569,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 - [ ] **M5-11 · Gate G2 and first live posts** · P0 · S · deps: M5-08, M5-09, M5-10, B-12, B-13
   - **Do:** run G2 checklist (14 §14.3): live smoke on test account, idempotency drill, dry runs on production accounts, kill switch, token refresh; first 3 posts per market with Sergey's approval; `docs/decisions/G2.md`.
   - **Done when:** G2 recorded; first production posts have media ids and permalinks.
+  - **Status 2026-10-11:** prepared (`docs/decisions/G2.md` with the order of work and empty record tables; `pnpm rc g2-check` for the items the database can show). The run itself waits for B-11, B-12, B-13 and Sergey's approval. Tick this box when G2 is recorded.
 
 - [ ] **M5-12 · AI imagery disclosure option** · P0 if B-13 requires it, else P1 · S · deps: M3-05, B-13 · ⚠ V-16
   - **Do:** per-market setting `ai_imagery_disclosure` = `NONE | CAPTION_NOTE | SLIDE_BADGE` (and platform label if the API supports it); applied when a variant uses generated photo-realistic images.

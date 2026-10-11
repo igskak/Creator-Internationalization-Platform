@@ -38,6 +38,14 @@ export {
   STUCK_AFTER_MS,
 } from "./dispatcher";
 export {
+  checkG2Readiness,
+  formatG2Readiness,
+  G2_FIRST_POSTS_PER_MARKET,
+  type G2Item,
+  type G2Readiness,
+  type G2State,
+} from "./g2";
+export {
   getPublishingStatus,
   type PublishingStatus,
   SetPublishingEnabledInput,
