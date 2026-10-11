@@ -557,7 +557,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `INSTAGRAM_PUBLISH_MODE`, `INSTAGRAM_ACCOUNT_ALLOWLIST`, `setPublishingEnabled` (owner, audited), header indicator.
   - **Done when:** tests: `off` blocks, `dry_run_only` blocks live, unknown account refused.
 
-- [ ] **M5-09 · Publish UX** · P0 · M · deps: M5-07, M4-09
+- [x] **M5-09 · Publish UX** · P0 · M · deps: M5-07, M4-09
   - **Do:** "Publish now", "Schedule", "Dry run" in review and calendar; publication drawer (attempt timeline, readable errors with next steps, permalink); retry/cancel.
   - **Done when:** flows work against MSW-backed dev; screenshots.
 

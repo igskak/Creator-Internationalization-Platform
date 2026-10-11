@@ -19,6 +19,18 @@ export {
   normalizeCaption,
 } from "./caption";
 export {
+  type ErrorKind,
+  errorKind,
+  GetPublicationInput,
+  getPublicationDetails,
+  listVariantPublications,
+  type PublicationAttempt,
+  type PublicationDetails,
+  type PublicationError,
+  type PublicationSummary,
+  type VariantPublications,
+} from "./details";
+export {
   DISPATCH_BATCH,
   type DispatchResult,
   dispatchDuePublications,

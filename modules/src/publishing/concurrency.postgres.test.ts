@@ -16,10 +16,11 @@ import { schedulePublication } from "./schedule";
 // points at a server with pgvector (the CI service container; locally e.g. a docker container),
 // and is skipped otherwise.
 
-const URL = process.env.TEST_POSTGRES_URL;
+const env = process.env;
+const POSTGRES_URL = env.TEST_POSTGRES_URL;
 const ES = "1784";
 
-describe.skipIf(!URL)("concurrency on a real Postgres", () => {
+describe.skipIf(!POSTGRES_URL)("concurrency on a real Postgres", () => {
   let pg: PostgresTestDb;
   let fx: ReviewFixture;
   let mock: ReturnType<typeof newMock>;
@@ -41,7 +42,7 @@ describe.skipIf(!URL)("concurrency on a real Postgres", () => {
   };
 
   beforeAll(async () => {
-    pg = await createPostgresTestDb(URL as string);
+    pg = await createPostgresTestDb(POSTGRES_URL as string);
     const { db, close } = pg.connect();
     closers.push(close);
     await seedDatabase(db, { ownerEmails: ["owner@example.com"] });
