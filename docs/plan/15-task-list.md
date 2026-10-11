@@ -521,7 +521,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M5 · Instagram → Gate G2
 
-- [ ] **M5-00 · Meta verification pass** · P0 · S · deps: B-11, B-14
+- [x] **M5-00 · Meta verification pass** · P0 · S · deps: B-11, B-14
   - **Do:** check V-01 … V-16 against the official docs ([S§24] links); record findings and plan changes in `decision-log.md`; update 09 if needed. Needs network access to `developers.facebook.com` (B-14) or run locally.
   - **Done when:** every ⚠ Meta item has a verified value or a documented decision.
 
