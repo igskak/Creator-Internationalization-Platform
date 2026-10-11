@@ -10,7 +10,7 @@ import {
 // extractor from the pages it is given, so a pasted text becomes cards whose quotes really are in
 // the text, and the idea generator from the cards it is given (the first card whose title starts
 // with "E2E card", else the first card), and the market adapter, the writer and the critic with
-// a valid plan, draft and review built on the cards of the request; every other prompt is refused. Only the web runtime uses it, and only when
+// a valid plan, draft and review built on the cards of the request, and the field regenerator with the current value plus "(redone)"; every other prompt is refused. Only the web runtime uses it, and only when
 // E2E_TEST_AUTH_SECRET is set (which production refuses).
 
 const unescapeXml = (text: string) =>
@@ -66,6 +66,76 @@ function pipelineRequest(text: string) {
   return { cards, market };
 }
 
+/**
+ * A new value for the field of a field-regenerator request: the current value with " (redone)"
+ * added, so the screen shows a visible change that passes the same checks. Built from the draft in
+ * the request, which is escaped XML.
+ */
+function answerFieldRegenerator(text: string) {
+  const attr = (tag: string, name: string) =>
+    new RegExp(`<${tag}[^>]*\\s${name}="([^"]*)"`, "u").exec(text)?.[1];
+  const path = unescapeXml(attr("field", "path") ?? "");
+  const kind = attr("field", "kind") ?? "";
+  const draft = /<current_draft>([\s\S]*?)<\/current_draft>/u.exec(text)?.[1] ?? "";
+  const body = (tag: string) =>
+    unescapeXml(new RegExp(`<${tag}[^>]*>\\n([\\s\\S]*?)\\n</${tag}>`, "u").exec(draft)?.[1] ?? "");
+  const redone = (value: string) => `${value} (redone)`;
+  let value: unknown;
+  switch (kind) {
+    case "hook":
+      value = redone(body("hook"));
+      break;
+    case "caption":
+      value = redone(body("caption"));
+      break;
+    case "hashtags":
+      value = body("hashtags").split(/\s+/u).filter(Boolean);
+      break;
+    case "cta": {
+      const cta = /<cta type="([^"]+)"[^>]*>\n([\s\S]*?)\n<\/cta>/u.exec(draft);
+      value = { type: cta?.[1] ?? "SAVE", text: redone(unescapeXml(cta?.[2] ?? "")) };
+      break;
+    }
+    case "slot": {
+      const slideId = attr("field", "slide") ?? "";
+      const slot = attr("field", "slot") ?? "";
+      const slide =
+        new RegExp(`<slide id="${slideId}"[^>]*>([\\s\\S]*?)</slide>`, "u").exec(draft)?.[1] ?? "";
+      const current =
+        new RegExp(`<slot name="${slot}">\\n([\\s\\S]*?)\\n</slot>`, "u").exec(slide)?.[1] ?? "";
+      value = redone(unescapeXml(current));
+      break;
+    }
+    case "slide": {
+      const slideId = attr("field", "slide") ?? "";
+      const tag = new RegExp(`<slide id="${slideId}"([^>]*)>([\\s\\S]*?)</slide>`, "u").exec(draft);
+      const get = (name: string) =>
+        new RegExp(`${name}="([^"]*)"`, "u").exec(tag?.[1] ?? "")?.[1] ?? "";
+      value = {
+        role: get("role"),
+        templateId: get("template"),
+        slots: [...(tag?.[2] ?? "").matchAll(/<slot name="([^"]+)">\n([\s\S]*?)\n<\/slot>/gu)].map(
+          (m) => ({
+            slot: m[1] ?? "",
+            text: redone(unescapeXml(m[2] ?? "")),
+          }),
+        ),
+        knowledgeIds: get("cards").split(", ").filter(Boolean),
+        factual: get("factual") === "true",
+        altText: "A redone slide.",
+      };
+      break;
+    }
+    default:
+      value = {
+        prompt: "Rice grains, macro, soft side light",
+        negativePrompt: "text, logo",
+        composition: "Low angle",
+      };
+  }
+  return { field: path, value, rationale: "Scripted answer of the E2E model." };
+}
+
 export function createE2eLlm() {
   return createFakeLLMProvider({
     handler: (request) => {
@@ -94,6 +164,7 @@ export function createE2eLlm() {
             });
       }
       if (promptId === "visual-director") return scriptedVisualBrief(text);
+      if (promptId === "field-regenerator") return answerFieldRegenerator(text);
       if (promptId !== "knowledge-extractor" && promptId !== "idea-generator") {
         throw new Error(`The E2E model has no answer for ${promptId}.`);
       }

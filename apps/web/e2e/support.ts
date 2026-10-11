@@ -202,6 +202,34 @@ export async function removeIdeasOfSource(sourceTitle: string): Promise<void> {
     await db
       .delete(schema.generationRuns)
       .where(inArray(schema.generationRuns.masterIdeaId, ideaIds));
+    // The drafts, with what hangs on them: posts, review events, approved versions, renders and
+    // pictures. The variants point at a render and a version, so those links go first.
+    const variants = await db
+      .select({ id: schema.contentVariants.id })
+      .from(schema.contentVariants)
+      .where(inArray(schema.contentVariants.masterIdeaId, ideaIds));
+    const variantIds = variants.map((v) => v.id);
+    if (variantIds.length > 0) {
+      await db
+        .delete(schema.publications)
+        .where(inArray(schema.publications.contentVariantId, variantIds));
+      await db
+        .update(schema.contentVariants)
+        .set({ currentRenderId: null, approvedVersionId: null })
+        .where(inArray(schema.contentVariants.id, variantIds));
+      await db
+        .delete(schema.reviewEvents)
+        .where(inArray(schema.reviewEvents.contentVariantId, variantIds));
+      await db
+        .delete(schema.contentVariantVersions)
+        .where(inArray(schema.contentVariantVersions.contentVariantId, variantIds));
+      await db
+        .delete(schema.carouselRenders)
+        .where(inArray(schema.carouselRenders.contentVariantId, variantIds));
+      await db
+        .delete(schema.visualAssets)
+        .where(inArray(schema.visualAssets.contentVariantId, variantIds));
+    }
     await db
       .delete(schema.contentVariants)
       .where(inArray(schema.contentVariants.masterIdeaId, ideaIds));
