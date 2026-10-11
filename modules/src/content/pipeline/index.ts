@@ -26,6 +26,7 @@ export {
   type VariantsRequest,
 } from "./request";
 export {
+  type CampaignView,
   getReviewBundle,
   type PendingRegeneration,
   type RenderView,

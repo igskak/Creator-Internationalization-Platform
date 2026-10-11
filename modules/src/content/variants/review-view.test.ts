@@ -3,6 +3,7 @@ import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getReviewBundle } from "../pipeline/review";
+import { approveVariant } from "./approve";
 import { type ReviewFixture, reviewFixture } from "./test-support";
 
 // What the review screen gets besides the text: the allowed actions and the regenerations that
@@ -115,5 +116,30 @@ describe("review bundle: allowed actions and pending regenerations", () => {
     // A newer regeneration of the same field replaces the older one.
     await event("hook", "REGENERATE", "Nuevo gancho", "Otro gancho");
     expect((await first(idea))?.regenerations.map((r) => r.edited)).toEqual(["Otro gancho"]);
+  });
+
+  it("shows the campaign of an approved commercial post, and none before", async () => {
+    const { variantId } = await fx.makeVariant({
+      commercial: true,
+      withOffer: true,
+      ctaType: "COMMENT_KEYWORD",
+    });
+    const idea = (await fx.variant(variantId)).masterIdeaId;
+    const before = await first(idea);
+    expect(before).toMatchObject({ commercial: true, campaign: null });
+    await fx.makeRender(variantId);
+    await approveVariant(fx.ctx, {
+      variantId,
+      lockVersion: (await fx.variant(variantId)).lockVersion,
+      checklist: { factsChecked: true, manychatConfigured: true },
+    });
+    const after = await first(idea);
+    expect(after?.campaign).toMatchObject({
+      campaignId: expect.stringMatching(/^rc-es-\d{6}-[a-z0-9]{6}$/),
+      keyword: "GUIA",
+    });
+    expect(after?.campaign?.url).toContain("utm_campaign=rc-es-");
+    const plain = await fx.makeVariant({ marketCode: "en" });
+    expect((await first((await fx.variant(plain.variantId)).masterIdeaId))?.commercial).toBe(false);
   });
 });

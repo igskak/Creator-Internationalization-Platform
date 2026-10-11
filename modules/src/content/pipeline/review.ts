@@ -35,6 +35,16 @@ export type RenderView = {
   error: string | null;
 };
 
+/** The tracking of a commercial post (plan 11 §11.7): what the ManyChat flow is set up with. */
+export type CampaignView = {
+  /** Also the name of the ManyChat flow. */
+  campaignId: string;
+  /** The CTA's comment/DM keyword, if it has one. */
+  keyword: string | null;
+  /** The offer's landing page with the UTM tags: the link the flow sends. */
+  url: string | null;
+};
+
 /**
  * A field the model redid and the reviewer has not touched since: the screen shows the old and the
  * new value with Keep and Undo (plan 10 §10.3). Undo is an ordinary edit back.
@@ -81,6 +91,10 @@ export type VariantView = {
   allowed: AllowedAction[];
   /** Regenerated fields waiting for Keep or Undo, newest first. */
   regenerations: PendingRegeneration[];
+  /** The idea sells something: approval creates a campaign id and a link. */
+  commercial: boolean;
+  /** Null until a commercial variant is approved. */
+  campaign: CampaignView | null;
 };
 
 export type ReviewBundle = {
@@ -242,6 +256,14 @@ export async function getReviewBundle(
         ctx.actor.type === "USER" ? ctx.actor.role : undefined,
       ),
       regenerations: pending.get(v.id) ?? [],
+      commercial: idea.idea.commercialIntent !== "NONE",
+      campaign: v.campaignId
+        ? {
+            campaignId: v.campaignId,
+            keyword: v.ctaJson?.keyword ?? null,
+            url: v.utmJson?.url ?? null,
+          }
+        : null,
     })),
     costUsd: cost?.total == null ? null : Number(cost.total),
   };

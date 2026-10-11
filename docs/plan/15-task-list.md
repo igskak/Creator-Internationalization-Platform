@@ -514,7 +514,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** E2E spec 3 (13 §13.4).
   - **Done when:** green in CI.
 
-- [ ] **M4-11 · Campaign IDs, UTM links and ManyChat checklist** · P0 · S · deps: M4-06, M2-02
+- [x] **M4-11 · Campaign IDs, UTM links and ManyChat checklist** · P0 · S · deps: M4-06, M2-02
   - **Do:** `offers/campaigns.ts` (`rc-{market}-{yymmdd}-{6}` at approval of commercial variants), `offers/utm.ts`, review-screen panel with copyable keyword, DM link and flow name; checklist item "ManyChat flow set up" for keyword CTAs.
   - **Done when:** tests (format, uniqueness, UTM encoding); panel visible.
   - **Refs:** 11 §11.7.

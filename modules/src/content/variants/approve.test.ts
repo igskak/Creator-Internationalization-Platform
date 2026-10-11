@@ -260,6 +260,85 @@ describe("approveVariant", () => {
     ).toEqual([1, 2]);
   });
 
+  describe("campaigns of commercial posts", () => {
+    const commercial = async (marketCode?: string) => {
+      const made = await fx.makeVariant({
+        commercial: true,
+        withOffer: true,
+        ...(marketCode ? { marketCode } : {}),
+      });
+      await fx.makeRender(made.variantId);
+      return made;
+    };
+
+    it("gives an approved commercial post its campaign id and UTM link, in the row and in the snapshot", async () => {
+      const { variantId } = await commercial();
+      const result = await approve(variantId);
+      const row = await fx.variant(variantId);
+      expect(row.campaignId).toMatch(/^rc-es-261010-[a-z0-9]{6}$/);
+      expect(row.utmJson).toMatchObject({
+        source: "instagram",
+        medium: "social",
+        campaign: row.campaignId,
+        content: variantId.replaceAll("-", "").slice(0, 8),
+      });
+      expect(row.utmJson?.url).toContain("https://example.test/guide?utm_source=instagram");
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, result.versionId));
+      expect(version?.snapshot).toMatchObject({
+        campaignId: row.campaignId,
+        utm: row.utmJson,
+        offerId: row.offerId,
+      });
+      expect(await verifyApprovedVersion(fx.ctx, result.versionId)).toMatchObject({ ok: true });
+      const [audit] = await t.db
+        .select()
+        .from(schema.auditEvents)
+        .where(eq(schema.auditEvents.action, "variant.approved"));
+      expect(audit?.data).toMatchObject({ campaignId: row.campaignId });
+    });
+
+    it("keeps the campaign id when the approval is withdrawn and given again", async () => {
+      const { variantId } = await commercial();
+      await approve(variantId);
+      const first = (await fx.variant(variantId)).campaignId;
+      await unapproveVariant(fx.ctx, { variantId, reason: "Wrong offer" });
+      // The content is the same, so the render of the first approval is still the current one.
+      const second = await approve(variantId);
+      expect((await fx.variant(variantId)).campaignId).toBe(first);
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, second.versionId));
+      expect(version?.snapshot.campaignId).toBe(first);
+    });
+
+    it("gives two commercial posts different ids", async () => {
+      const a = await commercial();
+      const b = await commercial("en");
+      await approve(a.variantId);
+      await approve(b.variantId);
+      const [va, vb] = [await fx.variant(a.variantId), await fx.variant(b.variantId)];
+      expect(va.campaignId).not.toBe(vb.campaignId);
+      expect(vb.campaignId).toMatch(/^rc-en-/);
+    });
+
+    it("leaves a post that sells nothing without a campaign", async () => {
+      const { variantId } = await ready();
+      const result = await approve(variantId);
+      const row = await fx.variant(variantId);
+      expect(row).toMatchObject({ campaignId: null, utmJson: null });
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, result.versionId));
+      expect(version?.snapshot.campaignId).toBeUndefined();
+      expect(version?.snapshot.utm).toBeUndefined();
+    });
+  });
+
   it("only a person can approve", async () => {
     const { variantId } = await ready();
     const lockVersion = (await fx.variant(variantId)).lockVersion;

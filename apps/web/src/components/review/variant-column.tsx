@@ -4,6 +4,7 @@ import { format } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n/locales";
 import type { Messages } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+import { CampaignPanel } from "./campaign-panel";
 import { CarouselViewer } from "./carousel-viewer";
 import { ConflictBanner } from "./conflict-banner";
 import { CriticPanel } from "./critic-panel";
@@ -193,6 +194,10 @@ export function VariantColumn({
               offerName={variant.offer?.name ?? null}
             />
           </Section>
+
+          {variant.commercial || variant.campaign ? (
+            <CampaignPanel campaign={variant.campaign} />
+          ) : null}
 
           <Section title={t.hashtags}>
             <EditableHashtags value={variant.hashtags} />

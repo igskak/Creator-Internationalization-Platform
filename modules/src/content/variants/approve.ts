@@ -6,6 +6,7 @@ import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/error
 import { z } from "zod";
 import { type ServiceContext, withTransaction } from "../../core";
 import { getIdeaCards } from "../../knowledge/retrieval";
+import { planCampaign } from "../../offers";
 import { contentOf } from "./content";
 import { staleLockError, validateDraftContent } from "./edit";
 import { currentRenderState } from "./render-state";
@@ -122,6 +123,10 @@ export async function approveVariant(
     });
   }
 
+  // A commercial post gets a campaign id and its UTM link now, and keeps them if it is approved again.
+  const commercial = (idea?.commercialIntent ?? "NONE") !== "NONE";
+  const campaign = commercial ? await planCampaign(ctx, variant) : null;
+
   const files = await ctx.db
     .select({ key: schema.renderedSlides.storageKey })
     .from(schema.renderedSlides)
@@ -139,8 +144,7 @@ export async function approveVariant(
     visualStyle: variant.visualStyle ?? "",
     templateSequence: variant.templateSequence,
     ...(variant.offerId ? { offerId: variant.offerId } : {}),
-    ...(variant.campaignId ? { campaignId: variant.campaignId } : {}),
-    ...(variant.utmJson ? { utm: variant.utmJson } : {}),
+    ...(campaign ? { campaignId: campaign.campaignId, utm: campaign.utm } : {}),
     renderId: current.id,
     renderedSlideKeys: files.map((f) => f.key),
     knowledge: cards.filter((c) => cited.has(c.id)).map((c) => ({ id: c.id, version: c.version })),
@@ -183,8 +187,16 @@ export async function approveVariant(
     const approved = await transitionVariant(tx, {
       variantId: variant.id,
       event: "APPROVE",
-      set: { approvedVersionId: version.id },
-      data: { versionId: version.id, versionNo, renderId: current.id },
+      set: {
+        approvedVersionId: version.id,
+        ...(campaign ? { campaignId: campaign.campaignId, utmJson: campaign.utm } : {}),
+      },
+      data: {
+        versionId: version.id,
+        versionNo,
+        renderId: current.id,
+        ...(campaign ? { campaignId: campaign.campaignId } : {}),
+      },
     });
     await tx.db.insert(schema.reviewEvents).values({
       contentVariantId: variant.id,
