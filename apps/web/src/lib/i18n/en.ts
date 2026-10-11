@@ -1028,6 +1028,13 @@ export const en = {
       other: "The Instagram connection for {market} expires in {count} days. Reconnect it soon.",
     } as PluralForms,
   },
+  dataDeletion: {
+    title: "Data deletion request",
+    completed:
+      "Your request was handled: the Instagram access token and the profile data we kept for this connection have been deleted.",
+    code: "Confirmation code {code}",
+    unknown: "We have no data deletion request with this confirmation code.",
+  },
   calendar: {
     title: "Calendar",
     subtitle:

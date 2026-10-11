@@ -10,6 +10,14 @@ export {
   toAccountView,
 } from "./accounts";
 export {
+  DELETION_CODE_PATTERN,
+  type DeletionStatus,
+  getDeletionStatus,
+  handleDataDeletion,
+  handleDeauthorize,
+  InvalidSignedRequestError,
+} from "./callbacks";
+export {
   classifyInstagramError,
   containerError,
   describeInstagramError,

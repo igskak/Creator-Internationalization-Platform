@@ -541,7 +541,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** J13 and J14 (06 §6.3), `integration_events`, status transitions (VALID/EXPIRING/INVALID).
   - **Done when:** MSW tests (refresh ok, 190 → NEEDS_REAUTH, not refreshed if < 24 h old).
 
-- [ ] **M5-05 · Meta callbacks** · P0 · S · deps: M5-02 · ⚠ V-13
+- [x] **M5-05 · Meta callbacks** · P0 · S · deps: M5-02 · ⚠ V-13
   - **Do:** `/api/meta/deauthorize` and `/api/meta/data-deletion` with `signed_request` verification; status page for deletion codes.
   - **Done when:** tests with signed fixtures (valid, invalid signature).
 
