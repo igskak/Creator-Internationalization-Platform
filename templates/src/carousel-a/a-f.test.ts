@@ -66,11 +66,11 @@ describe("template A", () => {
 });
 
 describe("template F", () => {
-  it("shows the keyword in the accent block and the product picture only when there is one", () => {
+  it("shows the keyword as accent text and the product cut-out only when there is one", () => {
     const html = render("F", "es-long");
-    expect(html).toContain('<div class="f-keyword-box">');
-    expect(html).toContain('data-image="product"');
+    expect(html).toContain('class="slot display f-keyword" data-slot="keyword"');
+    expect(html).toContain('<img class="img cutout f-photo" data-image="product"');
     expect(render("F", "es-long", false)).not.toContain('data-image="product"');
-    expect(render("F", "no-optionals")).not.toContain('<div class="f-keyword-box">');
+    expect(render("F", "no-optionals")).not.toContain('data-slot="keyword"');
   });
 });

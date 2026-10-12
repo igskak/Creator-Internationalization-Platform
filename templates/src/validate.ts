@@ -1,4 +1,5 @@
 import type { TemplateDefinition, TextSlotSpec } from "./define-template";
+import { stripEmphasis } from "./framework/html";
 import { registry, type TemplateRegistry } from "./registry";
 
 // Slot-limit checks against the template metadata (plan 07 §7.8 layer 3, first bullet). The result
@@ -108,7 +109,9 @@ export function validateSlideAgainstTemplate(
       });
       continue;
     }
-    const chars = countChars(text);
+    // `**emphasis**` markers are not drawn, so they do not count.
+    const visible = stripEmphasis(text);
+    const chars = countChars(visible);
     if (chars > spec.maxChars) {
       issues.push({
         code: "SLOT_OVERFLOW",
@@ -117,12 +120,12 @@ export function validateSlideAgainstTemplate(
         message: `${name} has ${chars} characters, the limit is ${spec.maxChars}.`,
         fixHint: `Shorten to at most ${spec.maxChars} characters.`,
       });
-    } else if (estimateLines(text, spec) > spec.maxLines) {
+    } else if (estimateLines(visible, spec) > spec.maxLines) {
       issues.push({
         code: "SLOT_LINES",
         severity: "MAJOR",
         fieldPath: path,
-        message: `${name} needs about ${estimateLines(text, spec)} lines, the limit is ${spec.maxLines}.`,
+        message: `${name} needs about ${estimateLines(visible, spec)} lines, the limit is ${spec.maxLines}.`,
         fixHint: "Use shorter words or fewer line breaks.",
       });
     }

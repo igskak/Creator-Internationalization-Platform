@@ -26,6 +26,23 @@ const needBrowser = (): Browser => browser as Browser;
 
 const dataUrl = (png: Uint8Array) => `data:image/png;base64,${Buffer.from(png).toString("base64")}`;
 const PICTURE = dataUrl(gradientPng(540, 675, "render-test"));
+/** Inner slides get cut-out photos: a subject in the lower right of a white frame. */
+const CUTOUT = dataUrl(
+  await sharp({ create: { width: 540, height: 675, channels: 3, background: "#ffffff" } })
+    .composite([
+      {
+        input: await sharp({
+          create: { width: 260, height: 300, channels: 3, background: "#b0814f" },
+        })
+          .png()
+          .toBuffer(),
+        left: 280,
+        top: 375,
+      },
+    ])
+    .png()
+    .toBuffer(),
+);
 const theme = buildTheme({});
 
 const inputFor = (templateId: string, name: string, withImages = true): RenderInputSlide => {
@@ -34,7 +51,7 @@ const inputFor = (templateId: string, name: string, withImages = true): RenderIn
   const images: Record<string, string> = {};
   if (withImages) {
     for (const slot of Object.keys(registry.get(templateId)?.imageSlots ?? {}))
-      images[slot] = PICTURE;
+      images[slot] = templateId === "A" ? PICTURE : CUTOUT;
   }
   return { slide, assets: { images } };
 };

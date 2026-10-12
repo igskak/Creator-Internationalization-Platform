@@ -1,23 +1,20 @@
 import { defineTemplate } from "../define-template";
 
-/**
- * Diagram / mechanism (plan 08 §8.2.1, P1): a title and 3–5 steps. The per-step icon comes from
- * the icon set in the renderer, so it is not a slot here.
- */
+/** Diagram / mechanism (plan 08 §8.2.1, P1): a title and 3–5 points drawn as a thin-line tree. */
 export const templateD = defineTemplate({
   id: "D",
-  version: "1.0.0",
+  version: "2.0.0",
   name: "Diagram / mechanism",
   priority: "P1",
   roles: ["EXPLANATION", "STEP"],
   textSlots: {
-    title: { maxChars: 60, maxLines: 2, required: true, font: "display", minPx: 56, maxPx: 80 },
-    step1: { maxChars: 60, maxLines: 2, required: true, font: "body", minPx: 32, maxPx: 40 },
-    step2: { maxChars: 60, maxLines: 2, required: true, font: "body", minPx: 32, maxPx: 40 },
-    step3: { maxChars: 60, maxLines: 2, required: true, font: "body", minPx: 32, maxPx: 40 },
-    step4: { maxChars: 60, maxLines: 2, required: false, font: "body", minPx: 32, maxPx: 40 },
-    step5: { maxChars: 60, maxLines: 2, required: false, font: "body", minPx: 32, maxPx: 40 },
+    title: { maxChars: 60, maxLines: 3, required: true, font: "display", minPx: 52, maxPx: 84 },
+    step1: { maxChars: 60, maxLines: 3, required: true, font: "body", minPx: 32, maxPx: 34 },
+    step2: { maxChars: 60, maxLines: 3, required: true, font: "body", minPx: 32, maxPx: 34 },
+    step3: { maxChars: 60, maxLines: 3, required: true, font: "body", minPx: 32, maxPx: 34 },
+    step4: { maxChars: 60, maxLines: 3, required: false, font: "body", minPx: 32, maxPx: 34 },
+    step5: { maxChars: 60, maxLines: 3, required: false, font: "body", minPx: 32, maxPx: 34 },
   },
-  imageSlots: { image: { aspect: "1:1", required: false } },
+  imageSlots: { image: { aspect: "4:5", required: false } },
   logo: { anchor: "bottom-left", heightPx: 48 },
 });

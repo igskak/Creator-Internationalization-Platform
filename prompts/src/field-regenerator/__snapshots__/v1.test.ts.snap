@@ -134,7 +134,7 @@ Guía de cereales
 <slot name="kicker" max_chars="24" max_lines="1" required="false">
 
 </slot>
-<slot name="headline" max_chars="70" max_lines="3" required="true">
+<slot name="headline" max_chars="70" max_lines="4" required="true">
 
 </slot>
 <slot name="subline" max_chars="90" max_lines="2" required="false">
@@ -148,38 +148,38 @@ Guía de cereales
 <slot name="label" max_chars="40" max_lines="1" required="false">
 
 </slot>
-<slot name="headline" max_chars="60" max_lines="2" required="false">
+<slot name="headline" max_chars="60" max_lines="4" required="false">
 
 </slot>
-<slot name="body" max_chars="220" max_lines="6" required="true">
+<slot name="body" max_chars="220" max_lines="9" required="true">
 
 </slot>
 </template>
 <template id="E" roles="MISTAKE, CORRECT">
-<slot name="mistakeTitle" max_chars="40" max_lines="1" required="true">
+<slot name="mistakeTitle" max_chars="40" max_lines="2" required="true">
 
 </slot>
-<slot name="mistakeText" max_chars="140" max_lines="4" required="true">
+<slot name="mistakeText" max_chars="140" max_lines="5" required="true">
 
 </slot>
-<slot name="correctTitle" max_chars="40" max_lines="1" required="true">
+<slot name="correctTitle" max_chars="40" max_lines="3" required="true">
 
 </slot>
-<slot name="correctText" max_chars="140" max_lines="4" required="true">
+<slot name="correctText" max_chars="140" max_lines="6" required="true">
 
 </slot>
 </template>
 <template id="F" roles="CTA">
-<slot name="headline" max_chars="60" max_lines="2" required="true">
+<slot name="headline" max_chars="60" max_lines="4" required="true">
 
 </slot>
-<slot name="body" max_chars="160" max_lines="4" required="true">
+<slot name="body" max_chars="160" max_lines="6" required="true">
 
 </slot>
 <slot name="keyword" max_chars="16" max_lines="1" required="false">
 
 </slot>
-<slot name="offerName" max_chars="40" max_lines="1" required="false">
+<slot name="offerName" max_chars="40" max_lines="2" required="false">
 
 </slot>
 </template>

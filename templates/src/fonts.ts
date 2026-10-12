@@ -2,8 +2,9 @@ import { readFileSync } from "node:fs";
 import { assetPath } from "./assets-path";
 
 // Bundled fonts (plan 08 §8.3, M3-06). Brand fonts are not licensed for embedding yet (Track B
-// B-10), so the SIL OFL fallback is Fraunces (display serif) and Inter (sans), Latin and Latin
-// Extended, which covers Spanish and English with `ñ ¿ ¡ á é í ó ú ü ° ½`. Files are WOFF2
+// B-10), so the SIL OFL fallback is Inter Tight for both roles (docs/design/carousel-style.md);
+// Fraunces and Inter stay available to a brand that names them. Latin and Latin Extended cover
+// Spanish and English with `ñ ¿ ¡ á é í ó ú ü ° ½`. Files are WOFF2
 // variable fonts in `templates/assets/fonts`; the renderer embeds them as data URLs, so no
 // system font and no network is involved. `brands.visual_system.fonts` names a family by `id`.
 
@@ -50,9 +51,19 @@ export const FONT_FAMILIES: Readonly<Record<string, FontFamily>> = {
       { path: "inter/inter-latin-ext-wght-normal.woff2", unicodeRange: LATIN_EXT },
     ],
   },
+  "inter-tight": {
+    id: "inter-tight",
+    cssName: "Inter Tight",
+    weights: "100 900",
+    kind: "sans-serif",
+    files: [
+      { path: "inter-tight/inter-tight-latin-wght-normal.woff2", unicodeRange: LATIN },
+      { path: "inter-tight/inter-tight-latin-ext-wght-normal.woff2", unicodeRange: LATIN_EXT },
+    ],
+  },
 };
 
-export const DEFAULT_FONTS = { display: "fraunces", body: "inter" } as const;
+export const DEFAULT_FONTS = { display: "inter-tight", body: "inter-tight" } as const;
 
 export const familyById = (id: string): FontFamily => {
   const family = FONT_FAMILIES[id];

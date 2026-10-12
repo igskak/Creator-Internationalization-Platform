@@ -30,12 +30,13 @@ describe("registry", () => {
   it("matches the limits of the plan table", () => {
     const a = registry.get("A");
     expect(a?.textSlots.kicker).toMatchObject({ maxChars: 24, maxLines: 1, required: false });
-    expect(a?.textSlots.headline).toMatchObject({ maxChars: 70, maxLines: 3, required: true });
+    expect(a?.textSlots.headline).toMatchObject({ maxChars: 70, maxLines: 4, required: true });
     expect(a?.imageSlots.hero).toEqual({ aspect: "4:5", required: true, fullBleed: true });
-    expect(registry.get("B")?.textSlots.body).toMatchObject({ maxChars: 220, maxLines: 6 });
-    expect(registry.get("E")?.textSlots.mistakeText).toMatchObject({ maxChars: 140, maxLines: 4 });
+    expect(registry.get("B")?.textSlots.body).toMatchObject({ maxChars: 220, maxLines: 9 });
+    expect(registry.get("E")?.textSlots.mistakeText).toMatchObject({ maxChars: 140, maxLines: 5 });
     expect(registry.get("F")?.textSlots.keyword).toMatchObject({ maxChars: 16, required: false });
-    expect(registry.get("C")?.imageSlots.before?.required).toBe(true);
+    expect(registry.get("C")?.imageSlots.before).toEqual({ aspect: "4:5", required: true });
+    expect(registry.get("B")?.imageSlots.side).toEqual({ aspect: "4:5", required: false });
     expect(Object.keys(registry.get("D")?.textSlots ?? {})).toHaveLength(6);
   });
 
@@ -58,7 +59,7 @@ describe("registry", () => {
   });
 
   it("reports a version string and rejects duplicate ids", () => {
-    expect(registry.version({ priority: "P0" })).toBe("A@1.0.0,B@1.0.0,E@1.0.0,F@1.0.0");
+    expect(registry.version({ priority: "P0" })).toBe("A@2.0.0,B@2.0.0,E@2.0.0,F@2.0.0");
     const a = registry.get("A") as TemplateDefinition;
     expect(() => createRegistry([a, a])).toThrow(/Duplicate/);
   });
@@ -167,10 +168,10 @@ describe("validateSlideAgainstTemplate", () => {
   });
 
   it("reports estimated line overflow as a MAJOR issue, not a blocker", () => {
-    // 4 words of 14 chars: 59 characters (within 70) but only one word fits a ~26-char line.
-    const word = "a".repeat(14);
+    // 5 words of 12 chars: 64 characters (within 70) but only one word fits a ~20-char line.
+    const word = "a".repeat(12);
     const issues = validateSlideAgainstTemplate(
-      slide({ slots: { headline: [word, word, word, word].join(" ") } }),
+      slide({ slots: { headline: [word, word, word, word, word].join(" ") } }),
     );
     expect(issues).toEqual([
       expect.objectContaining({
@@ -179,8 +180,15 @@ describe("validateSlideAgainstTemplate", () => {
         fieldPath: "slides.s1.slots.headline",
       }),
     ]);
-    const three = [word, word, word].join(" ");
-    expect(codes(slide({ slots: { headline: three } }))).toEqual([]);
+    const four = [word, word, word, word].join(" ");
+    expect(codes(slide({ slots: { headline: four } }))).toEqual([]);
+  });
+
+  it("does not count the emphasis markers", () => {
+    // 14 marked words of 4 letters: 125 characters with the markers, 69 without.
+    const marked = Array.from({ length: 14 }, () => "**abcd**").join(" ");
+    expect(countChars(marked)).toBe(125);
+    expect(codes(slide({ slots: { headline: marked } }))).toEqual([]);
   });
 
   it("flags empty and missing required slots, unknown slots and unknown images", () => {
@@ -224,18 +232,18 @@ describe("renderTemplateCatalog", () => {
   it("lists the P0 templates compactly and deterministically", () => {
     const text = renderTemplateCatalog();
     expect(text).toMatchInlineSnapshot(`
-      "A "Hero ingredient + strong hook" v1.0.0; roles: HOOK
-        text: kicker ≤24 chars/1 line (optional); headline ≤70 chars/3 lines; subline ≤90 chars/2 lines (optional)
+      "A "Hero ingredient + strong hook" v2.0.0; roles: HOOK
+        text: kicker ≤24 chars/1 line (optional); headline ≤70 chars/4 lines; subline ≤90 chars/2 lines (optional)
         images: hero 4:5 full-bleed
-      B "Large number / fact + explanation" v1.0.0; roles: FACT, EXPLANATION, STEP, SUMMARY, PROBLEM
-        text: number ≤8 chars/1 line (optional); label ≤40 chars/1 line (optional); headline ≤60 chars/2 lines (optional); body ≤220 chars/6 lines
-        images: side 1:1 (optional)
-      E "Mistake vs correct technique" v1.0.0; roles: MISTAKE, CORRECT
-        text: mistakeTitle ≤40 chars/1 line; mistakeText ≤140 chars/4 lines; correctTitle ≤40 chars/1 line; correctText ≤140 chars/4 lines
-        images: image 1:1 (optional)
-      F "CTA / lead magnet / offer" v1.0.0; roles: CTA
-        text: headline ≤60 chars/2 lines; body ≤160 chars/4 lines; keyword ≤16 chars/1 line (optional); offerName ≤40 chars/1 line (optional)
-        images: product 1:1 (optional)"
+      B "Large number / fact + explanation" v2.0.0; roles: FACT, EXPLANATION, STEP, SUMMARY, PROBLEM
+        text: number ≤8 chars/1 line (optional); label ≤40 chars/1 line (optional); headline ≤60 chars/4 lines (optional); body ≤220 chars/9 lines
+        images: side 4:5 (optional)
+      E "Mistake vs correct technique" v2.0.0; roles: MISTAKE, CORRECT
+        text: mistakeTitle ≤40 chars/2 lines; mistakeText ≤140 chars/5 lines; correctTitle ≤40 chars/3 lines; correctText ≤140 chars/6 lines
+        images: image 4:5 (optional)
+      F "CTA / lead magnet / offer" v2.0.0; roles: CTA
+        text: headline ≤60 chars/4 lines; body ≤160 chars/6 lines; keyword ≤16 chars/1 line (optional); offerName ≤40 chars/2 lines (optional)
+        images: product 4:5 (optional)"
     `);
     expect(renderTemplateCatalog()).toBe(text);
   });

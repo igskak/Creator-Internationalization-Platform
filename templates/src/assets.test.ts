@@ -32,7 +32,7 @@ describe("glyph coverage", () => {
     "¿Qué hace el almidón? Añade 180 °C, ½ taza; ¡ojo! Ü ü Ñ ñ á é í ó ú “comillas” – —";
   const english = "Don’t rinse: 350 °F (180 °C) – 2½ cups, naïve café";
 
-  it.each(["fraunces", "inter"])("covers Spanish and English text in %s", (id) => {
+  it.each(["fraunces", "inter", "inter-tight"])("covers Spanish and English text in %s", (id) => {
     expect(missingGlyphs(spanish, id)).toEqual([]);
     expect(missingGlyphs(english, id)).toEqual([]);
   });
@@ -61,7 +61,7 @@ describe("theme", () => {
   it("falls back to the default system while the brand has none", () => {
     expect(buildTheme({})).toMatchObject({
       colors: DEFAULT_VISUAL_SYSTEM.colors,
-      fonts: { display: "fraunces", body: "inter" },
+      fonts: { display: "inter-tight", body: "inter-tight" },
       safeMarginPx: 72,
       variant: null,
     });
@@ -76,7 +76,7 @@ describe("theme", () => {
     expect(warm.colors).toMatchObject({
       accent: "#C65D2E",
       background: "#FBEFDD",
-      text: "#1F1B16",
+      text: "#111111",
     });
     expect(warm.variant).toBe("warm-mediterranean");
     expect(buildTheme(system, "nope").colors).toEqual(DEFAULT_VISUAL_SYSTEM.colors);
@@ -91,11 +91,11 @@ describe("theme", () => {
   it("turns a theme into CSS variables", () => {
     const vars = themeCssVariables(buildTheme({}));
     expect(vars).toMatchObject({
-      "--rc-bg": "#FAF6EF",
-      "--rc-font-display": '"Fraunces", serif',
-      "--rc-font-body": '"Inter", sans-serif',
+      "--rc-bg": "#FFFFFF",
+      "--rc-font-display": '"Inter Tight", sans-serif',
+      "--rc-font-body": '"Inter Tight", sans-serif',
       "--rc-safe-margin": "72px",
     });
-    expect(cssVariablesText(buildTheme({}))).toContain("--rc-accent:#B5532F;");
+    expect(cssVariablesText(buildTheme({}))).toContain("--rc-accent:#E1251B;");
   });
 });
