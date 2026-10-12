@@ -138,6 +138,8 @@ export const VisualBrief = z.object({
       negativePrompt: z.string().optional(),
       composition: z.string(),
       aspect: z.enum(VISUAL_ASPECTS),
+      /** The kind of shot of the director's shot list (visual-director@4 on; see @rc/prompts). */
+      shotType: z.string().min(1).optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

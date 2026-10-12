@@ -27,6 +27,7 @@ import {
 import { validateMarketBrief } from "../brief";
 import { validateWriterOutput } from "../draft";
 import {
+  finishPhotoPrompts,
   loadLibraryCandidates,
   loadVisualStyles,
   type SiblingVisual,
@@ -417,6 +418,7 @@ export async function generateVariants(
               library,
               siblings: siblingVisuals.filter((s) => s.marketCode !== run.market.code),
               visualStyles,
+              cards: c.cards,
             }),
             inputRefs: refs(c, run),
             validate: (output) =>
@@ -438,8 +440,9 @@ export async function generateVariants(
         ctx.logger.warn({ variantId: run.row.id }, "the visual director gave no usable brief");
         continue;
       }
-      run.visual = visual;
-      siblingVisuals.push({ marketCode: run.market.code, brief: visual });
+      // The director wrote the subjects; the slot's composition, the style and the negatives are added.
+      run.visual = finishPhotoPrompts(visual, slides, p0Registry);
+      siblingVisuals.push({ marketCode: run.market.code, brief: run.visual });
     }
 
     // --- 4. finish ---------------------------------------------------------------------------------

@@ -64,7 +64,24 @@ Inner slides receive a 4:5 picture (1080 × 1350 after normalization, generated 
 
 ## Photography
 
-Prompt rules (visual director):
+### Shot list (visual-director@4)
+
+The first live carousel with `visual-director@3` showed a pot of grain on almost every slide: each picture was planned on its own and "one subject, no extra objects" left a vessel as the safe choice. From v4 the director first plans the carousel as a **shot list**, the way the accepted test round was planned by hand, and reads the **recipe** of the idea's cards (steps with their tools, ingredients, usual mistakes):
+
+| `shotType` | What it shows | Typical slide |
+|---|---|---|
+| `INGREDIENT_MACRO` | the ingredient itself, very close, no vessel | explanation, fact |
+| `TECHNIQUE_IN_ACTION` | the step while it happens: water through a strainer, steam, falling grains | step, mistake/correct, cover |
+| `COMPARISON` | two states split in one frame (raw / toasted) | why it works, mistake/correct |
+| `TOOL_AND_INGREDIENT` | the step's tool with the ingredient: measuring cup, strainer, spoon | step with a ratio or a tool |
+| `FINISHED_DISH` | the finished food, served or packed | cover, CTA |
+| `IN_THE_VESSEL` | the food in its pot or pan | at most twice |
+
+Checked in code (`modules/src/content/visual/validate.ts`, one repair): no two neighbouring slides with the same shot, at most two `IN_THE_VESSEL`, at least three kinds from four pictures on. One or two natural ingredients of the recipe may add colour; no tool or ingredient the slide and the recipe do not name.
+
+The director writes only the **subject and the action**. The code (`modules/src/content/visual/photo-prompt.ts`) appends the composition of the template slot (cover / side / centred), the style sentence and the fixed negative list, so every picture of a carousel shares them word for word. The same path serves "Regenerate pictures" of one market.
+
+### Prompt rules
 
 - **One subject, large, macro.** Cropped by the frame on the right and the bottom edge, never centred with air around it.
 - **Empty left side.** "The left 40 % of the frame, top to bottom, is completely empty pure white." The model tends to drift the subject left; placement in the template compensates, so the prompt must say it firmly.

@@ -14,7 +14,12 @@ import { marketAdapterV1, marketAdapterV2 } from "./market-adapter";
 import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
 import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
 import { createRegistry } from "./registry";
-import { visualDirectorV1, visualDirectorV2, visualDirectorV3 } from "./visual-director";
+import {
+  visualDirectorV1,
+  visualDirectorV2,
+  visualDirectorV3,
+  visualDirectorV4,
+} from "./visual-director";
 import { visualQaV1, visualQaV2 } from "./visual-qa";
 
 export const PACKAGE_NAME = "@rc/prompts";
@@ -84,6 +89,7 @@ export const promptRegistry = createRegistry([
   visualDirectorV1,
   visualDirectorV2,
   visualDirectorV3,
+  visualDirectorV4,
   fieldRegeneratorV1,
   visualQaV1,
   visualQaV2,
