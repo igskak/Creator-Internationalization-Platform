@@ -65,12 +65,11 @@ describe("template C", () => {
 });
 
 describe("template D", () => {
-  it("draws the steps that have text, each with its own icon, in order", () => {
+  it("draws the steps that have text as a tree, in order", () => {
     const html = render("D", "es-long");
     expect(html.match(/data-step="/g)).toHaveLength(5);
-    for (const icon of ["water", "heat", "time", "stir", "rest"])
-      expect(html).toContain(`data-icon="${icon}"`);
-    expect(html).toContain("<svg");
+    expect(html.indexOf('data-slot="step1"')).toBeLessThan(html.indexOf('data-slot="step5"'));
+    expect(html).not.toContain("data-icon");
     const three = render("D", "no-optionals");
     expect(three.match(/data-step="/g)).toHaveLength(3);
     expect(three).not.toContain('data-slot="step4"');

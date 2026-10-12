@@ -27,18 +27,21 @@ const platformDir = join(root, process.platform);
 const actualDir = join(root, ".actual");
 const update = process.argv.includes("--update");
 
-/** A fixed picture with a few flat blocks: small as a PNG and the same everywhere. */
+/**
+ * A fixed picture: a flat "subject" in the lower right of a white 4:5 frame, like the cut-out
+ * photos of the templates (docs/design/carousel-style.md). Small as a PNG and the same everywhere.
+ */
 async function picture(): Promise<string> {
   const block = (w: number, h: number, color: string) =>
     sharp({ create: { width: w, height: h, channels: 3, background: color } })
       .png()
       .toBuffer();
   const png = await sharp({
-    create: { width: 540, height: 675, channels: 3, background: "#7a5b3a" },
+    create: { width: 540, height: 675, channels: 3, background: "#ffffff" },
   })
     .composite([
-      { input: await block(540, 300, "#c9a46b"), left: 0, top: 0 },
-      { input: await block(220, 220, "#efe2c4"), left: 160, top: 250 },
+      { input: await block(300, 380, "#c9a46b"), left: 240, top: 295 },
+      { input: await block(160, 160, "#7a5b3a"), left: 300, top: 360 },
     ])
     .png()
     .toBuffer();

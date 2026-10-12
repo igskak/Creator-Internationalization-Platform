@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { schema } from "@rc/db";
 import type { Slide, VisualBrief } from "@rc/db/json";
-import { eq, inArray } from "@rc/db/orm";
+import { and, desc, eq, inArray, ne } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError } from "@rc/lib/errors";
 import { registry } from "@rc/templates";
 import { buildTheme, type RenderAssets, type Theme } from "@rc/templates/render";
@@ -26,6 +26,8 @@ export type RenderInput = {
   theme: Theme;
   /** Slides that carry the "AI" badge: the market asks for one and the slide has a generated image. */
   aiBadgeSlides: ReadonlySet<string>;
+  /** The market's Instagram username, written small on every slide; null without an account. */
+  handle: string | null;
   /** Ready asset rows used by the slides, by id. */
   assets: Map<string, typeof schema.visualAssets.$inferSelect>;
   templatesVersion: string;
@@ -75,6 +77,19 @@ export async function loadRenderInput(
   const brief: VisualBrief | null = variant.visualBriefJson;
   const hypothesis = (market?.visualHypotheses ?? []).find((h) => h.id === brief?.hypothesisId);
   const theme = buildTheme(brand?.visualSystem ?? {}, hypothesis?.themeVariant ?? null);
+  // The footer handle (docs/design/carousel-style.md): the market's connected account.
+  const [account] = await ctx.db
+    .select({ username: schema.socialAccounts.username })
+    .from(schema.socialAccounts)
+    .where(
+      and(
+        eq(schema.socialAccounts.marketId, variant.marketId),
+        ne(schema.socialAccounts.status, "DISABLED"),
+      ),
+    )
+    .orderBy(desc(schema.socialAccounts.connectedAt))
+    .limit(1);
+  const handle = account?.username ?? null;
 
   const assetIds = [
     ...new Set(
@@ -117,6 +132,7 @@ export async function loadRenderInput(
         templatesVersion,
         // Only when a badge is drawn, so renders made before M5-12 keep their hash.
         ...(aiBadgeSlides.size > 0 ? [{ aiBadge: [...aiBadgeSlides].sort() }] : []),
+        ...(handle ? [{ handle }] : []),
       ]),
     )
     .digest("hex");
@@ -125,6 +141,7 @@ export async function loadRenderInput(
     slides: variant.slidesJson,
     theme,
     aiBadgeSlides,
+    handle,
     assets,
     templatesVersion,
     inputHash,
@@ -173,6 +190,7 @@ export async function loadRenderAssets(
         assets: {
           images,
           ...(logo ? { logo } : {}),
+          ...(input.handle ? { handle: input.handle } : {}),
           ...(input.aiBadgeSlides.has(slide.id) ? { aiBadge: true } : {}),
         },
       };

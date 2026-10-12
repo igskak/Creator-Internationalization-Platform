@@ -16,15 +16,26 @@ const ESCAPES: Record<string, string> = {
 export const escapeHtml = (text: string): string =>
   text.replace(/[&<>"']/g, (c) => ESCAPES[c] ?? c);
 
-/** Text with its line breaks kept, escaped. */
-export const textHtml = (text: string): string => escapeHtml(text).replace(/\r?\n/g, "<br>");
+/** `**phrase**`: the writer's emphasis (docs/design/carousel-style.md). */
+const EMPHASIS = /\*\*([^*]+?)\*\*/g;
 
-/** Line height of the two font roles (08 §8.3). */
-export const LINE_HEIGHT = { display: 1.12, body: 1.3 } as const;
+/** Slot text without the emphasis markers: what the reader sees, for lengths and glyph checks. */
+export const stripEmphasis = (text: string): string =>
+  text.replace(EMPHASIS, "$1").replaceAll("**", "");
 
 /**
- * Vertical padding of a slot in em. A font's glyph box is taller than a tight line height (Fraunces
- * at 1.12), and the browser counts that extra as scrollable overflow; the padding gives it room, so
+ * Text with its line breaks kept, escaped. `**phrase**` becomes `<em>`: bold in a body slot, the
+ * accent colour in a display slot. A stray marker is dropped.
+ */
+export const textHtml = (text: string): string =>
+  escapeHtml(text).replace(EMPHASIS, "<em>$1</em>").replaceAll("**", "").replace(/\r?\n/g, "<br>");
+
+/** Line height of the two font roles (08 §8.3; tight uppercase headlines). */
+export const LINE_HEIGHT = { display: 1.02, body: 1.3 } as const;
+
+/**
+ * Vertical padding of a slot in em. A font's glyph box is taller than a tight line height (Inter
+ * Tight at 1.02), and the browser counts that extra as scrollable overflow; the padding gives it room, so
  * only text that really needs another line is reported as overflow.
  */
 export const SLOT_PAD_EM = { display: 0.1, body: 0.06 } as const;
@@ -67,4 +78,14 @@ export function imageSlot(context: RenderContext, name: string, className = ""):
     return `<div class="${cls} img-missing" data-image="${escapeHtml(name)}" data-image-missing data-required="${spec.required}"></div>`;
   }
   return `<img class="${cls}" data-image="${escapeHtml(name)}" alt="" src="${src}">`;
+}
+
+/**
+ * A cut-out picture on white (docs/design/carousel-style.md): the whole 4:5 picture as a layer
+ * behind the text, multiplied so its white merges with the page, moved right and down by the
+ * template (`className`) so the subject bleeds off the edge. Nothing when there is no picture.
+ */
+export function cutoutSlot(context: RenderContext, name: string, className = ""): string {
+  if (!context.assets.images[name]) return "";
+  return imageSlot(context, name, `cutout ${className}`);
 }

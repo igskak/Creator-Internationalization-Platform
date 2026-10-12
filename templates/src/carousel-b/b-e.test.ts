@@ -76,11 +76,25 @@ describe("template B", () => {
 });
 
 describe("template E", () => {
-  it("has a mistake panel and a correct panel, and the picture only when there is one", () => {
+  it("strikes out the mistake, then the correct way, and the cut-out only when there is one", () => {
     const html = render("E", "es-long");
-    expect(html).toContain('<div class="e-panel mistake">');
-    expect(html).toContain('<div class="e-panel correct">');
-    expect(html).toContain('data-image="image"');
+    expect(html).toContain('class="slot display e-mistake-title" data-slot="mistakeTitle"');
+    expect(html).toContain('class="slot display e-correct-title" data-slot="correctTitle"');
+    expect(html).toContain('<img class="img cutout e-photo" data-image="image"');
     expect(render("E", "es-long", false)).not.toContain('data-image="image"');
+  });
+});
+
+describe("template B number", () => {
+  it("draws a step number in ink and any other figure in the accent colour", () => {
+    expect(render("B", "en-short")).toContain('class="slot display b-number" data-slot="number"');
+    expect(render("B", "es-long")).toContain(
+      'class="slot display b-number figure" data-slot="number"',
+    );
+  });
+
+  it("narrows the column only when there is a picture", () => {
+    expect(render("B", "es-long")).toContain('<div class="b-wrap has-photo">');
+    expect(render("B", "es-long", false)).toContain('<div class="b-wrap">');
   });
 });

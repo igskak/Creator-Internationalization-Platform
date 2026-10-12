@@ -1,8 +1,8 @@
 import type { SlideData } from "./framework/types";
 
 // Fixture slides for the renderers' snapshot tests, the preview and the visual regression tests
-// (08 §8.9): Spanish long text, English short text, maximum-length slots, special characters and
-// a missing optional slot. Synthetic text, not real content.
+// (08 §8.9): Spanish long text (with `**emphasis**`), English short text, maximum-length slots,
+// special characters and a missing optional slot. Synthetic text, not real content.
 
 const slide = (
   templateId: string,
@@ -23,7 +23,7 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
       "es-long",
       slide("A", "HOOK", {
         kicker: "Error común",
-        headline: "¿Por qué el arroz del domingo siempre queda pegajoso?",
+        headline: "¿Por qué el arroz del domingo siempre queda **pegajoso?**",
         subline: "Tres gestos que cambian el resultado, sin comprar nada nuevo.",
       }),
     ),
@@ -50,7 +50,7 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
     fixture(
       "es-long",
       slide("F", "CTA", {
-        headline: "Llévate la guía completa del arroz perfecto",
+        headline: "Llévate la guía completa del **arroz perfecto**",
         body: "Comenta la palabra GUÍA y te la enviamos por mensaje directo, con recetas y tiempos.",
         keyword: "GUÍA",
         offerName: "Guía de arroz",
@@ -92,7 +92,7 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
         number: "2:1",
         label: "Agua y arroz",
         headline: "La proporción que no falla",
-        body: "Dos partes de agua por una de arroz, tapa puesta y fuego bajo; el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.",
+        body: "Dos partes de agua por una de arroz, **tapa puesta y fuego bajo;** el vapor termina el trabajo y los granos quedan sueltos, sin rascar el fondo de la olla.",
       }),
     ),
     fixture("en-short", slide("B", "FACT", { number: "12", body: "Minutes of rest." })),
@@ -218,7 +218,7 @@ export const TEMPLATE_FIXTURES: Readonly<Record<string, Readonly<Record<string, 
       "es-long",
       slide("D", "STEP", {
         title: "Cómo se cuece el arroz paso a paso",
-        step1: "Mide el agua: dos partes por una",
+        step1: "**Mide el agua:** dos partes por una",
         step2: "Lleva a ebullición y baja el fuego",
         step3: "Tapa y cuenta quince minutos",
         step4: "Mezcla con un tenedor",

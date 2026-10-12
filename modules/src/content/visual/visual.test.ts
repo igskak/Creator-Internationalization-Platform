@@ -71,7 +71,7 @@ describe("validateVisualBrief", () => {
   });
 
   it("allows an optional slot to stay empty or to be filled", () => {
-    const optional = entry({ slideId: "s2", slot: "side", aspect: "1:1" });
+    const optional = entry({ slideId: "s2", slot: "side", aspect: "4:5" });
     expect(codes(brief({ slides: [entry(), optional] }))).toEqual([]);
     expect(codes(brief({ slides: [entry(), { ...optional, source: "NONE" }] }))).toEqual([]);
   });

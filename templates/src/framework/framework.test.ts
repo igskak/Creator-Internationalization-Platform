@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { registry } from "../registry";
 import { buildTheme } from "../theme";
 import { FIT_TEXT_SCRIPT } from "./fit-text";
-import { imageSlot, slotBoxHeightPx, textSlot } from "./html";
+import { cutoutSlot, imageSlot, slotBoxHeightPx, stripEmphasis, textHtml, textSlot } from "./html";
 import { renderSlideHtml, TEMPLATE_RENDERERS } from "./slide-document";
 import type { RenderContext, SlideData, TemplateRenderer } from "./types";
 
@@ -70,12 +70,23 @@ describe("renderSlideHtml", () => {
   it("shows the page indicator and the theme variables on the root", () => {
     const html = renderSlideHtml(input);
     expect(html).toContain('<div class="rc-page" data-page>1/6</div>');
-    expect(html).toContain("--rc-bg:#FAF6EF;");
+    expect(html).toContain("--rc-bg:#FFFFFF;");
     // The quotes of the font names must not end the style attribute.
     expect(html).toContain(
-      "--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;",
+      "--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;",
     );
     expect(html).toContain("--rc-safe-margin:72px;");
+  });
+
+  it("writes the account's handle bottom-left when there is no logo", () => {
+    expect(renderSlideHtml(input)).not.toContain("data-handle");
+    const html = renderSlideHtml({ ...input, assets: { ...input.assets, handle: "@chef<x>" } });
+    expect(html).toContain('<div class="rc-handle" data-handle>@chef&lt;x&gt;</div>');
+    const withLogo = renderSlideHtml({
+      ...input,
+      assets: { ...input.assets, handle: "chef", logo: "data:image/svg+xml;base64,PHN2Zy8+" },
+    });
+    expect(withLogo).not.toContain("data-handle");
   });
 
   it("draws the AI badge only when asked (a slide with a generated image, M5-12)", () => {
@@ -106,10 +117,10 @@ describe("slot helpers", () => {
 
   it("limits the box from the template's limits and marks the slot for fit-text", () => {
     const html = textSlot(context, "headline", "h");
-    // headline: 3 lines × 96 px × 1.12 + 2 × 0.1 em of padding
-    expect(slotBoxHeightPx(context.template.textSlots.headline as never)).toBe(342);
-    expect(html).toContain('data-slot="headline" data-fit data-fit-min="64" data-fit-max="96"');
-    expect(html).toContain("max-height:342px");
+    // headline: 4 lines × 100 px × 1.02 + 2 × 0.1 em of padding
+    expect(slotBoxHeightPx(context.template.textSlots.headline as never)).toBe(428);
+    expect(html).toContain('data-slot="headline" data-fit data-fit-min="64" data-fit-max="100"');
+    expect(html).toContain("max-height:428px");
     expect(html).toContain("Por qué no lavar el arroz?<br>Segunda línea");
   });
 
@@ -121,6 +132,29 @@ describe("slot helpers", () => {
 
   it("marks a missing image so the QA can tell a required one", () => {
     expect(imageSlot(context, "hero")).toContain('data-image-missing data-required="true"');
+  });
+
+  it("draws a cut-out only when there is a picture", () => {
+    expect(cutoutSlot(context, "hero", "x")).toBe("");
+    const withImage = { ...context, assets: { images: { hero: "data:image/webp;base64,AA" } } };
+    expect(cutoutSlot(withImage, "hero", "x")).toBe(
+      '<img class="img cutout x" data-image="hero" alt="" src="data:image/webp;base64,AA">',
+    );
+  });
+});
+
+describe("emphasis", () => {
+  it("turns **phrase** into <em> after escaping, and drops a stray marker", () => {
+    expect(textHtml("Rinse **<b>first</b>** now")).toBe(
+      "Rinse <em>&lt;b&gt;first&lt;/b&gt;</em> now",
+    );
+    expect(textHtml("**a** and **b**\nnext")).toBe("<em>a</em> and <em>b</em><br>next");
+    expect(textHtml("odd ** marker")).toBe("odd  marker");
+  });
+
+  it("strips the markers for what the reader sees", () => {
+    expect(stripEmphasis("**Toast** it **in oil.**")).toBe("Toast it in oil.");
+    expect(stripEmphasis("2 ** 3")).toBe("2  3");
   });
 });
 

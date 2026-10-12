@@ -21,15 +21,18 @@ export type VisualSystemLike = {
   themeVariants: Readonly<Record<string, Partial<ThemeColors>>>;
 };
 
-/** Used while `brands.visual_system` is still `{}`. */
+/**
+ * Used while `brands.visual_system` is still `{}`: white page, black type, one red
+ * (docs/design/carousel-style.md). The correct way is plain black; red marks the mistake.
+ */
 export const DEFAULT_VISUAL_SYSTEM: VisualSystemLike = {
   colors: {
-    background: "#FAF6EF",
+    background: "#FFFFFF",
     surface: "#FFFFFF",
-    text: "#1F1B16",
-    accent: "#B5532F",
-    positive: "#3F7D4E",
-    negative: "#B3382C",
+    text: "#111111",
+    accent: "#E1251B",
+    positive: "#111111",
+    negative: "#E1251B",
   },
   fonts: { ...DEFAULT_FONTS },
   logo: { assetKey: "", minHeightPx: 48 },

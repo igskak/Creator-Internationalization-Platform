@@ -13,6 +13,7 @@ export {
 } from "./fonts";
 export {
   CANVAS,
+  cutoutSlot,
   escapeHtml,
   FIT_TEXT_SCRIPT,
   imageSlot,
@@ -23,6 +24,7 @@ export {
   renderSlideHtml,
   type SlideData,
   slotBoxHeightPx,
+  stripEmphasis,
   TEMPLATE_RENDERERS,
   type TemplateRenderer,
   textHtml,

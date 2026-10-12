@@ -2,41 +2,47 @@
 
 exports[`template C > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="1.0.0">
+<html lang="en" data-template="C" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.c-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:var(--rc-safe-margin);bottom:calc(var(--rc-safe-margin) + 48px + 28px);display:flex;flex-direction:column;gap:24px}
-.c-half{position:relative;height:430px;border-radius:28px;overflow:hidden;flex:none}
-.c-half .img{width:100%;height:100%}
-.c-pill{position:absolute;left:24px;top:24px;max-width:calc(100% - 48px);padding:10px 26px;border-radius:999px;background:var(--rc-text);color:var(--rc-bg)}
-.c-half.after .c-pill{background:var(--rc-accent);color:#fff}
-.c-caption{margin-top:auto}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.c-caption{position:absolute;left:180px;right:180px;top:112px;text-align:center}
+.c-label{position:absolute;top:470px;width:420px;z-index:1}
+.c-label.before{left:var(--rc-safe-margin)}
+.c-label.after{right:var(--rc-safe-margin);text-align:right}
+.c-label.after .slot{color:var(--rc-accent)}
+.c-before{transform:translate(-540px,330px);-webkit-mask-image:linear-gradient(90deg,#000 66%,transparent 92%);mask-image:linear-gradient(90deg,#000 66%,transparent 92%)}
+.c-after{transform:translate(540px,330px);-webkit-mask-image:linear-gradient(90deg,transparent 8%,#000 34%);mask-image:linear-gradient(90deg,transparent 8%,#000 34%)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="C" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
-<div class="c-wrap">
-<div class="c-half before"><img class="img" data-image="before" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="beforeLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Before</div></div></div>
-<div class="c-half after"><img class="img" data-image="after" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="afterLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">After</div></div></div>
-<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:161px">Same rice, ten minutes apart.</div>
-</div>
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="C" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout c-before" data-image="before" alt="" src="data:image/webp;base64,UklGRg==">
+<img class="img cutout c-after" data-image="after" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="36" style="font-size:36px;max-height:192px">Same rice, ten minutes apart.</div>
+<div class="c-label before"><div class="slot display " data-slot="beforeLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Before</div></div>
+<div class="c-label after"><div class="slot display " data-slot="afterLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">After</div></div>
 
 <div class="rc-page" data-page>1/6</div>
 </div>
@@ -73,41 +79,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="1.0.0">
+<html lang="en" data-template="C" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.c-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:var(--rc-safe-margin);bottom:calc(var(--rc-safe-margin) + 48px + 28px);display:flex;flex-direction:column;gap:24px}
-.c-half{position:relative;height:430px;border-radius:28px;overflow:hidden;flex:none}
-.c-half .img{width:100%;height:100%}
-.c-pill{position:absolute;left:24px;top:24px;max-width:calc(100% - 48px);padding:10px 26px;border-radius:999px;background:var(--rc-text);color:var(--rc-bg)}
-.c-half.after .c-pill{background:var(--rc-accent);color:#fff}
-.c-caption{margin-top:auto}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.c-caption{position:absolute;left:180px;right:180px;top:112px;text-align:center}
+.c-label{position:absolute;top:470px;width:420px;z-index:1}
+.c-label.before{left:var(--rc-safe-margin)}
+.c-label.after{right:var(--rc-safe-margin);text-align:right}
+.c-label.after .slot{color:var(--rc-accent)}
+.c-before{transform:translate(-540px,330px);-webkit-mask-image:linear-gradient(90deg,#000 66%,transparent 92%);mask-image:linear-gradient(90deg,#000 66%,transparent 92%)}
+.c-after{transform:translate(540px,330px);-webkit-mask-image:linear-gradient(90deg,transparent 8%,#000 34%);mask-image:linear-gradient(90deg,transparent 8%,#000 34%)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="C" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
-<div class="c-wrap">
-<div class="c-half before"><img class="img" data-image="before" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="beforeLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Sin remojar</div></div></div>
-<div class="c-half after"><img class="img" data-image="after" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="afterLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Tras 30 minutos</div></div></div>
-<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:161px">El grano remojado se cuece de forma pareja y no se abre; el otro queda duro por dentro.</div>
-</div>
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="C" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout c-before" data-image="before" alt="" src="data:image/webp;base64,UklGRg==">
+<img class="img cutout c-after" data-image="after" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="36" style="font-size:36px;max-height:192px">El grano remojado se cuece de forma pareja y no se abre; el otro queda duro por dentro.</div>
+<div class="c-label before"><div class="slot display " data-slot="beforeLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Sin remojar</div></div>
+<div class="c-label after"><div class="slot display " data-slot="afterLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Tras 30 minutos</div></div>
 
 <div class="rc-page" data-page>1/6</div>
 </div>
@@ -144,41 +156,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="1.0.0">
+<html lang="en" data-template="C" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.c-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:var(--rc-safe-margin);bottom:calc(var(--rc-safe-margin) + 48px + 28px);display:flex;flex-direction:column;gap:24px}
-.c-half{position:relative;height:430px;border-radius:28px;overflow:hidden;flex:none}
-.c-half .img{width:100%;height:100%}
-.c-pill{position:absolute;left:24px;top:24px;max-width:calc(100% - 48px);padding:10px 26px;border-radius:999px;background:var(--rc-text);color:var(--rc-bg)}
-.c-half.after .c-pill{background:var(--rc-accent);color:#fff}
-.c-caption{margin-top:auto}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.c-caption{position:absolute;left:180px;right:180px;top:112px;text-align:center}
+.c-label{position:absolute;top:470px;width:420px;z-index:1}
+.c-label.before{left:var(--rc-safe-margin)}
+.c-label.after{right:var(--rc-safe-margin);text-align:right}
+.c-label.after .slot{color:var(--rc-accent)}
+.c-before{transform:translate(-540px,330px);-webkit-mask-image:linear-gradient(90deg,#000 66%,transparent 92%);mask-image:linear-gradient(90deg,#000 66%,transparent 92%)}
+.c-after{transform:translate(540px,330px);-webkit-mask-image:linear-gradient(90deg,transparent 8%,#000 34%);mask-image:linear-gradient(90deg,transparent 8%,#000 34%)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="C" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
-<div class="c-wrap">
-<div class="c-half before"><img class="img" data-image="before" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="beforeLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Antes Antes Antes An</div></div></div>
-<div class="c-half after"><img class="img" data-image="after" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="afterLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Después Después Desp</div></div></div>
-<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:161px">Pie de foto con el máximo de caracteres permitido. Pie de foto con el máximo de caracteres permitido. Pie de foto con el máximo de caractere</div>
-</div>
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="C" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout c-before" data-image="before" alt="" src="data:image/webp;base64,UklGRg==">
+<img class="img cutout c-after" data-image="after" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="36" style="font-size:36px;max-height:192px">Pie de foto con el máximo de caracteres permitido. Pie de foto con el máximo de caracteres permitido. Pie de foto con el máximo de caractere</div>
+<div class="c-label before"><div class="slot display " data-slot="beforeLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Antes Antes Antes An</div></div>
+<div class="c-label after"><div class="slot display " data-slot="afterLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Después Después Desp</div></div>
 
 <div class="rc-page" data-page>1/6</div>
 </div>
@@ -215,41 +233,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="1.0.0">
+<html lang="en" data-template="C" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.c-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:var(--rc-safe-margin);bottom:calc(var(--rc-safe-margin) + 48px + 28px);display:flex;flex-direction:column;gap:24px}
-.c-half{position:relative;height:430px;border-radius:28px;overflow:hidden;flex:none}
-.c-half .img{width:100%;height:100%}
-.c-pill{position:absolute;left:24px;top:24px;max-width:calc(100% - 48px);padding:10px 26px;border-radius:999px;background:var(--rc-text);color:var(--rc-bg)}
-.c-half.after .c-pill{background:var(--rc-accent);color:#fff}
-.c-caption{margin-top:auto}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.c-caption{position:absolute;left:180px;right:180px;top:112px;text-align:center}
+.c-label{position:absolute;top:470px;width:420px;z-index:1}
+.c-label.before{left:var(--rc-safe-margin)}
+.c-label.after{right:var(--rc-safe-margin);text-align:right}
+.c-label.after .slot{color:var(--rc-accent)}
+.c-before{transform:translate(-540px,330px);-webkit-mask-image:linear-gradient(90deg,#000 66%,transparent 92%);mask-image:linear-gradient(90deg,#000 66%,transparent 92%)}
+.c-after{transform:translate(540px,330px);-webkit-mask-image:linear-gradient(90deg,transparent 8%,#000 34%);mask-image:linear-gradient(90deg,transparent 8%,#000 34%)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="C" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
-<div class="c-wrap">
-<div class="c-half before"><img class="img" data-image="before" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="beforeLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Antes</div></div></div>
-<div class="c-half after"><img class="img" data-image="after" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="afterLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">Después</div></div></div>
-<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:161px">Una diferencia clara.</div>
-</div>
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="C" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout c-before" data-image="before" alt="" src="data:image/webp;base64,UklGRg==">
+<img class="img cutout c-after" data-image="after" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="36" style="font-size:36px;max-height:192px">Una diferencia clara.</div>
+<div class="c-label before"><div class="slot display " data-slot="beforeLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Antes</div></div>
+<div class="c-label after"><div class="slot display " data-slot="afterLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">Después</div></div>
 
 <div class="rc-page" data-page>1/6</div>
 </div>
@@ -286,41 +310,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="1.0.0">
+<html lang="en" data-template="C" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.c-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:var(--rc-safe-margin);bottom:calc(var(--rc-safe-margin) + 48px + 28px);display:flex;flex-direction:column;gap:24px}
-.c-half{position:relative;height:430px;border-radius:28px;overflow:hidden;flex:none}
-.c-half .img{width:100%;height:100%}
-.c-pill{position:absolute;left:24px;top:24px;max-width:calc(100% - 48px);padding:10px 26px;border-radius:999px;background:var(--rc-text);color:var(--rc-bg)}
-.c-half.after .c-pill{background:var(--rc-accent);color:#fff}
-.c-caption{margin-top:auto}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.c-caption{position:absolute;left:180px;right:180px;top:112px;text-align:center}
+.c-label{position:absolute;top:470px;width:420px;z-index:1}
+.c-label.before{left:var(--rc-safe-margin)}
+.c-label.after{right:var(--rc-safe-margin);text-align:right}
+.c-label.after .slot{color:var(--rc-accent)}
+.c-before{transform:translate(-540px,330px);-webkit-mask-image:linear-gradient(90deg,#000 66%,transparent 92%);mask-image:linear-gradient(90deg,#000 66%,transparent 92%)}
+.c-after{transform:translate(540px,330px);-webkit-mask-image:linear-gradient(90deg,transparent 8%,#000 34%);mask-image:linear-gradient(90deg,transparent 8%,#000 34%)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="C" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
-<div class="c-wrap">
-<div class="c-half before"><img class="img" data-image="before" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="beforeLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">¡Crudo!</div></div></div>
-<div class="c-half after"><img class="img" data-image="after" alt="" src="data:image/webp;base64,UklGRg=="><div class="c-pill"><div class="slot display c-label" data-slot="afterLabel" data-fit data-fit-min="32" data-fit-max="44" style="font-size:44px;max-height:58px">A 180 °C</div></div></div>
-<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:161px">½ hora – la diferencia es “enorme”: café, crème, naïve.</div>
-</div>
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="C" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout c-before" data-image="before" alt="" src="data:image/webp;base64,UklGRg==">
+<img class="img cutout c-after" data-image="after" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot body c-caption" data-slot="caption" data-fit data-fit-min="32" data-fit-max="36" style="font-size:36px;max-height:192px">½ hora – la diferencia es “enorme”: café, crème, naïve.</div>
+<div class="c-label before"><div class="slot display " data-slot="beforeLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">¡Crudo!</div></div>
+<div class="c-label after"><div class="slot display " data-slot="afterLabel" data-fit data-fit-min="40" data-fit-max="56" style="font-size:56px;max-height:125px">A 180 °C</div></div>
 
 <div class="rc-page" data-page>1/6</div>
 </div>
@@ -357,45 +387,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="1.0.0">
+<html lang="en" data-template="D" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
-.d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
-.d-step{display:flex;align-items:center;gap:28px}
-.d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
-.d-icon svg{width:46px;height:46px}
-.d-num{position:absolute;top:-8px;left:-8px;width:36px;height:36px;border-radius:50%;background:var(--rc-text);color:var(--rc-bg);font:600 22px/36px var(--rc-font-body);text-align:center}
-.d-step .slot{flex:1}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.d-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:760px;display:flex;flex-direction:column;gap:44px}
+.d-steps{width:560px;border-left:2px solid var(--rc-text);display:flex;flex-direction:column}
+.d-step{position:relative;padding:14px 0 14px 44px}
+.d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
+.d-photo{transform:translate(200px,280px)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-en-short" data-template="D" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-en-short" data-template="D" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout d-photo" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="d-wrap">
-<div class="slot display d-title" data-slot="title" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Three steps</div>
-<img class="img d-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot display d-title" data-slot="title" data-fit data-fit-min="52" data-fit-max="84" style="font-size:84px;max-height:274px">Three steps</div>
 <div class="d-steps">
-<div class="d-step" data-step="1"><div class="d-icon" data-icon="water"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 17 11 23 11 30a13 13 0 0 0 26 0c0-7-5-13-13-24z"/></svg><span class="d-num">1</span></div><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Boil</div></div>
-<div class="d-step" data-step="2"><div class="d-icon" data-icon="heat"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5c2 8 11 12 11 24a11 11 0 0 1-22 0c0-6 4-8 5-13 3 2 4 5 4 8 3-4 4-11 2-19z"/></svg><span class="d-num">2</span></div><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Cover</div></div>
-<div class="d-step" data-step="3"><div class="d-icon" data-icon="time"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="16"/><path d="M24 16v10l7 5M19 5h10"/></svg><span class="d-num">3</span></div><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Rest</div></div>
+<div class="d-step" data-step="1"><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Boil</div></div>
+<div class="d-step" data-step="2"><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Cover</div></div>
+<div class="d-step" data-step="3"><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Rest</div></div>
 </div>
 </div>
 
@@ -434,47 +466,49 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="1.0.0">
+<html lang="en" data-template="D" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
-.d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
-.d-step{display:flex;align-items:center;gap:28px}
-.d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
-.d-icon svg{width:46px;height:46px}
-.d-num{position:absolute;top:-8px;left:-8px;width:36px;height:36px;border-radius:50%;background:var(--rc-text);color:var(--rc-bg);font:600 22px/36px var(--rc-font-body);text-align:center}
-.d-step .slot{flex:1}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.d-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:760px;display:flex;flex-direction:column;gap:44px}
+.d-steps{width:560px;border-left:2px solid var(--rc-text);display:flex;flex-direction:column}
+.d-step{position:relative;padding:14px 0 14px 44px}
+.d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
+.d-photo{transform:translate(200px,280px)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-es-long" data-template="D" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-es-long" data-template="D" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout d-photo" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="d-wrap">
-<div class="slot display d-title" data-slot="title" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Cómo se cuece el arroz paso a paso</div>
-<img class="img d-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot display d-title" data-slot="title" data-fit data-fit-min="52" data-fit-max="84" style="font-size:84px;max-height:274px">Cómo se cuece el arroz paso a paso</div>
 <div class="d-steps">
-<div class="d-step" data-step="1"><div class="d-icon" data-icon="water"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 17 11 23 11 30a13 13 0 0 0 26 0c0-7-5-13-13-24z"/></svg><span class="d-num">1</span></div><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Mide el agua: dos partes por una</div></div>
-<div class="d-step" data-step="2"><div class="d-icon" data-icon="heat"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5c2 8 11 12 11 24a11 11 0 0 1-22 0c0-6 4-8 5-13 3 2 4 5 4 8 3-4 4-11 2-19z"/></svg><span class="d-num">2</span></div><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Lleva a ebullición y baja el fuego</div></div>
-<div class="d-step" data-step="3"><div class="d-icon" data-icon="time"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="16"/><path d="M24 16v10l7 5M19 5h10"/></svg><span class="d-num">3</span></div><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Tapa y cuenta quince minutos</div></div>
-<div class="d-step" data-step="4"><div class="d-icon" data-icon="stir"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22h28M12 22a12 12 0 0 0 24 0M30 6 20 24"/></svg><span class="d-num">4</span></div><div class="slot body d-text" data-slot="step4" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Mezcla con un tenedor</div></div>
-<div class="d-step" data-step="5"><div class="d-icon" data-icon="rest"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 36h32M12 36V24a12 12 0 0 1 24 0v12M20 12l-2-6M28 12l2-6"/></svg><span class="d-num">5</span></div><div class="slot body d-text" data-slot="step5" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Deja reposar con la tapa puesta</div></div>
+<div class="d-step" data-step="1"><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px"><em>Mide el agua:</em> dos partes por una</div></div>
+<div class="d-step" data-step="2"><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Lleva a ebullición y baja el fuego</div></div>
+<div class="d-step" data-step="3"><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Tapa y cuenta quince minutos</div></div>
+<div class="d-step" data-step="4"><div class="slot body d-text" data-slot="step4" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Mezcla con un tenedor</div></div>
+<div class="d-step" data-step="5"><div class="slot body d-text" data-slot="step5" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Deja reposar con la tapa puesta</div></div>
 </div>
 </div>
 
@@ -513,47 +547,49 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="1.0.0">
+<html lang="en" data-template="D" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
-.d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
-.d-step{display:flex;align-items:center;gap:28px}
-.d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
-.d-icon svg{width:46px;height:46px}
-.d-num{position:absolute;top:-8px;left:-8px;width:36px;height:36px;border-radius:50%;background:var(--rc-text);color:var(--rc-bg);font:600 22px/36px var(--rc-font-body);text-align:center}
-.d-step .slot{flex:1}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.d-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:760px;display:flex;flex-direction:column;gap:44px}
+.d-steps{width:560px;border-left:2px solid var(--rc-text);display:flex;flex-direction:column}
+.d-step{position:relative;padding:14px 0 14px 44px}
+.d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
+.d-photo{transform:translate(200px,280px)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-max-length" data-template="D" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-max-length" data-template="D" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout d-photo" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="d-wrap">
-<div class="slot display d-title" data-slot="title" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Título del diagrama largo Título del diagrama largo Título d</div>
-<img class="img d-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot display d-title" data-slot="title" data-fit data-fit-min="52" data-fit-max="84" style="font-size:84px;max-height:274px">Título del diagrama largo Título del diagrama largo Título d</div>
 <div class="d-steps">
-<div class="d-step" data-step="1"><div class="d-icon" data-icon="water"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 17 11 23 11 30a13 13 0 0 0 26 0c0-7-5-13-13-24z"/></svg><span class="d-num">1</span></div><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Paso uno largo Paso uno largo Paso uno largo Paso uno largo </div></div>
-<div class="d-step" data-step="2"><div class="d-icon" data-icon="heat"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5c2 8 11 12 11 24a11 11 0 0 1-22 0c0-6 4-8 5-13 3 2 4 5 4 8 3-4 4-11 2-19z"/></svg><span class="d-num">2</span></div><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Paso dos largo Paso dos largo Paso dos largo Paso dos largo </div></div>
-<div class="d-step" data-step="3"><div class="d-icon" data-icon="time"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="16"/><path d="M24 16v10l7 5M19 5h10"/></svg><span class="d-num">3</span></div><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Paso tres largo Paso tres largo Paso tres largo Paso tres la</div></div>
-<div class="d-step" data-step="4"><div class="d-icon" data-icon="stir"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22h28M12 22a12 12 0 0 0 24 0M30 6 20 24"/></svg><span class="d-num">4</span></div><div class="slot body d-text" data-slot="step4" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Paso cuatro largo Paso cuatro largo Paso cuatro largo Paso c</div></div>
-<div class="d-step" data-step="5"><div class="d-icon" data-icon="rest"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 36h32M12 36V24a12 12 0 0 1 24 0v12M20 12l-2-6M28 12l2-6"/></svg><span class="d-num">5</span></div><div class="slot body d-text" data-slot="step5" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Paso cinco largo Paso cinco largo Paso cinco largo Paso cinc</div></div>
+<div class="d-step" data-step="1"><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Paso uno largo Paso uno largo Paso uno largo Paso uno largo </div></div>
+<div class="d-step" data-step="2"><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Paso dos largo Paso dos largo Paso dos largo Paso dos largo </div></div>
+<div class="d-step" data-step="3"><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Paso tres largo Paso tres largo Paso tres largo Paso tres la</div></div>
+<div class="d-step" data-step="4"><div class="slot body d-text" data-slot="step4" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Paso cuatro largo Paso cuatro largo Paso cuatro largo Paso c</div></div>
+<div class="d-step" data-step="5"><div class="slot body d-text" data-slot="step5" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Paso cinco largo Paso cinco largo Paso cinco largo Paso cinc</div></div>
 </div>
 </div>
 
@@ -592,45 +628,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="1.0.0">
+<html lang="en" data-template="D" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
-.d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
-.d-step{display:flex;align-items:center;gap:28px}
-.d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
-.d-icon svg{width:46px;height:46px}
-.d-num{position:absolute;top:-8px;left:-8px;width:36px;height:36px;border-radius:50%;background:var(--rc-text);color:var(--rc-bg);font:600 22px/36px var(--rc-font-body);text-align:center}
-.d-step .slot{flex:1}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.d-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:760px;display:flex;flex-direction:column;gap:44px}
+.d-steps{width:560px;border-left:2px solid var(--rc-text);display:flex;flex-direction:column}
+.d-step{position:relative;padding:14px 0 14px 44px}
+.d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
+.d-photo{transform:translate(200px,280px)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="D" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-no-optionals" data-template="D" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout d-photo" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="d-wrap">
-<div class="slot display d-title" data-slot="title" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">Tres pasos</div>
-<img class="img d-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot display d-title" data-slot="title" data-fit data-fit-min="52" data-fit-max="84" style="font-size:84px;max-height:274px">Tres pasos</div>
 <div class="d-steps">
-<div class="d-step" data-step="1"><div class="d-icon" data-icon="water"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 17 11 23 11 30a13 13 0 0 0 26 0c0-7-5-13-13-24z"/></svg><span class="d-num">1</span></div><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Uno</div></div>
-<div class="d-step" data-step="2"><div class="d-icon" data-icon="heat"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5c2 8 11 12 11 24a11 11 0 0 1-22 0c0-6 4-8 5-13 3 2 4 5 4 8 3-4 4-11 2-19z"/></svg><span class="d-num">2</span></div><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Dos</div></div>
-<div class="d-step" data-step="3"><div class="d-icon" data-icon="time"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="16"/><path d="M24 16v10l7 5M19 5h10"/></svg><span class="d-num">3</span></div><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Tres</div></div>
+<div class="d-step" data-step="1"><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Uno</div></div>
+<div class="d-step" data-step="2"><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Dos</div></div>
+<div class="d-step" data-step="3"><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Tres</div></div>
 </div>
 </div>
 
@@ -669,45 +707,47 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="1.0.0">
+<html lang="en" data-template="D" data-template-version="2.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
 <style>
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"Inter Tight";font-style:normal;font-weight:100 900;font-display:block;src:url(data:font/woff2;base64,…) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
-.rc-slide{position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
-.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal}
-.slot.display{font-family:var(--rc-font-display);line-height:1.12;padding-block:.1em;text-wrap:balance;font-weight:600}
-.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:400}
+.rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
+.slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
+.slot em{font-style:normal}
+.slot.body em{font-weight:700}
+.slot.display em{color:var(--rc-accent)}
+.slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
-.img-missing{background:repeating-linear-gradient(45deg,#e8e2d8,#e8e2d8 12px,#f4f0e8 12px,#f4f0e8 24px)}
-.rc-logo{position:absolute;display:flex;align-items:center}
+.img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
+.rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-page{position:absolute;right:var(--rc-safe-margin);bottom:var(--rc-safe-margin);font-family:var(--rc-font-body);font-size:24px;line-height:1;color:var(--rc-text);opacity:.6}
-.d-wrap{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);top:calc(var(--rc-safe-margin) + 24px);bottom:calc(var(--rc-safe-margin) + 48px + 40px);display:flex;flex-direction:column;gap:36px}
-.d-image{width:160px;height:160px;border-radius:24px;flex:none;align-self:flex-end}
-.d-steps{display:flex;flex-direction:column;gap:28px;margin-top:auto}
-.d-step{display:flex;align-items:center;gap:28px}
-.d-icon{flex:none;width:88px;height:88px;border-radius:50%;background:var(--rc-accent);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
-.d-icon svg{width:46px;height:46px}
-.d-num{position:absolute;top:-8px;left:-8px;width:36px;height:36px;border-radius:50%;background:var(--rc-text);color:var(--rc-bg);font:600 22px/36px var(--rc-font-body);text-align:center}
-.d-step .slot{flex:1}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
+.rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
+.d-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:760px;display:flex;flex-direction:column;gap:44px}
+.d-steps{width:560px;border-left:2px solid var(--rc-text);display:flex;flex-direction:column}
+.d-step{position:relative;padding:14px 0 14px 44px}
+.d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
+.d-photo{transform:translate(200px,280px)}
 </style>
 </head>
 <body>
-<div class="rc-slide" data-slide-id="fx-special-chars" data-template="D" style="--rc-bg:#FAF6EF;--rc-surface:#FFFFFF;--rc-text:#1F1B16;--rc-accent:#B5532F;--rc-positive:#3F7D4E;--rc-negative:#B3382C;--rc-font-display:&quot;Fraunces&quot;, serif;--rc-font-body:&quot;Inter&quot;, sans-serif;--rc-safe-margin:72px;">
+<div class="rc-slide" data-slide-id="fx-special-chars" data-template="D" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
+<img class="img cutout d-photo" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="d-wrap">
-<div class="slot display d-title" data-slot="title" data-fit data-fit-min="56" data-fit-max="80" style="font-size:80px;max-height:195px">¿Qué pasa a 180 °C?</div>
-<img class="img d-image" data-image="image" alt="" src="data:image/webp;base64,UklGRg==">
+<div class="slot display d-title" data-slot="title" data-fit data-fit-min="52" data-fit-max="84" style="font-size:84px;max-height:274px">¿Qué pasa a 180 °C?</div>
 <div class="d-steps">
-<div class="d-step" data-step="1"><div class="d-icon" data-icon="water"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6C16 17 11 23 11 30a13 13 0 0 0 26 0c0-7-5-13-13-24z"/></svg><span class="d-num">1</span></div><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Calienta ½ taza – sin prisa</div></div>
-<div class="d-step" data-step="2"><div class="d-icon" data-icon="heat"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5c2 8 11 12 11 24a11 11 0 0 1-22 0c0-6 4-8 5-13 3 2 4 5 4 8 3-4 4-11 2-19z"/></svg><span class="d-num">2</span></div><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">Añade “sal” y café</div></div>
-<div class="d-step" data-step="3"><div class="d-icon" data-icon="time"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="26" r="16"/><path d="M24 16v10l7 5M19 5h10"/></svg><span class="d-num">3</span></div><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="40" style="font-size:40px;max-height:109px">¡Listo! crème, naïve</div></div>
+<div class="d-step" data-step="1"><div class="slot body d-text" data-slot="step1" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Calienta ½ taza – sin prisa</div></div>
+<div class="d-step" data-step="2"><div class="slot body d-text" data-slot="step2" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">Añade “sal” y café</div></div>
+<div class="d-step" data-step="3"><div class="slot body d-text" data-slot="step3" data-fit data-fit-min="32" data-fit-max="34" style="font-size:34px;max-height:137px">¡Listo! crème, naïve</div></div>
 </div>
 </div>
 

@@ -27,7 +27,7 @@ describe("content-writer@1", () => {
 
   it("renders the slot limits of every template as attributes", () => {
     expect(textOf(FIXTURE_INPUT)).toContain(
-      '<slot name="headline" max_chars="70" max_lines="3" required="true">',
+      '<slot name="headline" max_chars="70" max_lines="4" required="true">',
     );
     expect(textOf(FIXTURE_INPUT)).toContain('<template id="E" roles="MISTAKE, CORRECT">');
   });
