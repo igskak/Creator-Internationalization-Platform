@@ -11,5 +11,17 @@ export async function register() {
   }
 }
 
-/** Errors thrown in server components, route handlers and server actions. */
-export const onRequestError = Sentry.captureRequestError;
+/**
+ * Errors thrown in server components, route handlers and server actions. Drizzle wraps a database
+ * error in "Failed query: …" and the Vercel log shows only that, so the wrapped error's code and
+ * message (never its parameters) are logged as well.
+ */
+export const onRequestError: typeof Sentry.captureRequestError = (error, ...rest) => {
+  const cause = (error as { cause?: { code?: unknown; message?: unknown } } | null)?.cause;
+  if (cause && typeof cause === "object") {
+    console.error(
+      `request error cause: ${String(cause.code ?? "")} ${String(cause.message ?? "")}`,
+    );
+  }
+  return Sentry.captureRequestError(error, ...rest);
+};
