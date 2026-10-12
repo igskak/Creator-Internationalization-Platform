@@ -11,6 +11,32 @@ export const LOGO_TOLERANCE_PX = 2;
 /** WCAG contrast of text over its background; below this the slot is reported (08 §8.6, P1). */
 export const MIN_CONTRAST = 4.5;
 
+/**
+ * A cut-out picture is multiplied onto the white page (docs/design/carousel-style.md), so its
+ * background must be white: the mean 0–255 value of its top-left corner (left 30 %, top 25 %),
+ * which every template leaves empty, must reach this, or the slide shows a grey block.
+ */
+export const MIN_PICTURE_WHITENESS = 240;
+
+/** Mean 0–255 value of the top-left corner (left 30 %, top 25 %) of a raw RGB(A) picture. */
+export function cornerWhiteness(image: {
+  data: Uint8Array;
+  width: number;
+  height: number;
+  channels: number;
+}): number {
+  const x1 = Math.max(1, Math.round(image.width * 0.3));
+  const y1 = Math.max(1, Math.round(image.height * 0.25));
+  let sum = 0;
+  for (let y = 0; y < y1; y++) {
+    for (let x = 0; x < x1; x++) {
+      const i = (y * image.width + x) * image.channels;
+      sum += ((image.data[i] ?? 0) + (image.data[i + 1] ?? 0) + (image.data[i + 2] ?? 0)) / 3;
+    }
+  }
+  return sum / (x1 * y1);
+}
+
 /** Relative luminance of an sRGB colour (WCAG 2.x). */
 export function luminance(r: number, g: number, b: number): number {
   const lin = (v: number) => {
@@ -64,6 +90,8 @@ export type PageMeasurement = {
   missingRequiredImages: string[];
   /** Pictures that did not load (`img.complete` false or zero width). */
   brokenImages: string[];
+  /** Image slots drawn as cut-outs on white (`img.cutout`). */
+  cutouts?: string[];
   /** Text slots with their box and colour, for the contrast check. */
   slots: {
     slot: string;
@@ -105,9 +133,13 @@ export function buildQaReport(args: {
   missingGlyphs: QaReport["missingGlyphs"];
   durationMs: number;
   lowContrast?: NonNullable<QaReport["lowContrast"]>;
+  nonWhitePictures?: NonNullable<QaReport["nonWhitePictures"]>;
 }): QaReport {
   return {
     ...(args.lowContrast && args.lowContrast.length > 0 ? { lowContrast: args.lowContrast } : {}),
+    ...(args.nonWhitePictures && args.nonWhitePictures.length > 0
+      ? { nonWhitePictures: args.nonWhitePictures }
+      : {}),
     overflow: args.measurements.flatMap((m) =>
       m.overflow.map((o) => ({ slideId: m.slideId, slot: o.slot, fontPxUsed: o.fontPxUsed })),
     ),
@@ -122,7 +154,7 @@ export function buildQaReport(args: {
 }
 
 export type QaVerdict = {
-  /** Findings that do not block: low contrast (08 §8.6, P1). */
+  /** Findings that do not block: low contrast (08 §8.6, P1), a cut-out picture not on white. */
   warnings: string[];
   /** The render may be used for review and approval. */
   ok: boolean;
@@ -177,9 +209,15 @@ export function judgeQa(
     flags.add("RENDER_FAILED");
     problems.push("A slide is larger than 8 MB.");
   }
-  const warnings = (report.lowContrast ?? []).map(
-    (c) =>
-      `Low contrast ${c.ratio.toFixed(1)}:1 (needs ${MIN_CONTRAST}:1): ${c.slideId}/${c.slot}.`,
-  );
+  const warnings = [
+    ...(report.lowContrast ?? []).map(
+      (c) =>
+        `Low contrast ${c.ratio.toFixed(1)}:1 (needs ${MIN_CONTRAST}:1): ${c.slideId}/${c.slot}.`,
+    ),
+    ...(report.nonWhitePictures ?? []).map(
+      (p) =>
+        `Picture not on white (corner ${Math.round(p.mean)}/255, needs ${MIN_PICTURE_WHITENESS}): ${p.slideId}/${p.slot}.`,
+    ),
+  ];
   return { ok: flags.size === 0, flags: [...flags], problems, warnings };
 }

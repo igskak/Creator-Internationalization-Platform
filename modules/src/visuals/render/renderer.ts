@@ -14,10 +14,12 @@ import { type Browser, chromium } from "playwright-core";
 import sharp from "sharp";
 import {
   buildQaReport,
+  cornerWhiteness,
   EXPECTED,
   judgeQa,
   MAX_JPEG_BYTES,
   MIN_CONTRAST,
+  MIN_PICTURE_WHITENESS,
   type PageMeasurement,
   type QaVerdict,
   worstContrast,
@@ -115,6 +117,9 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
   const brokenImages = [...document.querySelectorAll("img[data-image]")]
     .filter((img) => !img.complete || img.naturalWidth === 0)
     .map((img) => img.getAttribute("data-image") || "");
+  const cutouts = [...document.querySelectorAll("img.cutout[data-image]")].map(
+    (img) => img.getAttribute("data-image") || "",
+  );
   const logo = document.querySelector("[data-logo]");
   const box = logo ? logo.getBoundingClientRect() : null;
   const slots = [...document.querySelectorAll("[data-slot]")].map((el) => {
@@ -131,6 +136,7 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
     overflow,
     missingRequiredImages,
     brokenImages,
+    cutouts,
     logo: {
       box: box ? { x: box.x, y: box.y, width: box.width, height: box.height } : null,
       expected,
@@ -140,6 +146,27 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
 }`;
 
 type Measured = Omit<PageMeasurement, "slideId">;
+
+/** `cornerWhiteness` of a picture given as a data URL; null when it cannot be read. */
+async function pictureWhiteness(dataUrl: string | undefined): Promise<number | null> {
+  const base64 = dataUrl?.split(",", 2)[1];
+  if (!base64) return null;
+  try {
+    const { data, info } = await sharp(Buffer.from(base64, "base64"))
+      .resize(108, 135, { fit: "fill" })
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    return cornerWhiteness({
+      data,
+      width: info.width,
+      height: info.height,
+      channels: info.channels,
+    });
+  } catch {
+    return null;
+  }
+}
 
 export async function renderCarousel(
   input: { slides: readonly RenderInputSlide[]; theme: Theme },
@@ -170,6 +197,7 @@ export async function renderCarousel(
   const missingImages: { slideId: string; slot: string }[] = [];
   const brokenImages: { slideId: string; slot: string }[] = [];
   const lowContrast: { slideId: string; slot: string; ratio: number }[] = [];
+  const nonWhitePictures: { slideId: string; slot: string; mean: number }[] = [];
   try {
     const context = await browser.newContext({
       viewport: { width: EXPECTED.width, height: EXPECTED.height },
@@ -202,6 +230,13 @@ export async function renderCarousel(
           for (const slot of measured.missingRequiredImages)
             missingImages.push({ slideId: slide.id, slot });
           for (const slot of measured.brokenImages) brokenImages.push({ slideId: slide.id, slot });
+          // Cut-outs are multiplied onto the page: a picture that is not on white shows as a block.
+          for (const slot of measured.cutouts ?? []) {
+            const mean = await pictureWhiteness(assets.images[slot]);
+            if (mean !== null && mean < MIN_PICTURE_WHITENESS) {
+              nonWhitePictures.push({ slideId: slide.id, slot, mean: Math.round(mean) });
+            }
+          }
 
           const png = await page.screenshot({ type: "png", fullPage: false });
           // Contrast: the picture and background with the text hidden, sampled under each text box.
@@ -255,6 +290,7 @@ export async function renderCarousel(
     missingGlyphs: [],
     durationMs: Date.now() - started,
     lowContrast,
+    nonWhitePictures,
   });
   return {
     slides: rendered,

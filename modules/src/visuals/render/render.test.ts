@@ -8,6 +8,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import {
   buildQaReport,
   contrastRatio,
+  cornerWhiteness,
   judgeQa,
   logoPlacementOk,
   type PageMeasurement,
@@ -55,6 +56,41 @@ const inputFor = (templateId: string, name: string, withImages = true): RenderIn
   }
   return { slide, assets: { images } };
 };
+
+describe("cut-out background (no browser)", () => {
+  it("measures the top-left corner of a picture", () => {
+    const width = 10;
+    const height = 8;
+    const white = new Uint8Array(width * height * 3).fill(255);
+    expect(cornerWhiteness({ data: white, width, height, channels: 3 })).toBe(255);
+    // Grey only in the lower right: the corner stays white.
+    const subject = white.slice();
+    for (let y = 4; y < height; y++)
+      for (let x = 5; x < width; x++)
+        subject.fill(90, (y * width + x) * 3, (y * width + x) * 3 + 3);
+    expect(cornerWhiteness({ data: subject, width, height, channels: 3 })).toBe(255);
+    const grey = new Uint8Array(width * height * 3).fill(200);
+    expect(cornerWhiteness({ data: grey, width, height, channels: 3 })).toBe(200);
+  });
+
+  it("turns a non-white picture into a warning, not a blocker", () => {
+    const report = buildQaReport({
+      measurements: [],
+      files: [],
+      missingGlyphs: [],
+      durationMs: 1,
+      nonWhitePictures: [{ slideId: "s2", slot: "side", mean: 201 }],
+    });
+    const verdict = judgeQa(report, { missingRequiredImages: [], brokenImages: [] });
+    expect(verdict.ok).toBe(true);
+    expect(verdict.warnings).toEqual([
+      "Picture not on white (corner 201/255, needs 240): s2/side.",
+    ]);
+    expect(
+      buildQaReport({ measurements: [], files: [], missingGlyphs: [], durationMs: 1 }),
+    ).not.toHaveProperty("nonWhitePictures");
+  });
+});
 
 describe("contrast (no browser)", () => {
   it("computes the WCAG ratio: 21:1 for black on white, 1:1 for the same colour", () => {
@@ -230,7 +266,22 @@ describe.skipIf(!browser)("renderCarousel", () => {
     const slides = ["A", "B", "C", "D", "E", "F"].map((id) => inputFor(id, "es-long"));
     const result = await renderCarousel({ slides, theme }, { browser: needBrowser() });
     expect(result.qa.lowContrast).toBeUndefined();
+    expect(result.qa.nonWhitePictures).toBeUndefined();
   }, 120_000);
+
+  it("warns about a cut-out picture that is not on white, but not about the cover", async () => {
+    // The flat gradient picture has no white corner: fine full-bleed (A), a grey block as a cut-out.
+    const grey = { ...inputFor("B", "es-long"), assets: { images: { side: PICTURE } } };
+    const result = await renderCarousel(
+      { slides: [inputFor("A", "es-long"), grey], theme },
+      { browser: needBrowser() },
+    );
+    expect(result.qa.nonWhitePictures).toEqual([
+      expect.objectContaining({ slideId: "fx-es-long", slot: "side" }),
+    ]);
+    expect(result.verdict.ok).toBe(true);
+    expect(result.verdict.warnings.some((w) => w.startsWith("Picture not on white"))).toBe(true);
+  }, 60_000);
 
   it("reports a required picture that is missing", async () => {
     const slides = [inputFor("A", "es-long", false)];

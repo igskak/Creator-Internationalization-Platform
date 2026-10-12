@@ -271,5 +271,12 @@ export const QaReport = z.object({
   lowContrast: z
     .array(z.object({ slideId: z.string(), slot: z.string(), ratio: z.number().nonnegative() }))
     .optional(),
+  /**
+   * Cut-out pictures whose background is not white (a warning): the mean 0–255 value of the
+   * picture's top-left corner, which the templates expect empty and white.
+   */
+  nonWhitePictures: z
+    .array(z.object({ slideId: z.string(), slot: z.string(), mean: z.number().nonnegative() }))
+    .optional(),
 });
 export type QaReport = z.infer<typeof QaReport>;
