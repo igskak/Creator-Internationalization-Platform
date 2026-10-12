@@ -13,6 +13,7 @@ import { jobHandlers } from "@rc/modules/job-handlers";
 import { headers } from "next/headers";
 import { REQUEST_ID_HEADER } from "./request-id";
 import {
+  releaseDbAfterRequest,
   serverDb,
   serverEmbeddings,
   serverEnv,
@@ -60,6 +61,7 @@ export async function currentRequestId(): Promise<string> {
 
 /** ServiceContext for one request (plan 03 §3.1 `src/server/context.ts`). */
 export async function requestContext(actor: Actor, requestId?: string): Promise<ServiceContext> {
+  releaseDbAfterRequest();
   return createServiceContext({
     db: serverDb(),
     logger: serverLogger(),
