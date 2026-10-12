@@ -13,7 +13,7 @@ Spec §23.1 item 14 (§23 items 15 and 16). Milestones follow the spec phases [S
 | M3 Creative Engine | Phase 3 | Visual briefs, images, deterministic carousel renderer, preview | 14 | 8–11 days | DoD |
 | M4 Review + Calendar | Phase 4 | Field-level review, approval snapshots, scheduling, campaign IDs | 11 | 6–8 days | DoD |
 | M5 Instagram | Phase 5 | Connect, publish safely, token health | 12 (+ M5-12 if legally required) | 6–8 days | **Gate G2** |
-| M6 Analytics | Phase 6 | Snapshots, dashboards, lineage | 8 | 5–7 days | DoD |
+| M6 Analytics | Phase 6 | Snapshots, dashboards, lineage, progress of long actions | 9 | 6–8 days | DoD |
 | M7 Learning | Phase 7 | Performance memory fed into generation, experiments-lite | 0 (all P1) | 3–5 days | DoD |
 | H Hardening | – | Health page, security review, runbooks, MVP acceptance | 4 | 3–4 days | **MVP sign-off** |
 
@@ -90,11 +90,12 @@ Spec §23.1 item 14 (§23 items 15 and 16). Milestones follow the spec phases [S
 - **Acceptance checks**: smoke report; idempotency drill (one post only); `publish_attempts` audit trail; permalinks open.
 
 ### M6 · Analytics
-- **Scope**: M6-01 … M6-07, M6-09 (P0); M6-08 (P1).
+- **Scope**: M6-01 … M6-07, M6-09, M6-10 (P0); M6-08 (P1).
 - **Definition of Done**
   - Media snapshots at H2/D1/D3/D7/D28 and daily account snapshots are collected automatically; failures are visible.
   - Growth, Engagement, Content learning and Operations dashboards work with market and date filters.
   - The lineage view answers the §5 question for any published post.
+  - A long action (regenerate, pictures, render, publish) shows its steps and elapsed time on the page and updates itself (M6-10).
 - **Acceptance checks**: after 7 days of posting, D7 snapshots exist for every post; the content-learning table lists the posts under the right dimensions.
 
 ### M7 · Learning (P1)
