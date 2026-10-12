@@ -13,6 +13,15 @@ import { createServiceContext, manualClock, type ServiceContext } from "../../co
 import { p0Registry } from "../pipeline/context";
 import { seedAcceptedIdea, textOfRequest } from "../pipeline/scripted-model";
 import { recordingJobs } from "../variants/test-support";
+import { recipeOf } from "./inputs";
+import {
+  finishPhotoPrompts,
+  PHOTO_NEGATIVE,
+  PHOTO_STYLE,
+  photoNegative,
+  photoPrompt,
+  SLOT_COMPOSITION,
+} from "./photo-prompt";
 import {
   regenerateVisualBrief,
   requestVisualsRegeneration,
@@ -173,6 +182,34 @@ describe("regenerateVisualBrief", () => {
       .where(eq(schema.contentVariants.id, variantId));
     return v as typeof schema.contentVariants.$inferSelect;
   };
+
+  it("gives the director the idea's recipe and finishes the prompts of a shot list", async () => {
+    let request = "";
+    answer = (text) => {
+      request = text;
+      const scripted = scriptedVisualBrief(text) as VisualBrief;
+      const shots = ["TECHNIQUE_IN_ACTION", "INGREDIENT_MACRO", "FINISHED_DISH"] as const;
+      return {
+        ...scripted,
+        slides: scripted.slides.map((e, i) => ({
+          ...e,
+          source: "GENERATE",
+          shotType: shots[i],
+          prompt: `Subject ${i + 1}`,
+          negativePrompt: "burnt grains",
+        })),
+      };
+    };
+    const { visualBrief } = await regenerateVisualBrief(ctx, { variantId });
+    expect(request).toContain("<recipe>");
+    expect(request).toContain("Рис не промывают.");
+    const side = visualBrief.slides.find((e) => e.slot === "side");
+    expect(side?.prompt).toBe(`Subject 2. ${SLOT_COMPOSITION.side} ${PHOTO_STYLE}`);
+    expect(side?.negativePrompt).toBe(`${PHOTO_NEGATIVE}, burnt grains`);
+    const hero = visualBrief.slides.find((e) => e.slot === "hero");
+    expect(hero?.prompt).toContain(SLOT_COMPOSITION.cover);
+    expect((await row()).visualBriefJson).toEqual(visualBrief);
+  });
 
   it("plans the pictures again, stores the brief and audits it", async () => {
     const { visualBrief } = await regenerateVisualBrief(ctx, { variantId });
@@ -360,5 +397,154 @@ describe("regenerateVisualBrief", () => {
     await expect(regenerateVisualBrief(ctx, { variantId })).rejects.toBeInstanceOf(
       InvalidStateError,
     );
+  });
+});
+
+describe("photo prompts", () => {
+  it("adds the slot's composition and the style to the director's subject, once", () => {
+    const side = photoPrompt("Water running through quinoa in a strainer", "side");
+    expect(side).toBe(
+      `Water running through quinoa in a strainer. ${SLOT_COMPOSITION.side} ${PHOTO_STYLE}`,
+    );
+    expect(photoPrompt(side, "side")).toBe(side);
+    expect(photoPrompt("A bowl of quinoa!", "centred")).toBe(
+      `A bowl of quinoa! ${SLOT_COMPOSITION.centred} ${PHOTO_STYLE}`,
+    );
+  });
+
+  it("keeps the fixed negative list and adds the director's own terms without repeats", () => {
+    expect(photoNegative(undefined)).toBe(PHOTO_NEGATIVE);
+    const merged = photoNegative("burnt grains, Text, oil splatter");
+    expect(merged).toBe(`${PHOTO_NEGATIVE}, burnt grains, oil splatter`);
+    expect(photoNegative(merged)).toBe(merged);
+  });
+
+  it("finishes only the generated pictures of a shot list, by template slot", () => {
+    const finished = finishPhotoPrompts(
+      brief({
+        slides: [
+          entry({ shotType: "FINISHED_DISH", prompt: "A bowl of quinoa" }),
+          entry({ slideId: "s2", slot: "side", aspect: "4:5", prompt: "Old full prompt" }),
+        ],
+      }),
+      slides,
+      p0Registry,
+    );
+    expect(finished.slides[0]?.prompt).toContain(SLOT_COMPOSITION.cover);
+    expect(finished.slides[1]?.prompt).toBe("Old full prompt");
+    expect(finished.slides[1]?.negativePrompt).toBe("text");
+  });
+});
+
+describe("shot list checks", () => {
+  const five = [
+    slide("s1", 0, "A", "HOOK"),
+    slide("s2", 1, "B", "STEP"),
+    slide("s3", 2, "B", "STEP"),
+    slide("s4", 3, "B", "FACT"),
+    slide("s5", 4, "F", "CTA"),
+  ];
+  const ctx5: VisualValidationContext = { ...context, slides: five };
+  const shot = (
+    slideId: string,
+    shotType: NonNullable<VisualBrief["slides"][number]["shotType"]>,
+  ) =>
+    entry({
+      slideId,
+      slot: slideId === "s1" ? "hero" : slideId === "s5" ? "product" : "side",
+      aspect: "4:5",
+      shotType,
+    });
+  const codesOf = (shots: VisualBrief["slides"]) =>
+    validateVisualBrief(brief({ slides: shots }), ctx5).map((i) => i.code);
+
+  it("accepts a varied shot list", () => {
+    expect(
+      codesOf([
+        shot("s1", "FINISHED_DISH"),
+        shot("s2", "TECHNIQUE_IN_ACTION"),
+        shot("s3", "IN_THE_VESSEL"),
+        shot("s4", "COMPARISON"),
+        shot("s5", "FINISHED_DISH"),
+      ]),
+    ).toEqual([]);
+  });
+
+  it("blocks the same shot on neighbouring slides, in slide order", () => {
+    const issues = validateVisualBrief(
+      brief({
+        slides: [
+          shot("s3", "INGREDIENT_MACRO"),
+          shot("s1", "FINISHED_DISH"),
+          shot("s2", "INGREDIENT_MACRO"),
+        ],
+      }),
+      ctx5,
+    );
+    expect(issues).toEqual([
+      expect.objectContaining({ code: "VISUAL_SHOT_REPEATED", severity: "BLOCKER" }),
+    ]);
+  });
+
+  it("blocks more than two pictures of the food in its pot", () => {
+    expect(
+      codesOf([
+        shot("s1", "IN_THE_VESSEL"),
+        shot("s2", "TECHNIQUE_IN_ACTION"),
+        shot("s3", "IN_THE_VESSEL"),
+        shot("s4", "COMPARISON"),
+        shot("s5", "IN_THE_VESSEL"),
+      ]),
+    ).toEqual(["VISUAL_SHOT_VESSEL"]);
+  });
+
+  it("blocks a long carousel that uses only two kinds of shot", () => {
+    expect(
+      codesOf([
+        shot("s1", "FINISHED_DISH"),
+        shot("s2", "INGREDIENT_MACRO"),
+        shot("s3", "FINISHED_DISH"),
+        shot("s4", "INGREDIENT_MACRO"),
+      ]),
+    ).toEqual(["VISUAL_SHOT_MONOTONOUS"]);
+  });
+
+  it("does not check briefs without shot types (older directors)", () => {
+    expect(codesOf([entry(), entry({ slideId: "s2", slot: "side", aspect: "4:5" })])).toEqual([]);
+  });
+});
+
+describe("recipeOf", () => {
+  it("turns the cards into steps in order, ingredient lines and mistakes with their fix", () => {
+    expect(
+      recipeOf([
+        {
+          id: "k1",
+          title: "Quinoa",
+          claim: "Rinse it.",
+          procedure: [
+            { n: 2, text: "Toast it in oil." },
+            { n: 1, text: "Rinse it in a fine-mesh strainer." },
+          ],
+          ingredients: [
+            { name: "quinoa", quantity: 200, unit: "g", note: "rinsed" },
+            { name: "olive oil" },
+          ],
+          commonMistakes: [
+            { mistake: "Straight from the bag", fix: "Rinse first" },
+            { mistake: "Too much water" },
+          ],
+        },
+      ]),
+    ).toEqual([
+      {
+        id: "k1",
+        title: "Quinoa",
+        claim: "Rinse it.",
+        steps: ["Rinse it in a fine-mesh strainer.", "Toast it in oil."],
+        ingredients: ["200 g quinoa (rinsed)", "olive oil"],
+        mistakes: ["Straight from the bag → Rinse first", "Too much water"],
+      },
+    ]);
   });
 });

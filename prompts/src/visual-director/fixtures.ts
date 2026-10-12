@@ -60,6 +60,19 @@ export const FIXTURE_INPUT: VisualDirectorInput = {
     { code: "WARM_RUSTIC", label: "Warm rustic" },
     { code: "CLEAN_MINIMAL", label: "Clean minimal" },
   ],
+  recipe: [
+    {
+      id: "k1",
+      title: "Rinse rice before cooking",
+      claim: "Rinsing removes loose surface starch, so the grains stay separate.",
+      steps: [
+        "Put the rice in a fine-mesh strainer.",
+        "Rinse under cold running water until it runs clear.",
+      ],
+      ingredients: ["200 g long-grain rice"],
+      mistakes: ["Cooking the rice straight from the bag → rinse it first"],
+    },
+  ],
 };
 
 export const FIXTURE_OUTPUT: VisualDirectorOutput = {

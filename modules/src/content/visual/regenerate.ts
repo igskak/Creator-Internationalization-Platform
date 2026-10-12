@@ -6,9 +6,11 @@ import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/error
 import { z } from "zod";
 import { runStage } from "../../ai";
 import { audit, type ServiceContext, triggerJob } from "../../core";
+import { getIdeaCards } from "../../knowledge/retrieval";
 import { p0Registry } from "../pipeline/context";
 import { loadLibraryCandidates, loadVisualStyles } from "./context";
 import { type SiblingVisual, visualInput, visualValidationContext } from "./inputs";
+import { finishPhotoPrompts } from "./photo-prompt";
 import { validateVisualBrief } from "./validate";
 
 export const RegenerateVisualBriefInput = z.object({ variantId: z.uuid() });
@@ -88,6 +90,8 @@ export async function regenerateVisualBrief(
       library,
       siblings,
       visualStyles,
+      // The same recipe as at generation: the idea's approved cards.
+      cards: await getIdeaCards(ctx, idea.id),
     }),
     inputRefs: { masterIdeaId: idea.id, variantId },
     validate: (output) =>
@@ -112,11 +116,12 @@ export async function regenerateVisualBrief(
     });
   }
 
+  const brief = finishPhotoPrompts(result.data, slides, p0Registry);
   await ctx.db
     .update(schema.contentVariants)
     .set({
-      visualBriefJson: result.data,
-      visualStyle: result.data.visualStyle,
+      visualBriefJson: brief,
+      visualStyle: brief.visualStyle,
       lockVersion: sql`${schema.contentVariants.lockVersion} + 1`,
     })
     .where(eq(schema.contentVariants.id, variantId));
@@ -125,9 +130,9 @@ export async function regenerateVisualBrief(
     entityType: "content_variant",
     entityId: variantId,
     marketId: variant.marketId,
-    data: { runId: result.runId, slots: result.data.slides.length },
+    data: { runId: result.runId, slots: brief.slides.length },
   });
-  return { visualBrief: result.data };
+  return { visualBrief: brief };
 }
 
 // "Regenerate pictures" of the review screen: the pictures of ONE variant are planned again from

@@ -5,8 +5,8 @@ import v2 from "./v2";
 import v3 from "./v3";
 
 describe("visual-director@3", () => {
-  it("is the latest director, with the defaults of v2", () => {
-    expect(promptRegistry.latest("visual-director")).toBe(v3);
+  it("is registered, with the defaults of v2", () => {
+    expect(promptRegistry.get("visual-director", 3)).toBe(v3);
     expect(v3).toMatchObject({ key: "visual-director@3", stage: "VISUAL_DIRECTION" });
     expect(v3.defaults).toEqual(v2.defaults);
     expect(v3.hash).not.toBe(v2.hash);

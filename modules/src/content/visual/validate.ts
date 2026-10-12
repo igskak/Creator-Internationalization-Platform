@@ -3,7 +3,8 @@ import type { TemplateRegistry } from "@rc/templates";
 
 // Checks of the visual director's brief (plan 07 §7.6.1 "Visual direction", M3-02): every
 // required image slot is covered, library ids exist and are allowed, prompts exist for generated
-// pictures, the style and the hypothesis are real. BLOCKER issues go to the one repair.
+// pictures, the style and the hypothesis are real, and (visual-director@4 on) the shot list
+// varies. BLOCKER issues go to the one repair.
 
 export type VisualValidationContext = {
   /** The slides of the draft, with their template ids. */
@@ -148,6 +149,8 @@ export function validateVisualBrief(
     }
   });
 
+  issues.push(...shotListIssues(brief, context));
+
   // Every required slot of every slide needs a picture.
   for (const slide of context.slides) {
     const template = context.templates.get(slide.templateId);
@@ -166,6 +169,69 @@ export function validateVisualBrief(
         );
       }
     }
+  }
+  return issues;
+}
+
+/** At most this many pictures of the food in its pot or pan per carousel. */
+export const MAX_VESSEL_SHOTS = 2;
+/** From this many generated pictures on, the shot list uses at least `MIN_SHOT_KINDS` kinds. */
+export const VARIED_FROM = 4;
+export const MIN_SHOT_KINDS = 3;
+
+/**
+ * The variety of the shot list (visual-director@4): no two slides in a row with the same kind of
+ * shot, few pictures of food in its pot, several kinds of shot. Briefs without shot types (older
+ * versions) are not checked.
+ */
+function shotListIssues(brief: VisualBrief, context: VisualValidationContext): ValidationIssue[] {
+  const order = new Map(context.slides.map((s, i) => [s.id, i]));
+  const shots = brief.slides
+    .map((entry, i) => ({ entry, path: `slides.${i}.shotType` }))
+    .filter(
+      ({ entry }) => entry.source === "GENERATE" && entry.shotType && order.has(entry.slideId),
+    )
+    .sort((a, b) => (order.get(a.entry.slideId) ?? 0) - (order.get(b.entry.slideId) ?? 0));
+  if (shots.length === 0) return [];
+  const issues: ValidationIssue[] = [];
+  shots.forEach((shot, i) => {
+    const previous = shots[i - 1];
+    const sameSlide = previous?.entry.slideId === shot.entry.slideId;
+    if (previous && !sameSlide && previous.entry.shotType === shot.entry.shotType) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_SHOT_REPEATED",
+          shot.path,
+          `Slides ${previous.entry.slideId} and ${shot.entry.slideId} follow each other with the same shot (${shot.entry.shotType}).`,
+          "Give neighbouring slides different kinds of shot.",
+        ),
+      );
+    }
+  });
+  const vessel = shots.filter((s) => s.entry.shotType === "IN_THE_VESSEL");
+  if (vessel.length > MAX_VESSEL_SHOTS) {
+    issues.push(
+      issue(
+        "BLOCKER",
+        "VISUAL_SHOT_VESSEL",
+        vessel[MAX_VESSEL_SHOTS]?.path ?? "slides",
+        `${vessel.length} pictures show the food in its pot or pan; at most ${MAX_VESSEL_SHOTS}.`,
+        "Show the ingredient close up, the technique in action, a comparison or the tool instead.",
+      ),
+    );
+  }
+  const kinds = new Set(shots.map((s) => s.entry.shotType));
+  if (shots.length >= VARIED_FROM && kinds.size < MIN_SHOT_KINDS) {
+    issues.push(
+      issue(
+        "BLOCKER",
+        "VISUAL_SHOT_MONOTONOUS",
+        "slides",
+        `${shots.length} pictures use only ${kinds.size} kind(s) of shot.`,
+        `Use at least ${MIN_SHOT_KINDS} kinds of shot in the carousel.`,
+      ),
+    );
   }
   return issues;
 }
