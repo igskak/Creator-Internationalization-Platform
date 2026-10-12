@@ -49,7 +49,7 @@ Spec §23.1 item 15 (§23 items 2 and 18). Every task is sized for one Claude Co
 | 13 | `db` 0004; `lib/src/providers/image`; `modules/src/visuals`; `templates` components and fonts | M3-01 … M3-17 | 11 |
 | 14 | `db` 0005; `content/variants/{state,edit,regenerate,approve}`; `publishing/schedule`; review screen, calendar | M4-01 … M4-11 | 13 |
 | 15 | `db` 0006; `modules/src/instagram`; `publishing/{publish-machine,dispatcher,safeguards}`; `scripts/ig-smoke.ts` | M5-00 … M5-12 | 14 |
-| 16 | `db` 0007; `modules/src/analytics/{snapshots,slots,queries}`; dashboards, lineage | M6-01 … M6-09 | 15 |
+| 16 | `db` 0007; `modules/src/analytics/{snapshots,slots,queries}`; dashboards, lineage; progress of long actions | M6-01 … M6-10 | 15 |
 | 17 | `db` 0008; `analytics/summaries`, `analytics/experiments`; prompts v2 | M7-01 … M7-06 | 16 |
 | 18 | Health page, runbooks, security scripts, acceptance record | H-01 … H-06 | 15, 16 |
 
@@ -612,6 +612,16 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 - [ ] **M6-09 · Published list and lineage view** · P0 · M · deps: M6-03
   - **Do:** `/content/published` (D7 rates, permalink, CSV export) and `/content/published/[id]` lineage (04 §4.6) with metrics timeline and review history.
   - **Done when:** lineage shows source → cards → idea → brief → version → publication → metrics for a fixture post.
+
+- [ ] **M6-10 · Progress for long actions** · P0 · M · deps: M5-07
+  - **Why:** found on the first live run (2026-10-12). "Regenerate all" takes 4-6 minutes (four model stages for each market, then the pictures, then the render). After the click the page shows nothing and does not refresh itself, and the only way to tell whether work is going on is the Trigger.dev dashboard.
+  - **Do:** a progress panel where the action was started: the review screen (Generate drafts, Regenerate all, field regeneration, picture generation, Render), the publication panel and drawer (the steps of the publish machine), later idea generation and source ingestion.
+    - **Steps, not an invented percentage.** The step list is read from the database: `content_variants.status = GENERATING`, the `generation_runs.stage` rows so far (`MARKET_ADAPTATION`, `CONTENT_WRITING`, `CRITIC`, `VISUAL_DIRECTION`), `visual_assets`, `carousel_renders.status`, `publications.step`. A tick for a finished step, a spinner for the current one, muted for the ones to come, red for a failed one with the plain error and a link to the run. With the elapsed time and a usual duration ("usually 3-5 min", the median of earlier runs).
+    - **Survives a reload and a second tab:** the state comes from the database, not from the browser.
+    - **Updates itself:** one cheap read polled while a run is active and the tab is visible (every 3-5 s, slowing down), stopped at done or failed, then the page data is refreshed. One query per poll: the session pooler has only 15 client slots (decision log 2026-10-12).
+    - A small indicator in the sidebar while anything runs (like the publishing indicator), and the buttons that start a run are disabled, with the reason, while one is running (no second run by a double click).
+    - A run that makes no progress for a set time shows "taking longer than usual" with the link to the run instead of spinning forever.
+  - **Done when:** component tests for every state (running, done, failed, stalled); a test that polling stops at done and while the tab is hidden; a manual check on a real regeneration (the stages appear in order, the page updates itself at the end).
 
 ## M7 · Learning (P1)
 
