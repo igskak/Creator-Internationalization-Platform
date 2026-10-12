@@ -15,6 +15,7 @@ export {
   type TemplatePriority,
   type TextSlotSpec,
 } from "./define-template";
+export { stripEmphasis } from "./framework/html";
 export {
   ALL_TEMPLATES,
   createRegistry,

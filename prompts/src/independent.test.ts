@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CONTENT_INTRO, INTROS, independentVersion } from "./independent";
 import { type AnyPrompt, promptRegistry } from "./index";
 
-// The versions made by independentVersion: one per prompt, the latest of each id.
+// The versions made by independentVersion, one per prompt; later versions build on them.
 const INDEPENDENT: [id: string, version: number, intro: string][] = [
   ["content-writer", 3, CONTENT_INTRO],
   ["critic", 3, CONTENT_INTRO],
@@ -30,8 +30,12 @@ describe("independent prompt versions", () => {
   it.each(INDEPENDENT)("%s@%i changes only the opening of the data rules", (id, version, to) => {
     const next = promptRegistry.get(id, version);
     const previous = promptRegistry.get(id, version - 1);
-    expect(promptRegistry.latest(id)).toBe(next);
     expect(next.system[0]?.text.startsWith(to)).toBe(true);
+    // A later version keeps the neutral opening and names no brand either.
+    const latest = promptRegistry.latest(id);
+    expect(latest.version).toBeGreaterThanOrEqual(version);
+    expect(latest.system[0]?.text.startsWith(to)).toBe(true);
+    expect(latest.system.map((b) => b.text).join("\n")).not.toMatch(/Reg\.?Chef/i);
     const from = Object.values(INTROS).find((i) => i.to === to)?.from ?? /^/u;
     expect(tail(next, to)).toBe(tail(previous, from));
     expect(next.system.slice(1)).toEqual(previous.system.slice(1));

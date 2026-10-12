@@ -307,6 +307,18 @@ describe("validateForbiddenPatterns", () => {
     });
   });
 
+  it("reads slide text without the emphasis markers, so they cannot split a phrase", () => {
+    const forbiddenPhrase = [{ pattern: "super food", kind: "PHRASE" as const, reason: "claim" }];
+    const slides = replace("s2", { slots: { body: "Quinoa is a **super** food." } });
+    const issues = validateForbiddenPatterns(
+      withSlides(slides),
+      context({ forbiddenPatterns: forbiddenPhrase }),
+    );
+    expect(issues).toEqual([
+      expect.objectContaining({ fieldPath: "slides.s2.slots.body", code: "FORBIDDEN_PATTERN" }),
+    ]);
+  });
+
   it("applies regex patterns and slide slots", () => {
     const slides = replace("s2", { slots: { body: "This cures everything." } });
     const issues = validateForbiddenPatterns(

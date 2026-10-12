@@ -1,3 +1,4 @@
+import { stripEmphasis } from "@rc/templates";
 import type { ValidationIssue, Validator } from "./types";
 
 // First-person chef statements and attributions [S§6.3]: allowed only for cited claims.
@@ -54,7 +55,8 @@ export const validateCitations: Validator = (draft, context) => {
     }
     if (slide.knowledgeIds.length === 0) {
       for (const [slot, text] of Object.entries(slide.slots)) {
-        if (CHEF_ATTRIBUTION.test(text)) issues.push(chefIssue(`slides.${slide.id}.slots.${slot}`));
+        if (CHEF_ATTRIBUTION.test(stripEmphasis(text)))
+          issues.push(chefIssue(`slides.${slide.id}.slots.${slot}`));
       }
     }
   }

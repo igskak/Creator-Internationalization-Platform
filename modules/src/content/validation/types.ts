@@ -1,5 +1,5 @@
 import type { CtaSpec, ForbiddenPattern, Slide, ValidationIssue } from "@rc/db/json";
-import type { TemplateRegistry } from "@rc/templates";
+import { stripEmphasis, type TemplateRegistry } from "@rc/templates";
 import type { NumberLocale, NumericReference } from "../../localization";
 
 // Domain validators for generated content (plan 07 §7.8, layer 3). Pure functions: a draft and a
@@ -41,7 +41,8 @@ export function textFields(draft: DraftContent): { fieldPath: string; text: stri
     ...draft.slides.flatMap((slide) =>
       Object.entries(slide.slots).map(([slot, text]) => ({
         fieldPath: `slides.${slide.id}.slots.${slot}`,
-        text,
+        // What the reader sees: `**emphasis**` markers are not drawn and must not split a phrase.
+        text: stripEmphasis(text),
       })),
     ),
     { fieldPath: "caption", text: draft.caption },
