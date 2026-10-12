@@ -41,6 +41,9 @@ function ItemLink({
   return (
     <Link
       href={item.href}
+      // Every page is dynamic, so a prefetch is a full server render with its database queries; the
+      // menu has ~15 links and the database pooler has 15 client slots.
+      prefetch={false}
       {...(onNavigate ? { onClick: onNavigate } : {})}
       aria-current={active ? "page" : undefined}
       className={cn(
