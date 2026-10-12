@@ -15,6 +15,7 @@ import {
   RegenerateVariantFieldInput,
   RegenerateVariantInput,
   RegenerateVisualBriefInput,
+  RegenerateVisualsInput,
   RejectVariantInput,
   RequestChangesInput,
   ResubmitVariantInput,
@@ -25,6 +26,7 @@ import {
   requestIdeaRegeneration,
   requestVariantRegeneration,
   requestVariants,
+  requestVisualsRegeneration,
   resubmitVariant as resubmitVariantService,
   SearchCardsInput,
   searchCardsForIdea,
@@ -127,6 +129,14 @@ export const regenerateVisualBrief = defineAction({
   input: RegenerateVisualBriefInput,
   roles: ["owner", "editor", "chef"],
   handler: (ctx, input) => regenerateVisualBriefService(ctx, input),
+});
+
+/** "Regenerate pictures" of one market's draft: the pictures are replanned and redrawn (J22). */
+export const regenerateVisuals = defineAction({
+  name: "regenerateVisuals",
+  input: RegenerateVisualsInput,
+  roles: ["owner", "editor", "chef"],
+  handler: (ctx, input) => requestVisualsRegeneration(ctx, input),
 });
 
 /** Starts J7 for one variant: all its pictures, or only the given slots (retry of failed ones). */

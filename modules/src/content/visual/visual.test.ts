@@ -12,7 +12,12 @@ import { scriptedVisualBrief } from "../../ai/scripted-answers";
 import { createServiceContext, manualClock, type ServiceContext } from "../../core";
 import { p0Registry } from "../pipeline/context";
 import { seedAcceptedIdea, textOfRequest } from "../pipeline/scripted-model";
-import { regenerateVisualBrief } from "./regenerate";
+import { recordingJobs } from "../variants/test-support";
+import {
+  regenerateVisualBrief,
+  requestVisualsRegeneration,
+  runVisualsRegeneration,
+} from "./regenerate";
 import { type VisualValidationContext, validateVisualBrief } from "./validate";
 
 // Synthetic content only.
@@ -265,6 +270,79 @@ describe("regenerateVisualBrief", () => {
       InvalidStateError,
     );
     expect((await row()).visualBriefJson).toEqual(before);
+  });
+
+  describe("regenerate pictures (J22)", () => {
+    const withJobs = () => {
+      const recorder = recordingJobs();
+      return { jobs: recorder.calls, ctx: { ...ctx, jobs: recorder.runner } };
+    };
+
+    it("queues the job without touching the variant", async () => {
+      const { jobs, ctx: c } = withJobs();
+      const { requestId } = await requestVisualsRegeneration(c, { variantId });
+      expect(jobs).toEqual([
+        {
+          name: "regenerate-visuals",
+          payload: { variantId, requestId },
+          options: { idempotencyKey: `regen-visuals:${requestId}` },
+        },
+      ]);
+      const v = await row();
+      expect(v.visualBriefJson).toBeNull();
+      expect(v.lockVersion).toBe(0);
+      const audits = await t.db.select().from(schema.auditEvents);
+      expect(audits.map((a) => a.action)).toContain("variant.visuals_regeneration_requested");
+    });
+
+    it("refuses an approved variant and one without slides", async () => {
+      const { jobs, ctx: c } = withJobs();
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "APPROVED" })
+        .where(eq(schema.contentVariants.id, variantId));
+      await expect(requestVisualsRegeneration(c, { variantId })).rejects.toBeInstanceOf(
+        InvalidStateError,
+      );
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "CHANGES_REQUESTED", slidesJson: [] })
+        .where(eq(schema.contentVariants.id, variantId));
+      await expect(requestVisualsRegeneration(c, { variantId })).rejects.toBeInstanceOf(
+        InvalidStateError,
+      );
+      expect(jobs).toEqual([]);
+    });
+
+    it("replans the pictures, keeps the text and queues the drawing", async () => {
+      const { jobs, ctx: c } = withJobs();
+      const requestId = "00000000-0000-4000-8000-000000000001";
+      const result = await runVisualsRegeneration(c, { variantId, requestId });
+      const v = await row();
+      expect(v.visualBriefJson?.slides).toHaveLength(result.slots);
+      expect(v.slidesJson).toEqual(slides);
+      expect(jobs).toEqual([
+        {
+          name: "generate-visual-assets",
+          payload: { variantId },
+          options: { idempotencyKey: `regen-visuals-assets:${requestId}` },
+        },
+      ]);
+    });
+
+    it("draws nothing when the new plan is not usable", async () => {
+      const { jobs, ctx: c } = withJobs();
+      answer = () => ({
+        concept: "x",
+        visualStyle: "NOPE",
+        slides: [],
+        differentiationFromSibling: "",
+      });
+      await expect(
+        runVisualsRegeneration(c, { variantId, requestId: "00000000-0000-4000-8000-000000000002" }),
+      ).rejects.toBeInstanceOf(InvalidStateError);
+      expect(jobs).toEqual([]);
+    });
   });
 
   it("refuses a variant that is not open for review and one without slides", async () => {

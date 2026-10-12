@@ -7,5 +7,12 @@ export {
   visualInput,
   visualValidationContext,
 } from "./inputs";
-export { RegenerateVisualBriefInput, regenerateVisualBrief } from "./regenerate";
+export {
+  RegenerateVisualBriefInput,
+  RegenerateVisualsInput,
+  RegenerateVisualsPayload,
+  regenerateVisualBrief,
+  requestVisualsRegeneration,
+  runVisualsRegeneration,
+} from "./regenerate";
 export { type VisualValidationContext, validateVisualBrief } from "./validate";

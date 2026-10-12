@@ -40,6 +40,7 @@ Spec §23.1 item 6 (§23 item 5). All jobs are Trigger.dev tasks (D-05) in `jobs
 | J18 | `import-attribution-csv` | `importAttributionCsv` | `{ fileKey, mapping }` | default | upsert on `(source, external_ref)` | 2 | P1 |
 | J19 | `transcribe-pages` | J1 when pages have no text layer | `{ sourceAssetId, pages[] }` | llm | skip pages with `transcribed = true` | 2 | P1 |
 | J20 | `cleanup-storage` | cron daily | – | default | – | 1 | P2 |
+| J22 | `regenerate-visuals` | `regenerateVisuals` ("Regenerate pictures") | `{ variantId, requestId }` | llm | key `regen-visuals:{requestId}`; then J7 with key `regen-visuals-assets:{requestId}` | 2 | P1 |
 
 Cron minutes are spread (not :00) to avoid platform peaks.
 

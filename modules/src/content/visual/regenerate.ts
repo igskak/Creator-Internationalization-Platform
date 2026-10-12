@@ -1,16 +1,20 @@
+import { randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
 import type { VisualBrief } from "@rc/db/json";
 import { eq, inArray, sql } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
 import { z } from "zod";
 import { runStage } from "../../ai";
-import { audit, type ServiceContext } from "../../core";
+import { audit, type ServiceContext, triggerJob } from "../../core";
 import { p0Registry } from "../pipeline/context";
 import { loadLibraryCandidates, loadVisualStyles } from "./context";
 import { type SiblingVisual, visualInput, visualValidationContext } from "./inputs";
 import { validateVisualBrief } from "./validate";
 
 export const RegenerateVisualBriefInput = z.object({ variantId: z.uuid() });
+
+/** Statuses whose pictures a person can still change (the text is edited in the same ones). */
+const EDITABLE = ["READY_FOR_REVIEW", "CHANGES_REQUESTED"];
 
 /**
  * The `regenerateVisualBrief` action (M3-02): plans the pictures of one variant again from its
@@ -31,7 +35,7 @@ export async function regenerateVisualBrief(
     .from(schema.contentVariants)
     .where(eq(schema.contentVariants.id, variantId));
   if (!variant) throw new NotFoundError("Variant not found.", { details: { variantId } });
-  if (!["READY_FOR_REVIEW", "CHANGES_REQUESTED"].includes(variant.status)) {
+  if (!EDITABLE.includes(variant.status)) {
     throw new InvalidStateError(
       `The pictures of a ${variant.status} variant cannot be replanned.`,
       {
@@ -124,4 +128,84 @@ export async function regenerateVisualBrief(
     data: { runId: result.runId, slots: result.data.slides.length },
   });
   return { visualBrief: result.data };
+}
+
+// "Regenerate pictures" of the review screen: the pictures of ONE variant are planned again from
+// its current slides (the text a person may have edited stays as it is) and drawn anew. The
+// action only checks and queues the job; the job replans (one visual director call) and hands the
+// drawing to J7, which queues the render. Far cheaper than "Regenerate all", which rewrites the
+// text of every market too.
+
+export const RegenerateVisualsInput = z.object({ variantId: z.uuid() });
+
+/** J22 payload. `requestId` identifies the request: the same one is one run. */
+export const RegenerateVisualsPayload = z.object({
+  variantId: z.uuid(),
+  requestId: z.uuid(),
+});
+export type RegenerateVisualsPayload = z.infer<typeof RegenerateVisualsPayload>;
+
+/** The `regenerateVisuals` action: checks the variant and queues J22. Nothing is written yet. */
+export async function requestVisualsRegeneration(
+  ctx: ServiceContext,
+  raw: z.input<typeof RegenerateVisualsInput>,
+): Promise<{ jobRunId: string; requestId: string }> {
+  const parsed = RegenerateVisualsInput.safeParse(raw);
+  if (!parsed.success) throw ValidationError.fromZod(parsed.error);
+  const { variantId } = parsed.data;
+  const [variant] = await ctx.db
+    .select({
+      status: schema.contentVariants.status,
+      slides: schema.contentVariants.slidesJson,
+      marketId: schema.contentVariants.marketId,
+    })
+    .from(schema.contentVariants)
+    .where(eq(schema.contentVariants.id, variantId));
+  if (!variant) throw new NotFoundError("Variant not found.", { details: { variantId } });
+  if (!EDITABLE.includes(variant.status)) {
+    throw new InvalidStateError(
+      `The pictures of a ${variant.status} variant cannot be redone. Withdraw the approval first.`,
+      { details: { variantId, status: variant.status } },
+    );
+  }
+  if (variant.slides.length === 0) {
+    throw new InvalidStateError("The variant has no slides yet.", { details: { variantId } });
+  }
+
+  const requestId = randomUUID();
+  await audit(ctx, {
+    action: "variant.visuals_regeneration_requested",
+    entityType: "content_variant",
+    entityId: variantId,
+    marketId: variant.marketId,
+    data: { requestId },
+  });
+  const { runId } = await triggerJob(
+    ctx,
+    "regenerate-visuals",
+    { variantId, requestId },
+    { idempotencyKey: `regen-visuals:${requestId}` },
+  );
+  return { jobRunId: runId, requestId };
+}
+
+/**
+ * J22 `regenerate-visuals`: plans the pictures again and queues J7 for every slot of the new brief.
+ * New prompts mean new pictures; a slot whose prompt came out the same keeps its picture (J7 never
+ * pays twice for one prompt). A brief that does not pass the checks keeps the old pictures and
+ * fails the run with the issues.
+ */
+export async function runVisualsRegeneration(
+  ctx: ServiceContext,
+  raw: RegenerateVisualsPayload,
+): Promise<{ jobRunId: string; slots: number }> {
+  const { variantId, requestId } = RegenerateVisualsPayload.parse(raw);
+  const { visualBrief } = await regenerateVisualBrief(ctx, { variantId });
+  const { runId } = await triggerJob(
+    ctx,
+    "generate-visual-assets",
+    { variantId },
+    { idempotencyKey: `regen-visuals-assets:${requestId}` },
+  );
+  return { jobRunId: runId, slots: visualBrief.slides.length };
 }

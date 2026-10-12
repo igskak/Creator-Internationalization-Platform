@@ -4,7 +4,9 @@ import {
   GenerateContentPayload,
   generateVariants,
   RegenerateFieldPayload,
+  RegenerateVisualsPayload,
   runFieldRegeneration,
+  runVisualsRegeneration,
 } from "./content";
 import { GenerateIdeasPayload, runGenerateIdeas } from "./content/ideas";
 import { audit } from "./core/audit";
@@ -214,6 +216,15 @@ export const regenerateFieldJob = defineJob({
 });
 
 /**
+ * J22: "Regenerate pictures" of one variant: the visual director plans the pictures again from the
+ * current slides, then J7 draws them (and queues the render). The text is not touched.
+ */
+export const regenerateVisualsJob = defineJob({
+  payload: RegenerateVisualsPayload,
+  run: (ctx, payload) => runVisualsRegeneration(ctx, payload),
+});
+
+/**
  * J13 (plan 06 §6.3): refreshes the long-lived Instagram tokens that are due (daily cron). A token
  * Instagram refuses makes the account NEEDS_REAUTH and returns normally; a transient failure is
  * rethrown after the other accounts are done, and the retry touches only what is still due.
@@ -257,6 +268,7 @@ export const jobHandlers = {
   "generate-ideas": generateIdeasJob,
   "generate-content": generateContentJob,
   "regenerate-field": regenerateFieldJob,
+  "regenerate-visuals": regenerateVisualsJob,
   "generate-visual-assets": generateVisualAssetsJob,
   "render-carousel": renderCarouselJob,
   "import-library-photo": importLibraryPhotoJob,

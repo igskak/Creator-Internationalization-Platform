@@ -16,6 +16,7 @@ import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
+import { RegeneratePicturesButton } from "./regenerate-pictures-button";
 import { SlideCard } from "./slide-card";
 import { SlideDrawer } from "./slide-drawer";
 import { VariantActions } from "./variant-actions";
@@ -34,6 +35,9 @@ const BLOCKING = new Set([
   "KNOWLEDGE_ARCHIVED",
   "GENERATION_FAILED",
 ]);
+
+/** Statuses whose pictures can be redone (`regenerateVisuals`); an approval is withdrawn first. */
+const PICTURE_STATUSES = new Set(["READY_FOR_REVIEW", "CHANGES_REQUESTED"]);
 
 const STATUS_STYLE: Record<string, string> = {
   READY_FOR_REVIEW: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -162,6 +166,11 @@ export function VariantColumn({
               variantId={variant.id}
               render={variant.render}
               slideIds={variant.slides.map((s) => s.id)}
+            />
+            <RegeneratePicturesButton
+              enabled={PICTURE_STATUSES.has(variant.status)}
+              renderId={variant.render.renderId}
+              renderBusy={variant.render.state === "RENDERING" || variant.render.state === "STALE"}
             />
           </Section>
 
