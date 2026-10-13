@@ -91,6 +91,19 @@ The first live run of v4 (an English carousel about rescuing grains that came ou
 - **COMPARISON** gets its own composition from the code: one frame split down the middle into two equal halves.
 - The footer handle and page number have a soft halo in the page colour, so they stay legible where a photo runs under them (templates 2.0.1).
 
+### Placement and arrangement (visual-director@6)
+
+With v5 the subjects varied but every inner picture sat in the lower right corner. The reference carousels move the picture and build the frame from one to three elements; a placement test (6 images, 2026-10-13) showed the image model keeps all four placements:
+
+| `placement` | Where | Good for |
+|---|---|---|
+| `CORNER` | lower right, cropped by the right and bottom edges (the template's own offset) | a single subject from the side |
+| `TOP_RIGHT` | entering from the top-right corner | a spoon, whisk or fork from above, grains falling, small accents lower right |
+| `RIGHT_COLUMN` | a tall column down the right side | a sequence of stages or two states one above the other |
+| `BOTTOM_BAND` | a wide band across the bottom 45 % | a wide pan, a line-up, a served bowl; only with at most 140 characters besides the headline |
+
+`arrangement`: `HERO`, `HERO_WITH_ACCENTS`, `SEQUENCE`, `TWO_STATES`, `LINE_UP`. The code adds the placement's composition to the prompt; the templates move the cut-out with `place-*` classes (shared offsets in `slide-document.ts`) and narrow the text column to 520 px for the right-hand placements (templates 2.1.0). The validator blocks the same placement on neighbouring slides and a bottom band under a long text. The cover and template C keep their own composition.
+
 ### Prompt rules
 
 - **One subject, large, macro.** Cropped by the frame on the right and the bottom edge, never centred with air around it.

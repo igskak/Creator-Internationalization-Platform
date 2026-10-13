@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest";
 import { registry } from "../registry";
 import { buildTheme } from "../theme";
 import { FIT_TEXT_SCRIPT } from "./fit-text";
-import { cutoutSlot, imageSlot, slotBoxHeightPx, stripEmphasis, textHtml, textSlot } from "./html";
+import {
+  cutoutSlot,
+  imageSlot,
+  isRightHand,
+  placementOf,
+  slotBoxHeightPx,
+  stripEmphasis,
+  textHtml,
+  textSlot,
+} from "./html";
 import { renderSlideHtml, TEMPLATE_RENDERERS } from "./slide-document";
 import type { RenderContext, SlideData, TemplateRenderer } from "./types";
 
@@ -140,6 +149,22 @@ describe("slot helpers", () => {
     expect(cutoutSlot(withImage, "hero", "x")).toBe(
       '<img class="img cutout x" data-image="hero" alt="" src="data:image/webp;base64,AA">',
     );
+  });
+
+  it("moves a cut-out to the placement of the brief, and tells the right-hand ones", () => {
+    const placed = (placement: string) => ({
+      ...context,
+      assets: { images: { hero: "data:image/webp;base64,AA" }, placements: { hero: placement } },
+    });
+    expect(cutoutSlot(placed("RIGHT_COLUMN"), "hero", "x")).toContain(
+      'class="img cutout x place-right-column"',
+    );
+    expect(placementOf(placed("BOTTOM_BAND"), "hero")).toBe("bottom-band");
+    expect(placementOf(placed("CORNER"), "hero")).toBe("corner");
+    expect(placementOf(placed("SIDEWAYS"), "hero")).toBe("corner");
+    expect(placementOf(context, "hero")).toBe("corner");
+    expect(isRightHand("top-right")).toBe(true);
+    expect(isRightHand("bottom-band")).toBe(false);
   });
 });
 

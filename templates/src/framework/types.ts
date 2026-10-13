@@ -19,6 +19,11 @@ export type RenderAssets = {
   images: Readonly<Record<string, string>>;
   /** Data URL of the brand logo (SVG or PNG); without it no mark is drawn. */
   logo?: string;
+  /**
+   * Image slot → where its cut-out sits on an inner slide (visual-director@6): CORNER (default),
+   * TOP_RIGHT, RIGHT_COLUMN or BOTTOM_BAND.
+   */
+  placements?: Readonly<Record<string, string>>;
   /** The account's Instagram username, drawn small bottom-left when there is no logo. */
   handle?: string;
   /** Draw the "AI" badge: this slide carries a generated image and the market asks for a badge (M5-12). */

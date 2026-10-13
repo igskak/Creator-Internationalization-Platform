@@ -59,6 +59,9 @@ html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;over
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:${CANVAS.width}px;height:${CANVAS.height}px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}

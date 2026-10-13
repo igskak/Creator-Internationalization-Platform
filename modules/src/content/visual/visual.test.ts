@@ -18,6 +18,7 @@ import {
   finishPhotoPrompts,
   PHOTO_NEGATIVE,
   PHOTO_STYLE,
+  PLACEMENT_COMPOSITION,
   photoNegative,
   photoPrompt,
   SLOT_COMPOSITION,
@@ -435,6 +436,18 @@ describe("photo prompts", () => {
     expect(finished.slides[0]?.prompt).toContain(SPLIT_COMPOSITION.side);
   });
 
+  it("composes an inner picture for its placement; the corner and other slots keep theirs", () => {
+    expect(photoPrompt("Three spoons", "side", false, "RIGHT_COLUMN")).toBe(
+      `Three spoons. ${PLACEMENT_COMPOSITION.RIGHT_COLUMN} ${PHOTO_STYLE}`,
+    );
+    expect(photoPrompt("Two mounds", "side", true, "TOP_RIGHT")).toContain(
+      PLACEMENT_COMPOSITION.TOP_RIGHT,
+    );
+    expect(photoPrompt("A pot", "side", true, "CORNER")).toContain(SPLIT_COMPOSITION.side);
+    expect(photoPrompt("A bowl", "cover", false, "BOTTOM_BAND")).toContain(SLOT_COMPOSITION.cover);
+    expect(photoPrompt("A bowl", "side", false, "SIDEWAYS")).toContain(SLOT_COMPOSITION.side);
+  });
+
   it("keeps the fixed negative list and adds the director's own terms without repeats", () => {
     expect(photoNegative(undefined)).toBe(PHOTO_NEGATIVE);
     const merged = photoNegative("burnt grains, Text, oil splatter");
@@ -637,5 +650,39 @@ describe("colour checks", () => {
         entry({ slideId: "s2", slot: "side", aspect: "4:5", shotType: "INGREDIENT_MACRO" }),
       ]),
     ).toEqual([]);
+  });
+});
+
+describe("placement checks", () => {
+  const withText = (id: string, index: number, body: string): Slide => ({
+    ...slide(id, index, "B", "STEP"),
+    slots: { headline: "A headline that does not count", body },
+  });
+  const slides4 = [
+    withText("s2", 0, "Short body."),
+    withText("s3", 1, "x".repeat(200)),
+    withText("s4", 2, "Short **body**."),
+  ];
+  const ctx: VisualValidationContext = { ...context, slides: slides4 };
+  const at = (slideId: string, placement: string) =>
+    entry({ slideId, slot: "side", aspect: "4:5", placement });
+  const codesOf = (pics: VisualBrief["slides"]) =>
+    validateVisualBrief(brief({ slides: pics }), ctx).map((i) => i.code);
+
+  it("accepts varied placements and a bottom band on a short slide", () => {
+    expect(
+      codesOf([at("s2", "BOTTOM_BAND"), at("s3", "RIGHT_COLUMN"), at("s4", "BOTTOM_BAND")]),
+    ).toEqual([]);
+  });
+
+  it("blocks the same placement on neighbouring slides only", () => {
+    expect(codesOf([at("s2", "CORNER"), at("s3", "CORNER")])).toEqual([
+      "VISUAL_PLACEMENT_REPEATED",
+    ]);
+    expect(codesOf([at("s2", "CORNER"), at("s4", "CORNER")])).toEqual([]);
+  });
+
+  it("blocks a bottom band under a long text", () => {
+    expect(codesOf([at("s3", "BOTTOM_BAND")])).toEqual(["VISUAL_PLACEMENT_BAND"]);
   });
 });

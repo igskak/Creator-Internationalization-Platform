@@ -81,6 +81,7 @@ describe("@rc/prompts", () => {
       "visual-director@3",
       "visual-director@4",
       "visual-director@5",
+      "visual-director@6",
       "field-regenerator@1",
       "visual-qa@1",
       "visual-qa@2",

@@ -27,6 +27,36 @@ export const SHOT_TYPES = [
 ] as const;
 export type ShotType = (typeof SHOT_TYPES)[number];
 
+/**
+ * Where an inner slide's picture sits (visual-director@6). The template moves the cut-out layer to
+ * the same place and narrows the text column for the right-hand ones.
+ */
+export const PLACEMENTS = [
+  /** Lower right, cropped by the right and bottom edges (the default). */
+  "CORNER",
+  /** Entering from the top-right corner, cropped by the top and right edges. */
+  "TOP_RIGHT",
+  /** A tall column down the right side, top to bottom. */
+  "RIGHT_COLUMN",
+  /** A wide band across the bottom; only for slides with little text. */
+  "BOTTOM_BAND",
+] as const;
+export type Placement = (typeof PLACEMENTS)[number];
+
+/** How the frame is built (visual-director@6). */
+export const ARRANGEMENTS = [
+  /** One main subject. */
+  "HERO",
+  /** One main subject and one or two small related accents near it. */
+  "HERO_WITH_ACCENTS",
+  /** Two or three of the same item in order: the stages of the process. */
+  "SEQUENCE",
+  /** Two states of the same food, side by side or one above the other. */
+  "TWO_STATES",
+  /** The ingredients or tools of the step laid out together. */
+  "LINE_UP",
+] as const;
+
 /** Where a picture's colour accent comes from (visual-director@5). */
 export const COLOR_SOURCES = [
   /** An ingredient, tool or result of the recipe or the slide. */
@@ -135,6 +165,9 @@ export const VisualDirectorOutput = z.object({
       /** The colour accent in a few words, "" when none (visual-director@5 on). */
       colorAccent: z.string().optional(),
       colorSource: z.enum(COLOR_SOURCES).optional(),
+      /** Where the picture sits on an inner slide, and how the frame is built (visual-director@6 on). */
+      placement: z.enum(PLACEMENTS).optional(),
+      arrangement: z.enum(ARRANGEMENTS).optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

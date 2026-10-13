@@ -1,4 +1,4 @@
-import { cutoutSlot, textSlot } from "../framework/html";
+import { cutoutSlot, isRightHand, placementOf, textSlot } from "../framework/html";
 import type { TemplateRenderer } from "../framework/types";
 
 // Template F, CTA / lead magnet / offer (plan 08 §8.2.1): offer name, a large headline, body and
@@ -10,13 +10,17 @@ export const rendererF: TemplateRenderer = {
 .f-offer{color:var(--rc-accent)}
 .f-body{width:470px}
 .f-keyword{color:var(--rc-accent);letter-spacing:.02em}
-.f-photo{transform:translate(180px,320px)}`,
-  body: (c) =>
-    `${cutoutSlot(c, "product", "f-photo")}
-<div class="f-wrap">
+.f-photo{transform:translate(180px,320px)}
+.f-wrap.narrow{width:520px}`,
+  body: (c) => {
+    const photo = cutoutSlot(c, "product", "f-photo");
+    const narrow = photo && isRightHand(placementOf(c, "product")) ? " narrow" : "";
+    return `${photo}
+<div class="f-wrap${narrow}">
 ${textSlot(c, "offerName", "rc-kicker f-offer")}
 ${textSlot(c, "headline", "f-headline")}
 ${textSlot(c, "body", "f-body")}
 ${textSlot(c, "keyword", "f-keyword")}
-</div>`,
+</div>`;
+  },
 };
