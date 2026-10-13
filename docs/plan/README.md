@@ -25,6 +25,7 @@ This plan follows spec §23. Files 01–17 map one-to-one to the output format r
 | 15 | [15-task-list.md](15-task-list.md) | 127 dependency-ordered tasks with checkboxes (106 P0), area → task map, build sequence by folder |
 | 16 | [16-risks-assumptions.md](16-risks-assumptions.md) | Risks, assumptions, spec corrections, verification list, open questions |
 | 17 | [17-first-coding-task.md](17-first-coding-task.md) | Where to start, first two weeks, copy-paste prompts |
+| 18 | [18-reels.md](18-reels.md) | Video-first Reels generated on request: flow, data, pipeline, publishing, cost, tasks M8 |
 | – | [decision-log.md](decision-log.md) | Deviations, verification results, gate outcomes |
 
 ## Legend (fact vs decision)
