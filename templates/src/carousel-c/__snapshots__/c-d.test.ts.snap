@@ -2,7 +2,7 @@
 
 exports[`template C > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="2.0.1">
+<html lang="en" data-template="C" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -21,6 +21,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -79,7 +82,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="2.0.1">
+<html lang="en" data-template="C" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -98,6 +101,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -156,7 +162,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="2.0.1">
+<html lang="en" data-template="C" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -175,6 +181,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -233,7 +242,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="2.0.1">
+<html lang="en" data-template="C" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -252,6 +261,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -310,7 +322,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template C > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="C" data-template-version="2.0.1">
+<html lang="en" data-template="C" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -329,6 +341,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -387,7 +402,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="2.0.1">
+<html lang="en" data-template="D" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -406,6 +421,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -417,6 +435,8 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .d-step{position:relative;padding:14px 0 14px 44px}
 .d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
 .d-photo{transform:translate(200px,280px)}
+.d-wrap.narrow{width:520px}
+.d-wrap.narrow .d-steps{width:500px}
 </style>
 </head>
 <body>
@@ -466,7 +486,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="2.0.1">
+<html lang="en" data-template="D" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -485,6 +505,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -496,6 +519,8 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .d-step{position:relative;padding:14px 0 14px 44px}
 .d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
 .d-photo{transform:translate(200px,280px)}
+.d-wrap.narrow{width:520px}
+.d-wrap.narrow .d-steps{width:500px}
 </style>
 </head>
 <body>
@@ -547,7 +572,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="2.0.1">
+<html lang="en" data-template="D" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -566,6 +591,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -577,6 +605,8 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .d-step{position:relative;padding:14px 0 14px 44px}
 .d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
 .d-photo{transform:translate(200px,280px)}
+.d-wrap.narrow{width:520px}
+.d-wrap.narrow .d-steps{width:500px}
 </style>
 </head>
 <body>
@@ -628,7 +658,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="2.0.1">
+<html lang="en" data-template="D" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -647,6 +677,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -658,6 +691,8 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .d-step{position:relative;padding:14px 0 14px 44px}
 .d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
 .d-photo{transform:translate(200px,280px)}
+.d-wrap.narrow{width:520px}
+.d-wrap.narrow .d-steps{width:500px}
 </style>
 </head>
 <body>
@@ -707,7 +742,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template D > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="D" data-template-version="2.0.1">
+<html lang="en" data-template="D" data-template-version="2.1.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -726,6 +761,9 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout.place-top-right{transform:translate(110px,-30px)}
+.img.cutout.place-right-column{transform:translate(110px,0)}
+.img.cutout.place-bottom-band{transform:translate(40px,170px)}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
@@ -737,6 +775,8 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .d-step{position:relative;padding:14px 0 14px 44px}
 .d-step::before{content:"";position:absolute;left:0;top:36px;width:30px;height:2px;background:var(--rc-text)}
 .d-photo{transform:translate(200px,280px)}
+.d-wrap.narrow{width:520px}
+.d-wrap.narrow .d-steps{width:500px}
 </style>
 </head>
 <body>

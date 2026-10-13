@@ -1,4 +1,4 @@
-import { cutoutSlot, textSlot } from "../framework/html";
+import { cutoutSlot, isRightHand, placementOf, textSlot } from "../framework/html";
 import type { TemplateRenderer } from "../framework/types";
 
 // Template E, mistake vs correct technique (plan 08 §8.2.1): the mistake in muted type, struck out
@@ -11,13 +11,17 @@ export const rendererE: TemplateRenderer = {
 .e-mistake-text{color:var(--rc-muted);width:470px;margin-top:16px}
 .e-correct-title{color:var(--rc-positive);margin-top:56px}
 .e-correct-text{width:470px;margin-top:32px}
-.e-photo{transform:translate(330px,400px)}`,
-  body: (c) =>
-    `${cutoutSlot(c, "image", "e-photo")}
-<div class="e-wrap">
+.e-photo{transform:translate(330px,400px)}
+.e-wrap.narrow{width:520px}`,
+  body: (c) => {
+    const photo = cutoutSlot(c, "image", "e-photo");
+    const narrow = photo && isRightHand(placementOf(c, "image")) ? " narrow" : "";
+    return `${photo}
+<div class="e-wrap${narrow}">
 ${textSlot(c, "mistakeTitle", "e-mistake-title")}
 ${textSlot(c, "mistakeText", "e-mistake-text")}
 ${textSlot(c, "correctTitle", "e-correct-title")}
 ${textSlot(c, "correctText", "e-correct-text")}
-</div>`,
+</div>`;
+  },
 };

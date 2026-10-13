@@ -27,6 +27,23 @@ export const SPLIT_COMPOSITION = {
     "Composition: one frame split down the middle into two equal halves that show the two states side by side with the same angle and light, centred, with pure white all around.",
 } as const;
 
+/**
+ * Where an inner slide's picture sits (visual-director@6); the template moves the cut-out to the
+ * same place. CORNER is the side composition above.
+ */
+export const PLACEMENT_COMPOSITION = {
+  CORNER: SLOT_COMPOSITION.side,
+  TOP_RIGHT:
+    "Composition: the subject enters the frame from the top-right corner and is cropped by the top edge and the right edge; one or two small accents may sit lower on the right. The left 45% of the frame and the whole lower-left quarter are completely empty pure white.",
+  RIGHT_COLUMN:
+    "Composition: the elements are arranged one above another in a tall column in the right 45% of the frame, from near the top to near the bottom, cropped by the right edge. The left 55% of the frame, top to bottom, is completely empty pure white.",
+  BOTTOM_BAND:
+    "Composition: the elements are arranged side by side in a wide band across the bottom 45% of the frame, from the left edge to the right edge, cropped by the bottom edge. The top 55% of the frame is completely empty pure white.",
+} as const;
+export type PlacementName = keyof typeof PLACEMENT_COMPOSITION;
+const isPlacement = (value: string | undefined): value is PlacementName =>
+  value !== undefined && value in PLACEMENT_COMPOSITION;
+
 export const PHOTO_STYLE =
   "Isolated on a pure white seamless background (#FFFFFF), high-key soft diffused studio light, a gentle natural contact shadow, shallow depth of field, saturated natural colors, crisp texture detail, appetizing premium cookbook look. No text.";
 
@@ -44,11 +61,22 @@ export function slotKind(templateId: string, fullBleed: boolean | undefined): Sl
  * The subject sentence with the slot's composition (split in two for a comparison) and the style;
  * already finished ones stay.
  */
-export function photoPrompt(subject: string, kind: SlotKind, split = false): string {
+export function photoPrompt(
+  subject: string,
+  kind: SlotKind,
+  split = false,
+  placement?: string,
+): string {
   const text = subject.trim();
   if (text.endsWith(PHOTO_STYLE)) return text;
   const sentence = /[.!?]$/.test(text) ? text : `${text}.`;
-  const composition = split ? SPLIT_COMPOSITION[kind] : SLOT_COMPOSITION[kind];
+  // An inner slide's placement decides the composition; a split frame only in the corner.
+  const composition =
+    kind === "side" && isPlacement(placement) && placement !== "CORNER"
+      ? PLACEMENT_COMPOSITION[placement]
+      : split
+        ? SPLIT_COMPOSITION[kind]
+        : SLOT_COMPOSITION[kind];
   return `${sentence} ${composition} ${PHOTO_STYLE}`;
 }
 
@@ -86,6 +114,7 @@ export function finishPhotoPrompts(
           entry.prompt,
           slotKind(slide.templateId, spec?.fullBleed),
           entry.shotType === "COMPARISON",
+          entry.placement,
         ),
         negativePrompt: photoNegative(entry.negativePrompt),
       };

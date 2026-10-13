@@ -1,5 +1,5 @@
 import type { Slide, ValidationIssue, VisualBrief } from "@rc/db/json";
-import type { TemplateRegistry } from "@rc/templates";
+import { countChars, stripEmphasis, type TemplateRegistry } from "@rc/templates";
 
 // Checks of the visual director's brief (plan 07 §7.6.1 "Visual direction", M3-02): every
 // required image slot is covered, library ids exist and are allowed, prompts exist for generated
@@ -8,7 +8,7 @@ import type { TemplateRegistry } from "@rc/templates";
 
 export type VisualValidationContext = {
   /** The slides of the draft, with their template ids and roles. */
-  slides: readonly Pick<Slide, "id" | "templateId" | "role">[];
+  slides: readonly Pick<Slide, "id" | "templateId" | "role" | "slots">[];
   templates: Pick<TemplateRegistry, "get">;
   /** Ids of the library photos that were offered (their rights allow a visual transform). */
   libraryIds: ReadonlySet<string>;
@@ -151,6 +151,7 @@ export function validateVisualBrief(
 
   issues.push(...shotListIssues(brief, context));
   issues.push(...colourIssues(brief, context));
+  issues.push(...placementIssues(brief, context));
 
   // Every required slot of every slide needs a picture.
   for (const slide of context.slides) {
@@ -289,5 +290,63 @@ function colourIssues(brief: VisualBrief, context: VisualValidationContext): Val
       );
     }
   }
+  return issues;
+}
+
+/** Slots that are short by nature and do not count against a bottom band. */
+const HEADING_SLOTS = new Set(["headline", "title", "number", "label", "kicker", "offerName"]);
+/** A picture across the bottom leaves room for this much text besides the headline. */
+export const BOTTOM_BAND_MAX_CHARS = 140;
+
+/**
+ * Placement (visual-director@6): two inner slides in a row never share a placement, and a bottom
+ * band only goes on a slide with little text. Briefs without placements are not checked.
+ */
+function placementIssues(brief: VisualBrief, context: VisualValidationContext): ValidationIssue[] {
+  const order = new Map(context.slides.map((s, i) => [s.id, i]));
+  const slideById = new Map(context.slides.map((s) => [s.id, s]));
+  const placed = brief.slides
+    .map((entry, i) => ({ entry, path: `slides.${i}.placement` }))
+    .filter(
+      ({ entry }) => entry.source === "GENERATE" && entry.placement && order.has(entry.slideId),
+    )
+    .sort((a, b) => (order.get(a.entry.slideId) ?? 0) - (order.get(b.entry.slideId) ?? 0));
+  const issues: ValidationIssue[] = [];
+  placed.forEach(({ entry, path }, i) => {
+    const previous = placed[i - 1]?.entry;
+    if (
+      previous &&
+      previous.slideId !== entry.slideId &&
+      previous.placement === entry.placement &&
+      (order.get(entry.slideId) ?? 0) - (order.get(previous.slideId) ?? 0) === 1
+    ) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_PLACEMENT_REPEATED",
+          path,
+          `Slides ${previous.slideId} and ${entry.slideId} follow each other with the picture in the same place (${entry.placement}).`,
+          "Move the picture of one of them: CORNER, TOP_RIGHT, RIGHT_COLUMN or BOTTOM_BAND.",
+        ),
+      );
+    }
+    if (entry.placement === "BOTTOM_BAND") {
+      const slide = slideById.get(entry.slideId);
+      const chars = Object.entries(slide?.slots ?? {})
+        .filter(([name]) => !HEADING_SLOTS.has(name))
+        .reduce((sum, [, text]) => sum + countChars(stripEmphasis(text)), 0);
+      if (chars > BOTTOM_BAND_MAX_CHARS) {
+        issues.push(
+          issue(
+            "BLOCKER",
+            "VISUAL_PLACEMENT_BAND",
+            path,
+            `Slide ${entry.slideId} has ${chars} characters of text besides the headline; a bottom band leaves room for ${BOTTOM_BAND_MAX_CHARS}.`,
+            "Use CORNER, TOP_RIGHT or RIGHT_COLUMN for a slide with more text.",
+          ),
+        );
+      }
+    }
+  });
   return issues;
 }

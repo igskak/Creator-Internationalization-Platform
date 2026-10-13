@@ -28,6 +28,8 @@ export type RenderInput = {
   aiBadgeSlides: ReadonlySet<string>;
   /** The market's Instagram username, written small on every slide; null without an account. */
   handle: string | null;
+  /** Slide id → image slot → placement of its cut-out, from the visual brief (visual-director@6). */
+  placements: ReadonlyMap<string, Record<string, string>>;
   /** Ready asset rows used by the slides, by id. */
   assets: Map<string, typeof schema.visualAssets.$inferSelect>;
   templatesVersion: string;
@@ -90,6 +92,15 @@ export async function loadRenderInput(
     .orderBy(desc(schema.socialAccounts.connectedAt))
     .limit(1);
   const handle = account?.username ?? null;
+  // Where the brief put each inner picture; briefs before visual-director@6 have none.
+  const placements = new Map<string, Record<string, string>>();
+  for (const entry of brief?.slides ?? []) {
+    if (!entry.placement) continue;
+    placements.set(entry.slideId, {
+      ...placements.get(entry.slideId),
+      [entry.slot]: entry.placement,
+    });
+  }
 
   const assetIds = [
     ...new Set(
@@ -133,6 +144,7 @@ export async function loadRenderInput(
         // Only when a badge is drawn, so renders made before M5-12 keep their hash.
         ...(aiBadgeSlides.size > 0 ? [{ aiBadge: [...aiBadgeSlides].sort() }] : []),
         ...(handle ? [{ handle }] : []),
+        ...(placements.size > 0 ? [{ placements: [...placements].sort() }] : []),
       ]),
     )
     .digest("hex");
@@ -142,6 +154,7 @@ export async function loadRenderInput(
     theme,
     aiBadgeSlides,
     handle,
+    placements,
     assets,
     templatesVersion,
     inputHash,
@@ -191,12 +204,19 @@ export async function loadRenderAssets(
           images,
           ...(logo ? { logo } : {}),
           ...(input.handle ? { handle: input.handle } : {}),
+          ...placementsOf(input, slide.id),
           ...(input.aiBadgeSlides.has(slide.id) ? { aiBadge: true } : {}),
         },
       };
     }),
   );
 }
+
+/** The placements of one slide's pictures, as `RenderAssets` takes them. */
+const placementsOf = (input: RenderInput, slideId: string): Pick<RenderAssets, "placements"> => {
+  const placed = input.placements.get(slideId);
+  return placed ? { placements: placed } : {};
+};
 
 const LOGO_MIME: Record<string, string> = {
   svg: "image/svg+xml",

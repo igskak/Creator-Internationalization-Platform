@@ -80,12 +80,29 @@ export function imageSlot(context: RenderContext, name: string, className = ""):
   return `<img class="${cls}" data-image="${escapeHtml(name)}" alt="" src="${src}">`;
 }
 
+const PLACEMENT_CLASSES: Readonly<Record<string, string>> = {
+  TOP_RIGHT: "top-right",
+  RIGHT_COLUMN: "right-column",
+  BOTTOM_BAND: "bottom-band",
+};
+
+/** Where a slot's cut-out sits: "corner" (the template's own place) unless the brief moved it. */
+export const placementOf = (context: RenderContext, slot: string): string =>
+  PLACEMENT_CLASSES[context.assets.placements?.[slot] ?? ""] ?? "corner";
+
+/** A picture down the right side needs a narrower text column. */
+export const isRightHand = (placement: string): boolean =>
+  placement === "top-right" || placement === "right-column";
+
 /**
  * A cut-out picture on white (docs/design/carousel-style.md): the whole 4:5 picture as a layer
  * behind the text, multiplied so its white merges with the page, moved right and down by the
- * template (`className`) so the subject bleeds off the edge. Nothing when there is no picture.
+ * template (`className`) so the subject bleeds off the edge, or to the placement the brief chose
+ * (`place-*`, moved by the shared CSS). Nothing when there is no picture.
  */
 export function cutoutSlot(context: RenderContext, name: string, className = ""): string {
   if (!context.assets.images[name]) return "";
-  return imageSlot(context, name, `cutout ${className}`);
+  const placement = placementOf(context, name);
+  const place = placement === "corner" ? "" : ` place-${placement}`;
+  return imageSlot(context, name, `cutout ${className}${place}`);
 }

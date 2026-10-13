@@ -1204,3 +1204,9 @@ Template:
 - Evidence: unit tests (v5 rules and user message, colour checks, split composition); `pnpm test` green.
 - Check: "Regenerate pictures" on the same variant after the deploy (about $0.35–0.45).
 
+## 2026-10-13 · visual-director@6: placement and arrangement of inner pictures [style follow-up]
+- Context: after v5 the pictures had colour and varied subjects, but every inner one sat in the lower right corner, so the slides still looked alike. Eight slides of a reference carousel (chocolate mousse) move the picture (top right, a right column, a bottom band, the corner) and build the frame from one to three elements (a hero with small accents, three spoons as stages, two states one above the other, ingredients in a row). A placement test (6 images, $0.253) on the wet-grains topic: the image model kept all four placements; rendered through the templates they read well once the text column is narrowed for the right-hand placements.
+- Decision: `visual-director@6` (p1.6.0) gives each inner picture a `placement` (CORNER, TOP_RIGHT, RIGHT_COLUMN, BOTTOM_BAND) and an `arrangement` (HERO, HERO_WITH_ACCENTS, SEQUENCE, TWO_STATES, LINE_UP). `finishPhotoPrompts` adds the placement's composition; `loadRenderInput` passes the placements to the templates (and into the render hash); templates 2.1.0 move the cut-out with `place-*` classes and narrow the text column to 520 px for TOP_RIGHT and RIGHT_COLUMN. The validator blocks the same placement on neighbouring slides and a bottom band with more than 140 characters besides the headline (one repair). Corner stays each template's tuned offset, so the goldens do not change.
+- Evidence: unit tests (v6 rules, placement compositions, placement checks, placement classes and the narrow column); `pnpm test` green; `pnpm test:visual` 0 diffs; the test carousel rendered through the production CSS.
+- Check: "Regenerate pictures" on the wet-grains variant after the deploy (about $0.35–0.45).
+

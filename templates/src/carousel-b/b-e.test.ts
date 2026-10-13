@@ -97,4 +97,17 @@ describe("template B number", () => {
     expect(render("B", "es-long")).toContain('<div class="b-wrap has-photo">');
     expect(render("B", "es-long", false)).toContain('<div class="b-wrap">');
   });
+
+  it("narrows it further for a picture down the right side", () => {
+    const placed = (placement: string) =>
+      renderSlideHtml({
+        slide: TEMPLATE_FIXTURES.B?.["es-long"] as never,
+        theme: buildTheme({}),
+        assets: { images: { side: PICTURE }, placements: { side: placement } },
+        page: { index: 1, count: 6 },
+      });
+    expect(placed("RIGHT_COLUMN")).toContain('<div class="b-wrap has-photo narrow">');
+    expect(placed("RIGHT_COLUMN")).toContain('class="img cutout b-photo place-right-column"');
+    expect(placed("BOTTOM_BAND")).toContain('<div class="b-wrap has-photo">');
+  });
 });

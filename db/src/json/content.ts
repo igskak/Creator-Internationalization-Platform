@@ -143,6 +143,9 @@ export const VisualBrief = z.object({
       /** The colour accent and its source, RECIPE or SERVING (visual-director@5 on). */
       colorAccent: z.string().optional(),
       colorSource: z.string().min(1).optional(),
+      /** Where the picture sits on an inner slide and how its frame is built (visual-director@6 on). */
+      placement: z.string().min(1).optional(),
+      arrangement: z.string().min(1).optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

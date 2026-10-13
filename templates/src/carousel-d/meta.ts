@@ -3,7 +3,7 @@ import { defineTemplate } from "../define-template";
 /** Diagram / mechanism (plan 08 §8.2.1, P1): a title and 3–5 points drawn as a thin-line tree. */
 export const templateD = defineTemplate({
   id: "D",
-  version: "2.0.1",
+  version: "2.1.0",
   name: "Diagram / mechanism",
   priority: "P1",
   roles: ["EXPLANATION", "STEP"],
