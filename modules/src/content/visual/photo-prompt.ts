@@ -18,6 +18,15 @@ export const SLOT_COMPOSITION = {
     "Composition: one subject, centred, with pure white all around it and a clear margin on every side.",
 } as const;
 
+/** A COMPARISON shot: the same slot, but one frame split into two equal halves. */
+export const SPLIT_COMPOSITION = {
+  cover:
+    "Composition: one frame split down the middle into two equal halves that show the two states side by side with the same angle and light; together they fill the upper two thirds of the frame, and the bottom third is calm and simple.",
+  side: "Composition: one frame split down the middle into two equal halves that show the two states side by side with the same angle and light; together they sit in the right 60% and lower part of the frame and are cropped by the right edge and the bottom edge. The left 40% of the frame, top to bottom, is completely empty pure white.",
+  centred:
+    "Composition: one frame split down the middle into two equal halves that show the two states side by side with the same angle and light, centred, with pure white all around.",
+} as const;
+
 export const PHOTO_STYLE =
   "Isolated on a pure white seamless background (#FFFFFF), high-key soft diffused studio light, a gentle natural contact shadow, shallow depth of field, saturated natural colors, crisp texture detail, appetizing premium cookbook look. No text.";
 
@@ -31,12 +40,16 @@ export function slotKind(templateId: string, fullBleed: boolean | undefined): Sl
   return templateId === "C" ? "centred" : "side";
 }
 
-/** The subject sentence with the slot's composition and the style; already finished ones stay. */
-export function photoPrompt(subject: string, kind: SlotKind): string {
+/**
+ * The subject sentence with the slot's composition (split in two for a comparison) and the style;
+ * already finished ones stay.
+ */
+export function photoPrompt(subject: string, kind: SlotKind, split = false): string {
   const text = subject.trim();
   if (text.endsWith(PHOTO_STYLE)) return text;
   const sentence = /[.!?]$/.test(text) ? text : `${text}.`;
-  return `${sentence} ${SLOT_COMPOSITION[kind]} ${PHOTO_STYLE}`;
+  const composition = split ? SPLIT_COMPOSITION[kind] : SLOT_COMPOSITION[kind];
+  return `${sentence} ${composition} ${PHOTO_STYLE}`;
 }
 
 /** The fixed list plus what the director added for this picture, without repeats. */
@@ -69,7 +82,11 @@ export function finishPhotoPrompts(
       const spec = templates.get(slide.templateId)?.imageSlots[entry.slot];
       return {
         ...entry,
-        prompt: photoPrompt(entry.prompt, slotKind(slide.templateId, spec?.fullBleed)),
+        prompt: photoPrompt(
+          entry.prompt,
+          slotKind(slide.templateId, spec?.fullBleed),
+          entry.shotType === "COMPARISON",
+        ),
         negativePrompt: photoNegative(entry.negativePrompt),
       };
     }),

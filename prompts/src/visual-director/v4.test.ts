@@ -12,8 +12,8 @@ const textOf = (input = FIXTURE_INPUT) =>
     .join("\n");
 
 describe("visual-director@4", () => {
-  it("is the latest director, with the defaults of v3", () => {
-    expect(promptRegistry.latest("visual-director")).toBe(v4);
+  it("is registered, with the defaults of v3", () => {
+    expect(promptRegistry.get("visual-director", 4)).toBe(v4);
     expect(v4).toMatchObject({ key: "visual-director@4", stage: "VISUAL_DIRECTION" });
     expect(v4.defaults).toEqual(v3.defaults);
     expect(v4.hash).not.toBe(v3.hash);

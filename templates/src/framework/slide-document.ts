@@ -62,7 +62,7 @@ html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;over
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}`;
 

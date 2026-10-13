@@ -2,7 +2,7 @@
 
 exports[`template A > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.0.0">
+<html lang="en" data-template="A" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -24,7 +24,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .a-hero{position:absolute;inset:0;width:100%;height:100%}
@@ -32,7 +32,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}
 </style>
 </head>
 <body>
@@ -80,7 +80,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template A > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.0.0">
+<html lang="en" data-template="A" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -102,7 +102,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .a-hero{position:absolute;inset:0;width:100%;height:100%}
@@ -110,7 +110,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}
 </style>
 </head>
 <body>
@@ -158,7 +158,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template A > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.0.0">
+<html lang="en" data-template="A" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -180,7 +180,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .a-hero{position:absolute;inset:0;width:100%;height:100%}
@@ -188,7 +188,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}
 </style>
 </head>
 <body>
@@ -236,7 +236,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template A > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.0.0">
+<html lang="en" data-template="A" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -258,7 +258,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .a-hero{position:absolute;inset:0;width:100%;height:100%}
@@ -266,7 +266,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}
 </style>
 </head>
 <body>
@@ -314,7 +314,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template A > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.0.0">
+<html lang="en" data-template="A" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -336,7 +336,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .a-hero{position:absolute;inset:0;width:100%;height:100%}
@@ -344,7 +344,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}
 </style>
 </head>
 <body>
@@ -392,7 +392,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template F > fixture en-short is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="F" data-template-version="2.0.0">
+<html lang="en" data-template="F" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -414,7 +414,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .f-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:620px;display:flex;flex-direction:column;gap:32px}
@@ -469,7 +469,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template F > fixture es-long is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="F" data-template-version="2.0.0">
+<html lang="en" data-template="F" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -491,7 +491,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .f-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:620px;display:flex;flex-direction:column;gap:32px}
@@ -546,7 +546,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template F > fixture max-length is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="F" data-template-version="2.0.0">
+<html lang="en" data-template="F" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -568,7 +568,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .f-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:620px;display:flex;flex-direction:column;gap:32px}
@@ -623,7 +623,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template F > fixture no-optionals is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="F" data-template-version="2.0.0">
+<html lang="en" data-template="F" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -645,7 +645,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .f-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:620px;display:flex;flex-direction:column;gap:32px}
@@ -700,7 +700,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 
 exports[`template F > fixture special-chars is valid for the template and renders a stable page 1`] = `
 "<!doctype html>
-<html lang="en" data-template="F" data-template-version="2.0.0">
+<html lang="en" data-template="F" data-template-version="2.0.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -722,7 +722,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .img-missing{background:repeating-linear-gradient(45deg,#ececec,#ececec 12px,#f6f6f6 12px,#f6f6f6 24px)}
 .rc-logo{position:absolute;display:flex;align-items:center;z-index:2}
 .rc-logo img{display:block;height:100%;width:auto}
-.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400}
+.rc-handle,.rc-page{position:absolute;bottom:44px;z-index:2;font-family:var(--rc-font-body);font-size:22px;line-height:1;letter-spacing:.02em;font-weight:400;text-shadow:0 0 3px var(--rc-bg),0 0 8px var(--rc-bg),0 0 14px var(--rc-bg)}
 .rc-handle{left:var(--rc-safe-margin);color:var(--rc-text)}
 .rc-page{right:var(--rc-safe-margin);color:var(--rc-muted)}
 .f-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:620px;display:flex;flex-direction:column;gap:32px}

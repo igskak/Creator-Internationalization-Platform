@@ -81,6 +81,16 @@ Checked in code (`modules/src/content/visual/validate.ts`, one repair): no two n
 
 The director writes only the **subject and the action**. The code (`modules/src/content/visual/photo-prompt.ts`) appends the composition of the template slot (cover / side / centred), the style sentence and the fixed negative list, so every picture of a carousel shares them word for word. The same path serves "Regenerate pictures" of one market.
 
+### Colour and visible action (visual-director@5)
+
+The first live run of v4 (an English carousel about rescuing grains that came out too wet) had a varied shot list on paper, but all seven pictures were white rice on white: the recipe had no colourful ingredient, props were forbidden, and several shots rested on steam, clear water or a starch film, which do not show on white. From v5:
+
+- **Colour accent on at least half of the pictures**, named in `colorAccent` with `colorSource`: `RECIPE` (an ingredient, tool or result of the recipe or slide) on any picture, `SERVING` (a classic partner the recipe does not name: herbs, a lemon wedge, cherry tomatoes, a fried egg) only on the cover and FINISHED_DISH shots, so it never looks like a recipe step. Checked in code (one repair).
+- **Pale food** (rice, quinoa, pasta, oats, dough) gets contrast: one vessel of a strong colour (black cast iron, a deep-coloured or dark ceramic bowl) or the colour accent. Steel and clear glass alone are not contrast.
+- **A visible action or texture in every frame** (a spoon lifting a clump, a fork fluffing, grains falling, a golden crust, droplets); steam, clear water and starch film are never the point of a picture.
+- **COMPARISON** gets its own composition from the code: one frame split down the middle into two equal halves.
+- The footer handle and page number have a soft halo in the page colour, so they stay legible where a photo runs under them (templates 2.0.1).
+
 ### Prompt rules
 
 - **One subject, large, macro.** Cropped by the frame on the right and the bottom edge, never centred with air around it.

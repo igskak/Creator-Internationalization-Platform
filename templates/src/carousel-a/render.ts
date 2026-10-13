@@ -11,7 +11,7 @@ export const rendererA: TemplateRenderer = {
 .a-text{position:absolute;left:var(--rc-safe-margin);right:var(--rc-safe-margin);bottom:120px;display:flex;flex-direction:column;gap:24px;color:#fff;z-index:1}
 .a-kicker{opacity:.9}
 .a-sub{opacity:.9}
-[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85)}`,
+[data-template="A"] .rc-handle,[data-template="A"] .rc-page{color:rgba(255,255,255,.85);text-shadow:none}`,
   body: (c) =>
     `${imageSlot(c, "hero", "a-hero")}
 <div class="a-shade"></div>

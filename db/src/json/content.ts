@@ -140,6 +140,9 @@ export const VisualBrief = z.object({
       aspect: z.enum(VISUAL_ASPECTS),
       /** The kind of shot of the director's shot list (visual-director@4 on; see @rc/prompts). */
       shotType: z.string().min(1).optional(),
+      /** The colour accent and its source, RECIPE or SERVING (visual-director@5 on). */
+      colorAccent: z.string().optional(),
+      colorSource: z.string().min(1).optional(),
     }),
   ),
   differentiationFromSibling: z.string(),
