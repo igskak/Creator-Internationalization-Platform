@@ -27,6 +27,14 @@ export const SHOT_TYPES = [
 ] as const;
 export type ShotType = (typeof SHOT_TYPES)[number];
 
+/** Where a picture's colour accent comes from (visual-director@5). */
+export const COLOR_SOURCES = [
+  /** An ingredient, tool or result of the recipe or the slide. */
+  "RECIPE",
+  /** A serving partner the recipe does not name: only on the cover and the finished dish. */
+  "SERVING",
+] as const;
+
 const ImageSlot = z.object({
   name: z.string().min(1),
   /** The aspect of the template slot; the plan's "8:5" is half of the canvas. */
@@ -124,6 +132,9 @@ export const VisualDirectorOutput = z.object({
       aspect: z.enum(VISUAL_ASPECTS),
       /** The kind of shot of the shot list (visual-director@4 on). */
       shotType: z.enum(SHOT_TYPES).optional(),
+      /** The colour accent in a few words, "" when none (visual-director@5 on). */
+      colorAccent: z.string().optional(),
+      colorSource: z.enum(COLOR_SOURCES).optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

@@ -3,7 +3,7 @@ import { defineTemplate } from "../define-template";
 /** Mistake vs correct technique (plan 08 §8.2.1). */
 export const templateE = defineTemplate({
   id: "E",
-  version: "2.0.0",
+  version: "2.0.1",
   name: "Mistake vs correct technique",
   priority: "P0",
   roles: ["MISTAKE", "CORRECT"],

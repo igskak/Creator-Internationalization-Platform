@@ -7,8 +7,8 @@ import type { TemplateRegistry } from "@rc/templates";
 // varies. BLOCKER issues go to the one repair.
 
 export type VisualValidationContext = {
-  /** The slides of the draft, with their template ids. */
-  slides: readonly Pick<Slide, "id" | "templateId">[];
+  /** The slides of the draft, with their template ids and roles. */
+  slides: readonly Pick<Slide, "id" | "templateId" | "role">[];
   templates: Pick<TemplateRegistry, "get">;
   /** Ids of the library photos that were offered (their rights allow a visual transform). */
   libraryIds: ReadonlySet<string>;
@@ -150,6 +150,7 @@ export function validateVisualBrief(
   });
 
   issues.push(...shotListIssues(brief, context));
+  issues.push(...colourIssues(brief, context));
 
   // Every required slot of every slide needs a picture.
   for (const slide of context.slides) {
@@ -232,6 +233,61 @@ function shotListIssues(brief: VisualBrief, context: VisualValidationContext): V
         `Use at least ${MIN_SHOT_KINDS} kinds of shot in the carousel.`,
       ),
     );
+  }
+  return issues;
+}
+
+/**
+ * Colour (visual-director@5): at least half of the generated pictures carry a colour accent, and a
+ * serving suggestion the recipe does not name appears only on the cover or a finished dish. Briefs
+ * without colour fields (older versions) are not checked.
+ */
+function colourIssues(brief: VisualBrief, context: VisualValidationContext): ValidationIssue[] {
+  const generated = brief.slides
+    .map((entry, i) => ({ entry, path: `slides.${i}` }))
+    .filter(({ entry }) => entry.source === "GENERATE");
+  if (!generated.some(({ entry }) => entry.colorAccent !== undefined)) return [];
+  const issues: ValidationIssue[] = [];
+  const coloured = generated.filter(({ entry }) => entry.colorAccent?.trim());
+  const needed = Math.ceil(generated.length / 2);
+  if (coloured.length < needed) {
+    issues.push(
+      issue(
+        "BLOCKER",
+        "VISUAL_COLOUR_MISSING",
+        "slides",
+        `${coloured.length} of ${generated.length} pictures have a colour accent; at least ${needed} need one.`,
+        "Give more pictures a colour accent from the recipe, or a colourful vessel for pale food.",
+      ),
+    );
+  }
+  const roleOf = new Map(context.slides.map((s) => [s.id, s.role]));
+  for (const { entry, path } of coloured) {
+    if (!entry.colorSource) {
+      issues.push(
+        issue(
+          "MINOR",
+          "VISUAL_COLOUR_SOURCE",
+          `${path}.colorSource`,
+          "A colour accent without its source.",
+          "Say RECIPE or SERVING.",
+        ),
+      );
+    } else if (
+      entry.colorSource === "SERVING" &&
+      entry.shotType !== "FINISHED_DISH" &&
+      roleOf.get(entry.slideId) !== "HOOK"
+    ) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_COLOUR_SERVING",
+          `${path}.colorSource`,
+          `A serving suggestion (${entry.colorAccent}) on a ${entry.shotType ?? "step"} picture would look like a step of the recipe.`,
+          "Use a serving suggestion only on the cover or a FINISHED_DISH shot; elsewhere take the colour from the recipe or the vessel.",
+        ),
+      );
+    }
   }
   return issues;
 }

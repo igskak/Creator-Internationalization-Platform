@@ -119,7 +119,7 @@ describe("review bundle and regenerate all", () => {
       status: "READY_FOR_REVIEW",
       hasContent: true,
       hookType: "MISTAKE_CALLOUT",
-      generationVersion: "p1.4.0",
+      generationVersion: "p1.5.0",
       lastError: null,
       critic: { verdict: "PASS", iteration: 0 },
       differentiation: { verdict: "OK" },

@@ -7,7 +7,7 @@ import { defineTemplate } from "../define-template";
  */
 export const templateB = defineTemplate({
   id: "B",
-  version: "2.0.0",
+  version: "2.0.1",
   name: "Large number / fact + explanation",
   priority: "P0",
   roles: ["FACT", "EXPLANATION", "STEP", "SUMMARY", "PROBLEM"],

@@ -21,6 +21,7 @@ import {
   photoNegative,
   photoPrompt,
   SLOT_COMPOSITION,
+  SPLIT_COMPOSITION,
 } from "./photo-prompt";
 import {
   regenerateVisualBrief,
@@ -412,6 +413,28 @@ describe("photo prompts", () => {
     );
   });
 
+  it("splits the frame of a comparison, in the slot's place", () => {
+    expect(photoPrompt("Raw and toasted quinoa", "side", true)).toBe(
+      `Raw and toasted quinoa. ${SPLIT_COMPOSITION.side} ${PHOTO_STYLE}`,
+    );
+    const finished = finishPhotoPrompts(
+      brief({
+        slides: [
+          entry({
+            slideId: "s2",
+            slot: "side",
+            aspect: "4:5",
+            shotType: "COMPARISON",
+            prompt: "Wet | fluffy",
+          }),
+        ],
+      }),
+      slides,
+      p0Registry,
+    );
+    expect(finished.slides[0]?.prompt).toContain(SPLIT_COMPOSITION.side);
+  });
+
   it("keeps the fixed negative list and adds the director's own terms without repeats", () => {
     expect(photoNegative(undefined)).toBe(PHOTO_NEGATIVE);
     const merged = photoNegative("burnt grains, Text, oil splatter");
@@ -546,5 +569,73 @@ describe("recipeOf", () => {
         mistakes: ["Straight from the bag → Rinse first", "Too much water"],
       },
     ]);
+  });
+});
+
+describe("colour checks", () => {
+  const four = [
+    slide("s1", 0, "A", "HOOK"),
+    slide("s2", 1, "B", "STEP"),
+    slide("s3", 2, "B", "FACT"),
+    slide("s4", 3, "F", "CTA"),
+  ];
+  const ctx4: VisualValidationContext = { ...context, slides: four };
+  const pic = (
+    slideId: string,
+    shotType: NonNullable<VisualBrief["slides"][number]["shotType"]>,
+    colorAccent: string,
+    colorSource?: "RECIPE" | "SERVING",
+  ) =>
+    entry({
+      slideId,
+      slot: slideId === "s1" ? "hero" : slideId === "s4" ? "product" : "side",
+      aspect: "4:5",
+      shotType,
+      colorAccent,
+      ...(colorSource ? { colorSource } : {}),
+    });
+  const codesOf = (pics: VisualBrief["slides"]) =>
+    validateVisualBrief(brief({ slides: pics }), ctx4).map((i) => i.code);
+
+  it("accepts half of the pictures with a colour accent, serving ones on the cover and the dish", () => {
+    expect(
+      codesOf([
+        pic("s1", "TECHNIQUE_IN_ACTION", "chopped parsley", "SERVING"),
+        pic("s2", "TOOL_AND_INGREDIENT", ""),
+        pic("s3", "INGREDIENT_MACRO", ""),
+        pic("s4", "FINISHED_DISH", "black cast-iron skillet", "RECIPE"),
+      ]),
+    ).toEqual([]);
+  });
+
+  it("blocks a carousel with too few colour accents", () => {
+    expect(
+      codesOf([
+        pic("s1", "TECHNIQUE_IN_ACTION", "golden crust", "RECIPE"),
+        pic("s2", "TOOL_AND_INGREDIENT", ""),
+        pic("s3", "INGREDIENT_MACRO", ""),
+        pic("s4", "FINISHED_DISH", ""),
+      ]),
+    ).toEqual(["VISUAL_COLOUR_MISSING"]);
+  });
+
+  it("blocks a serving suggestion on a step picture, and notes a missing source", () => {
+    expect(
+      codesOf([
+        pic("s1", "TECHNIQUE_IN_ACTION", "golden crust", "RECIPE"),
+        pic("s2", "TOOL_AND_INGREDIENT", "cherry tomatoes", "SERVING"),
+        pic("s3", "INGREDIENT_MACRO", "green peas"),
+        pic("s4", "FINISHED_DISH", ""),
+      ]),
+    ).toEqual(["VISUAL_COLOUR_SERVING", "VISUAL_COLOUR_SOURCE"]);
+  });
+
+  it("does not check briefs without colour fields (older directors)", () => {
+    expect(
+      codesOf([
+        entry({ shotType: "FINISHED_DISH" }),
+        entry({ slideId: "s2", slot: "side", aspect: "4:5", shotType: "INGREDIENT_MACRO" }),
+      ]),
+    ).toEqual([]);
   });
 });
