@@ -705,10 +705,12 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Done when:** migration reviewed by hand; schema tests green.
   - **Result:** `0009_reels.sql`, `db/src/schema/reels.ts` (`reel_shots`) and `reel_scripts` and `reel_renders` in `schema/content.ts`. The REEL variant state machine is not touched here: the `RENDER_CURRENT` guard and the `RE_RENDER` effect for Reels belong to M8-06 (generate) and M8-09 (approve and publish).
   - **Refs:** 18 §18.3, 04.
-- [ ] **M8-05 · Assembly renderer** · P0 · L · deps: M8-04 · ⚠ V-27
+- [x] **M8-05 · Assembly renderer** · P0 · L · deps: M8-04 · ⚠ V-27
   - **Do:** `modules/src/reels/render/`: ffmpeg wrapper, text cards through the existing Chromium renderer, colour and box rules, cut grid, optional flash opener, audio mix; deterministic input hash.
   - **Done when:** unit tests on the filter graph; a golden-frame test with a fixture clip.
   - **Refs:** 18 §18.4, 08.
+  - **Result (2026-10-14):** `modules/src/reels/render/`: `plan.ts` (the cut list: one segment per scene on the beat grid, the four-slice flash opener), `ffmpeg.ts` (one filter graph, strings only), `cards.ts` (Inter Tight cards through Chromium with a fit-text step and a safe-zone measure), `qa.ts` (ffprobe, blackdetect, first-second motion, `ReelQaReport`), `hash.ts` (the input hash), `assemble.ts` (cards → ffmpeg → checks, local files in and out), `pnpm reels:assemble <spec.json> <out.mp4>`. Tests: plan, graph, hash, QA parsers, Chromium cards, and real ffmpeg on synthetic clips with five golden frames (`__golden__/`, flat cards so no font dependence; rewrite with `UPDATE_GOLDEN=1`). **V-27 is not closed**: ffmpeg on Trigger.dev production machines (the build extension in `jobs/trigger.config.ts`, Chromium for the cards, memory and time of a 20 s render) is checked when M8-06 adds the job. Audio is taken as a file; the synthesized beat is M8-08.
+
 - [ ] **M8-06 · Generate service and job J23** · P0 · L · deps: M8-02, M8-03, M8-04, M8-05
   - **Do:** `modules/src/reels/{estimate,generate,shots}.ts`, `jobs/src/tasks/generate-reel.ts` (queue `render`, large machine, resume, idempotency `reel:{variantId}:{requestId}`), audit events, setting `reels.enabled`.
   - **Done when:** an end-to-end test with fakes; one live run on a real post with its cost recorded.

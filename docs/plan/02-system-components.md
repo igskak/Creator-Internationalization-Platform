@@ -96,6 +96,6 @@ External: Supabase Postgres + pgvector + Auth · Cloudflare R2 · Anthropic · O
 ## 2.4 Dependency rules (enforced by M0-20)
 - `apps/web` and `jobs` import only from `@rc/modules/*` subpaths, `@rc/lib`, `@rc/templates` (preview), and types.
 - `@rc/modules` may import `@rc/db`, `@rc/lib`, `@rc/prompts`, `@rc/templates`. Never `apps/*` or `jobs`.
-- Inside modules: `content` → (`knowledge`, `localization`, `offers`, `visuals`, `ai`); `publishing` → (`content`, `instagram`); `analytics` → (`publishing`, `instagram`, `content`). No cycles. `core` depends on nothing inside modules.
+- Inside modules: `content` → (`knowledge`, `localization`, `offers`, `visuals`, `ai`); `publishing` → (`content`, `instagram`); `analytics` → (`publishing`, `instagram`, `content`); `reels` → (`content`, `localization`, `visuals`, `ai`). No cycles. `core` depends on nothing inside modules.
 - `@rc/templates` is pure (no db, no network). `@rc/prompts` has no side effects.
 - The web app never imports `modules/visuals/render` (Chromium) except through `InlineJobRunner` with a dynamic import (test/dev only).
