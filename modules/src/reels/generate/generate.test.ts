@@ -109,13 +109,16 @@ describe("generateReel", () => {
     // The cards and beats went to the assembly, with the hook card first.
     expect(stub.calls[0]?.scenes[0]).toMatchObject({ id: "s1", beats: 4, layout: "RIGHT" });
     expect(stub.calls[0]?.flashOpener).toBe(true);
+    // The placeholder beat goes with it (the file is cut to the 7 scenes and the flash opener).
+    expect(stub.calls[0]?.audio).toMatchObject({ kind: "PLACEHOLDER_BEAT" });
+    expect(stub.calls[0]?.audio?.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(Object.keys(stub.calls[0]?.shots ?? {})).toHaveLength(7);
 
     const [render] = await renders();
     expect(render).toMatchObject({
       status: "READY",
       reelScriptId: script?.id,
-      audioKind: "NONE",
+      audioKind: "PLACEHOLDER_BEAT",
       width: 1080,
       height: 1920,
       durationMs: 14_880,

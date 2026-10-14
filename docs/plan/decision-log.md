@@ -1264,3 +1264,10 @@ Template:
 - Evidence: 17 component tests (the dialog, the confirmed price, the model re-read, every blocked reason, the progress and the slow message, a failed Reel, the video, the hook change, the shot redo, no change for an approved Reel or for a non-owner), service tests for the view, the hook change (free: no shot, no director, one new render) and the shot redo (exactly one new shot, a second redo another shot), the i18n parity test, and a Chrome rendering of every state of the card.
 - Impact on plan: M8-07a added; M8-09 puts Reels into the queues and adds approve and reject.
 
+## 2026-10-14 · Placeholder beat and the Reel player's CSP [M8-08, M8-07]
+- Context: the first Reel made through the app was silent, and the owner could not play it in the card (the downloaded file played).
+- Cause of the player: the Content-Security-Policy had no `media-src`, so the `<video>` fell back to `default-src 'self'` and the browser refused the presigned R2 link. Fix: `media-src 'self' blob: https://*.r2.cloudflarestorage.com` (PR #104), with a test.
+- Decision (audio, RL-7): `generate-reel` makes the placeholder beat in code (a port of the spike's synthesizer, no licence to hold): 120 BPM, silent-first but with a beat: kick and clap from the second scene, a bass and hat pulse under the hook, a pop on every cut, an impact before the peak scene, a riser out of the flash opener. It is deterministic (seed 7), as long as the video, ends with a 0.35 s fade, and is soft-clipped to a usable level: −15.3 LUFS and a true peak of −1.1 dBTP by ebur128 (without the clipping it sat at −20.6 LUFS, with a drive of 2.4 at −11.9 LUFS and +1.0 dBTP, so 1.4 was chosen). The beat's hash is part of the render's input hash, so a Reel made before this change is rebuilt (for free, with "Use this hook" or a new request) and gets its sound. `audio_kind = PLACEHOLDER_BEAT`.
+- Not done: owner-supplied licensed tracks (Q-08) and their upload; Instagram's own music library cannot be added through the API.
+- Evidence: tests for the schedule (cuts, kick and clap entry, the impact, the riser), the WAV, determinism, level, and a loudness check by ffmpeg.
+

@@ -730,10 +730,12 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
 - [ ] **M8-07a · E2E of the Reel card and the Reels switch screen** · P1 · M · deps: M8-07
   - **Do:** E2E fakes for the web server (`createE2eLlm` answers `reel-director`, a video provider that returns a small real clip, a stub or a real ffmpeg), a spec: switch off → the button is off with its reason; switch on → estimate, confirm, progress, the video; change hook; redo a shot; a settings control for `reels.enabled`.
 
-- [ ] **M8-08 · Audio** · P0 · M · deps: M8-05 · ⚠ V-28
+- [x] **M8-08 · Audio** · P0 · M · deps: M8-05 · ⚠ V-28
   - **Do:** a synthesized placeholder beat synced to the cut grid (first release); mix with cut accents; the hook for owner-supplied licensed tracks (settings upload with a licence note and BPM) stays off until Q-08 is answered.
   - **Done when:** tests; loudness within limits.
   - **Refs:** 18 §18.4.
+  - **Result (2026-10-14):** `modules/src/reels/audio/beat.ts`: the placeholder beat in code (port of the spike): `beatSchedule` (the pattern as data: kick and clap from the second scene, bass and hats under the hook, a pop on every cut, an impact before the PEAK scene, a riser out of the flash opener), `synthesizeBeat` (a deterministic mono 16-bit WAV, as long as the video, a 0.35 s fade at the end, soft clipping for level, peak −1.4 dBFS). `generate-reel` makes it from the script's scenes and passes it to the assembly (`audio_kind = PLACEHOLDER_BEAT`, its hash is part of the render's input hash). Measured with ebur128: −15.3 LUFS, true peak −1.1 dBTP. The slot for owner-supplied tracks (`OWNER_TRACK`, a settings upload with a licence note and BPM) is still not built; it waits for Q-08.
+
 - [ ] **M8-09 · Review, scheduling and publishing** · P0 · L · deps: M8-06 · ⚠ V-25, V-26
   - **Do:** REEL through approve, schedule and calendar; `modules/instagram` REELS container, longer status wait, J10 format branch; mock Graph API cases; `pnpm ig:smoke --reel` (dry by default); `docs/runbooks/reels.md`; Gate **G3** record `docs/decisions/G3.md`.
   - **Done when:** a dry run reaches FINISHED on the test account; no live Reel before G3.

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,6 +10,7 @@ import { DEFAULT_VIDEO_MODEL, VIDEO_MODELS, type VideoModelId } from "@rc/lib/pr
 import { z } from "zod";
 import { transitionVariant } from "../../content/variants/transition";
 import { audit, type ServiceContext } from "../../core";
+import { synthesizeBeat } from "../audio";
 import { type DirectedReel, directReel, type ReelScriptDraft } from "../director";
 import {
   type AssembledReel,
@@ -17,6 +19,7 @@ import {
   type AssembleShot,
   assembleReel,
   assemblyInputHash,
+  FLASH,
   RENDERER_VERSION,
 } from "../render";
 import { assertReelsEnabled } from "./enabled";
@@ -323,10 +326,25 @@ export async function generateReel(
       await writeFile(path, await ctx.storage.getBytes(shot.storageKey));
       assembleShots[scene.id] = { path, sha256: shot.sha256 };
     }
+    // The placeholder beat, cut to this script: the same script always gets the same file.
+    const flashOpener = scriptRow.flashOpener === "ON";
+    const peakIndex = scenes.findIndex((s) => s.role === "PEAK");
+    const beat = synthesizeBeat({
+      sceneBeats: scenes.map((s) => s.beats),
+      flashSeconds: flashOpener ? FLASH.shots * FLASH.shotSeconds : 0,
+      peakSceneIndex: peakIndex >= 0 ? peakIndex : undefined,
+    });
+    const audioPath = join(tmp, "beat.wav");
+    await writeFile(audioPath, beat.wav);
     const input: AssembleInput = {
       scenes: scenes.map((s) => ({ id: s.id, beats: s.beats, card: s.card, layout: s.layout })),
       shots: assembleShots,
-      flashOpener: scriptRow.flashOpener === "ON",
+      flashOpener,
+      audio: {
+        path: audioPath,
+        kind: "PLACEHOLDER_BEAT",
+        sha256: createHash("sha256").update(beat.wav).digest("hex"),
+      },
       workDir: join(tmp, "work"),
       outPath: join(tmp, "reel.mp4"),
     };
