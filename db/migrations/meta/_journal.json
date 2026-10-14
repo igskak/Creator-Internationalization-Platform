@@ -64,6 +64,13 @@
       "when": 1791800000000,
       "tag": "0008_market_ai_disclosure",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791959179909,
+      "tag": "0009_reels",
+      "breakpoints": true
     }
   ]
 }

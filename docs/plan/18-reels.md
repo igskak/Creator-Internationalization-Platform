@@ -25,10 +25,10 @@ Status: approved by the owner 2026-10-13 (audio placeholder for now; the Spanish
 
 - `content_variants`: reuse `format = 'REEL'` (enum value exists; unique index `(master_idea_id, market_id, format)` already allows one carousel and one Reel per idea and market). Add nullable `source_variant_id` (the carousel the Reel is built from). `slides_json` is not used for a Reel: the script lives in `reel_scripts`.
 - `reel_scripts`: `variant_id`, `version`, `hook_options jsonb`, `chosen_hook`, `scenes jsonb` (per scene: id, beats, emotion, text card, shot prompt, source picture/asset id, claim ids from the post), `cost_estimate_usd`, `model`, `prompt_version`, `generation_run_id`.
-- `reel_shots`: `variant_id`, `scene_id`, `prompt_hash`, `provider`, `model`, `provider_request_id`, `status`, `source_asset_id`, `storage_key` (mp4 in R2), `duration_ms`, `cost_usd`, `error`; unique `(variant_id, scene_id, prompt_hash)` for live statuses (a rerun finds the shot instead of paying again, same as `visual_assets_gen_uq`).
-- `reel_renders`: `variant_id`, `input_hash`, `storage_key`, `width`, `height`, `duration_ms`, `bytes`, `sha256`, `audio_asset_id`, `cost_usd` (sum of shots), `template_version`; `content_variants.current_render_id` is typed for carousels today, so add `current_reel_render_id`.
+- `reel_shots`: scoped to the **brand**, not the variant, so the Spanish Reel finds the English shots (decision Q-10) and a rerun never pays twice: `brand_id`, `content_variant_id` (the Reel that ordered it), `prompt_hash` (model, resolution, seconds, prompt and the start frame's sha256), `status` (PENDING, RUNNING, READY, FAILED, BLOCKED), `provider_request_id` (required when RUNNING), `source_visual_asset_id`, `storage_key` (the mp4 in R2, required when READY), size, `sha256`, `cost_usd`, `params`, `error`; unique `(brand_id, prompt_hash)` among PENDING, RUNNING and READY. A scene in `reel_scripts.scenes` refers to its shot by `shotId`.
+- `reel_renders`: `variant_id`, `reel_script_id`, `input_hash`, `storage_key`, `width`, `height`, `duration_ms`, `bytes`, `sha256`, `audio_kind` (NONE, PLACEHOLDER_BEAT, OWNER_TRACK), `cost_usd` (sum of shots), `renderer_version`, `qa_report`; `content_variants.current_reel_render_id` points at the current one.
 - `generation_stage` enum gets `REEL_DIRECTION` and `REEL_SHOT`.
-- `audio_tracks` (owner-uploaded, with licence note and BPM) in `source_assets` style or its own table; decided in M8-08.
+- Owner-uploaded audio tracks (licence note, BPM) are not modelled yet; `audio_kind` is a text column until M8-08 decides (`OWNER_TRACK` needs a source).
 - All with RLS and no policies (04 §4.1).
 
 ## 18.4 Pipeline (job J23 `generate-reel`, queue `render`, machine large, ≤ 25 min)

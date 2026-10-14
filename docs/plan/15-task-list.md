@@ -692,9 +692,10 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`.
   - **Done when:** `pnpm eval` (fake) green; a live run recorded in the decision log; the owner reviewed 3 scripts.
   - **Refs:** 18 §18.4, 07 §7.5.
-- [ ] **M8-04 · Data model** · P0 · M · deps: M8-01
-  - **Do:** migration 0009 (`reel_scripts`, `reel_shots`, `reel_renders`, `content_variants.source_variant_id` and `current_reel_render_id`), Drizzle schema, RLS, schema tests, REEL transitions.
+- [x] **M8-04 · Data model** · P0 · M · deps: M8-01
+  - **Do:** migration 0009 (`reel_scripts`, `reel_shots`, `reel_renders`, `content_variants.source_variant_id` and `current_reel_render_id`), Drizzle schema, Zod shapes in `db/src/json/reels.ts`, RLS, schema tests.
   - **Done when:** migration reviewed by hand; schema tests green.
+  - **Result:** `0009_reels.sql`, `db/src/schema/reels.ts` (`reel_shots`) and `reel_scripts` and `reel_renders` in `schema/content.ts`. The REEL variant state machine is not touched here: the `RENDER_CURRENT` guard and the `RE_RENDER` effect for Reels belong to M8-06 (generate) and M8-09 (approve and publish).
   - **Refs:** 18 §18.3, 04.
 - [ ] **M8-05 · Assembly renderer** · P0 · L · deps: M8-04 · ⚠ V-27
   - **Do:** `modules/src/reels/render/`: ffmpeg wrapper, text cards through the existing Chromium renderer, colour and box rules, cut grid, optional flash opener, audio mix; deterministic input hash.

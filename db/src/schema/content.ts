@@ -30,6 +30,7 @@ import type {
   UtmSpec,
   VisualBrief,
 } from "../json/content";
+import type { ReelAudioKind, ReelHookOption, ReelQaReport, ReelScene } from "../json/reels";
 import type { ApprovedSnapshot } from "../json/review";
 import { appUsers, brands, markets } from "./core";
 import { contentFormat, generationRuns, knowledgeItems, sourceAssets } from "./knowledge";
@@ -237,6 +238,10 @@ export const contentVariants = pgTable(
     visualStyle: text(),
     /** The render the review screen shows; set by the render job (M3-12). */
     currentRenderId: uuid().references((): AnyPgColumn => carouselRenders.id),
+    /** The Reel render the review screen shows (0009, M8-04); null for carousels. */
+    currentReelRenderId: uuid().references((): AnyPgColumn => reelRenders.id),
+    /** A Reel: the carousel variant it is built from (0009, M8-04). */
+    sourceVariantId: uuid().references((): AnyPgColumn => contentVariants.id),
     /** The snapshot the publisher posts; null until approved, cleared when the approval is undone. */
     approvedVersionId: uuid().references((): AnyPgColumn => contentVariantVersions.id),
     /** Derived; used by analytics and originality checks. */
@@ -274,6 +279,10 @@ export const contentVariants = pgTable(
       .where(sql`${t.status} <> 'REJECTED'`),
     index("content_variants_market_status_idx").on(t.marketId, t.status),
     index("content_variants_status_updated_idx").on(t.status, t.updatedAt.desc()),
+    check(
+      "content_variants_source_variant_check",
+      sql`${t.sourceVariantId} is null or ${t.format} = 'REEL'`,
+    ),
   ],
 ).enableRLS();
 
@@ -299,6 +308,82 @@ export const carouselRenders = pgTable(
     completedAt: timestamp({ withTimezone: true }),
   },
   (t) => [unique("carousel_renders_variant_input_uq").on(t.contentVariantId, t.inputHash)],
+).enableRLS();
+
+/**
+ * One version of a Reel's script: three hook options, the chosen hook and the scenes. A new
+ * script (a changed hook, an edited scene) is a new version; renders point at the version they
+ * were built from.
+ */
+export const reelScripts = pgTable(
+  "reel_scripts",
+  {
+    id: id(),
+    contentVariantId: uuid()
+      .notNull()
+      .references(() => contentVariants.id),
+    version: integer().notNull(),
+    hookOptions: jsonb().$type<ReelHookOption[]>().notNull().default(sql`'[]'::jsonb`),
+    chosenHookId: text(),
+    /** The first 0.88 s as four flash shots under the hook card (variant B). */
+    flashOpener: text().$type<"ON" | "OFF">().notNull().default("ON"),
+    scenes: jsonb().$type<ReelScene[]>().notNull().default(sql`'[]'::jsonb`),
+    /** The video model the shots are made with, e.g. `alibaba/wan-3.0`. */
+    shotModel: text().notNull(),
+    /** Estimate shown before the run (USD, list prices). */
+    costEstimateUsd: numeric({ precision: 10, scale: 4 }),
+    promptVersion: text(),
+    generationRunId: uuid().references(() => generationRuns.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("reel_scripts_variant_version_uq").on(t.contentVariantId, t.version),
+    check("reel_scripts_version_check", sql`${t.version} > 0`),
+    check("reel_scripts_flash_check", sql`${t.flashOpener} in ('ON', 'OFF')`),
+  ],
+).enableRLS();
+
+/** One render of a Reel (plan 18 §18.3, 0009_reels); the input hash makes a re-render a no-op. */
+export const reelRenders = pgTable(
+  "reel_renders",
+  {
+    id: id(),
+    contentVariantId: uuid()
+      .notNull()
+      .references(() => contentVariants.id),
+    /** The script version this render was assembled from. */
+    reelScriptId: uuid()
+      .notNull()
+      .references(() => reelScripts.id),
+    /** Hash of the script, shot ids, text cards, audio and renderer version. */
+    inputHash: text().notNull(),
+    status: renderStatus().notNull().default("PENDING"),
+    width: integer().notNull().default(1080),
+    height: integer().notNull().default(1920),
+    durationMs: integer(),
+    bytes: integer(),
+    sha256: text(),
+    /** The mp4 in R2; set when READY. */
+    storageKey: text(),
+    audioKind: text().$type<ReelAudioKind>().notNull().default("NONE"),
+    /** Sum of the cost of the shots in this render (USD, list-price estimates). */
+    costUsd: numeric({ precision: 10, scale: 4 }),
+    /** Version of the assembly code and card templates. */
+    rendererVersion: text().notNull(),
+    qaReport: jsonb().$type<ReelQaReport>(),
+    error: jsonb().$type<{ code: string; message: string; details?: Record<string, unknown> }>(),
+    triggerRunId: text(),
+    createdAt: createdAt(),
+    completedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    unique("reel_renders_variant_input_uq").on(t.contentVariantId, t.inputHash),
+    check("reel_renders_ready_check", sql`${t.status} <> 'READY' or ${t.storageKey} is not null`),
+    check(
+      "reel_renders_audio_kind_check",
+      sql`${t.audioKind} in ('NONE', 'PLACEHOLDER_BEAT', 'OWNER_TRACK')`,
+    ),
+  ],
 ).enableRLS();
 
 /** One reviewer action on a variant, with the value before and after [S§5, §10.3]. */
