@@ -11,8 +11,8 @@ import {
 import { z } from "zod";
 import { audit, type ServiceContext, triggerJob } from "../../core";
 import { assertReelsEnabled, reelsEnabled } from "./enabled";
-import { applyChosenHook } from "./generate";
 import { estimateReel, type ReelEstimate } from "./estimate";
+import { applyChosenHook } from "./generate";
 import { loadReelSource } from "./source";
 
 // The two services behind the Generate Reel button (plan 18 §18.6, decisions RL-2 and RL-4):
@@ -182,7 +182,12 @@ async function changeableReel(ctx: ServiceContext, variantId: string) {
       reel.status === "GENERATING"
         ? "The Reel is being made."
         : `A ${reel.status} Reel is not changed. Un-approve it first.`,
-      { details: { code: reel.status === "GENERATING" ? "reel_generating" : "reel_in_use", variantId } },
+      {
+        details: {
+          code: reel.status === "GENERATING" ? "reel_generating" : "reel_in_use",
+          variantId,
+        },
+      },
     );
   }
   const [script] = await ctx.db
@@ -191,7 +196,8 @@ async function changeableReel(ctx: ServiceContext, variantId: string) {
     .where(eq(schema.reelScripts.contentVariantId, variantId))
     .orderBy(desc(schema.reelScripts.version))
     .limit(1);
-  if (!script) throw new InvalidStateError("The Reel has no script yet.", { details: { variantId } });
+  if (!script)
+    throw new InvalidStateError("The Reel has no script yet.", { details: { variantId } });
   return { reel, script };
 }
 
@@ -237,7 +243,9 @@ export async function changeReelHook(
     });
   }
   if (!script.hookOptions.some((h) => h.id === input.hookId)) {
-    throw new ValidationError("There is no such hook option.", { details: { code: "unknown_hook" } });
+    throw new ValidationError("There is no such hook option.", {
+      details: { code: "unknown_hook" },
+    });
   }
   const changed = applyChosenHook(
     {
@@ -291,7 +299,9 @@ export async function regenerateReelShot(
   const { reel, script } = await changeableReel(ctx, input.variantId);
   const scene = script.scenes.find((s) => s.id === input.sceneId);
   if (!scene) {
-    throw new NotFoundError("The scene is not in the Reel.", { details: { sceneId: input.sceneId } });
+    throw new NotFoundError("The scene is not in the Reel.", {
+      details: { sceneId: input.sceneId },
+    });
   }
   const estimateUsd = estimateShotRedo(script.shotModel as VideoModelId);
   if (input.confirmEstimateUsd + CONFIRM_SLACK_USD < estimateUsd) {
@@ -317,7 +327,13 @@ export async function regenerateReelShot(
     entityType: "content_variant",
     entityId: reel.id,
     marketId: reel.marketId,
-    data: { sceneId: scene.id, attempt: (scene.shotAttempt ?? 0) + 1, scriptId: next.id, estimateUsd, runId },
+    data: {
+      sceneId: scene.id,
+      attempt: (scene.shotAttempt ?? 0) + 1,
+      scriptId: next.id,
+      estimateUsd,
+      runId,
+    },
   });
   return { variantId: reel.id, runId, scriptId: next.id, estimateUsd };
 }

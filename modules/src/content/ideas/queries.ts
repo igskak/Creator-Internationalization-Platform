@@ -159,7 +159,10 @@ export async function getIdeaDetail(ctx: ServiceContext, id: string): Promise<Id
     .from(schema.contentVariants)
     .innerJoin(schema.markets, eq(schema.markets.id, schema.contentVariants.marketId))
     .where(
-      and(eq(schema.contentVariants.masterIdeaId, id), eq(schema.contentVariants.format, "CAROUSEL")),
+      and(
+        eq(schema.contentVariants.masterIdeaId, id),
+        eq(schema.contentVariants.format, "CAROUSEL"),
+      ),
     )
     .orderBy(asc(schema.markets.sortOrder), asc(schema.markets.code));
 

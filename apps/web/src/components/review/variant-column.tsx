@@ -1,4 +1,5 @@
 import type { VariantView } from "@rc/modules/content";
+import type { ReelView } from "@rc/modules/reels";
 import type { MarketInfo } from "@/components/calendar/calendar-dialogs";
 import { PublishPanel } from "@/components/publishing/publish-panel";
 import { PUBLISHABLE_STATUSES } from "@/components/publishing/statuses";
@@ -16,6 +17,7 @@ import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
+import { ReelCard } from "./reel-card";
 import { RegeneratePicturesButton } from "./regenerate-pictures-button";
 import { SlideCard } from "./slide-card";
 import { SlideDrawer } from "./slide-drawer";
@@ -69,6 +71,7 @@ export function VariantColumn({
   templates,
   ctaTypes,
   publish,
+  reel,
 }: {
   variant: VariantView;
   cardTitles: ReadonlyMap<string, string>;
@@ -84,6 +87,8 @@ export function VariantColumn({
     canManage: boolean;
     publications: VariantPublicationsDto;
   };
+  /** The Reel card of this market's post: absent in tests that do not show it. */
+  reel?: { view: ReelView; canManage: boolean };
 }) {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
@@ -173,6 +178,8 @@ export function VariantColumn({
               renderBusy={variant.render.state === "RENDERING" || variant.render.state === "STALE"}
             />
           </Section>
+
+          {reel ? <ReelCard view={reel.view} canManage={reel.canManage} /> : null}
 
           <Section title={t.hook}>
             <EditableText

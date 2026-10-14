@@ -97,10 +97,9 @@ const slug = (text: string) =>
     .slice(0, 40) || "reel";
 
 export function reelEstimates(): Record<VideoModelId, ReelEstimate> {
-  return Object.fromEntries(VIDEO_MODELS.map((model) => [model, estimateReel({ model })])) as Record<
-    VideoModelId,
-    ReelEstimate
-  >;
+  return Object.fromEntries(
+    VIDEO_MODELS.map((model) => [model, estimateReel({ model })]),
+  ) as Record<VideoModelId, ReelEstimate>;
 }
 
 async function detailOf(
@@ -157,7 +156,11 @@ async function detailOf(
       }),
     ]);
     render = {
-      state: generating ? "RENDERING" : script && current.reelScriptId !== script.id ? "STALE" : "READY",
+      state: generating
+        ? "RENDERING"
+        : script && current.reelScriptId !== script.id
+          ? "STALE"
+          : "READY",
       renderId: current.id,
       durationMs: current.durationMs,
       width: current.width,
@@ -190,7 +193,9 @@ async function detailOf(
     variantId: reel.id,
     status: reel.status,
     flags: reel.flags,
-    lastError: reel.lastError ? { code: reel.lastError.code, message: reel.lastError.message } : null,
+    lastError: reel.lastError
+      ? { code: reel.lastError.code, message: reel.lastError.message }
+      : null,
     stage:
       generating && state
         ? {
@@ -263,7 +268,10 @@ export async function getReelView(
     names.topic = idea?.topic ?? "";
   } catch (error) {
     const code = (error as { details?: { code?: string } } | null)?.details?.code;
-    if (error instanceof InvalidStateError && (code === "carousel_not_ready" || code === "no_pictures")) {
+    if (
+      error instanceof InvalidStateError &&
+      (code === "carousel_not_ready" || code === "no_pictures")
+    ) {
       blockedBy = code;
     } else {
       throw error;

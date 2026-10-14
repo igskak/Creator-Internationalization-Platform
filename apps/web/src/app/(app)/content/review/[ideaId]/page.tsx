@@ -2,6 +2,7 @@ import { NotFoundError } from "@rc/lib/errors";
 import { getReviewBundle } from "@rc/modules/content";
 import { listMarkets } from "@rc/modules/localization";
 import { listVariantPublications } from "@rc/modules/publishing";
+import { getReelViews } from "@rc/modules/reels";
 import { listTaxonomyTerms } from "@rc/modules/settings";
 import { registry } from "@rc/templates";
 import { ArrowLeftIcon } from "lucide-react";
@@ -44,13 +45,18 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     listTaxonomyTerms(ctx),
   ]);
   const { idea: detail, variants, costUsd } = bundle;
-  const [markets, publications] = await Promise.all([
+  const [markets, publications, reels] = await Promise.all([
     listMarkets(ctx),
     listVariantPublications(
       ctx,
       variants.map((v) => v.id),
     ),
+    getReelViews(
+      ctx,
+      variants.map((v) => v.id),
+    ),
   ]);
+  const canMakeReels = user.role === "owner" || user.role === "editor";
   const { idea, product, cards } = detail;
   const label = (kind: string, code: string) =>
     terms.find((term) => term.kind === kind && term.code === code)?.label ?? code;
@@ -105,6 +111,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
       },
     };
   };
+  const reelProps = (variantId: string) => {
+    const view = reels[variantId];
+    return view ? { reel: { view, canManage: canMakeReels } } : {};
+  };
   const generationVersion = variants.find((v) => v.generationVersion)?.generationVersion;
 
   return (
@@ -135,13 +145,32 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
       </header>
 
       <ReviewPoller
-        variants={variants.map((v) => ({
-          id: v.id,
-          status: v.status,
-          inProgress:
-            v.status === "GENERATING" || (v.status === "DRAFT" && !v.hasContent && !v.lastError),
-          rendering: v.render.state === "RENDERING" || v.render.state === "STALE",
-        }))}
+        variants={[
+          ...variants.map((v) => ({
+            id: v.id,
+            status: v.status,
+            inProgress:
+              v.status === "GENERATING" || (v.status === "DRAFT" && !v.hasContent && !v.lastError),
+            rendering: v.render.state === "RENDERING" || v.render.state === "STALE",
+          })),
+          // A Reel being made (or waiting for its job) is polled like a draft; a video that is
+          // being rebuilt refreshes the page.
+          ...Object.values(reels).flatMap((view) =>
+            view.reel
+              ? [
+                  {
+                    id: view.reel.variantId,
+                    status: view.reel.status,
+                    inProgress:
+                      view.reel.status === "GENERATING" ||
+                      (view.reel.status === "DRAFT" && !view.reel.script && !view.reel.lastError),
+                    rendering:
+                      view.reel.render.state === "RENDERING" || view.reel.render.state === "STALE",
+                  },
+                ]
+              : [],
+          ),
+        ]}
       />
 
       {variants.length === 0 ? (
@@ -244,6 +273,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
                 templates={templates}
                 ctaTypes={ctaTypes}
                 {...publishProps(variant)}
+                {...reelProps(variant.id)}
               />
             ))}
           </div>

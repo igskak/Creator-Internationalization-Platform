@@ -13,11 +13,16 @@ export {
   generateReel,
 } from "./generate";
 export {
+  ChangeReelHookInput,
+  changeReelHook,
   EstimateReelInput,
   estimateReelCost,
+  estimateShotRedo,
   type ReelEstimateView,
+  RegenerateReelShotInput,
   type RequestedReel,
   RequestReelInput,
+  regenerateReelShot,
   requestReel,
 } from "./request";
 export {
