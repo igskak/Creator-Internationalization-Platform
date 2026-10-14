@@ -1,5 +1,6 @@
 export { validateCitations } from "./citations";
 export { validateForbiddenPatterns } from "./forbidden";
+export { validateHookLine } from "./hook";
 export { flagsForIssues, isBlocking, splitIssues } from "./issues";
 export { validateNumericFidelity } from "./numeric";
 export { validateSlots } from "./slots";

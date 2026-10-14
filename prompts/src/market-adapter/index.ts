@@ -10,3 +10,4 @@ export {
 } from "./schema";
 export { default as marketAdapterV1 } from "./v1";
 export { default as marketAdapterV2 } from "./v2";
+export { default as marketAdapterV3 } from "./v3";
