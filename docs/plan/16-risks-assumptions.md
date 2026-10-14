@@ -102,7 +102,7 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-21 | Vercel limits (request body 4.5 MB, max duration), region `fra1`, Node version; Next.js major (middleware vs `proxy.ts`) | M0-08 | Vercel / Next.js docs |
 | V-22 | R2: presigned PUT and CORS; single PUT size limit; EU jurisdiction; public bucket option | M0-13 | Cloudflare docs |
 | V-23 | Legal: EU AI Act transparency obligations (scope, dates); Meta AI-generated content policy | B-13 (legal) | Counsel |
-| V-24 | Higgsfield API: commercial use of outputs, file retention, rate limits, moderation (`nsfw` false positives), request/status schema and error codes | M8-02 | docs.higgsfield.ai, terms of service |
+| V-24 | Higgsfield API: commercial use of outputs, file retention, rate limits, moderation (`nsfw` false positives), request/status schema and error codes | M8-02 | docs.higgsfield.ai, terms of service. **Checked 2026-10-13: partly**, see decision log |
 | V-25 | Instagram Reels container: `media_type=REELS`, codecs, max length and size, aspect ratio, `video_url`, processing time, `trial_params` | M8-09 | Instagram Content Publishing docs |
 | V-26 | Does Meta fetch a presigned R2 URL for video (V-14 passed for images)? | M8-09 | Dry run on the test account |
 | V-27 | ffmpeg and Chromium together on Trigger.dev prod machines; memory and time for a 20 s render | M8-05 | Trigger.dev docs, a deploy test |

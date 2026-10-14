@@ -68,6 +68,11 @@ export const aiSchema = z
       AI_PROVIDER: z.literal("live"),
       ANTHROPIC_API_KEY: required,
       OPENAI_API_KEY: required,
+      /** Optional: only Reels need it. `<key id>:<secret>` from the Higgsfield console. */
+      HIGGSFIELD_API_KEY: z
+        .string()
+        .regex(/^[^:\s]+:[^:\s]+$/, "Expected <key id>:<secret>")
+        .optional(),
     }),
   ])
   .transform((v) =>
@@ -77,6 +82,7 @@ export const aiSchema = z
           provider: "live" as const,
           anthropicApiKey: v.ANTHROPIC_API_KEY,
           openaiApiKey: v.OPENAI_API_KEY,
+          ...(v.HIGGSFIELD_API_KEY ? { higgsfieldApiKey: v.HIGGSFIELD_API_KEY } : {}),
         },
   );
 
