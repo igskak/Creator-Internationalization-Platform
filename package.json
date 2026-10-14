@@ -26,6 +26,7 @@
     "video:smoke": "tsx --env-file-if-exists=.env scripts/video-smoke.ts",
     "e2e": "pnpm build && pnpm --filter @rc/web e2e",
     "test:visual": "pnpm --filter @rc/modules test:visual",
+    "reels:assemble": "pnpm --filter @rc/modules reels:assemble",
     "eval": "pnpm --filter @rc/evals eval",
     "eval:reels": "pnpm --filter @rc/evals eval:reels"
   },
