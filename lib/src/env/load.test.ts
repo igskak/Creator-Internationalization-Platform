@@ -157,6 +157,39 @@ describe("loadServerEnv: invalid", () => {
   });
 });
 
+describe("loadServerEnv: Higgsfield key", () => {
+  const live = {
+    ...base,
+    AI_PROVIDER: "live",
+    ANTHROPIC_API_KEY: "sk-ant",
+    OPENAI_API_KEY: "sk-oa",
+  };
+
+  it("is optional, so an existing live setup keeps loading", () => {
+    expect(loadServerEnv(live).ai).toEqual({
+      provider: "live",
+      anthropicApiKey: "sk-ant",
+      openaiApiKey: "sk-oa",
+    });
+    expect(loadServerEnv({ ...live, HIGGSFIELD_API_KEY: "" }).ai).not.toHaveProperty(
+      "higgsfieldApiKey",
+    );
+  });
+
+  it("is read as <key id>:<secret> when set", () => {
+    const env = loadServerEnv({ ...live, HIGGSFIELD_API_KEY: "id-1:secret-1" });
+    expect(env.ai).toMatchObject({ provider: "live", higgsfieldApiKey: "id-1:secret-1" });
+  });
+
+  it("names the variable, never the value, when the format is wrong", () => {
+    const error = problemsOf({ ...live, HIGGSFIELD_API_KEY: "justonestring" });
+    expect(error.problems).toEqual([
+      expect.objectContaining({ name: "HIGGSFIELD_API_KEY", kind: "invalid" }),
+    ]);
+    expect(error.message).not.toContain("justonestring");
+  });
+});
+
 describe("loadServerEnv: production guards", () => {
   it("accepts a production env with trigger jobs, live AI, R2 and no test secret", () => {
     expect(() => loadServerEnv(production)).not.toThrow();

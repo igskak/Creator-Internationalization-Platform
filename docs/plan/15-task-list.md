@@ -690,10 +690,11 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Do:** `docs/plan/18-reels.md`, `docs/design/reel-style.md`, decision-log entry, this section, README row, V-24…V-29 / R-21…R-26 / Q-08…Q-10 in 16.
   - **Done when:** merged; no code.
   - **Refs:** 18.
-- [ ] **M8-02 · Video provider (Higgsfield)** · P0 · M · deps: M8-01 · ⚠ V-24
+- [x] **M8-02 · Video provider (Higgsfield)** · P0 · M · deps: M8-01 · ⚠ V-24
   - **Do:** `lib/src/providers/video/{types,factory,fake,higgsfield}.ts`; submit, poll, download into R2; idempotency key; error mapping (`nsfw`, `failed`, timeouts); cost table; `HIGGSFIELD_API_KEY` in `loadServerEnv`; MSW tests; fake returns a small fixed mp4.
-  - **Done when:** tests green without network; documented estimate-only smoke command.
+  - **Done when:** tests green without network; documented estimate-only smoke command (`pnpm video:smoke`).
   - **Refs:** 18 §18.4, §18.7.
+  - **Result:** `lib/src/providers/video/` (submit and `waitFor` split so a crashed run resumes by request id), `HIGGSFIELD_API_KEY` optional in `ai` env, `pnpm video:smoke`. Wiring into `ServiceContext` and the runtimes comes with M8-06, the first user of it.
 - [ ] **M8-03 · Reel director prompt** · P0 · L · deps: M8-01, M2-12b · ⚠ V-29
   - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`; hooks from `docs/design/hook-library.md` (`ReelHookOption` holds a `hook_type` code from the shared taxonomy, 3 distinct hook types per script, banned patterns, CTA cards).
   - **Done when:** `pnpm eval` (fake) green; a live run recorded in the decision log; the owner reviewed 3 scripts.

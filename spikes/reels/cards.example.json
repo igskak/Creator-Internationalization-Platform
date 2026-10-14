@@ -1,0 +1,62 @@
+[
+ {
+  "id": "c1",
+  "text": "Soak the<br><span>beans?</span>",
+  "size": 112,
+  "top": 240
+ },
+ {
+  "id": "c2",
+  "text": "Only if<br>they're <span>dry.</span>",
+  "size": 112,
+  "top": 240,
+  "labels": [
+   {
+    "x": 110,
+    "y": 1340,
+    "t": "Dry"
+   },
+   {
+    "x": 560,
+    "y": 1340,
+    "t": "Canned"
+   }
+  ]
+ },
+ {
+  "id": "c3",
+  "text": "Dry: rinse.<br>Soak.<br><span>8 hours.</span>",
+  "size": 96,
+  "top": 240
+ },
+ {
+  "id": "c4",
+  "text": "Canned?<br><span>Skip it.</span>",
+  "size": 104,
+  "top": 240
+ },
+ {
+  "id": "c5",
+  "text": "Simmer<br><span>gently.</span>",
+  "size": 128,
+  "top": 240
+ },
+ {
+  "id": "c6",
+  "text": "Creamy.<br>Tender.<br><span>Ready.</span>",
+  "size": 92,
+  "top": 240
+ },
+ {
+  "id": "c7",
+  "text": "Then add<br><span>salt.</span>",
+  "size": 112,
+  "top": 240
+ },
+ {
+  "id": "c8",
+  "text": "Check the<br><span>can first.</span><br>Save it.",
+  "size": 96,
+  "top": 240
+ }
+]
