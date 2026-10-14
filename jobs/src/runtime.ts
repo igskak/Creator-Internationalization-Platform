@@ -5,6 +5,7 @@ import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/provide
 import { createImageProvider, type ImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
+import { createVideoProvider, type VideoProvider } from "@rc/lib/providers/video";
 import {
   createServiceContext,
   createTriggerDevJobRunner,
@@ -23,6 +24,7 @@ type Runtime = {
   llm: LLMProvider;
   embeddings: EmbeddingProvider;
   images: ImageProvider;
+  video: VideoProvider;
 };
 
 // One set of clients per worker process, created on first use.
@@ -59,13 +61,14 @@ function createRuntime(): Runtime {
     llm: createLlmProvider(env.ai),
     embeddings: createEmbeddingProvider(env.ai),
     images: createImageProvider(env.ai),
+    video: createVideoProvider(env.ai),
   };
 }
 
 /** Service context for one Trigger.dev run (actor JOB, run id, request id from the envelope). */
 export function jobContext(runId: string, taskId: string, meta: JobMeta): ServiceContext {
   shared ??= createRuntime();
-  const { logger, db, jobs, storage, llm, embeddings, images } = shared;
+  const { logger, db, jobs, storage, llm, embeddings, images, video } = shared;
   return createServiceContext({
     db,
     logger: logger.child({ taskId }),
@@ -74,6 +77,7 @@ export function jobContext(runId: string, taskId: string, meta: JobMeta): Servic
     llm,
     embeddings,
     images,
+    video,
     instagram: instagramRuntimeFromEnv(jobEnv()),
     // Inside a run: waits are checkpointed and cost no compute (plan 06 §6.3 J10).
     sleep: async (ms) => {

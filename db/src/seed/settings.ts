@@ -18,6 +18,7 @@ export const rightsDefaults = Object.fromEntries(
 
 export const settingSeeds: { key: string; value: unknown }[] = [
   { key: "publishing.enabled", value: false },
+  { key: "reels.enabled", value: false },
   { key: "publishing.min_gap_minutes", value: 180 },
   { key: "analytics.min_sample", value: 3 },
   { key: "rights.defaults", value: rightsDefaults },

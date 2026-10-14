@@ -143,7 +143,7 @@ export const taxonomyTerms = pgTable(
 ).enableRLS();
 
 /**
- * Keys: publishing.enabled (bool), publishing.min_gap_minutes (int), rights.defaults
+ * Keys: publishing.enabled (bool), reels.enabled (bool), publishing.min_gap_minutes (int), rights.defaults
  * (RightsDefaults), analytics.min_sample (int), ai.stage_overrides (P1), ai.monthly_budget_usd (P1).
  */
 export const appSettings = pgTable("app_settings", {

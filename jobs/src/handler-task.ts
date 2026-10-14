@@ -6,7 +6,7 @@ import { classifyJobError } from "./errors";
 import { jobContext } from "./runtime";
 
 /** Machine presets the plan uses (06 §6.1): default small-1x; Chromium and big PDFs medium-1x. */
-export type Machine = "small-1x" | "medium-1x";
+export type Machine = "small-1x" | "medium-1x" | "large-1x";
 
 type HandlerTaskOptions = {
   queue: Queue;

@@ -9,6 +9,7 @@ export {
   disabledInstagram,
   disabledLlm,
   disabledStorage,
+  disabledVideo,
   type InstagramApp,
   type InstagramRuntime,
   instagramRuntimeFromEnv,

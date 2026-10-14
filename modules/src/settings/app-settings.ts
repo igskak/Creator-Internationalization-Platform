@@ -8,6 +8,8 @@ import { audit, type ServiceContext, withTransaction } from "../core";
 /** Allowed app_settings keys and their value types (04 §4.3). P1 keys (ai.*) come later. */
 export const APP_SETTING_SCHEMAS = {
   "publishing.enabled": z.boolean(),
+  /** Kill switch of Reel generation (M8-06): off, nothing is spent on shots. Missing means off. */
+  "reels.enabled": z.boolean(),
   "publishing.min_gap_minutes": z
     .number()
     .int()
