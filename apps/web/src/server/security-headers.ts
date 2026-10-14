@@ -1,6 +1,7 @@
 // Security headers for every response (plan 12 §12.5). Hosts are wildcards so the build does not
 // need env: Supabase (auth), R2 (presigned uploads and images) and Sentry ingest. Next.js injects inline scripts
-// for hydration, so script-src needs 'unsafe-inline' until a nonce-based CSP is added.
+// for hydration, so script-src needs 'unsafe-inline' until a nonce-based CSP is added. Reel videos
+// play from R2 too (media-src).
 
 export type Header = { key: string; value: string };
 
@@ -15,6 +16,8 @@ export function contentSecurityPolicy({ dev }: { dev: boolean }): string {
     "script-src": `'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src": "'self' 'unsafe-inline'",
     "img-src": `'self' data: blob: ${r2}`,
+    // Reels play from presigned R2 links (M8-07); without this the video falls back to default-src.
+    "media-src": `'self' blob: ${r2}`,
     "font-src": "'self' data:",
     "connect-src": `'self' ${supabase} ${r2} ${sentry}`,
     "frame-src": "'self'",
