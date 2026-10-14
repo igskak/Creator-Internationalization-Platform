@@ -2,6 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { schema } from "@rc/db";
+import { eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { createLogger } from "@rc/lib/logging";
@@ -50,6 +51,52 @@ describe("dev CLI", () => {
       action: "job.hello",
       actorType: "SYSTEM",
       data: { name: "dev" },
+    });
+  });
+
+  describe("setting", () => {
+    const settingValue = async (key: string) =>
+      (await t.db.select().from(schema.appSettings)).find((r) => r.key === key)?.value;
+
+    it("lists the settings and sets one, with an audit event", async () => {
+      await seedDatabase(t.db, { ownerEmails: ["owner@example.com"] });
+      const log = vi.spyOn(console, "log").mockImplementation(() => {});
+      await runCliCommand(cliCommands, ctx, ["setting"]);
+      const listed = log.mock.calls.map((c) => c.join(" ")).join("\n");
+      expect(listed).toContain("reels.enabled = false");
+      expect(listed).toContain("rights.defaults = (rights matrix)");
+
+      await runCliCommand(cliCommands, ctx, ["setting", "reels.enabled", "true"]);
+      expect(await settingValue("reels.enabled")).toBe(true);
+      expect(log).toHaveBeenLastCalledWith("rc setting: reels.enabled = true");
+      const events = await t.db.select().from(schema.auditEvents);
+      expect(events.filter((e) => e.action === "settings.changed")).toHaveLength(1);
+      expect(events.find((e) => e.action === "settings.changed")?.data).toMatchObject({
+        key: "reels.enabled",
+        from: false,
+        to: true,
+      });
+    });
+
+    it("creates the setting when the database was seeded before it existed", async () => {
+      await seedDatabase(t.db, { ownerEmails: ["owner@example.com"] });
+      await t.db.delete(schema.appSettings).where(eq(schema.appSettings.key, "reels.enabled"));
+      vi.spyOn(console, "log").mockImplementation(() => {});
+      await runCliCommand(cliCommands, ctx, ["setting", "reels.enabled", "true"]);
+      expect(await settingValue("reels.enabled")).toBe(true);
+    });
+
+    it("refuses an unknown key, a wrong type and a value that is not JSON", async () => {
+      await expect(runCliCommand(cliCommands, ctx, ["setting", "nope", "1"])).rejects.toThrow();
+      await expect(
+        runCliCommand(cliCommands, ctx, ["setting", "reels.enabled", '"yes"']),
+      ).rejects.toThrow(/Invalid value/);
+      await expect(
+        runCliCommand(cliCommands, ctx, ["setting", "reels.enabled", "yes"]),
+      ).rejects.toThrow(/must be JSON/);
+      await expect(runCliCommand(cliCommands, ctx, ["setting", "reels.enabled"])).rejects.toThrow(
+        /Usage/,
+      );
     });
   });
 

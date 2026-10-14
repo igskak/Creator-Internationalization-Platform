@@ -13,6 +13,7 @@ import { canProcessWithAI } from "./knowledge/rights";
 import { completeSourceUpload, createSourceUpload, getSourceReport } from "./knowledge/sources";
 import { transcribeSourcePages } from "./knowledge/transcription";
 import { checkG2Readiness, formatG2Readiness } from "./publishing";
+import { listAppSettings, setAppSetting } from "./settings";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   ".pdf": "application/pdf",
@@ -51,6 +52,33 @@ export const cliCommands: CliCommands = {
         auditEventId: number;
       };
       console.log(`rc hello: wrote audit event ${result.auditEventId}`);
+    },
+  },
+  setting: {
+    description:
+      "Show the app settings, or set one (value as JSON: true, false, 180); audited like the Settings action",
+    usage: "setting [<key> <value>]",
+    run: async (ctx, args) => {
+      const [key, value] = args;
+      if (key === undefined) {
+        const all = await listAppSettings(ctx);
+        for (const name of Object.keys(all).sort()) {
+          // The rights matrix is large; the other values are one line.
+          console.log(
+            `${name} = ${name === "rights.defaults" ? "(rights matrix)" : JSON.stringify(all[name])}`,
+          );
+        }
+        return;
+      }
+      if (value === undefined) throw new ValidationError("Usage: setting <key> <value>");
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(value);
+      } catch {
+        throw new ValidationError(`The value must be JSON (true, false, 180): got "${value}".`);
+      }
+      const saved = await setAppSetting(ctx, { key: key as never, value: parsed });
+      console.log(`rc setting: ${saved.key} = ${JSON.stringify(saved.value)}`);
     },
   },
   "g2-check": {
