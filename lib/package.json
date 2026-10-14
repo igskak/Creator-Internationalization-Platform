@@ -14,7 +14,8 @@
     "./observability": "./src/observability/index.ts",
     "./providers/llm": "./src/providers/llm/index.ts",
     "./providers/embeddings": "./src/providers/embeddings/index.ts",
-    "./providers/image": "./src/providers/image/index.ts"
+    "./providers/image": "./src/providers/image/index.ts",
+    "./providers/video": "./src/providers/video/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
