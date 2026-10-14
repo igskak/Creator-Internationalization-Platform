@@ -18,6 +18,7 @@ export const PROMPT_STAGES = [
   "VISUAL_QA",
   "EVAL_JUDGE",
   "PAGE_TRANSCRIPTION",
+  "REEL_DIRECTION",
 ] as const;
 export type PromptStage = (typeof PROMPT_STAGES)[number];
 

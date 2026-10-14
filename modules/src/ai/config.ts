@@ -30,8 +30,8 @@ const stage = (
 export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   KNOWLEDGE_EXTRACTION: stage("knowledge-extractor", "medium", 32_000, { stream: true }, 2),
   IDEA_GENERATION: stage("idea-generator", "high", 16_000, {}, 2),
-  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 2),
-  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 4),
+  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 3),
+  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 5),
   CRITIC: stage("critic", "high", 16_000, {}, 3),
   VISUAL_DIRECTION: stage("visual-director", "medium", 16_000, {}, 6),
   FIELD_REGENERATION: stage("field-regenerator", "high", 8_000),
@@ -40,4 +40,5 @@ export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   VISUAL_QA: stage("visual-qa", "medium", 8_000, {}, 2),
   EVAL_JUDGE: stage("eval-judge", "high", 8_000, {}, 2),
   PAGE_TRANSCRIPTION: stage("page-transcriber", "low", 16_000, {}, 2),
+  REEL_DIRECTION: stage("reel-director", "high", 12_000, {}, 1),
 };

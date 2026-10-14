@@ -26,7 +26,8 @@
     "video:smoke": "tsx --env-file-if-exists=.env scripts/video-smoke.ts",
     "e2e": "pnpm build && pnpm --filter @rc/web e2e",
     "test:visual": "pnpm --filter @rc/modules test:visual",
-    "eval": "pnpm --filter @rc/evals eval"
+    "eval": "pnpm --filter @rc/evals eval",
+    "eval:reels": "pnpm --filter @rc/evals eval:reels"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

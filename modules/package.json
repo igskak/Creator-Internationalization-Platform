@@ -9,6 +9,7 @@
     "./ai": "./src/ai/index.ts",
     "./knowledge": "./src/knowledge/index.ts",
     "./content": "./src/content/index.ts",
+    "./reels": "./src/reels/index.ts",
     "./localization": "./src/localization/index.ts",
     "./visuals": "./src/visuals/index.ts",
     "./visuals/render": "./src/visuals/render/index.ts",

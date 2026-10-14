@@ -6,5 +6,14 @@ export { describeEstimate, estimateRun } from "./cost";
 export { createFakeEvalEmbeddings, createFakeEvalModel } from "./fake-model";
 export { formatG1, type G1Row, g1Check } from "./g1";
 export { aggregate, computeMetrics, expectationsMet } from "./metrics";
+export {
+  estimateReelEval,
+  formatReelSummary,
+  type ReelEvalResult,
+  type ReelEvalSummary,
+  reelReviewSheet,
+  runReelEval,
+  summarizeReelEval,
+} from "./reels";
 export { buildReport, type EvalReport, summarize, writeReport } from "./report";
 export { type CaseOutcome, runCase } from "./runner";

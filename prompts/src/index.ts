@@ -14,6 +14,7 @@ import { knowledgeGlossV1, knowledgeGlossV2 } from "./knowledge-gloss";
 import { marketAdapterV1, marketAdapterV2, marketAdapterV3 } from "./market-adapter";
 import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
 import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
+import { reelDirectorV1 } from "./reel-director";
 import { createRegistry } from "./registry";
 import {
   visualDirectorV1,
@@ -52,6 +53,8 @@ export * as knowledgeGloss from "./knowledge-gloss";
 export * as marketAdapter from "./market-adapter";
 export * as pageTranscriber from "./page-transcriber";
 export * as postAnnotator from "./post-annotator";
+export * as reelDirector from "./reel-director";
+export { REEL_LIMITS } from "./reel-director";
 export { createRegistry, type PromptRegistry } from "./registry";
 export {
   BANNED_HOOK_PATTERNS,
@@ -59,6 +62,7 @@ export {
   findBannedHookPatterns,
   HOOK_LANGUAGES,
   HOOK_LIBRARY,
+  HOOK_REEL_CARDS,
   type HookLanguage,
   type HookLibraryEntry,
   hookGuidance,
@@ -112,4 +116,5 @@ export const promptRegistry = createRegistry([
   fieldRegeneratorV1,
   visualQaV1,
   visualQaV2,
+  reelDirectorV1,
 ]);

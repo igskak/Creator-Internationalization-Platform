@@ -10,7 +10,8 @@
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run",
-    "eval": "tsx --env-file-if-exists=../.env src/cli.ts"
+    "eval": "tsx --env-file-if-exists=../.env src/cli.ts",
+    "eval:reels": "tsx --env-file-if-exists=../.env src/reels-cli.ts"
   },
   "dependencies": {
     "@rc/db": "workspace:*",
