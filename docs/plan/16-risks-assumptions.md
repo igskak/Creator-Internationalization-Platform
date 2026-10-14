@@ -26,6 +26,12 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | R-18 | Outage of Trigger.dev, Vercel, Supabase or Meta | Medium | Low | Retries; visible failures; dispatcher recovery; manual-posting runbook (post by hand, record media id) | Engineer |
 | R-19 | Compliance gaps: AI imagery disclosure, food-safety claims, Meta data deletion | High | Medium | Legal review B-13 before G2; `SAFETY_REVIEW` flag and checklist; Meta callbacks; disclosure option (M5-12) | Ihor |
 | R-20 | Chef review is the bottleneck (cards pile up in NEEDS_REVIEW) | High | High | Review queue order (verified quotes first, focus categories); bulk approve for clean cards; agreed weekly review time (A-20); only cards needed for the next ideas are urgent | Sergey / Ihor |
+| R-21 | Generated shots look wrong (morphing, merged objects) and spend is wasted | Medium | High | Prompt rules (static camera plus one motion), per-shot regenerate, preview before approval, shot costs visible, fallback to the source photo with a slow zoom | Ihor |
+| R-22 | Higgsfield queue stalls or the API changes | Medium | Medium | Timeouts, resume by request id, idempotency key, stage progress; provider interface allows another vendor | Ihor |
+| R-23 | Instagram rejects the video (codec, length, presigned URL) | High | Medium | V-25 and V-26 before G3; fixed encoder profile; `RENDERS_PUBLIC_BASE_URL` fallback | Ihor |
+| R-24 | Copyright claim on audio | High | Low | Owner-supplied licensed tracks only; the synthesized beat is a placeholder | Ihor |
+| R-25 | Video cost creeps with retries (no hard cap by owner decision) | Medium | Medium | Estimate before, real cost after, daily total on the settings page, soft warning (not a block) above a configurable value | Ihor |
+| R-26 | A Reel claims more than its post says | High | Medium | Validator requires claim ids from the carousel slides; critic pass; owner approval | Ihor |
 
 ## 16.2 Assumptions (change one → check the listed impact)
 
@@ -96,6 +102,12 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-21 | Vercel limits (request body 4.5 MB, max duration), region `fra1`, Node version; Next.js major (middleware vs `proxy.ts`) | M0-08 | Vercel / Next.js docs |
 | V-22 | R2: presigned PUT and CORS; single PUT size limit; EU jurisdiction; public bucket option | M0-13 | Cloudflare docs |
 | V-23 | Legal: EU AI Act transparency obligations (scope, dates); Meta AI-generated content policy | B-13 (legal) | Counsel |
+| V-24 | Higgsfield API: commercial use of outputs, file retention, rate limits, moderation (`nsfw` false positives), request/status schema and error codes | M8-02 | docs.higgsfield.ai, terms of service |
+| V-25 | Instagram Reels container: `media_type=REELS`, codecs, max length and size, aspect ratio, `video_url`, processing time, `trial_params` | M8-09 | Instagram Content Publishing docs |
+| V-26 | Does Meta fetch a presigned R2 URL for video (V-14 passed for images)? | M8-09 | Dry run on the test account |
+| V-27 | ffmpeg and Chromium together on Trigger.dev prod machines; memory and time for a 20 s render | M8-05 | Trigger.dev docs, a deploy test |
+| V-28 | Audio licence: only owner-supplied tracks with a licence note; Instagram's music library is not available through the API | M8-08 | Owner, counsel |
+| V-29 | `reel-director` quality: claim fidelity and hook strength on real posts | M8-03 | Eval harness + owner review |
 
 Note: in this cloud environment the egress proxy blocked `developers.facebook.com` and `trigger.dev` while this plan was written. Allow these domains in the environment's Network access (B-14) or verify from a local machine.
 
@@ -123,3 +135,6 @@ Note: in this cloud environment the egress proxy blocked `developers.facebook.co
 | Q-05 | Which products are localized first? | Lead magnets first (B-07) |
 | Q-06 | Connect the Russian account through the API later for richer historical metrics? | Not in MVP; CSV import |
 | Q-07 | Split English into US and UK later? | No |
+| Q-08 | Which licensed tracks will the owner supply? | Open; the synthesized beat is a placeholder (owner, 2026-10-13) |
+| Q-09 | Voice-over in a later stage? | Not in the first release (P2-02) |
+| Q-10 | Spanish Reel: same shots or its own? | Same shots, only the text cards change (owner, 2026-10-13) |

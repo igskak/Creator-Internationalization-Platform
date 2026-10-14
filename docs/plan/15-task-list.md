@@ -28,7 +28,7 @@ Spec §23.1 item 15 (§23 items 2 and 18). Every task is sized for one Claude Co
 | Learning loop [S§12.4] | M7 (P1) | performance memory; generation v2; overuse filter; experiments-lite | M7-01 … M7-06 |
 | Security, operations, observability [S§19, §23] | M0 + H | env, logging, crypto, auth, Sentry; health page; security review; runbooks; cost alert; scanning | M0-04 … M0-07, M0-15, M0-19, H-01 … H-06 |
 | Seed dataset [S§20] | M1 + M2 (P1) + Track B | historical posts import & annotation; voice examples | M1-22, M1-23, M2-17, B-05, B-06, B-08 |
-| Reels [S§14] | P2 | – | P2-01, P2-02 |
+| Reels [S§14] | M8 (video-first, on demand, with publishing) + P2 (transcription-based Type A, voice-over Type B) | Reel provider, director prompt, assembly, job, UI, audio, publishing, insights | M8-01 … M8-11, P2-01, P2-02 |
 
 ## 15.2 Build sequence by folder (what exists after which tasks)
 
@@ -52,6 +52,7 @@ Spec §23.1 item 15 (§23 items 2 and 18). Every task is sized for one Claude Co
 | 16 | `db` 0007; `modules/src/analytics/{snapshots,slots,queries}`; dashboards, lineage; progress of long actions | M6-01 … M6-10 | 15 |
 | 17 | `db` 0008; `analytics/summaries`, `analytics/experiments`; prompts v2 | M7-01 … M7-06 | 16 |
 | 18 | Health page, runbooks, security scripts, acceptance record | H-01 … H-06 | 15, 16 |
+| 19 | `db` 0009; `lib/src/providers/video`; `prompts/src/reel-director`; `modules/src/reels`; `jobs` J23; Reel card on review and published screens; `modules/instagram` REELS | M8-01 … M8-11 | 15, 16 |
 
 Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
@@ -675,9 +676,56 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** uptime check on `/api/health`; `gitleaks` and `pnpm audit` in CI (audit as warning).
   - **Done when:** CI shows the new checks.
 
+## M8 · Reels (video-first, generated on request)
+
+Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-first (no slideshow), on demand per post and market, estimate without a hard cap, first release includes publishing, Higgsfield (`alibaba/wan-3.0` default), placeholder audio for now, the Spanish Reel reuses the English shots.
+
+- [ ] **M8-01 · Spec and plan** · P0 · S · deps: —
+  - **Do:** `docs/plan/18-reels.md`, `docs/design/reel-style.md`, decision-log entry, this section, README row, V-24…V-29 / R-21…R-26 / Q-08…Q-10 in 16.
+  - **Done when:** merged; no code.
+  - **Refs:** 18.
+- [ ] **M8-02 · Video provider (Higgsfield)** · P0 · M · deps: M8-01 · ⚠ V-24
+  - **Do:** `lib/src/providers/video/{types,factory,fake,higgsfield}.ts`; submit, poll, download into R2; idempotency key; error mapping (`nsfw`, `failed`, timeouts); cost table; `HIGGSFIELD_API_KEY` in `loadServerEnv`; MSW tests; fake returns a small fixed mp4.
+  - **Done when:** tests green without network; documented estimate-only smoke command.
+  - **Refs:** 18 §18.4, §18.7.
+- [ ] **M8-03 · Reel director prompt** · P0 · L · deps: M8-01 · ⚠ V-29
+  - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`.
+  - **Done when:** `pnpm eval` (fake) green; a live run recorded in the decision log; the owner reviewed 3 scripts.
+  - **Refs:** 18 §18.4, 07 §7.5.
+- [ ] **M8-04 · Data model** · P0 · M · deps: M8-01
+  - **Do:** migration 0009 (`reel_scripts`, `reel_shots`, `reel_renders`, `content_variants.source_variant_id` and `current_reel_render_id`), Drizzle schema, RLS, schema tests, REEL transitions.
+  - **Done when:** migration reviewed by hand; schema tests green.
+  - **Refs:** 18 §18.3, 04.
+- [ ] **M8-05 · Assembly renderer** · P0 · L · deps: M8-04 · ⚠ V-27
+  - **Do:** `modules/src/reels/render/`: ffmpeg wrapper, text cards through the existing Chromium renderer, colour and box rules, cut grid, optional flash opener, audio mix; deterministic input hash.
+  - **Done when:** unit tests on the filter graph; a golden-frame test with a fixture clip.
+  - **Refs:** 18 §18.4, 08.
+- [ ] **M8-06 · Generate service and job J23** · P0 · L · deps: M8-02, M8-03, M8-04, M8-05
+  - **Do:** `modules/src/reels/{estimate,generate,shots}.ts`, `jobs/src/tasks/generate-reel.ts` (queue `render`, large machine, resume, idempotency `reel:{variantId}:{requestId}`), audit events, setting `reels.enabled`.
+  - **Done when:** an end-to-end test with fakes; one live run on a real post with its cost recorded.
+  - **Refs:** 18 §18.4, 06.
+- [ ] **M8-07 · UI: button, estimate dialog, progress, player** · P0 · L · deps: M8-06
+  - **Do:** `ReelCard` on `/content/review/[ideaId]` and `/content/published/[publicationId]`; actions `estimateReel`, `generateReel`; progress from stages; player; regenerate one shot; change hook; download; en and ru.
+  - **Done when:** component and E2E tests; i18n parity test green.
+  - **Refs:** 18 §18.2, §18.6, 10.
+- [ ] **M8-08 · Audio** · P0 · M · deps: M8-05 · ⚠ V-28
+  - **Do:** a synthesized placeholder beat synced to the cut grid (first release); mix with cut accents; the hook for owner-supplied licensed tracks (settings upload with a licence note and BPM) stays off until Q-08 is answered.
+  - **Done when:** tests; loudness within limits.
+  - **Refs:** 18 §18.4.
+- [ ] **M8-09 · Review, scheduling and publishing** · P0 · L · deps: M8-06 · ⚠ V-25, V-26
+  - **Do:** REEL through approve, schedule and calendar; `modules/instagram` REELS container, longer status wait, J10 format branch; mock Graph API cases; `pnpm ig:smoke --reel` (dry by default); `docs/runbooks/reels.md`; Gate **G3** record `docs/decisions/G3.md`.
+  - **Done when:** a dry run reaches FINISHED on the test account; no live Reel before G3.
+  - **Refs:** 18 §18.5, 09.
+- [ ] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
+  - **Do:** Reel metrics in snapshots and dashboards; link Reel to its source carousel.
+- [ ] **M8-11 · Trial Reels** · P1 · S · deps: M8-09
+  - **Do:** `trial_params` toggle per Reel, off by default.
+
+---
+
 ## P2 · Post-MVP backlog (not scheduled)
-- **P2-01** Reels Type A: transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].
-- **P2-02** Reels Type B: faceless B-roll + typography + localized voice-over [S§14.2].
+- **P2-01** Reels Type A (talking video, narrower than M8, see `docs/plan/18-reels.md`): transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].
+- **P2-02** Reels Type B voice-over: localized voice-over for the M8 video-first Reels [S§14.2].
 - **P2-03** France market activation (fr-FR profile, reviewers, account) [S§1.2].
 - **P2-04** ManyChat API integration (automatic flows per campaign).
 - **P2-05** Sales webhooks from the selling/payment stack.
