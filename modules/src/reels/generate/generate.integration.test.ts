@@ -117,7 +117,7 @@ describe.skipIf(!haveFfmpeg || !browser)("generateReel with ffmpeg and Chromium"
         status: "READY",
         width: 1080,
         height: 1920,
-        audioKind: "NONE",
+        audioKind: "PLACEHOLDER_BEAT",
       });
       expect(render?.qaReport).toMatchObject({
         videoCodec: "h264",

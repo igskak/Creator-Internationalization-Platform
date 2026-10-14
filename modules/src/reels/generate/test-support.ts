@@ -150,7 +150,7 @@ export function stubAssemble() {
       path: input.outPath,
       inputHash: assemblyInputHash(input),
       plan: { segments: [], flashSeconds: 0.88, totalSeconds: 14 },
-      audioKind: "NONE",
+      audioKind: input.audio?.kind ?? "NONE",
       durationMs: 14_880,
       width: 1080,
       height: 1920,
