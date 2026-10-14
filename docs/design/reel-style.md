@@ -9,7 +9,7 @@ Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/p
 - Silent-first: the picture and the text card must work without sound. The first release adds a placeholder synthesized beat (kick and clap enter on scene 2, an impact on the "appetite" scene, a click on every cut).
 
 ## Story (one idea per Reel)
-1. **Hook (0–2.5 s)**: a doubt about a familiar action, with motion in the first frame ("HOT WATER ON BULGUR?").
+1. **Hook (0–2.5 s)**: a doubt about a familiar action, with motion in the first frame ("HOT WATER ON BULGUR?"). Hook patterns and banned patterns: `docs/design/hook-library.md`.
 2. **Rule (next 1.5 s)**: the answer that opens a loop ("ONLY IF IT'S FINE.").
 3. **Body**: one step per scene, a different frame each time.
 4. **Appetite peak**: the most sensory shot (toast, sizzle, pour) with its card ("NUTTY. TOASTY. LIKE BREAD.").

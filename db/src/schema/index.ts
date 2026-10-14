@@ -4,3 +4,4 @@ export * from "./core";
 export * from "./creative";
 export * from "./knowledge";
 export * from "./publishing";
+export * from "./reels";

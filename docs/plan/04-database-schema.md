@@ -602,6 +602,63 @@ alter table master_ideas
   add column performance_summary_id uuid references performance_summaries;   -- spec: created_from_metrics_window
 ```
 
+
+### 0009_reels (M8-04, plan 18 §18.3)
+Numbering note: the repository's migration numbers run ahead of this file's headings (see the decision log); this is the ninth migration file, `0009_reels.sql`.
+```sql
+alter type generation_stage add value 'REEL_DIRECTION';
+alter type generation_stage add value 'REEL_SHOT';
+create type reel_shot_status as enum ('PENDING','RUNNING','READY','FAILED','BLOCKED');
+
+alter table content_variants
+  add column source_variant_id      uuid references content_variants,   -- a Reel: the carousel it is built from
+  add column current_reel_render_id uuid references reel_renders,
+  add constraint content_variants_source_variant_check check (source_variant_id is null or format = 'REEL');
+
+create table reel_scripts (                      -- one version of a Reel's script
+  pk, content_variant_id uuid not null references content_variants,
+  version int not null check (version > 0), unique (content_variant_id, version),
+  hook_options jsonb not null default '[]',      -- ReelHookOption[] (json/reels)
+  chosen_hook_id text,
+  flash_opener text not null default 'ON' check (flash_opener in ('ON','OFF')),
+  scenes jsonb not null default '[]',            -- ReelScene[]
+  shot_model text not null,                      -- e.g. alibaba/wan-3.0
+  cost_estimate_usd numeric(10,4), prompt_version text,
+  generation_run_id uuid references generation_runs, created_at
+);
+
+create table reel_renders (                      -- like carousel_renders
+  pk, content_variant_id uuid not null references content_variants,
+  reel_script_id uuid not null references reel_scripts,
+  input_hash text not null, unique (content_variant_id, input_hash),
+  status render_status not null default 'PENDING',
+  width int not null default 1080, height int not null default 1920,
+  duration_ms int, bytes int, sha256 text,
+  storage_key text,                              -- required when READY
+  audio_kind text not null default 'NONE' check (audio_kind in ('NONE','PLACEHOLDER_BEAT','OWNER_TRACK')),
+  cost_usd numeric(10,4), renderer_version text not null,
+  qa_report jsonb, error jsonb, trigger_run_id text, created_at, completed_at
+);
+
+create table reel_shots (                        -- one generated shot, scoped to the brand
+  pk, brand_id uuid not null references brands,
+  content_variant_id uuid not null references content_variants,   -- the Reel that ordered it
+  prompt_hash text not null,                     -- model, resolution, seconds, prompt, start frame sha
+  status reel_shot_status not null default 'PENDING',
+  provider text not null, model text not null, provider_request_id text,   -- required when RUNNING
+  prompt text not null, duration_seconds int not null check (duration_seconds between 1 and 30),
+  resolution text not null default '720p',
+  source_visual_asset_id uuid references visual_assets, source_frame_sha256 text,
+  storage_key text,                              -- required when READY
+  width int, height int, bytes int, sha256 text, cost_usd numeric(10,4),
+  params jsonb, generation_run_id uuid references generation_runs, error jsonb,
+  created_at, updated_at                         -- set_updated_at() trigger
+);
+create unique index reel_shots_live_uq on reel_shots (brand_id, prompt_hash)
+  where status in ('PENDING','RUNNING','READY');   -- a rerun, or another market, finds the shot
+```
+RLS on the three new tables, no policies. `reel_scripts` and `reel_renders` are declared in the Drizzle file next to `content_variants` (module cycle), `reel_shots` in `schema/reels.ts`.
+
 ## 4.4 JSON field shapes (Zod schemas in `db/src/json/`)
 
 ```ts

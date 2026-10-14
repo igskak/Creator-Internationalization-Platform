@@ -98,6 +98,8 @@ export const generationStage = pgEnum("generation_stage", [
   "VISUAL_QA",
   "EVAL_JUDGE",
   "PAGE_TRANSCRIPTION",
+  "REEL_DIRECTION",
+  "REEL_SHOT",
 ]);
 export const runStatus = pgEnum("run_status", [
   "SUCCEEDED",
@@ -107,7 +109,7 @@ export const runStatus = pgEnum("run_status", [
   "FAILED",
 ]);
 
-/** Content formats; only CAROUSEL is produced in the MVP. Reused by 0003_content. */
+/** Content formats: CAROUSEL, and REEL since M8 (plan 18). Reused by 0003_content. */
 export const contentFormat = pgEnum("content_format", ["CAROUSEL", "REEL", "SINGLE_IMAGE"]);
 
 export const EMBEDDING_DIMENSIONS = 1536;
