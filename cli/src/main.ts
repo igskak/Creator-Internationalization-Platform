@@ -5,6 +5,7 @@ import { createEmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider } from "@rc/lib/providers/llm";
 import { createStorage } from "@rc/lib/providers/storage";
+import { createVideoProvider } from "@rc/lib/providers/video";
 import { cliCommands } from "@rc/modules/cli-commands";
 import {
   cliHelp,
@@ -51,6 +52,7 @@ const providers = {
   llm: createLlmProvider(env.ai),
   embeddings: createEmbeddingProvider(env.ai),
   images: createImageProvider(env.ai),
+  video: createVideoProvider(env.ai),
   instagram: instagramRuntimeFromEnv(env),
 };
 // Jobs run in-process, one after the other, so a command can wait for ingestion to finish.

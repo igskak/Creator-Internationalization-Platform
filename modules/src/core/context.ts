@@ -6,6 +6,7 @@ import type { EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import type { ImageProvider } from "@rc/lib/providers/image";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import type { StorageProvider } from "@rc/lib/providers/storage";
+import { DEFAULT_VIDEO_MODEL, type VideoProvider } from "@rc/lib/providers/video";
 import type { KeyRing } from "@rc/lib/security";
 import { type Clock, systemClock } from "./clock";
 import { disabledJobRunner, type JobRunner } from "./job-runner";
@@ -103,6 +104,8 @@ export type ServiceContext = {
   embeddings: EmbeddingProvider;
   /** Image generation (M3-03). */
   images: ImageProvider;
+  /** Image-to-video shots for Reels (M8-02, M8-06). */
+  video: VideoProvider;
   /** Instagram app, publish mode and token keys (M5). */
   instagram: InstagramRuntime;
   /**
@@ -128,6 +131,8 @@ export type CreateServiceContextInput = {
   embeddings?: EmbeddingProvider;
   /** Default: a provider that refuses every call. */
   images?: ImageProvider;
+  /** Default: a provider that refuses every call. */
+  video?: VideoProvider;
   /** Default: publishing off. */
   instagram?: InstagramRuntime;
   /** Default: a timer. */
@@ -151,6 +156,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     llm: input.llm ?? disabledLlm,
     embeddings: input.embeddings ?? disabledEmbeddings,
     images: input.images ?? disabledImages,
+    video: input.video ?? disabledVideo,
     instagram: input.instagram ?? disabledInstagram,
     sleep: input.sleep ?? timerSleep,
   };
@@ -204,4 +210,19 @@ export const disabledImages: ImageProvider = {
   generate: async () => {
     throw new PermanentError("No image provider is configured for this context.");
   },
+};
+
+const videoDisabled = (): never => {
+  throw new PermanentError("No video provider is configured for this context.", {
+    details: { code: "video_disabled" },
+  });
+};
+
+/** Default for contexts that must not generate video. */
+export const disabledVideo: VideoProvider = {
+  id: "disabled",
+  model: DEFAULT_VIDEO_MODEL,
+  submit: async () => videoDisabled(),
+  waitFor: async () => videoDisabled(),
+  generate: async () => videoDisabled(),
 };

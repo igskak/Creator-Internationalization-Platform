@@ -35,7 +35,7 @@ describe("seedDatabase", () => {
       markets: 3,
       taxonomyTerms: taxonomySeeds.length,
       owners: 2,
-      settings: 4,
+      settings: 5,
     });
   });
 
@@ -102,6 +102,7 @@ describe("seedDatabase", () => {
       (await t.db.select().from(appSettings)).map((s) => [s.key, s.value]),
     );
     expect(settings["publishing.enabled"]).toBe(false);
+    expect(settings["reels.enabled"]).toBe(false);
     expect(settings["publishing.min_gap_minutes"]).toBe(180);
     expect(settings["analytics.min_sample"]).toBe(3);
     const rights = RightsDefaults.parse(settings["rights.defaults"]);

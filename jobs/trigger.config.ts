@@ -1,6 +1,6 @@
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { esbuildPlugin } from "@trigger.dev/build/extensions";
-import { additionalFiles } from "@trigger.dev/build/extensions/core";
+import { additionalFiles, ffmpeg } from "@trigger.dev/build/extensions/core";
 import { playwright } from "@trigger.dev/build/extensions/playwright";
 import { defineConfig } from "@trigger.dev/sdk";
 
@@ -42,6 +42,8 @@ export default defineConfig({
       // Chromium and its system libraries for render-carousel (V-17); the image sets
       // PLAYWRIGHT_BROWSERS_PATH. The version is pinned to the one of playwright-core.
       playwright({ browsers: ["chromium"], version: "1.63.0" }),
+      // ffmpeg and ffprobe (apt, on PATH) for the Reel assembly of generate-reel (M8-05, M8-06, V-27).
+      ffmpeg(),
       // Fonts and icons of @rc/templates are read from disk (assets-path.ts).
       additionalFiles({ files: ["../templates/assets/**"] }),
       ...(process.env.SENTRY_AUTH_TOKEN

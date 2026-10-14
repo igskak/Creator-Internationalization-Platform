@@ -27,6 +27,7 @@ import {
 } from "./knowledge/posts";
 import { TranscribePagesInput, transcribeSourcePages } from "./knowledge/transcription";
 import { dispatchDuePublications, runPublication } from "./publishing";
+import { GenerateReelPayload, generateReel } from "./reels";
 import {
   GenerateVisualAssetsPayload,
   generateVisualAssets,
@@ -262,6 +263,16 @@ export const publishContentJob = defineJob({
   run: (ctx, payload) => runPublication(ctx, payload),
 });
 
+/**
+ * J23 (plan 06 §6.3, plan 18 §18.4): the Reel pipeline for one Reel variant: director, shots,
+ * assembly, checks. A permanent failure ends the variant as DRAFT with a flag and the job returns;
+ * a transient one is rethrown, the variant stays GENERATING and the run resumes at its stage.
+ */
+export const generateReelJob = defineJob({
+  payload: GenerateReelPayload,
+  run: (ctx, payload) => generateReel(ctx, payload),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -282,6 +293,7 @@ export const jobHandlers = {
   "check-account-health": checkAccountHealthJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
+  "generate-reel": generateReelJob,
 };
 
 type JobHandlers = typeof jobHandlers;
