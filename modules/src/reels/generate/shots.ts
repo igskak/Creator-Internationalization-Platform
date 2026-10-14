@@ -59,6 +59,8 @@ export const shotPromptHash = (parts: {
   seconds: number;
   prompt: string;
   frameSha256: string;
+  /** How often the shot was redone; the first make is 0 and leaves the hash as it was. */
+  attempt?: number;
 }): string =>
   createHash("sha256")
     .update(
@@ -68,6 +70,7 @@ export const shotPromptHash = (parts: {
         parts.seconds,
         parts.prompt,
         parts.frameSha256,
+        ...(parts.attempt ? [parts.attempt] : []),
       ]),
     )
     .digest("hex");
@@ -78,6 +81,8 @@ export type ShotSpec = {
   /** `visual_assets.id` of the picture the shot starts from. */
   pictureId: string;
   frame: StartFrame;
+  /** "Regenerate shot": the number of the redo; 0 or missing for the first make. */
+  attempt?: number;
 };
 
 export type ShotResult = {
@@ -168,6 +173,7 @@ async function claimShot(
     seconds,
     prompt,
     frameSha256: spec.frame.sha256,
+    ...(spec.attempt ? { attempt: spec.attempt } : {}),
   });
   const live = () =>
     ctx.db
@@ -349,6 +355,8 @@ export async function ensureShots(
   ctx: ServiceContext,
   shotCtx: ShotContext,
   specs: readonly ShotSpec[],
+  /** Called after each finished shot with the number done so far (the progress panel reads it). */
+  onProgress?: (done: number) => Promise<void>,
 ): Promise<EnsureShotsResult> {
   const results: ShotResult[] = [];
   const failures: EnsureShotsResult["failures"] = [];
@@ -359,6 +367,7 @@ export async function ensureShots(
       if (!spec) return;
       try {
         results.push(await ensureShot(ctx, shotCtx, spec));
+        await onProgress?.(results.length);
       } catch (error) {
         failures.push({ sceneId: spec.sceneId, error });
       }

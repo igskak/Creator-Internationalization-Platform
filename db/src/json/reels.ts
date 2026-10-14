@@ -70,6 +70,8 @@ export const ReelScene = z.object({
   claimSlideIds: z.array(z.string().min(1)),
   /** `reel_shots.id`, set when the shot exists (it may belong to another market's Reel). */
   shotId: z.string().min(1).optional(),
+  /** How often the shot was redone ("regenerate shot"); part of the shot's hash, so a redo is a new shot. */
+  shotAttempt: z.number().int().positive().optional(),
 });
 export type ReelScene = z.infer<typeof ReelScene>;
 

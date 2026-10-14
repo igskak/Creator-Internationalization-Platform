@@ -66,6 +66,8 @@ export async function listDrafts(
 ): Promise<DraftList> {
   const input = ListDraftsInput.parse(raw);
   const filters = [
+    // The queues hold carousels; Reels join them with M8-09.
+    eq(v.format, "CAROUSEL"),
     ...(input.market ? [eq(schema.markets.code, input.market)] : []),
     ...(input.flagged ? [sql`cardinality(${v.flags}) > 0`] : []),
   ];
@@ -142,7 +144,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export async function getWorkQueue(ctx: ServiceContext): Promise<WorkQueue> {
   const horizon = new Date(ctx.clock.now().getTime() + 7 * DAY_MS);
   const variants = (status: VariantStatus) =>
-    sql<number>`(select count(*)::int from ${v} where ${v.status} = ${status})`;
+    sql<number>`(select count(*)::int from ${v} where ${v.status} = ${status} and ${v.format} = 'CAROUSEL')`;
   const [row] = await ctx.db
     .select({
       cardsToReview: sql<number>`(select count(*)::int from ${schema.knowledgeItems} where ${schema.knowledgeItems.reviewStatus} = 'NEEDS_REVIEW')`,

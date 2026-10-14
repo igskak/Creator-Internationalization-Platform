@@ -13,11 +13,16 @@ export {
   generateReel,
 } from "./generate";
 export {
+  ChangeReelHookInput,
+  changeReelHook,
   EstimateReelInput,
   estimateReelCost,
+  estimateShotRedo,
   type ReelEstimateView,
+  RegenerateReelShotInput,
   type RequestedReel,
   RequestReelInput,
+  regenerateReelShot,
   requestReel,
 } from "./request";
 export {
@@ -39,3 +44,13 @@ export {
   type ReelPicture,
   type ReelSource,
 } from "./source";
+export {
+  getReelView,
+  getReelViews,
+  type ReelBlock,
+  type ReelDetail,
+  type ReelRenderView,
+  type ReelSceneView,
+  type ReelView,
+  reelEstimates,
+} from "./view";

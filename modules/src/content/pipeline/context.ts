@@ -79,6 +79,8 @@ export async function loadPipelineContext(
     .where(
       and(
         eq(schema.contentVariants.masterIdeaId, masterIdeaId),
+        // A Reel is made from a carousel and has no draft pipeline of its own (M8-06).
+        eq(schema.contentVariants.format, "CAROUSEL"),
         ne(schema.contentVariants.status, "REJECTED"),
       ),
     );

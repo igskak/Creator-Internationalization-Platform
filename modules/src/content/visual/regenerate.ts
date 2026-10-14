@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
 import type { VisualBrief } from "@rc/db/json";
-import { eq, inArray, sql } from "@rc/db/orm";
+import { and, eq, inArray, sql } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
 import { z } from "zod";
 import { runStage } from "../../ai";
@@ -69,7 +69,12 @@ export async function regenerateVisualBrief(
     })
     .from(schema.contentVariants)
     .innerJoin(schema.markets, eq(schema.markets.id, schema.contentVariants.marketId))
-    .where(eq(schema.contentVariants.masterIdeaId, variant.masterIdeaId));
+    .where(
+      and(
+        eq(schema.contentVariants.masterIdeaId, variant.masterIdeaId),
+        eq(schema.contentVariants.format, "CAROUSEL"),
+      ),
+    );
   for (const o of others) {
     if (o.id !== variantId && o.status !== "REJECTED" && o.brief) {
       siblings.push({ marketCode: o.marketCode, brief: o.brief });
