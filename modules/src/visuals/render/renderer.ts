@@ -10,7 +10,7 @@ import {
   type SlotText,
   type Theme,
 } from "@rc/templates/render";
-import { type Browser, chromium } from "playwright-core";
+import type { Browser } from "playwright-core";
 import sharp from "sharp";
 import {
   buildQaReport,
@@ -71,6 +71,10 @@ export function chromiumPath(explicit?: string): string | undefined {
 
 export async function launchBrowser(options: RenderOptions = {}): Promise<Browser> {
   const executablePath = chromiumPath(options.executablePath);
+  // Loaded here, not at the top: the web app imports this module through the Reels barrel, and
+  // Vercel does not trace playwright-core's own files (browsers.json), so a top-level import
+  // broke every page of the app. Only the render jobs ever get here.
+  const { chromium } = await import("playwright-core");
   return chromium.launch({
     ...(executablePath ? { executablePath } : {}),
     args: ["--font-render-hinting=none", "--disable-lcd-text", "--force-color-profile=srgb"],
