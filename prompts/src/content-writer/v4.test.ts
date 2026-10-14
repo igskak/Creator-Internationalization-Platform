@@ -5,8 +5,8 @@ import v3 from "./v3";
 import v4 from "./v4";
 
 describe("content-writer@4", () => {
-  it("is the latest writer, with the defaults of v3", () => {
-    expect(promptRegistry.latest("content-writer")).toBe(v4);
+  it("is registered, with the defaults of v3", () => {
+    expect(promptRegistry.get("content-writer", 4)).toBe(v4);
     expect(v4).toMatchObject({ key: "content-writer@4", stage: "CONTENT_WRITING" });
     expect(v4.defaults).toEqual(v3.defaults);
     expect(v4.hash).not.toBe(v3.hash);

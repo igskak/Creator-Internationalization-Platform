@@ -1,5 +1,6 @@
 import { validateCitations } from "./citations";
 import { validateForbiddenPatterns } from "./forbidden";
+import { validateHookLine } from "./hook";
 import { flagsForIssues, splitIssues } from "./issues";
 import { validateNumericFidelity } from "./numeric";
 import { validateSlots } from "./slots";
@@ -14,6 +15,7 @@ export const VALIDATORS: readonly Validator[] = [
   validateCitations,
   validateNumericFidelity,
   validateForbiddenPatterns,
+  validateHookLine,
   validateTextRules,
 ];
 

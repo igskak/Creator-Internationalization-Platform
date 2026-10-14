@@ -49,7 +49,7 @@ Format limits per type:
 | Invented certainty or statistics: "works 100% of the time", "guaranteed", "10× better", "works for everyone", "always works" | R29, R37, R45, R46, R57 | Numbers and results not from the cards (R-26) |
 | Conspiracy framing: "experts are hiding this", "nobody talks about this", "forbidden trick", "everyone keeps quiet" | R5, R6, R26, R30 | Clickbait without a claim; use `CURIOSITY_GAP` or `CONTRARIAN` with a real claim |
 | A time promise: "in 1 minute", "in 60 seconds", "by tomorrow", "this month", "in a week" | E2, E7, R31, R35, R54, R65 | Talking-head filler; usually a promise the post does not make |
-| First-person secret or self-promotion: "my best hack", "my secret method", "what I'd do if I started over" | E1, R2, R33, R64 | Brand voice, not a creator's voice; the same idea works as `CURIOSITY_GAP` or `BOLD_CLAIM` |
+| First-person secret or self-promotion: "my best hack", "my secret method", "what I'd do if I started over" | E1, R2, R33, R64 | Brand voice, not a creator's voice; the same idea works as `CURIOSITY_GAP` or `BOLD_CLAIM`. In code only "what I'd do if…" is blocked; "my trick" stays with the citation rule (a chef statement is allowed for a cited claim) |
 | Empty hype with nothing after it: "this will change your approach", "the tool you can't do without", "everything you need, no fluff" | R40, R47, R58, R59, R60, R61, R68 | Slide 2 or the rule card has nothing to answer |
 
 ## 4. Save and share prompts go to the CTA, not the hook
@@ -68,7 +68,7 @@ One ask per post. The Reel's last card echoes a word from its hook (`reel-style.
 1. **Library in code.** `prompts/src/shared/hook-library.ts`: per `hook_type` code its patterns (one line each), best angles and two examples per market language; plus the banned list per language (`en`, `es`). Keyed by code; a code added later in `/settings/brand` without an entry falls back to its label.
 2. **`market-adapter@3`.** Each `<hook_types>` term carries its patterns and best angles, so the choice is based on what the idea's angle supports, not on the label alone. The sibling rule stays (another market gets another hook type).
 3. **`content-writer@5`.** For the plan's `hookType` the prompt gets its patterns and examples as guidance, plus the banned list as a rule. It writes a native line in the market's language, never a translated example.
-4. **Check in code (one repair).** A number in the hook line or on the HOOK slide must appear in a cited card; no phrase from the banned list. Today HOOK slides may have `factual: false` and cite nothing, so an invented number there is not caught.
+4. **Check in code (one repair): `validateHookLine`** (`modules/src/content/validation/hook.ts`). Applies to the hook line and the HOOK slide. No phrase from the banned list of the market's language (`en`, `es`; none for other languages). A number without a unit must be a number stated by a card, `1`, or the count of the body slides (so "3 ways" passes with three body slides); numbers with units stay with numeric fidelity. Both are BLOCKERs, so they go through the existing repair, and an unresolved one raises `UNSUPPORTED_CLAIM`. Before this, a HOOK slide with `factual: false` cited nothing and an invented number there was not caught.
 5. **Eval.** The content-writer eval set before and after: the judge's hook score, and over the following weeks the reviewers' `WEAK_HOOK` rate. Released prompt files are not edited; the change ships as new versions.
 
 ## 6. Reels (M8-03, after M2-12b): what changes

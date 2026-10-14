@@ -10,3 +10,4 @@ export { default as contentWriterV1 } from "./v1";
 export { default as contentWriterV2 } from "./v2";
 export { default as contentWriterV3 } from "./v3";
 export { default as contentWriterV4 } from "./v4";
+export { default as contentWriterV5 } from "./v5";
