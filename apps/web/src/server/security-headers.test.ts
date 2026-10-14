@@ -21,6 +21,8 @@ describe("securityHeaders", () => {
       /connect-src 'self' https:\/\/\*\.supabase\.co .*https:\/\/\*\.r2\.cloudflarestorage\.com/,
     );
     expect(csp).toMatch(/img-src 'self' data: blob: https:\/\/\*\.r2\.cloudflarestorage\.com/);
+    // A Reel is a video from a presigned R2 link: it needs its own directive.
+    expect(csp).toMatch(/media-src 'self' blob: https:\/\/\*\.r2\.cloudflarestorage\.com/);
   });
 
   it("lets the browser report errors to Sentry ingest", () => {
