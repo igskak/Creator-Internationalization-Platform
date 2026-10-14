@@ -4,6 +4,7 @@ import {
   findBannedHookPatterns,
   HOOK_LANGUAGES,
   HOOK_LIBRARY,
+  HOOK_REEL_CARDS,
   hookGuidance,
   hookLanguage,
   hookPatternsLine,
@@ -27,6 +28,26 @@ describe("hook library", () => {
         }
       }
     }
+  });
+
+  it("has a Reel card of at most 6 words per type and language, and none is banned", () => {
+    expect(Object.keys(HOOK_REEL_CARDS).sort()).toEqual(Object.keys(HOOK_LIBRARY).sort());
+    for (const [code, byLanguage] of Object.entries(HOOK_REEL_CARDS)) {
+      for (const lang of HOOK_LANGUAGES) {
+        expect(byLanguage[lang].length, `${code} ${lang}`).toBeGreaterThan(0);
+        for (const card of byLanguage[lang]) {
+          const words = card.replaceAll("**", "").split(/\s+/u).filter(Boolean);
+          expect(words.length, card).toBeLessThanOrEqual(6);
+          expect(card.split("**").length % 2, `${card} has balanced accents`).toBe(1);
+          expect(findBannedHookPatterns(card, lang), card).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it("gives Reel cards instead of cover lines for the Reel format", () => {
+    expect(hookGuidance("MYTH_BUST", "en", "reel")).toContain("NOT ALWAYS");
+    expect(hookGuidance("MYTH_BUST", "en", "reel")).not.toContain("only half true");
   });
 
   it("maps a market language to a library language", () => {

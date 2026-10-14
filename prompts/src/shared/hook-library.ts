@@ -128,6 +128,55 @@ export const HOOK_LIBRARY: Readonly<Record<string, HookLibraryEntry>> = {
   },
 };
 
+/**
+ * First cards of a Reel (at most 6 words, `**…**` marks the accent word) per hook type. The shape
+ * of the card, not text to copy; the rule card that follows answers it.
+ */
+export const HOOK_REEL_CARDS: Readonly<
+  Record<keyof typeof HOOK_LIBRARY, Readonly<Record<HookLanguage, readonly string[]>>>
+> = {
+  MISTAKE_CALLOUT: {
+    en: ["STILL RINSING **RISOTTO RICE?**"],
+    es: ["¿AÚN LAVAS EL ARROZ **DEL RISOTTO?**"],
+  },
+  MYTH_BUST: {
+    en: ['"ALWAYS RINSE RICE." **NOT ALWAYS.**'],
+    es: ['"LAVA SIEMPRE EL ARROZ." **NO SIEMPRE.**'],
+  },
+  CONTRARIAN: {
+    en: ["THE **WORST** PASTA ADVICE"],
+    es: ["EL **PEOR** CONSEJO PARA LA PASTA"],
+  },
+  CURIOSITY_GAP: {
+    en: ["BULGUR IS **ALREADY COOKED.**"],
+    es: ["EL BULGUR YA ESTÁ **COCIDO.**"],
+  },
+  RELATABLE_PROBLEM: {
+    en: ["RICE STUCK TO THE **POT?**"],
+    es: ["¿EL ARROZ SE **PEGA?**"],
+  },
+  HOW_TO_PROMISE: {
+    en: ["WANT **NUTTY** BULGUR?"],
+    es: ["¿BULGUR CON SABOR A **NUEZ?**"],
+  },
+  NUMBER_OR_STAT: {
+    en: ["3 WAYS TO RUIN **RISOTTO**"],
+    es: ["3 FORMAS DE ARRUINAR UN **RISOTTO**"],
+  },
+  DIRECT_QUESTION: {
+    en: ["HOT WATER ON **BULGUR?**"],
+    es: ["¿AGUA HIRVIENDO AL **BULGUR?**"],
+  },
+  BOLD_CLAIM: {
+    en: ["ONE RULE FOR **FLUFFY** RICE"],
+    es: ["UNA REGLA PARA UN ARROZ **SUELTO**"],
+  },
+  BEFORE_AFTER: {
+    en: ["SAME RICE. **DIFFERENT** WATER."],
+    es: ["MISMO ARROZ. **OTRA** AGUA."],
+  },
+};
+
 /** "es-ES" / "es" → "es"; a language without a library entry → undefined. */
 export function hookLanguage(language: string): HookLanguage | undefined {
   const base = language.toLowerCase().split(/[-_]/u)[0];
@@ -141,12 +190,23 @@ export function hookPatternsLine(code: string): string | undefined {
   return `patterns: ${entry.patterns.join("; ")}. Fits angles: ${entry.angles.join(", ")}.`;
 }
 
-/** The patterns plus example cover lines in the market's language, for the writer. */
-export function hookGuidance(code: string, language: string): string | undefined {
+/**
+ * The patterns plus example lines in the market's language: cover lines for the carousel writer,
+ * first cards for the Reel director.
+ */
+export function hookGuidance(
+  code: string,
+  language: string,
+  format: "carousel" | "reel" = "carousel",
+): string | undefined {
   const entry = HOOK_LIBRARY[code];
   if (!entry) return undefined;
   const lang = hookLanguage(language);
-  const examples = lang ? entry.examples[lang] : [];
+  const examples = !lang
+    ? []
+    : format === "reel"
+      ? (HOOK_REEL_CARDS[code]?.[lang] ?? [])
+      : entry.examples[lang];
   return [
     hookPatternsLine(code),
     examples.length > 0

@@ -10,6 +10,7 @@
     "./fixtures/eval-judge": "./src/eval-judge/fixtures.ts",
     "./fixtures/critic": "./src/critic/fixtures.ts",
     "./fixtures/content-writer": "./src/content-writer/fixtures.ts",
+    "./fixtures/reel-director": "./src/reel-director/fixtures.ts",
     "./fixtures/market-adapter": "./src/market-adapter/fixtures.ts",
     "./fixtures/visual-director": "./src/visual-director/fixtures.ts",
     "./fixtures/visual-qa": "./src/visual-qa/fixtures.ts",

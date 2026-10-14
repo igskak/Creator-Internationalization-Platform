@@ -28,3 +28,13 @@ Completion rate, schema-valid rate of the model runs (and how many needed the re
 ## Blind review (Gate G1)
 
 `--blind` writes, per idea, two items A and B (the two markets in a seeded random order, no market code, no scores), a CSV to fill in (`reads_as_native_1_5`, `not_a_translation_of_the_other_yes_no`, `approvable_yes_no`, `field_edits_needed`, `comments`) and `*-blind-key.json`, which says which item is which market. Give the reviewers the Markdown and the CSV; keep the key. Humans spot-check 20 % of the judge's verdicts.
+
+## Reel director (`pnpm eval:reels`, M8-03, V-29)
+
+```bash
+pnpm eval:reels                      # three synthetic posts, scripted fake model: free
+pnpm eval:reels --provider live      # the model of .env (AI_PROVIDER=live): prints an estimate and asks
+pnpm eval:reels --provider live --yes --posts bulgur-hot-water
+```
+
+Each post (an approved carousel, its pictures, the market) goes through the real `directReel` stage in a throw-away database. The report counts valid scripts, repairs, notes per script and cost; `*-reels-<provider>-review.md` is the sheet the owner reads: the three hook options, the chosen one and every scene (role, emotion, beats, card, shot prompt, picture). The owner rates claim fidelity, hook quality and native voice on it; the numbers only show that the rules hold. A live run of the three posts costs about $0.25 (up to $0.5 with a repair each). The exit code is 1 when a script stays invalid. Results go to `evals/results/` (not in git).

@@ -73,12 +73,15 @@ One ask per post. The Reel's last card echoes a word from its hook (`reel-style.
 
 ## 6. Reels (M8-03, after M2-12b): what changes
 
-1. `ReelHookOption.formula` (in `db/src/json/reels.ts`) holds a **`hook_type` code**. Suggested: rename it to `hookType` and validate against the brand's taxonomy, like `content-writer` does. It is a JSON column, so no migration.
-2. The dialog's 3 options use **3 different hook types**. Option 1 reuses the source carousel's `hookType` (the same idea in Reel form); options 2 and 3 are other types that the slides support.
-3. Suggested addition: `claimSlideIds` on `ReelHookOption`, because the `ruleCard` is a claim.
-4. The Spanish Reel keeps the English Reel's hook type and scene structure (shared shots, Q-10); its cards are written in Spanish.
-5. Validators (in addition to those in 18 §18.4): the hook type is in the taxonomy; the 3 options are distinct; numbers in cards appear in the claim slides; no banned phrase; `NUMBER_OR_STAT` with N → N `STEP` scenes; the last card shares a content word with the hook card.
-6. Eval (V-29): the 3 synthetic posts have different angles, so the fakes and the live run cover at least 5 hook types.
+Done in M8-03 (`reel-director@1`, `modules/src/reels/director/`):
+
+1. `ReelHookOption.formula` became **`hookType`**, a `hook_type` code of the shared taxonomy; the answer schema of the call accepts only the codes of the taxonomy given. It is a JSON column, so no migration.
+2. The dialog's 3 options use **3 different hook types** (`REEL_HOOK_TYPES_DIFFER`). The prompt asks for option 1 in the source carousel's hook type when the slides support it, and not to offer the hook types of the market's latest Reels (`recentHookTypes`, newest first).
+3. `ReelHookOption.claimSlideIds` was added, because the `ruleCard` is a claim (`REEL_HOOK_CLAIM_MISSING`).
+4. The Spanish Reel keeps the English Reel's hook type and scene structure (shared shots, Q-10): the input takes an optional `baseScript`, the prompt keeps its scenes and writes only the cards, and `REEL_BASE_CHANGED` blocks any other change.
+5. Reel cards come from `HOOK_REEL_CARDS` (first cards, at most 6 words), not from the carousel cover lines. `hookGuidance(code, language, "reel")` renders them.
+6. Validators beyond 18 §18.4: hook types distinct and in the taxonomy; the chosen option's two cards on scenes 1 and 2 word for word; numbers with units match the cited slides (the numeric-fidelity check), a bare number is on a cited slide, is `1` or is the number of `STEP` scenes; the banned patterns of §3 on every card; the market's forbidden patterns; the last card shares a content word with the hook card.
+7. Eval (V-29): `pnpm eval:reels` runs the 3 synthetic posts (a mistake callout in es-ES, a direct question in en, a contrarian hook in en) and writes a review sheet for the owner. The three scripts of the fake run cover 7 hook types between them.
 
 ## 7. Learning loop
 

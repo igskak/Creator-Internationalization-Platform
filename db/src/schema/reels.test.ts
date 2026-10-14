@@ -305,9 +305,10 @@ describe("Reel JSON shapes", () => {
   it("accepts a hook option", () => {
     const hook = {
       id: "h1",
-      formula: "WRONG_WAY_RIGHT_WAY",
+      hookType: "DIRECT_QUESTION",
       card: "Hot water on **bulgur?**",
       ruleCard: "Only if it's **fine.**",
+      claimSlideIds: ["s2"],
       rationale: "Doubts a familiar action, then promises a rule.",
     };
     expect(ReelHookOption.parse(hook)).toEqual(hook);

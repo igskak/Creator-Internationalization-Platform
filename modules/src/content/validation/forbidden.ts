@@ -1,12 +1,12 @@
+import type { ForbiddenPattern } from "@rc/db/json";
 import type { ValidationIssue, Validator } from "./types";
 import { textFields } from "./types";
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Market forbidden patterns (`markets.forbidden_patterns`): phrases as whole words, regexes as given. */
-export const validateForbiddenPatterns: Validator = (draft, context) => {
-  const issues: ValidationIssue[] = [];
-  const compiled = context.forbiddenPatterns.flatMap((p) => {
+/** The patterns as regular expressions: phrases as whole words, regexes as given; bad regexes are skipped. */
+export function compileForbiddenPatterns(patterns: readonly ForbiddenPattern[]) {
+  return patterns.flatMap((p) => {
     try {
       const source =
         p.kind === "REGEX"
@@ -17,6 +17,12 @@ export const validateForbiddenPatterns: Validator = (draft, context) => {
       return [];
     }
   });
+}
+
+/** Market forbidden patterns (`markets.forbidden_patterns`): phrases as whole words, regexes as given. */
+export const validateForbiddenPatterns: Validator = (draft, context) => {
+  const issues: ValidationIssue[] = [];
+  const compiled = compileForbiddenPatterns(context.forbiddenPatterns);
   for (const field of [
     ...textFields(draft),
     ...draft.hashtags.map((h, i) => ({ fieldPath: `hashtags.${i}`, text: h })),

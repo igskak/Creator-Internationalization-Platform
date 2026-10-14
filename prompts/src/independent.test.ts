@@ -20,6 +20,7 @@ const INDEPENDENT: [id: string, version: number, intro: string][] = [
 // Prompts that were written after the decision and never had a brand name.
 const WRITTEN_INDEPENDENT: [id: string, version: number, intro: string][] = [
   ["field-regenerator", 1, CONTENT_INTRO],
+  ["reel-director", 1, CONTENT_INTRO],
 ];
 
 /** The first system block after its opening sentence(s). */

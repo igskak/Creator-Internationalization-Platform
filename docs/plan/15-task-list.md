@@ -698,6 +698,7 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`; hooks from `docs/design/hook-library.md` (`ReelHookOption` holds a `hook_type` code from the shared taxonomy, 3 distinct hook types per script, banned patterns, CTA cards).
   - **Done when:** `pnpm eval` (fake) green; a live run recorded in the decision log; the owner reviewed 3 scripts.
   - **Refs:** 18 §18.4, 07 §7.5, `docs/design/hook-library.md`.
+  - **Result (code, 2026-10-14):** stage `REEL_DIRECTION`; `prompts/src/reel-director/` (`reel-director@1`, schema, three synthetic posts as fixtures, snapshot); `modules/src/reels/director/` (`validateReelScript`, `directReel` = `runStage` with the validators and one repair, `toReelScriptDraft`); `ReelHookOption` got `hookType` (was `formula`) and `claimSlideIds`; `pnpm eval:reels` with a review sheet; domain `reels` in the dependency rules. Open: the live run and its entry in the decision log, and the owner's review of the three scripts (V-29).
 - [x] **M8-04 · Data model** · P0 · M · deps: M8-01
   - **Do:** migration 0009 (`reel_scripts`, `reel_shots`, `reel_renders`, `content_variants.source_variant_id` and `current_reel_render_id`), Drizzle schema, Zod shapes in `db/src/json/reels.ts`, RLS, schema tests.
   - **Done when:** migration reviewed by hand; schema tests green.

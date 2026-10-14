@@ -30,7 +30,7 @@ function hookTexts(draft: DraftContent): { fieldPath: string; text: string }[] {
   ];
 }
 
-function integersIn(text: string): number[] {
+export function integersIn(text: string): number[] {
   return [...text.matchAll(BARE_NUMBER)].map((m) => Number(m[0]));
 }
 
@@ -49,7 +49,7 @@ function cardIntegers(context: ValidationContext): Set<number> {
 }
 
 /** A text without the numbers that carry a unit: those are checked by numeric fidelity. */
-function withoutUnitNumbers(text: string, locale: NumberLocale): string {
+export function withoutUnitNumbers(text: string, locale: NumberLocale): string {
   let result = text;
   for (const found of extractNumbers(text, locale).sort((a, b) => b.index - a.index)) {
     result =

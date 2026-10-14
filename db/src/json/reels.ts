@@ -34,15 +34,17 @@ const Card = z
     message: `A card has at most ${MAX_CARD_WORDS} words.`,
   });
 
-/** reel_scripts.hook_options[]: three hooks, each a doubt about a familiar action and the rule. */
+/** reel_scripts.hook_options[]: three hooks, each a doubt or promise and the rule that answers it. */
 export const ReelHookOption = z.object({
   id: z.string().min(1),
-  /** Taxonomy code of the hook formula (e.g. WRONG_WAY_RIGHT_WAY). */
-  formula: z.string().min(1),
+  /** `hook_type` taxonomy code, the same codes as the carousels' (docs/design/hook-library.md). */
+  hookType: z.string().min(1),
   /** The first card, e.g. "HOT WATER ON **BULGUR?**". */
   card: Card,
   /** The card that opens the loop, e.g. "ONLY IF IT'S **FINE.**". */
   ruleCard: Card,
+  /** Ids of the carousel's slides the rule card's claim comes from. */
+  claimSlideIds: z.array(z.string().min(1)),
   rationale: z.string().min(1),
 });
 export type ReelHookOption = z.infer<typeof ReelHookOption>;

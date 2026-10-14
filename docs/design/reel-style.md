@@ -15,11 +15,13 @@ Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/p
 4. **Appetite peak**: the most sensory shot (toast, sizzle, pour) with its card ("NUTTY. TOASTY. LIKE BREAD.").
 5. **Payoff and ask**: the finished dish and one ask ("CHECK THE GRIND FIRST. SAVE IT."). The last card echoes a word from the hook.
 - One emotion per scene: doubt, intrigue, "aha", appetite, usefulness, save.
+- Scene roles in order: `HOOK`, `RULE`, `STEP` scenes, exactly one `PEAK`, `PAYOFF`, and the ending (`CTA`, or `PAYOFF` carrying the ask). Scene 1's card is the chosen hook's card and scene 2's its rule card, word for word, so "change hook" swaps two cards.
 - Every claim comes from the post's slides. No new facts, numbers or results.
 
 ## Text cards
 - Inter Tight 800, uppercase, 92–128 px, line height 1.0, letter spacing −0.02 em; the ink colour of the carousel (`#111`), one accent word or line in the carousel red (`#E1251B`) per card.
 - At most 6 words per card, 2–3 lines, left aligned at x = 70, top at y = 240.
+- Limits the director validates: at most 36 characters per card and 14 per word (a 780 px column at 92–128 px), at most one accent, no emoji. The renderer still fits text down to the safe zone.
 - **Safe zone** on 1080×1920: nothing above y = 230 or below y = 1440; keep the right 230 px clear (Instagram's buttons and caption sit there). A card appears with a 0.12 s fade at the start of its scene.
 
 ## Picture
