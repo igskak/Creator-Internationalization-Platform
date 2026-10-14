@@ -372,6 +372,11 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** `critic@2` (new version + eval): score or issue category for the hook (a real hook vs a general statement), and a writer rule; `decideVerdict` asks a rewrite for a weak hook only with a concrete instruction.
   - **Done when:** the pilot's weak hook case is flagged by the critic in an eval; no regression on the synthetic set. Found in the G1 pilot (a weak hook passed with 4.37).
 
+- [ ] **M2-12b · Hook library for carousels** · P1 · M · deps: M2-12a, M2-16
+  - **Do:** `prompts/src/shared/hook-library.ts` (patterns, best angles and en/es examples per `hook_type` code, banned patterns per language; a code without an entry falls back to its label); `market-adapter@3` (hook type terms carry their patterns and angles); `content-writer@5` (patterns of the chosen hook type as guidance, the banned list as a rule); a check in code with one repair: a number in the hook line or on the HOOK slide appears in a cited card, no banned phrase. New versions only; the critic is unchanged.
+  - **Done when:** eval of the current versions vs `market-adapter@3` + `content-writer@5` on the synthetic set with no regression and the judge's hook score not lower; activation recorded in `decision-log.md`; unit tests for the number and banned-phrase checks. The library is reused by M8-03.
+  - **Refs:** `docs/design/hook-library.md` §1–5, 07 §7.5, 11 (lift by `hook_type`).
+
 - [x] **M2-14 · `generate-content` job and actions** · P0 · M · deps: M2-13, M0-14
   - **Do:** J5 handler + task; actions `generateVariants`, `regenerateVariant`; `getStatuses` for variants (stage from `pipeline_state`).
   - **Done when:** inline integration test from action to READY_FOR_REVIEW.
@@ -688,10 +693,10 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Do:** `lib/src/providers/video/{types,factory,fake,higgsfield}.ts`; submit, poll, download into R2; idempotency key; error mapping (`nsfw`, `failed`, timeouts); cost table; `HIGGSFIELD_API_KEY` in `loadServerEnv`; MSW tests; fake returns a small fixed mp4.
   - **Done when:** tests green without network; documented estimate-only smoke command.
   - **Refs:** 18 §18.4, §18.7.
-- [ ] **M8-03 · Reel director prompt** · P0 · L · deps: M8-01 · ⚠ V-29
-  - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`.
+- [ ] **M8-03 · Reel director prompt** · P0 · L · deps: M8-01, M2-12b · ⚠ V-29
+  - **Do:** `prompts/src/reel-director/v1.ts`, `ReelScript` schema, deterministic validators, one repair, eval set of 3 synthetic posts, fake responses, `generation_stage` values `REEL_DIRECTION` and `REEL_SHOT`; hooks from `docs/design/hook-library.md` (`ReelHookOption` holds a `hook_type` code from the shared taxonomy, 3 distinct hook types per script, banned patterns, CTA cards).
   - **Done when:** `pnpm eval` (fake) green; a live run recorded in the decision log; the owner reviewed 3 scripts.
-  - **Refs:** 18 §18.4, 07 §7.5.
+  - **Refs:** 18 §18.4, 07 §7.5, `docs/design/hook-library.md`.
 - [x] **M8-04 · Data model** · P0 · M · deps: M8-01
   - **Do:** migration 0009 (`reel_scripts`, `reel_shots`, `reel_renders`, `content_variants.source_variant_id` and `current_reel_render_id`), Drizzle schema, Zod shapes in `db/src/json/reels.ts`, RLS, schema tests.
   - **Done when:** migration reviewed by hand; schema tests green.
