@@ -107,7 +107,7 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-26 | Does Meta fetch a presigned R2 URL for video (V-14 passed for images)? | M8-09 | Dry run on the test account |
 | V-27 | ffmpeg and Chromium together on Trigger.dev prod machines; memory and time for a 20 s render | M8-05 | Trigger.dev docs, a deploy test |
 | V-28 | Audio licence: only owner-supplied tracks with a licence note; Instagram's music library is not available through the API | M8-08 | Owner, counsel |
-| V-29 | `reel-director` quality: claim fidelity and hook strength on real posts | M8-03 | Eval harness + owner review |
+| V-29 | `reel-director` quality: claim fidelity and hook strength on real posts | M8-03 | Eval harness + owner review. **Closed 2026-10-14**: live run on 3 synthetic posts, scripts accepted by the owner (not yet real posts) |
 
 Note: in this cloud environment the egress proxy blocked `developers.facebook.com` and `trigger.dev` while this plan was written. Allow these domains in the environment's Network access (B-14) or verify from a local machine.
 
