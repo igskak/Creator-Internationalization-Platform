@@ -10,7 +10,7 @@ import type {
   SnapshotDisclosure,
   VisualBrief,
 } from "@rc/db/json";
-import { asc, desc, eq, inArray, sql } from "@rc/db/orm";
+import { and, asc, desc, eq, inArray, sql } from "@rc/db/orm";
 import { PRESIGN_TTL } from "@rc/lib/providers/storage";
 import { registry } from "@rc/templates";
 import type { ServiceContext } from "../../core";
@@ -198,7 +198,13 @@ export async function getReviewBundle(
     .from(schema.contentVariants)
     .innerJoin(schema.markets, eq(schema.markets.id, schema.contentVariants.marketId))
     .leftJoin(schema.offers, eq(schema.offers.id, schema.contentVariants.offerId))
-    .where(eq(schema.contentVariants.masterIdeaId, masterIdeaId))
+    .where(
+      and(
+        eq(schema.contentVariants.masterIdeaId, masterIdeaId),
+        // Reels have their own card on the market's column (M8-07).
+        eq(schema.contentVariants.format, "CAROUSEL"),
+      ),
+    )
     .orderBy(asc(schema.markets.sortOrder), asc(schema.markets.code));
 
   const [cost] = await ctx.db

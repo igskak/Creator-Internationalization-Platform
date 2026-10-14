@@ -39,3 +39,13 @@ export {
   type ReelPicture,
   type ReelSource,
 } from "./source";
+export {
+  getReelView,
+  getReelViews,
+  type ReelBlock,
+  type ReelDetail,
+  type ReelRenderView,
+  type ReelSceneView,
+  type ReelView,
+  reelEstimates,
+} from "./view";

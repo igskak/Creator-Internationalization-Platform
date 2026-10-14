@@ -1,5 +1,5 @@
 import { schema } from "@rc/db";
-import { asc, count, desc, eq, inArray, sql } from "@rc/db/orm";
+import { and, asc, count, desc, eq, inArray, sql } from "@rc/db/orm";
 import { NotFoundError } from "@rc/lib/errors";
 import { z } from "zod";
 import type { ServiceContext } from "../../core";
@@ -158,7 +158,9 @@ export async function getIdeaDetail(ctx: ServiceContext, id: string): Promise<Id
     })
     .from(schema.contentVariants)
     .innerJoin(schema.markets, eq(schema.markets.id, schema.contentVariants.marketId))
-    .where(eq(schema.contentVariants.masterIdeaId, id))
+    .where(
+      and(eq(schema.contentVariants.masterIdeaId, id), eq(schema.contentVariants.format, "CAROUSEL")),
+    )
     .orderBy(asc(schema.markets.sortOrder), asc(schema.markets.code));
 
   return {

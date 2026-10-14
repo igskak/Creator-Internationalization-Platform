@@ -1,11 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { schema } from "@rc/db";
-import { and, eq, ne } from "@rc/db/orm";
-import { InvalidStateError, ValidationError } from "@rc/lib/errors";
-import { DEFAULT_VIDEO_MODEL, VIDEO_MODELS } from "@rc/lib/providers/video";
+import { and, desc, eq, ne } from "@rc/db/orm";
+import { InvalidStateError, NotFoundError, ValidationError } from "@rc/lib/errors";
+import {
+  DEFAULT_VIDEO_MODEL,
+  estimateShotCostUsd,
+  VIDEO_MODELS,
+  type VideoModelId,
+} from "@rc/lib/providers/video";
 import { z } from "zod";
 import { audit, type ServiceContext, triggerJob } from "../../core";
 import { assertReelsEnabled, reelsEnabled } from "./enabled";
+import { applyChosenHook } from "./generate";
 import { estimateReel, type ReelEstimate } from "./estimate";
 import { loadReelSource } from "./source";
 
@@ -154,4 +160,164 @@ export async function requestReel(
     },
   });
   return { variantId: reel.id, runId, estimate };
+}
+
+// --- Changes to a Reel that exists (M8-07) --------------------------------------------------
+// Both write a new version of the script and run the pipeline from the shots on: changing the hook
+// costs nothing (every shot is reused, only the cards and the video change), redoing one shot pays
+// for that shot.
+
+const ChangeInput = z.object({ variantId: z.uuid() });
+
+async function changeableReel(ctx: ServiceContext, variantId: string) {
+  const [reel] = await ctx.db
+    .select()
+    .from(schema.contentVariants)
+    .where(eq(schema.contentVariants.id, variantId));
+  if (!reel || reel.format !== "REEL") {
+    throw new NotFoundError("Reel not found.", { details: { variantId } });
+  }
+  if (!REUSABLE.includes(reel.status)) {
+    throw new InvalidStateError(
+      reel.status === "GENERATING"
+        ? "The Reel is being made."
+        : `A ${reel.status} Reel is not changed. Un-approve it first.`,
+      { details: { code: reel.status === "GENERATING" ? "reel_generating" : "reel_in_use", variantId } },
+    );
+  }
+  const [script] = await ctx.db
+    .select()
+    .from(schema.reelScripts)
+    .where(eq(schema.reelScripts.contentVariantId, variantId))
+    .orderBy(desc(schema.reelScripts.version))
+    .limit(1);
+  if (!script) throw new InvalidStateError("The Reel has no script yet.", { details: { variantId } });
+  return { reel, script };
+}
+
+/** A copy of the script as the next version (the older versions stay as the history). */
+async function nextScript(
+  ctx: ServiceContext,
+  script: typeof schema.reelScripts.$inferSelect,
+  change: Partial<Pick<typeof schema.reelScripts.$inferInsert, "chosenHookId" | "scenes">>,
+) {
+  const [row] = await ctx.db
+    .insert(schema.reelScripts)
+    .values({
+      contentVariantId: script.contentVariantId,
+      version: script.version + 1,
+      hookOptions: script.hookOptions,
+      chosenHookId: script.chosenHookId,
+      flashOpener: script.flashOpener,
+      scenes: script.scenes,
+      shotModel: script.shotModel,
+      costEstimateUsd: script.costEstimateUsd,
+      promptVersion: script.promptVersion,
+      generationRunId: script.generationRunId,
+      ...change,
+    })
+    .returning();
+  if (!row) throw new Error("reel_scripts: the insert returned no row");
+  return row;
+}
+
+export const ChangeReelHookInput = ChangeInput.extend({ hookId: z.string().min(1) });
+
+/** Another hook option for the Reel: its two cards go on the first two scenes, the video is rebuilt. */
+export async function changeReelHook(
+  ctx: ServiceContext,
+  raw: z.input<typeof ChangeReelHookInput>,
+): Promise<{ variantId: string; runId: string; scriptId: string }> {
+  const input = ChangeReelHookInput.parse(raw);
+  await assertReelsEnabled(ctx);
+  const { reel, script } = await changeableReel(ctx, input.variantId);
+  if (script.chosenHookId === input.hookId) {
+    throw new ValidationError("That hook is already the one in the Reel.", {
+      details: { code: "hook_unchanged" },
+    });
+  }
+  if (!script.hookOptions.some((h) => h.id === input.hookId)) {
+    throw new ValidationError("There is no such hook option.", { details: { code: "unknown_hook" } });
+  }
+  const changed = applyChosenHook(
+    {
+      hookOptions: script.hookOptions,
+      chosenHookId: script.chosenHookId ?? "",
+      flashOpener: script.flashOpener,
+      scenes: script.scenes,
+    },
+    input.hookId,
+  );
+  const next = await nextScript(ctx, script, {
+    chosenHookId: changed.chosenHookId,
+    scenes: changed.scenes,
+  });
+  const requestId = ctx.requestId ?? randomUUID();
+  const { runId } = await triggerJob(
+    ctx,
+    "generate-reel",
+    { variantId: reel.id, requestId, scriptId: next.id, model: script.shotModel as VideoModelId },
+    { idempotencyKey: `reel:${reel.id}:${requestId}`, tags: [`variant:${reel.id}`] },
+  );
+  await audit(ctx, {
+    action: "reel.hook_changed",
+    entityType: "content_variant",
+    entityId: reel.id,
+    marketId: reel.marketId,
+    data: { from: script.chosenHookId, to: input.hookId, scriptId: next.id, runId },
+  });
+  return { variantId: reel.id, runId, scriptId: next.id };
+}
+
+export const RegenerateReelShotInput = ChangeInput.extend({
+  sceneId: z.string().min(1),
+  /** The price the owner saw for one shot, in USD. */
+  confirmEstimateUsd: z.number().nonnegative(),
+});
+
+/** What redoing one shot costs on the Reel's model. */
+export function estimateShotRedo(model: VideoModelId): number {
+  const e = estimateReel({ model, shots: 1 });
+  return Math.round(estimateShotCostUsd(model, e.secondsPerShot, e.resolution) * 10_000) / 10_000;
+}
+
+/** Redoes the shot of one scene (the same prompt and picture, a new shot) and rebuilds the video. */
+export async function regenerateReelShot(
+  ctx: ServiceContext,
+  raw: z.input<typeof RegenerateReelShotInput>,
+): Promise<{ variantId: string; runId: string; scriptId: string; estimateUsd: number }> {
+  const input = RegenerateReelShotInput.parse(raw);
+  await assertReelsEnabled(ctx);
+  const { reel, script } = await changeableReel(ctx, input.variantId);
+  const scene = script.scenes.find((s) => s.id === input.sceneId);
+  if (!scene) {
+    throw new NotFoundError("The scene is not in the Reel.", { details: { sceneId: input.sceneId } });
+  }
+  const estimateUsd = estimateShotRedo(script.shotModel as VideoModelId);
+  if (input.confirmEstimateUsd + CONFIRM_SLACK_USD < estimateUsd) {
+    throw new ValidationError(
+      `One shot now costs about $${estimateUsd.toFixed(2)}, not $${input.confirmEstimateUsd.toFixed(2)}. Confirm the new amount.`,
+      { details: { code: "estimate_changed", estimateUsd } },
+    );
+  }
+  const next = await nextScript(ctx, script, {
+    scenes: script.scenes.map((s) =>
+      s.id === scene.id ? { ...s, shotAttempt: (s.shotAttempt ?? 0) + 1, shotId: undefined } : s,
+    ),
+  });
+  const requestId = ctx.requestId ?? randomUUID();
+  const { runId } = await triggerJob(
+    ctx,
+    "generate-reel",
+    { variantId: reel.id, requestId, scriptId: next.id, model: script.shotModel as VideoModelId },
+    { idempotencyKey: `reel:${reel.id}:${requestId}`, tags: [`variant:${reel.id}`] },
+  );
+  await audit(ctx, {
+    action: "reel.shot_regenerated",
+    entityType: "content_variant",
+    entityId: reel.id,
+    marketId: reel.marketId,
+    data: { sceneId: scene.id, attempt: (scene.shotAttempt ?? 0) + 1, scriptId: next.id, estimateUsd, runId },
+  });
+  return { variantId: reel.id, runId, scriptId: next.id, estimateUsd };
 }

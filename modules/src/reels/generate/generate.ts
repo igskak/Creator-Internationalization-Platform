@@ -38,6 +38,11 @@ export const GenerateReelPayload = z.object({
   /** The hook option to use instead of the director's recommendation. */
   hookId: z.string().min(1).optional(),
   model: z.enum(VIDEO_MODELS).optional(),
+  /**
+   * Use this script of the variant instead of asking the director: "change hook" and "regenerate
+   * shot" write a new script version and run the pipeline from the shots on.
+   */
+  scriptId: z.uuid().optional(),
 });
 export type GenerateReelPayload = z.infer<typeof GenerateReelPayload>;
 
@@ -199,7 +204,24 @@ export async function generateReel(
 
     // 1. Director -----------------------------------------------------------------------------
     let script: ScriptRow | undefined;
-    if (completed.includes("DIRECTION") && ids.SCRIPT) {
+    if (payload.scriptId && !ids.SCRIPT) {
+      [script] = await ctx.db
+        .select()
+        .from(schema.reelScripts)
+        .where(
+          and(
+            eq(schema.reelScripts.id, payload.scriptId),
+            eq(schema.reelScripts.contentVariantId, variant.id),
+          ),
+        );
+      if (!script) {
+        throw new PermanentError("The script does not belong to this Reel.", {
+          details: { code: "script_missing" },
+        });
+      }
+      ids.SCRIPT = script.id;
+      completed.push("DIRECTION");
+    } else if (completed.includes("DIRECTION") && ids.SCRIPT) {
       [script] = await ctx.db
         .select()
         .from(schema.reelScripts)
@@ -255,6 +277,7 @@ export async function generateReel(
         prompt: scene.shotPrompt,
         pictureId: picture.assetId,
         frame,
+        ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
       });
     }
     const shots = await ensureShots(
@@ -267,6 +290,10 @@ export async function generateReel(
         resolution: "720p",
       },
       specs,
+      async (done) => {
+        ids.SHOTS_READY = String(done);
+        await progress("SHOTS");
+      },
     );
     if (shots.failures.length > 0) {
       // A transient problem anywhere is retried as a whole (finished shots are reused); otherwise the first refusal ends the run.

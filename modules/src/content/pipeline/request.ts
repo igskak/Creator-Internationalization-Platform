@@ -100,6 +100,7 @@ export async function requestVariants(
     .where(
       and(
         eq(schema.contentVariants.masterIdeaId, masterIdeaId),
+        eq(schema.contentVariants.format, "CAROUSEL"),
         ne(schema.contentVariants.status, "REJECTED"),
         inArray(
           schema.contentVariants.marketId,
