@@ -51,14 +51,28 @@ const Limit = z.object({
 });
 const Me = z.object({ followers_count: z.number().int().nonnegative().optional() });
 
-/** One slide as a carousel child: Meta downloads `imageUrl` itself. Returns the container id. */
+/** Meta's limit for `alt_text` (V-30): 1,000 characters, images and carousel images only. */
+export const MAX_ALT_TEXT_CHARS = 1000;
+
+/**
+ * One slide as a carousel child: Meta downloads `imageUrl` itself. `altText` is the slide's approved
+ * description, read by screen readers and by Instagram's search (G-02). Returns the container id.
+ */
 export async function createChildContainer(
   client: GraphClient,
   accountId: string,
   imageUrl: string,
+  altText?: string,
 ): Promise<string> {
+  const alt = [...(altText ?? "").replace(/\s+/gu, " ").trim()]
+    .slice(0, MAX_ALT_TEXT_CHARS)
+    .join("");
   const reply = Id.parse(
-    await client.post(`/${accountId}/media`, { image_url: imageUrl, is_carousel_item: true }),
+    await client.post(`/${accountId}/media`, {
+      image_url: imageUrl,
+      is_carousel_item: true,
+      ...(alt ? { alt_text: alt } : {}),
+    }),
   );
   return reply.id;
 }

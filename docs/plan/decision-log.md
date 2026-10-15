@@ -1336,3 +1336,10 @@ Template:
 - Not done: the live Reel eval (about $0.3) needs the owner's yes before the merge; carousel asks and hashtags are G-04.
 - Impact on plan: new section G in plan 15 (growth); G-01 done.
 
+## 2026-10-16 · Alt text goes to Instagram [G-02, V-30]
+- Context: the writer gives every slide an `altText` and the approved snapshot keeps it, but the publish machine never sent it, so Instagram had no description of our images (search and screen readers read it).
+- Decision: send the snapshot's alt text of each slide as `alt_text` of its carousel child container: whitespace folded, cut to Meta's 1,000 characters, left out when empty. The carousel parent and Reels get none (Meta takes it on images only). What is sent is what the reviewer approved; nothing is generated at publish time.
+- Evidence: publish-machine test (two slides with alt text, one without, the long one cut, none on the parent); Meta's IG User Media reference read 2026-10-16.
+- Not done: V-30, the first dry run with alt text through `graph.instagram.com`.
+- Impact on plan: G-02 code done.
+

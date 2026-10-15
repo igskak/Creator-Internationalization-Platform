@@ -114,6 +114,48 @@ describe("publish machine", () => {
     );
   const graphCalls = () => mock.calls.filter((c) => !c.path.includes("oauth"));
 
+  it("sends each slide's approved alt text with its image (G-02)", async () => {
+    const { variantId, marketId } = await fx.makeVariant({ status: "SCHEDULED" });
+    const v = await variantOf(variantId);
+    await t.db
+      .update(schema.contentVariants)
+      .set({
+        slidesJson: v.slidesJson.map((s, i) =>
+          i === 0
+            ? { ...s, altText: "  Arroz   crudo en un bol blanco. " }
+            : i === 1
+              ? { ...s, altText: "x".repeat(1200) }
+              : s,
+        ),
+      })
+      .where(eq(schema.contentVariants.id, variantId));
+    const { versionId } = await fx.makeVersion(variantId);
+    await connectTestAccount(fx.ctx, mock, {
+      marketId,
+      accountId: ES_ACCOUNT,
+      username: "kitchen_es",
+    });
+    const publicationId = await fx.makePublication(variantId, versionId, {
+      status: "QUEUED",
+      mode: "IMMEDIATE",
+      dryRun: false,
+    });
+    mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es", followers: 10 });
+    expect(await runPublication(jobCtx, { publicationId })).toMatchObject({ status: "PUBLISHED" });
+    const children = mock.calls.filter(
+      (c) => c.method === "POST" && c.body.is_carousel_item === true,
+    );
+    expect(children.map((c) => c.body.alt_text)).toEqual([
+      "Arroz crudo en un bol blanco.",
+      "x".repeat(1000),
+      undefined,
+    ]);
+    // The parent carries no alt text: Meta takes it on images only.
+    expect(mock.calls.find((c) => c.body.media_type === "CAROUSEL")?.body).not.toHaveProperty(
+      "alt_text",
+    );
+  });
+
   it("publishes a carousel: children, parent, wait, publish, finalize", async () => {
     const { variantId, publicationId } = await queued();
     mock.addAccount({ id: ES_ACCOUNT, username: "kitchen_es", followers: 4321 });
