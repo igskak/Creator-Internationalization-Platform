@@ -692,9 +692,10 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** run 13 §13.8 (spec §17 and §18) with evidence links; sign-off by Ihor and Sergey in `docs/decisions/mvp-acceptance.md`.
   - **Done when:** signed off.
 
-- [ ] **H-05 · AI cost view and budget alert** · P1 · S · deps: M1-10
+- [x] **H-05 · AI cost view and budget alert** · P1 · S · deps: M1-10
   - **Do:** `/settings/ai` (stage config read-only, cost month-to-date by stage), `ai.monthly_budget_usd` with amber/red health states and an email alert.
   - **Done when:** fixture costs aggregate correctly.
+  - **Result (2026-10-15):** `modules/src/ai/budget.ts` (`getAiCostOverview`: the UTC month's cost by stage from `generation_runs`, model and video calls alike, runs and failures, the last 24 hours, the active `STAGE_CONFIG`; `budgetState`: none, green, amber from 80 %, red above 100 %; `checkAiBudget` = J24 `check-ai-budget`, daily 06:05 UTC: one alert per month and level, remembered in `app_settings.ai.budget_alert_state`, audited). The **e-mail** goes through Sentry: the J24 task reports the alert as a Sentry message with its own fingerprint per month and level, so the "new issue" rule e-mails once (there is no mail provider in the app; `docs/runbooks/sentry.md`). Settings `ai.monthly_budget_usd` and `learning.min_posts_for_patterns` are now editable keys. `/settings/ai` is a real page: budget with its state in words and a bar, the form for owners, cost by stage, the stage table, and the Reels switch. 3 module tests (fixture costs, the thresholds, alerts once per level and month), 2 Sentry tests, 3 component tests. The health page and dashboard tile for AI cost come with H-01 (the state is `getAiCostOverview().state`).
 
 - [ ] **H-06 · Uptime monitor, secret scanning, dependency audit** · P1 · S · deps: M0-02
   - **Do:** uptime check on `/api/health`; `gitleaks` and `pnpm audit` in CI (audit as warning).

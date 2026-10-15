@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { failureTags } from "./sentry";
+import { describe, expect, it, vi } from "vitest";
+import { failureTags, reportBudgetAlert } from "./sentry";
+
+const sentry = vi.hoisted(() => ({ captureMessage: vi.fn() }));
+vi.mock("@sentry/node", () => ({ init: vi.fn(), captureException: vi.fn(), ...sentry }));
 
 describe("failureTags", () => {
   it("tags task, run and request id, never the payload", () => {
@@ -16,5 +19,29 @@ describe("failureTags", () => {
       task_id: "hello",
       run_id: "run_2",
     });
+  });
+});
+
+describe("reportBudgetAlert (H-05)", () => {
+  it("sends one Sentry message per month and level, with sums only", () => {
+    reportBudgetAlert({
+      state: "RED",
+      alert: { level: "RED", month: "2026-10", monthToDateUsd: 105.5, budgetUsd: 100 },
+    });
+    expect(sentry.captureMessage).toHaveBeenCalledWith(
+      "AI cost is over the monthly budget: $105.50 of $100.00 (2026-10)",
+      expect.objectContaining({
+        level: "error",
+        fingerprint: ["ai-budget", "2026-10", "RED"],
+        tags: { alert: "ai_budget", level: "RED", month: "2026-10" },
+      }),
+    );
+  });
+
+  it("stays quiet without an alert", () => {
+    sentry.captureMessage.mockClear();
+    reportBudgetAlert({ state: "GREEN", alert: null });
+    reportBudgetAlert(undefined);
+    expect(sentry.captureMessage).not.toHaveBeenCalled();
   });
 });

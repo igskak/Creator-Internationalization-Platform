@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { classifyJobError } from "./errors";
 import { buildPerformanceSummary } from "./tasks/build-performance-summary";
 import { checkAccountHealth } from "./tasks/check-account-health";
+import { checkAiBudget } from "./tasks/check-ai-budget";
 import { collectAccountInsights } from "./tasks/collect-account-insights";
 import { collectInsights } from "./tasks/collect-insights";
 import { hello } from "./tasks/hello";
@@ -69,11 +70,12 @@ describe("tasks", () => {
     expect(collectAccountInsights.id).toBe("collect-account-insights");
   });
 
-  it("registers the analytics and learning tasks (J15, J18)", () => {
-    for (const registered of [buildPerformanceSummary, importAttributionCsv]) {
+  it("registers the analytics, learning and budget tasks (J15, J18, J24)", () => {
+    for (const registered of [buildPerformanceSummary, importAttributionCsv, checkAiBudget]) {
       expect(Object.keys(jobHandlers)).toContain(registered.id);
     }
     expect(buildPerformanceSummary.id).toBe("build-performance-summary");
     expect(importAttributionCsv.id).toBe("import-attribution-csv");
+    expect(checkAiBudget.id).toBe("check-ai-budget");
   });
 });

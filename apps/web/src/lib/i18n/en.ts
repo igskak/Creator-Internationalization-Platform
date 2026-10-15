@@ -1652,6 +1652,45 @@ export const en = {
       sourceCarousel: "Made from the carousel",
     },
   },
+  aiSettings: {
+    title: "AI and providers",
+    subtitle:
+      "Which prompt version and model each stage runs (set in code, read only here), what the model and video calls cost this month, and the monthly budget.",
+    budget: {
+      title: "Monthly budget",
+      spent: "Spent in {month}",
+      of: "of {budget}",
+      noBudget: "No budget set: no warning and no alert.",
+      state: {
+        NONE: "No budget",
+        GREEN: "Within budget",
+        AMBER: "80 % reached",
+        RED: "Over budget",
+      },
+      hint: "Amber from 80 %, red above 100 %. Each level sends one e-mail a month (through Sentry). List prices: the bill can differ a little.",
+      label: "Budget in USD a month (0 = none)",
+      save: "Save",
+      saved: "Budget saved.",
+      ownersOnly: "Only owners change the budget.",
+    },
+    byStage: {
+      title: "Cost by stage this month",
+      stage: "Stage",
+      runs: "Runs",
+      failed: "Failed or refused",
+      cost: "Cost",
+      none: "No model or video call this month yet.",
+    },
+    day: "Last 24 hours: {runs} runs, {failed} failed, {refused} refused, {invalid} unusable answers.",
+    stages: {
+      title: "Active configuration",
+      stage: "Stage",
+      prompt: "Prompt",
+      model: "Model",
+      effort: "Effort",
+      maxTokens: "Max tokens",
+    },
+  },
   reelsSwitch: {
     title: "Reel generation",
     description:

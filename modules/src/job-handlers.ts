@@ -1,5 +1,6 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
+import { checkAiBudget } from "./ai";
 import {
   BuildSummariesPayload,
   buildPerformanceSummaries,
@@ -298,6 +299,16 @@ export const buildPerformanceSummaryJob = defineJob({
 });
 
 /**
+ * J24 (H-05, plan 12 §12.9): the AI cost of the month against `ai.monthly_budget_usd`, daily. A
+ * new level (amber at 80 %, red above 100 %) is returned once per month as `alert`; the task
+ * reports it to Sentry, which sends the e-mail.
+ */
+export const checkAiBudgetJob = defineJob({
+  payload: z.object({}).default({}),
+  run: (ctx) => checkAiBudget(ctx),
+});
+
+/**
  * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
  * ones that were lost. It never fails the cron run for one bad publication.
  */
@@ -348,6 +359,7 @@ export const jobHandlers = {
   "collect-account-insights": collectAccountInsightsJob,
   "import-attribution-csv": importAttributionCsvJob,
   "build-performance-summary": buildPerformanceSummaryJob,
+  "check-ai-budget": checkAiBudgetJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,

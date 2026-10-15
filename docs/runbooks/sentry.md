@@ -32,3 +32,7 @@ With the DSNs in `.env`:
 1. Web: `pnpm build && pnpm --filter @rc/web start`, sign in, open `/api/dev/sentry-test` (development only) → 500. In Sentry: an issue "Sentry test (M0-19)…" with tag `request_id` equal to the response's `x-request-id`, message showing `access_token=[REDACTED]`, no `cookie` / `authorization` headers, user = id only.
 2. Jobs: `pnpm jobs:dev`, then `pnpm jobs:hello --fail` → after the retries the run fails; in the jobs project: "hello failed on purpose (M0-19)…" with `task_id=hello`, `run_id`, and `access_token=[REDACTED]`.
 Record the result in `docs/plan/decision-log.md`.
+
+## AI budget alert (H-05)
+J24 `check-ai-budget` runs daily at 06:05 UTC. When the month's AI cost reaches 80 % of `ai.monthly_budget_usd` (Settings → AI) and again when it goes above 100 %, it sends one Sentry message for that month and level (fingerprint `ai-budget/<month>/<level>`, tag `alert=ai_budget`, sums only). Sentry's default rule "a new issue is created" e-mails the project's members, which is the alert; to make it explicit, add an issue alert rule in the jobs project: *when an event is seen* and *tag `alert` equals `ai_budget`* → *send a notification to the owner*. Without a budget (0 or unset) nothing is sent. What to do when it fires: `docs/plan/12-security-observability.md` §12.10 (cost spike) — look at Settings → AI, cost by stage, and switch off Reels there if they are the cause.
+

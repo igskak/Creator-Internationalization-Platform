@@ -41,6 +41,7 @@ Spec §23.1 item 6 (§23 item 5). All jobs are Trigger.dev tasks (D-05) in `jobs
 | J19 | `transcribe-pages` | J1 when pages have no text layer | `{ sourceAssetId, pages[] }` | llm | skip pages with `transcribed = true` | 2 | P1 |
 | J20 | `cleanup-storage` | cron daily | – | default | – | 1 | P2 |
 | J22 | `regenerate-visuals` | `regenerateVisuals` ("Regenerate pictures") | `{ variantId, requestId }` | llm | key `regen-visuals:{requestId}`; then J7 with key `regen-visuals-assets:{requestId}` | 2 | P1 |
+| J24 | `check-ai-budget` | cron daily 06:05 UTC | – | default | an alert once per month and level (`app_settings.ai.budget_alert_state`) | 3 | P1 (H-05) |
 
 Cron minutes are spread (not :00) to avoid platform peaks.
 
