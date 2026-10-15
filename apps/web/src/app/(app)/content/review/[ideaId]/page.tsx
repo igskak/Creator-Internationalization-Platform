@@ -1,4 +1,5 @@
 import { NotFoundError } from "@rc/lib/errors";
+import { getArmChoices } from "@rc/modules/analytics";
 import { getDraftProgress, getReviewBundle, usualDraftDurationMs } from "@rc/modules/content";
 import { listMarkets } from "@rc/modules/localization";
 import { listVariantPublications } from "@rc/modules/publishing";
@@ -47,7 +48,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     listTaxonomyTerms(ctx),
   ]);
   const { idea: detail, variants, costUsd } = bundle;
-  const [markets, publications, reels, progress, usualMs] = await Promise.all([
+  const [markets, publications, reels, progress, usualMs, armChoices] = await Promise.all([
     listMarkets(ctx),
     listVariantPublications(
       ctx,
@@ -59,6 +60,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     ),
     getDraftProgress(ctx, ideaId),
     usualDraftDurationMs(ctx),
+    getArmChoices(
+      ctx,
+      variants.map((v) => v.id),
+    ),
   ]);
   const busy = progress.some(isActive);
   // The Reels' own posts (M8-09): a Reel is scheduled and published like its carousel.
@@ -309,6 +314,16 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
                   ctaTypes={ctaTypes}
                   {...publishProps(variant)}
                   {...reelProps(variant)}
+                  {...(armChoices[variant.id]
+                    ? {
+                        experiment: {
+                          choice: armChoices[variant.id] as NonNullable<
+                            (typeof armChoices)[string]
+                          >,
+                          canManage: user.role !== "chef",
+                        },
+                      }
+                    : {})}
                 />
               ))}
             </div>

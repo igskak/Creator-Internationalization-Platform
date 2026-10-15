@@ -136,8 +136,9 @@ defineAction({
 | `importAttributionCsv` (P1) | `{ fileName, text, mapping? }` | `{ batchId }` | Owner, editor. Stores the file and starts J18; the report (`created`, `duplicates`, `unknownCampaigns`, row errors) is in `listAttributionImports`. Insert-or-skip on `(source, external_ref)`; a row without an order id gets a hash of its row number and content |
 | `reassignCampaign` (P1) | `{ from, to }` | `{ moved }` | Owner, editor. Moves the events of an unknown campaign id to a campaign a post has (reconciliation list `listUnknownCampaigns`) |
 | `deleteAttributionEvent` (P1) | `{ id }` | – | Owner; audited |
-| `buildPerformanceSummary` (P1) | `{ marketId?, windowDays: 28 \| 56 \| 90 }` | `{ jobRunId }` | – |
-| `upsertExperiment` / `setExperimentStatus` (P1) | experiment fields / `{ id, status }` | `Experiment` | – |
+| `buildPerformanceSummary` (P1) | `{ marketId?, windowDays: 28 \| 56 \| 90 }` | `{ runId }` | Owner, editor (M7-03): J15 for every active market and across markets unless a market is given |
+| `upsertExperiment` / `setExperimentStatus` (P1) | experiment fields / `{ id, status, outcome? }` | `{ id }` / `{ id, status }` | Owner, editor (M7-06). Only a draft can be edited; `outcome` (CONFIRMED, REJECTED, INCONCLUSIVE) on completion sets the linked market visual hypothesis |
+| `assignExperimentArm` (P1) | `{ variantId, experimentId \| null, arm? }` | `{ experimentId, arm }` | Owner, editor; a DRAFT or RUNNING experiment of the variant's market |
 
 ## 5.11 Settings, AI, health
 
