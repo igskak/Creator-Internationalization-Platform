@@ -648,9 +648,10 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** migration + tests.
   - **Result (2026-10-15):** migration `0012_learning.sql` (reviewed by hand; the custom part adds the `experiments` updated_at trigger and replaces `v_publication_dimensions` with the experiment columns), `db/src/schema/learning.ts`, `db/src/json/learning.ts` (`PerformanceMemory` as a Zod schema, `PerformanceStats`, `EXPERIMENT_DIMENSIONS`). 3 schema tests (a summary per market and across markets linked from an idea; the experiment checks and trigger; an arm needs its experiment and shows in the view). **The owner applies 0012 with `pnpm db:migrate` before this code is deployed.**
 
-- [ ] **M7-02 · Performance summary builder** · P1 · M · deps: M6-04, M7-01
+- [x] **M7-02 · Performance summary builder** · P1 · M · deps: M6-04, M7-01
   - **Do:** `analytics/summaries/` algorithm (11 §11.5), JSON ≤ ~1,500 tokens, caveats.
   - **Done when:** fixture tests (patterns, overuse, gaps, empty-pattern case below data threshold).
+  - **Result (2026-10-15):** `modules/src/analytics/summaries/build.ts` (`buildPerformanceSummary`: posts of the window with D7 numbers, nine dimensions, each post's rate divided by its market's median so the summary across markets (`ALL`, `market_id` null) is fair to a small market; patterns from `min_sample` posts with lift ≥ 1.2 or ≤ 0.8, five each, confidence by n; pattern lists empty with a caveat below `learning.min_posts_for_patterns` (default 20); overused themes and coverage gaps from `content/ideas/overuse.ts` (shared with M7-05); untested visual hypotheses, DRAFT experiments and unused hook types; active offers by priority with leads and sales; top rejection reasons, most-edited field kinds, the last hook rewrites; `fitSummary` keeps the JSON under 6,000 characters; stored with the raw groups in `stats_json`). 6 tests on fixture history (lift with known answers, the empty-pattern case, the cross-market normalization, gaps, untested, offers, feedback, the size limit).
 
 - [ ] **M7-03 · Summary job and view** · P1 · S · deps: M7-02
   - **Do:** J15 (weekly + manual + stale-before-ideas), Analytics → Learning summary view.
