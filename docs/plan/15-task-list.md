@@ -599,29 +599,34 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** tests: one snapshot per slot, late slot stored with real age, one failing post does not block others.
   - **Result (2026-10-15):** `modules/src/analytics/slots.ts` (due-slot rules: a slot is collected when its time has come and no snapshot is already as old as the slot; of those the latest is measured, so a post first looked at on day ten gets one snapshot named D7 with its true age, flagged late), `collect.ts` (`collectInsights` = J11, `collectAccountInsights` = J12, `requestMetricsNow`), jobs `collect-insights` (hourly at :07) and `collect-account-insights` (daily 02:17), the action `collectMetricsNow` (owner and editor; there is no screen for it until M6-09). One failing post is a finding on its account (`INSIGHTS_FAILED`) and does not stop the others; a refused token makes the account NEEDS_REAUTH and ends its posts; a rate limit stops the run and is rethrown; a finding is closed only by a run in which none of the account's posts failed. 26 tests in `analytics`: one snapshot per slot and never twice, a late slot with its real age, nulls, Reel and carousel columns, dry runs and posts without a media id left out, the per-run limit with the oldest due first, the remembered unsupported metric, manual snapshots, the market-local day for account metrics (also a 25-hour day), overwrite of the day on a second run.
 
-- [ ] **M6-04 · Metric definitions and query layer** · P0 · M · deps: M6-01
+- [x] **M6-04 · Metric definitions and query layer** · P0 · M · deps: M6-01
   - **Do:** `analytics/queries/`: rates, D7 standardization, dimension grouping (whitelisted dimensions), min sample, lift, Operations metrics from `review_events`/`audit_events`/`generation_runs`.
   - **Done when:** PGlite tests on a fixture dataset with known answers.
+  - **Result (2026-10-15):** `modules/src/analytics/queries/` (`range`, `growth`, `engagement`, `learning`, `operations`, `published`, `lineage`) on three typed read views added to migration 0011's schema file (`v_publication_dimensions`, `v_publication_metrics_d7` with `is_exact_d7`, `v_campaign_attribution`, declared with `pgView().existing()`). Rates are medians of per-post rates over posts with a reach; a missing metric is null, never 0. Learning groups only by the whitelist `LEARNING_DIMENSIONS` (the SQL of each is fixed in code, the input is a literal union), has a minimum sample (setting `analytics.min_sample`, default 3) and a low-sample flag and lift against the market median. 30 tests (queries and published) on fixture data with known answers.
 
-- [ ] **M6-05 · Dashboard: Growth and Engagement** · P0 · M · deps: M6-04
+- [x] **M6-05 · Dashboard: Growth and Engagement** · P0 · M · deps: M6-04
   - **Do:** load the `dataviz` skill; tiles, followers/reach series, non-follower share, per-post rates table; market and date filters.
   - **Done when:** renders fixture data; screenshots.
+  - **Result (2026-10-15):** `/analytics` (tabs Growth, Engagement, Content learning, Operations; market and range filters in one row), chart parts in `apps/web/src/components/analytics/` (`LineChart` 2 px with a 10 % wash, a table view, a tooltip that only enhances; `BarList`; `StatTile`), series colours validated with the dataviz script and added as `--viz-series-1/2` tokens (light and dark). `/dev/analytics` shows every tab and the lineage on fixtures (dev only). 25 component tests; looked at in the browser at desktop width.
 
-- [ ] **M6-06 · Dashboard: Content learning** · P0 · M · deps: M6-04
+- [x] **M6-06 · Dashboard: Content learning** · P0 · M · deps: M6-04
   - **Do:** dimension selector, grouped table (n, medians, lift, low-sample badge), top/bottom posts with thumbnails linking to lineage.
   - **Done when:** fixture results match the query tests.
+  - **Result (2026-10-15):** the Content learning tab: dimension selector (the whitelist), grouped table with n, median save and share rate, median reach, lift and a low-sample badge, best and worst posts with thumbnails that link to the lineage. Fixture results are asserted against the query tests' numbers.
 
-- [ ] **M6-07 · Dashboard: Operations** · P0 · S · deps: M6-04
+- [x] **M6-07 · Dashboard: Operations** · P0 · S · deps: M6-04
   - **Do:** generated, approval rate, rejection reasons, edits per approved variant, time to approve, critic first-pass rate, regenerations, AI cost per approved post.
   - **Done when:** fixture results correct.
+  - **Result (2026-10-15):** the Operations tab: generated, approval rate, rejection reasons, edits per approved variant, time to approve, critic first-pass rate, regenerations, AI cost per approved post; a number with no basis shows a dash.
 
 - [ ] **M6-08 · Attribution events and Commercial dashboard** · P1 · M · deps: M4-11, M6-04
   - **Do:** manual entry + CSV import (J18), reconciliation list for unknown campaign ids, Commercial tab (leads, sales, revenue, revenue per 1,000 reach).
   - **Done when:** import tests (dedupe by `external_ref`); fixture dashboard.
 
-- [ ] **M6-09 · Published list and lineage view** · P0 · M · deps: M6-03
+- [x] **M6-09 · Published list and lineage view** · P0 · M · deps: M6-03
   - **Do:** `/content/published` (D7 rates, permalink, CSV export) and `/content/published/[id]` lineage (04 §4.6) with metrics timeline and review history.
   - **Done when:** lineage shows source → cards → idea → brief → version → publication → metrics for a fixture post.
+  - **Result (2026-10-15):** `/content/published` (market, format and range filters, D7 rates and a flag when D7 fell back to D3, permalink, `export` route with CSV: UTF-8, rates as fractions, at most 5000 rows, a cell that starts with `=`, `+`, `-`, `@`, tab or return gets an apostrophe so the hook text cannot run as a formula) and `/content/published/[publicationId]` (`LineageView`: numbers at D7 and the snapshot timeline, then source cards with page and quote, idea, market brief, approved version with caption, CTA, slides or video, review history, generation cost, the Reel card of a carousel and the link from a Reel to its carousel; a "Collect numbers now" button for owner and editor). Resolves the M8-07 open item that the Reel card had no home on the published screen. 10 component tests.
 
 - [ ] **M6-10 · Progress for long actions** · P0 · M · deps: M5-07
   - **Why:** found on the first live run (2026-10-12). "Regenerate all" takes 4-6 minutes (four model stages for each market, then the pictures, then the render). After the click the page shows nothing and does not refresh itself, and the only way to tell whether work is going on is the Trigger.dev dashboard.

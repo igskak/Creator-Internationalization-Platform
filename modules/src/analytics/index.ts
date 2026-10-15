@@ -13,6 +13,7 @@ export {
   RequestMetricsInput,
   requestMetricsNow,
 } from "./collect";
+export * from "./queries";
 export {
   AUTOMATIC_SLOTS,
   type AutomaticSlot,

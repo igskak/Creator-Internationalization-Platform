@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   date,
   index,
@@ -8,6 +9,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  pgView,
   text,
   timestamp,
   unique,
@@ -139,3 +141,64 @@ export const attributionEvents = pgTable(
     ),
   ],
 ).enableRLS();
+
+// The views of 0011, declared as existing so that queries over them are typed and run the same on
+// postgres.js and PGlite. Drizzle does not create them: the migration does.
+
+/** One row per published, non-dry-run post with everything it can be grouped by (11 §11.3). */
+export const vPublicationDimensions = pgView("v_publication_dimensions", {
+  publicationId: uuid().notNull(),
+  publishedAt: timestamp({ withTimezone: true }).notNull(),
+  followerCountAtPublish: integer(),
+  marketId: uuid().notNull(),
+  marketCode: text().notNull(),
+  weekdayLocal: integer().notNull(),
+  daypartLocal: text().notNull(),
+  masterIdeaId: uuid().notNull(),
+  topic: text().notNull(),
+  category: text().notNull(),
+  angle: text().notNull(),
+  commercialIntent: text().notNull(),
+  productId: uuid(),
+  variantId: uuid().notNull(),
+  format: text().notNull(),
+  hookType: text(),
+  visualStyle: text(),
+  ctaType: text(),
+  offerId: uuid(),
+  templateSequence: text().array().notNull(),
+  firstTemplateId: text(),
+  slideCount: integer(),
+  captionChars: integer(),
+  generationVersion: text(),
+  campaignId: text(),
+}).existing();
+
+/** One row per post: the snapshot closest to 168 h among those at least 72 h old, with the rates. */
+export const vPublicationMetricsD7 = pgView("v_publication_metrics_d7", {
+  publicationId: uuid().notNull(),
+  snapshotSlot: text().notNull(),
+  mediaAgeHours: numeric({ precision: 8, scale: 2 }).notNull(),
+  reach: integer(),
+  views: integer(),
+  likes: integer(),
+  comments: integer(),
+  saves: integer(),
+  shares: integer(),
+  totalInteractions: integer(),
+  saveRate: numeric(),
+  shareRate: numeric(),
+  commentRate: numeric(),
+  engagementRate: numeric(),
+  isExactD7: boolean("is_exact_d7").notNull(),
+}).existing();
+
+/** Leads, sales and revenue of each campaign. */
+export const vCampaignAttribution = pgView("v_campaign_attribution", {
+  campaignId: text().notNull(),
+  marketId: uuid().notNull(),
+  offerId: uuid(),
+  leads: integer().notNull(),
+  sales: integer().notNull(),
+  revenue: numeric().notNull(),
+}).existing();
