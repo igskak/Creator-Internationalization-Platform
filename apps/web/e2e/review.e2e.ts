@@ -3,9 +3,11 @@ import { E2E_SECRET } from "../playwright.config";
 import {
   E2E_EDITOR_EMAIL,
   ensureE2eUser,
+  readSetting,
   removeIdeasOfSource,
   removeSourceByTitle,
   seedApprovedCards,
+  writeSetting,
 } from "./support";
 
 // E2E spec 3 (plan 13 §13.4, M4-10): edit the hook → regenerate a slide → approve with the
@@ -16,11 +18,17 @@ const SOURCE = `E2E source review ${Date.now()}`;
 
 test.describe.configure({ mode: "serial" });
 
+// The kill switch as the test found it: the database is shared with live publishing, so the test
+// switches it off only around the schedule step and always puts it back.
+let originalPublishing: unknown;
+
 test.beforeAll(async () => {
   await ensureE2eUser(E2E_EDITOR_EMAIL, "editor");
   await seedApprovedCards(SOURCE);
+  originalPublishing = await readSetting("publishing.enabled");
 });
 test.afterAll(async () => {
+  await writeSetting("publishing.enabled", originalPublishing);
   await removeIdeasOfSource(SOURCE);
   await removeSourceByTitle(SOURCE);
 });
@@ -113,10 +121,15 @@ test("edit the hook, regenerate a slide, approve, schedule and see it in the cal
   await waiting.getByRole("button", { name: "Schedule…" }).first().click();
   const schedule = page.getByRole("dialog");
   await schedule.getByLabel(/Date and time/).fill(`${day}T11:00`);
-  await schedule.getByRole("button", { name: "Schedule", exact: true }).click();
-  await expect(page.getByText(/Scheduled for/)).toBeVisible();
-  // Publishing is switched off and no account is connected: the dialog says so.
-  await expect(schedule.getByRole("status")).toContainText("Publishing is switched off.");
+  // With publishing switched off the dialog says so. A due live post waits meanwhile (J9 skips it).
+  await writeSetting("publishing.enabled", false);
+  try {
+    await schedule.getByRole("button", { name: "Schedule", exact: true }).click();
+    await expect(page.getByText(/Scheduled for/)).toBeVisible();
+    await expect(schedule.getByRole("status")).toContainText("Publishing is switched off.");
+  } finally {
+    await writeSetting("publishing.enabled", originalPublishing);
+  }
   await page.keyboard.press("Escape");
   await expect(schedule).toBeHidden();
 
