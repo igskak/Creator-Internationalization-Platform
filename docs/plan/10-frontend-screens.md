@@ -132,7 +132,7 @@ See 09 §9.4.1 (SCHEDULED → QUEUED → IN_PROGRESS(step) → PUBLISHED | FAILE
 ## 10.5 UX rules
 - **Status colors**: DRAFT gray · GENERATING blue (spinner) · READY_FOR_REVIEW amber · CHANGES_REQUESTED orange · APPROVED green · SCHEDULED teal · PUBLISHING blue · PUBLISHED dark green · FAILED red · REJECTED gray (struck through).
 - **Flags** are badges; blocking flags are red with a lock icon and a tooltip that says how to fix.
-- **Progress**: while an item on the page is in progress (GENERATING, PROCESSING, RENDERING, QUEUED, IN_PROGRESS), poll `getStatuses` every 3 s; stop after 15 min with "still running — check Health".
+- **Progress**: while an item on the page is in progress (GENERATING, PROCESSING, RENDERING, QUEUED, IN_PROGRESS), poll `getStatuses` every 3 s; stop after 15 min with "still running — check Health". On the review screen the drafts show their steps (M6-10: `getProgress`, one poll for the page, 3 s then slower, paused while the tab is hidden, "taking longer than usual" after 10 min without movement).
 - **Confirmations** name the effect: "This cancels the scheduled post on Tue 13:00 (ES)".
 - **Errors**: toast with a human message + copyable request id; failed jobs show the domain error on the entity page (not only in logs) [S§11].
 - **Empty states** with the next step ("No approved knowledge yet → Review cards").
