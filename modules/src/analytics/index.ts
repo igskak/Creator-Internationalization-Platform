@@ -1,5 +1,6 @@
 export const MODULE_NAME = "analytics";
 
+export * from "./attribution";
 export {
   type AccountInsightsResult,
   CollectAccountInsightsInput,

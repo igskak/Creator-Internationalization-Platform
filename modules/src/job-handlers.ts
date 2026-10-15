@@ -5,6 +5,8 @@ import {
   CollectInsightsInput,
   collectAccountInsights,
   collectInsights,
+  ImportAttributionPayload,
+  importAttributionCsv,
 } from "./analytics";
 import {
   GenerateContentPayload,
@@ -267,6 +269,16 @@ export const collectAccountInsightsJob = defineJob({
 });
 
 /**
+ * J18 (plan 06 §6.3, 11 §11.7): imports a stored CSV of leads, sales and refunds. References that
+ * are in the table already are skipped, so a second run adds nothing; a file that cannot be read is
+ * a report with the error, not an exception.
+ */
+export const importAttributionCsvJob = defineJob({
+  payload: ImportAttributionPayload,
+  run: (ctx, payload) => importAttributionCsv(ctx, payload),
+});
+
+/**
  * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
  * ones that were lost. It never fails the cron run for one bad publication.
  */
@@ -315,6 +327,7 @@ export const jobHandlers = {
   "check-account-health": checkAccountHealthJob,
   "collect-insights": collectInsightsJob,
   "collect-account-insights": collectAccountInsightsJob,
+  "import-attribution-csv": importAttributionCsvJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,

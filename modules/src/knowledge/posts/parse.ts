@@ -1,3 +1,7 @@
+import { parseCsv } from "@rc/lib/csv";
+
+export { parseCsv };
+
 // Parsing of the historical posts import file (plan 07 §7.2.5, M1-22): CSV or JSON in, valid rows
 // and row errors out. Pure, so every rule can be tested without a database. The taxonomy codes are
 // checked later, against the database.
@@ -67,40 +71,6 @@ const COLUMNS: Record<string, string> = {
   isexemplar: "isExemplar",
 };
 const squash = (name: string) => name.toLowerCase().replace(/[\s_-]+/gu, "");
-
-/** Splits CSV text into rows of cells: quotes, doubled quotes, line breaks inside quotes. */
-export function parseCsv(text: string, delimiter: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i] as string;
-    if (quoted) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          cell += '"';
-          i++;
-        } else quoted = false;
-      } else cell += c;
-    } else if (c === '"' && cell === "") quoted = true;
-    else if (c === delimiter) {
-      row.push(cell);
-      cell = "";
-    } else if (c === "\n" || c === "\r") {
-      if (c === "\r" && text[i + 1] === "\n") i++;
-      row.push(cell);
-      cell = "";
-      rows.push(row);
-      row = [];
-    } else cell += c;
-  }
-  if (cell !== "" || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((v) => v.trim() !== ""));
-}
 
 /** Excel in some locales saves `;`-separated CSV, spreadsheets may export tabs. */
 function detectDelimiter(firstLine: string): string {

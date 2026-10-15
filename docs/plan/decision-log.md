@@ -1309,3 +1309,10 @@ Template:
 - Not done: see the task's entry in plan 15 (Reel card, publication panel, ideas and sources keep their own progress; a text rewrite shows as the next step for a moment).
 - Evidence: 16 service tests on a database, 22 component tests, E2E `drafts` passes on the production build; `review` passes up to the calendar step and then fails on an unrelated expectation (its dialog now says "No Instagram account is connected for this market" because a real account is connected in the dev database; it expected "Publishing is switched off.").
 - Impact on plan: M6-10 done; M6 has only M6-08 (P1) left.
+
+## 2026-10-15 · Leads, sales and the Commercial tab [M6-08]
+- Context: campaign ids exist since M4-11, but no lead or sale could be recorded, so revenue per post was unknown.
+- Decision: (1) An event's market is the market of the post that has its campaign id, else the market given, else the id's market part (`rc-es-…`); a row with none of them is refused, not guessed. (2) Revenue is a sum per currency and is never added across currencies (EUR and USD markets). (3) Revenue per 1,000 reach is computed over the campaigns whose posts have D7 reach only; the others would flatter it. (4) The import reads only the listed columns, so the names and e-mails a shop export carries are never read; an order id that looks like an e-mail or phone is hashed (A-10). (5) A row without an order id gets a hash of its row number and content: importing the same file twice adds nothing, and two equal rows of one file both count. (6) The import report lives in the audit log (`attribution.import_requested`, `attribution.imported`); no table was added for it. (7) An event with an unknown campaign id is stored and listed for reconciliation rather than refused, so the money is never lost.
+- Evidence: 14 module tests, 6 component tests, `pnpm check`.
+- Impact on plan: M6-08 done; M6 is complete.
+

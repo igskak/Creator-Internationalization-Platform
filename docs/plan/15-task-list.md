@@ -619,9 +619,10 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** fixture results correct.
   - **Result (2026-10-15):** the Operations tab: generated, approval rate, rejection reasons, edits per approved variant, time to approve, critic first-pass rate, regenerations, AI cost per approved post; a number with no basis shows a dash.
 
-- [ ] **M6-08 · Attribution events and Commercial dashboard** · P1 · M · deps: M4-11, M6-04
+- [x] **M6-08 · Attribution events and Commercial dashboard** · P1 · M · deps: M4-11, M6-04
   - **Do:** manual entry + CSV import (J18), reconciliation list for unknown campaign ids, Commercial tab (leads, sales, revenue, revenue per 1,000 reach).
   - **Done when:** import tests (dedupe by `external_ref`); fixture dashboard.
+  - **Result (2026-10-15):** `modules/src/analytics/attribution/` (`parseAttributionCsv`: known column names in any case, a mapping for others, `,` `;` or tab, sums like `1.234,50`, only the listed columns are read so names and e-mails in an export are never looked at, an order id that looks like an e-mail or a phone is stored as a hash, a row without an id gets a hash of its row number and content; `recordAttributionEvent`, `createAttributionImport` + J18 `import-attribution-csv` (insert-or-skip on `(source, external_ref)`, report in the audit log, `listAttributionImports`), `listUnknownCampaigns` and `reassignCampaign`, `deleteAttributionEvent` for owners), `queries/commercial.ts` (`getCommercial`: per campaign, offer and market; revenue per currency; revenue per 1,000 reach over the campaigns that have D7 reach). The CSV splitter moved to `@rc/lib/csv`. The **Commercial tab** on `/analytics` (tiles, campaigns with their post, sales by offer, the reconciliation list with a form, the latest events and imports, "Add an event" and "Import a CSV" dialogs; en and ru) and on `/dev/analytics`. 14 module tests (parser, import twice adds nothing, reconciliation, the dashboard numbers), 6 component tests.
 
 - [x] **M6-09 · Published list and lineage view** · P0 · M · deps: M6-03
   - **Do:** `/content/published` (D7 rates, permalink, CSV export) and `/content/published/[id]` lineage (04 §4.6) with metrics timeline and review history.

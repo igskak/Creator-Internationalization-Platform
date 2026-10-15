@@ -1,10 +1,14 @@
 import type {
+  AttributionEventRow,
+  AttributionImportEntry,
+  Commercial,
   ContentLearning,
   Engagement,
   Growth,
   Lineage,
   Operations,
   RankedPost,
+  UnknownCampaign,
 } from "@rc/modules/analytics";
 
 // Synthetic dashboard data: for the component tests and for /dev/analytics (a page that shows the
@@ -329,3 +333,173 @@ export const lineageFixture = (): Lineage => ({
     ],
   },
 });
+
+/** The Commercial tab: the numbers of the module test of `getCommercial` (M6-08). */
+export const commercialFixture = (): Commercial => ({
+  totals: {
+    leads: 7,
+    sales: 4,
+    refunds: 1,
+    revenue: [
+      { currency: "EUR", amount: 60 },
+      { currency: "USD", amount: 25 },
+    ],
+    reachD7: 2500,
+    revenuePer1kReach: [
+      { currency: "EUR", amount: 20 },
+      { currency: "USD", amount: 10 },
+    ],
+  },
+  campaigns: [
+    {
+      campaignId: "rc-es-261001-aaa111",
+      marketCode: "es-ES",
+      offerName: "Guía del arroz",
+      known: true,
+      publicationId: "00000000-0000-4000-8000-0000000000a1",
+      hook: "El error que arruina tu risotto",
+      leads: 4,
+      sales: 2,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 50 }],
+      reachD7: 2000,
+      revenuePer1kReach: [{ currency: "EUR", amount: 25 }],
+    },
+    {
+      campaignId: "rc-en-261001-ccc333",
+      marketCode: "en",
+      offerName: "Rice guide",
+      known: true,
+      publicationId: "00000000-0000-4000-8000-0000000000a2",
+      hook: "Stop rinsing risotto rice",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+      reachD7: 500,
+      revenuePer1kReach: [{ currency: "USD", amount: 50 }],
+    },
+    {
+      campaignId: "rc-es-261001-bbb222",
+      marketCode: "es-ES",
+      offerName: "Guía del arroz",
+      known: true,
+      publicationId: null,
+      hook: "Arroz que no se pega",
+      leads: 0,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "EUR", amount: 10 }],
+      reachD7: null,
+      revenuePer1kReach: null,
+    },
+    {
+      campaignId: null,
+      marketCode: "es-ES",
+      offerName: null,
+      known: false,
+      publicationId: null,
+      hook: null,
+      leads: 2,
+      sales: 0,
+      refunds: 0,
+      revenue: [],
+      reachD7: null,
+      revenuePer1kReach: null,
+    },
+  ],
+  offers: [
+    {
+      offerId: "00000000-0000-4000-8000-0000000000b1",
+      offerName: "Guía del arroz",
+      leads: 4,
+      sales: 3,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 60 }],
+    },
+    {
+      offerId: "00000000-0000-4000-8000-0000000000b2",
+      offerName: "Rice guide",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+    },
+  ],
+  markets: [
+    {
+      marketCode: "en",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+    },
+    {
+      marketCode: "es-ES",
+      leads: 6,
+      sales: 3,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 60 }],
+    },
+  ],
+});
+
+export const unknownCampaignsFixture = (): UnknownCampaign[] => [
+  {
+    campaignId: "rc-en-261001-typo00",
+    marketCode: "en",
+    events: 2,
+    leads: 2,
+    sales: 1,
+    firstAt: new Date("2026-10-05T12:00:00Z"),
+    lastAt: new Date("2026-10-06T12:00:00Z"),
+  },
+];
+
+export const attributionEventsFixture = (): AttributionEventRow[] => [
+  {
+    id: "00000000-0000-4000-8000-0000000000c1",
+    type: "SALE",
+    occurredAt: new Date("2026-10-06T00:00:00Z"),
+    campaignId: "rc-en-261001-ccc333",
+    marketCode: "en",
+    quantity: 1,
+    amount: 25,
+    currency: "USD",
+    source: "CSV_IMPORT",
+  },
+  {
+    id: "00000000-0000-4000-8000-0000000000c2",
+    type: "LEAD",
+    occurredAt: new Date("2026-10-03T00:00:00Z"),
+    campaignId: "rc-es-261001-aaa111",
+    marketCode: "es-ES",
+    quantity: 4,
+    amount: null,
+    currency: null,
+    source: "MANUAL",
+  },
+];
+
+export const attributionImportsFixture = (): AttributionImportEntry[] => [
+  {
+    batchId: "00000000-0000-4000-8000-0000000000d1",
+    fileName: "orders-october.csv",
+    requestedAt: new Date("2026-10-08T09:00:00Z"),
+    report: {
+      batchId: "00000000-0000-4000-8000-0000000000d1",
+      totalRows: 9,
+      created: 7,
+      duplicates: 1,
+      unknownCampaigns: 0,
+      errorCount: 1,
+      errors: [{ row: 10, field: "market", message: "Unknown market." }],
+    },
+  },
+  {
+    batchId: "00000000-0000-4000-8000-0000000000d2",
+    fileName: "orders-late.csv",
+    requestedAt: new Date("2026-10-09T09:00:00Z"),
+    report: null,
+  },
+];

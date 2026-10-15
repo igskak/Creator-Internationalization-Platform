@@ -1,3 +1,10 @@
+export {
+  type CampaignRow,
+  type Commercial,
+  type CommercialCounts,
+  getCommercial,
+  type Money,
+} from "./commercial";
 export { type Engagement, getEngagement, type PostRates } from "./engagement";
 export { type Growth, getGrowth, type SeriesPoint } from "./growth";
 export {
