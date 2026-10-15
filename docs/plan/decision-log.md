@@ -1309,3 +1309,8 @@ Template:
 - Not done: see the task's entry in plan 15 (Reel card, publication panel, ideas and sources keep their own progress; a text rewrite shows as the next step for a moment).
 - Evidence: 16 service tests on a database, 22 component tests, E2E `drafts` passes on the production build; `review` passes up to the calendar step and then fails on an unrelated expectation (its dialog now says "No Instagram account is connected for this market" because a real account is connected in the dev database; it expected "Publishing is switched off.").
 - Impact on plan: M6-10 done; M6 has only M6-08 (P1) left.
+
+## 2026-10-15 · Owner check of M6-01..10 after the merge
+- Context: PRs #108, #109 and #110 were merged in order with `scripts/merge-m6-stack.sh` (migration 0011 applied first, `db:migrate: done`). Verified by the owner in the running app, reported in chat the same day: the new screens and "Collect numbers now" work, and the progress panel on a real regeneration works. The details of what was clicked were not given; this entry records the owner's verdict, not a test log.
+- Still open: V-10 and V-11 stay open until a live Insights run is looked at on the record (the error for an unsupported metric, the carousel's media product type, the day boundary of account metrics, the `follow_type` sides); the G3 decision and V-26 in `docs/decisions/G3.md`; M6-08 and the P1 tasks.
+- Impact on plan: M6-01..07, M6-09 and M6-10 are done and checked; M6 has only M6-08 (P1) left.
