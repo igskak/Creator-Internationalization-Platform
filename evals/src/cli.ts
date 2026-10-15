@@ -7,6 +7,7 @@ import { EnvValidationError, loadServerEnv } from "@rc/lib/env";
 import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createLlmProvider } from "@rc/lib/providers/llm";
 import { STAGE_CONFIG } from "@rc/modules/ai";
+import { promptRegistry } from "@rc/prompts";
 import { exportBlind } from "./blind";
 import { loadCases } from "./case";
 import { describeEstimate, estimateRun } from "./cost";
@@ -29,6 +30,8 @@ const HELP = `pnpm eval [options]
   --g1                  also print the machine-checkable conditions of Gate G1
   --blind               also write the blind review sheet (Markdown + CSV) and its key
   --out <dir>           where results go (default: evals/results, not in git)
+  --stage-version S=N   run stage S with prompt version N instead of the active one, e.g.
+                        CONTENT_WRITING=6 (repeatable; compares a new version before it is active)
   --help`;
 
 function parse(argv: string[]) {
@@ -41,6 +44,7 @@ function parse(argv: string[]) {
     g1: false,
     cases: [] as string[],
     out: "",
+    stageVersions: [] as string[],
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -53,6 +57,7 @@ function parse(argv: string[]) {
     else if (arg === "--g1") args.g1 = true;
     else if (arg === "--cases") args.cases = value().split(",").filter(Boolean);
     else if (arg === "--out") args.out = value();
+    else if (arg === "--stage-version") args.stageVersions.push(value());
     else if (arg === "--help" || arg === "-h") {
       console.log(HELP);
       process.exit(0);
@@ -70,6 +75,19 @@ function parse(argv: string[]) {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = parse(process.argv.slice(2));
+
+// --stage-version: this process only; the pipeline reads STAGE_CONFIG when a stage runs.
+for (const pair of args.stageVersions) {
+  const [stage = "", version = ""] = pair.split("=");
+  const config = (STAGE_CONFIG as Record<string, { promptId: string; version: number }>)[stage];
+  const n = Number(version);
+  if (!config || !Number.isInteger(n) || !promptRegistry.has(config.promptId, n)) {
+    console.error(`eval: --stage-version ${pair}: unknown stage or prompt version.`);
+    process.exit(2);
+  }
+  config.version = n;
+  console.log(`eval: ${stage} runs ${config.promptId}@${n}.`);
+}
 const setDir = existsSync(join(root, "sets", args.set))
   ? join(root, "sets", args.set)
   : resolve(args.set);

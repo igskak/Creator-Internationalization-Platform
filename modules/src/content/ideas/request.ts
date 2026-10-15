@@ -282,6 +282,7 @@ export async function runGenerateIdeas(
           origin: "AI_GENERATED",
           rationale: `Why now: ${draft.whyNow}\nDifferent from recent: ${draft.differsFromRecent}`,
           generationRunId: result.runIds.at(-1) ?? null,
+          performanceSummaryId: result.performanceSummaryId,
         })
         .returning({ id: schema.masterIdeas.id });
       if (!row) continue;

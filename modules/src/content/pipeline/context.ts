@@ -1,9 +1,17 @@
 import { schema } from "@rc/db";
 import { and, asc, desc, eq, inArray, ne } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError } from "@rc/lib/errors";
+import type { contentWriter } from "@rc/prompts";
 import { registry, type TemplateDefinition } from "@rc/templates";
 import type { ServiceContext } from "../../core";
 import { getIdeaCards, type IdeaCard } from "../../knowledge/retrieval";
+import {
+  latestMemory,
+  learningLabels,
+  topExemplarsByD7,
+  writerLearning,
+  writerUsesLearning,
+} from "../learning";
 import { type Exemplar, selectExemplars } from "../voice";
 
 // What the generation pipeline reads before it starts (plan 07 §7.6.2, §7.9.2): the idea, the
@@ -30,6 +38,8 @@ export type PipelineContext = {
   offers: Map<string, PipelineOffer>;
   /** What the writer learns each market's voice from (M2-17), by market id. */
   exemplars: Map<string, Exemplar[]>;
+  /** What the market's performance memory tells the writer (M7-04), by market id; empty when unused. */
+  learning: Map<string, contentWriter.WriterLearning>;
   hookTypes: TaxonomyTerm[];
   ctaTypes: TaxonomyTerm[];
   /** P0 templates: the only ones a plan may use. */
@@ -58,6 +68,10 @@ export async function loadPipelineContext(
   ctx: ServiceContext,
   masterIdeaId: string,
   variantIds: readonly string[],
+  options: {
+    /** The content-writer version that will run; default the active one. */
+    writerVersion?: number;
+  } = {},
 ): Promise<PipelineContext> {
   const [idea] = await ctx.db
     .select()
@@ -128,6 +142,22 @@ export async function loadPipelineContext(
     )
     .orderBy(asc(schema.taxonomyTerms.sortOrder), asc(schema.taxonomyTerms.code));
 
+  // M7-04: a writer that has the rules for it gets the market's memory and its best posts at D7.
+  const exemplars = new Map(
+    await Promise.all(
+      marketIds.map(async (id) => [id, await selectExemplars(ctx, id)] as [string, Exemplar[]]),
+    ),
+  );
+  const learning = new Map<string, contentWriter.WriterLearning>();
+  if (writerUsesLearning(options.writerVersion)) {
+    const labels = await learningLabels(ctx);
+    for (const id of marketIds) {
+      const memory = await latestMemory(ctx, id);
+      if (memory) learning.set(id, writerLearning(memory.memory, labels));
+      exemplars.set(id, [...(exemplars.get(id) ?? []), ...(await topExemplarsByD7(ctx, id))]);
+    }
+  }
+
   return {
     idea,
     brandVoice: brand?.brandVoice ?? "",
@@ -136,11 +166,8 @@ export async function loadPipelineContext(
     others,
     markets: new Map(marketRows.map((m) => [m.id, m])),
     offers,
-    exemplars: new Map(
-      await Promise.all(
-        marketIds.map(async (id) => [id, await selectExemplars(ctx, id)] as [string, Exemplar[]]),
-      ),
-    ),
+    exemplars,
+    learning,
     hookTypes: terms(taxonomy.filter((t) => t.kind === "hook_type")),
     ctaTypes: terms(taxonomy.filter((t) => t.kind === "cta_type")),
     templates: p0Templates(),

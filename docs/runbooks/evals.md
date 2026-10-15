@@ -11,6 +11,8 @@ pnpm eval --provider live --judge           # the real model of .env (AI_PROVIDE
 pnpm eval --provider live --yes --set /path/to/private/set --cases a,b
 ```
 
+To compare a new prompt version before it is active, run the same set twice, once with `--stage-version`, e.g. `pnpm eval --provider live --stage-version CONTENT_WRITING=6 --stage-version IDEA_GENERATION=3` (M7-04): the flag changes the version for that process only.
+
 A live run costs money, so it never runs in PR CI. The fake run is what the unit tests execute (`evals/src/eval.test.ts`). Results go to `evals/results/` (not in git): one JSON per run, and with `--blind` a Markdown sheet, a CSV and a key.
 
 ## A case (`<set>/cases/*.json`)

@@ -10,8 +10,8 @@ const textOf = (prompt: typeof v5, input: unknown) =>
     .join("\n");
 
 describe("content-writer@5", () => {
-  it("is the latest writer, with the defaults of v4", () => {
-    expect(promptRegistry.latest("content-writer")).toBe(v5);
+  it("is registered, with the defaults of v4", () => {
+    expect(promptRegistry.get("content-writer", 5)).toBe(v5);
     expect(v5).toMatchObject({ key: "content-writer@5", stage: "CONTENT_WRITING" });
     expect(v5.defaults).toEqual(v4.defaults);
     expect(v5.hash).not.toBe(v4.hash);

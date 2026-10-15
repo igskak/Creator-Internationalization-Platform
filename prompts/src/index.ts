@@ -4,11 +4,12 @@ import {
   contentWriterV3,
   contentWriterV4,
   contentWriterV5,
+  contentWriterV6,
 } from "./content-writer";
 import { criticV1, criticV2, criticV3 } from "./critic";
 import { evalJudgeV1, evalJudgeV2 } from "./eval-judge";
 import { fieldRegeneratorV1 } from "./field-regenerator";
-import { ideaGeneratorV1, ideaGeneratorV2 } from "./idea-generator";
+import { ideaGeneratorV1, ideaGeneratorV2, ideaGeneratorV3 } from "./idea-generator";
 import { knowledgeExtractorV1, knowledgeExtractorV2 } from "./knowledge-extractor";
 import { knowledgeGlossV1, knowledgeGlossV2 } from "./knowledge-gloss";
 import { marketAdapterV1, marketAdapterV2, marketAdapterV3 } from "./market-adapter";
@@ -94,6 +95,7 @@ export const promptRegistry = createRegistry([
   knowledgeGlossV2,
   ideaGeneratorV1,
   ideaGeneratorV2,
+  ideaGeneratorV3,
   marketAdapterV1,
   marketAdapterV2,
   marketAdapterV3,
@@ -102,6 +104,7 @@ export const promptRegistry = createRegistry([
   contentWriterV3,
   contentWriterV4,
   contentWriterV5,
+  contentWriterV6,
   criticV1,
   criticV2,
   criticV3,

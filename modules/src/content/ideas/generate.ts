@@ -1,8 +1,9 @@
 import type { ValidationIssue } from "@rc/db/json";
 import type { LLMUsage } from "@rc/lib/providers/llm";
 import type { ideaGenerator } from "@rc/prompts";
-import { runStage, type StageStatus } from "../../ai";
+import { runStage, STAGE_CONFIG, type StageStatus } from "../../ai";
 import type { ServiceContext } from "../../core";
+import { ideasUseMemory, latestMemory, memoryForIdeas } from "../learning";
 import { buildIdeaContext, type IdeaContextOptions } from "./context";
 import { type DroppedIdea, dropNearDuplicates, validateIdeaOutput } from "./validate";
 
@@ -20,6 +21,8 @@ export type IdeaDraftsResult = {
   runIds: string[];
   usage: LLMUsage;
   costUsd: number | null;
+  /** The performance summary the model was given (M7-04); null when none was used. */
+  performanceSummaryId: string | null;
   /** Cards the model was allowed to cite, with the pool statistics. */
   context: {
     cardIds: string[];
@@ -38,9 +41,18 @@ export type IdeaDraftsResult = {
  */
 export async function generateIdeaDrafts(
   ctx: ServiceContext,
-  options: IdeaContextOptions,
+  options: IdeaContextOptions & {
+    /** The idea-generator version to run; default the active one (`STAGE_CONFIG`). */
+    promptVersion?: number;
+  },
 ): Promise<IdeaDraftsResult> {
-  const { input, pool } = await buildIdeaContext(ctx, options);
+  const { promptVersion = STAGE_CONFIG.IDEA_GENERATION.version, ...contextOptions } = options;
+  // The memory across markets goes only to a version that has the rules for it (M7-04).
+  const memory = ideasUseMemory(promptVersion) ? await latestMemory(ctx, null) : null;
+  const { input, pool } = await buildIdeaContext(ctx, {
+    ...contextOptions,
+    ...(memory ? { performanceMemory: memoryForIdeas(memory.memory) } : {}),
+  });
   const cardIds = input.cards.map((c) => c.id);
   const validation = {
     cardIds: new Set(cardIds),
@@ -49,6 +61,7 @@ export async function generateIdeaDrafts(
   };
   const stage = await runStage<Output>(ctx, {
     stage: "IDEA_GENERATION",
+    config: { version: promptVersion },
     input,
     inputRefs: { knowledgeItemIds: cardIds },
     validate: (output) => validateIdeaOutput(output, validation),
@@ -66,6 +79,7 @@ export async function generateIdeaDrafts(
     runIds: stage.runIds,
     usage: stage.usage,
     costUsd: stage.costUsd,
+    performanceSummaryId: memory?.summaryId ?? null,
     context,
   };
   if (!stage.data) return { ...base, ideas: [], dropped: [] };

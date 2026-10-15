@@ -11,7 +11,7 @@ import type { PipelineContext, PipelineMarket, PipelineOffer, PipelineVariant } 
 // the pipeline loaded, in the shapes the prompts and the validators take.
 
 type AdapterInput = marketAdapter.MarketAdapterInput;
-type WriterInput = contentWriter.ContentWriterInput;
+type WriterInput = contentWriter.ContentWriterInputV6;
 type WriterOutput = contentWriter.ContentWriterOutput;
 type CriticInput = critic.CriticInput;
 
@@ -234,6 +234,7 @@ export function writerInput(
     templates: templatesForPrompt(c),
     siblingSummary: [...siblings],
     exemplars: c.exemplars.get(market.id) ?? [],
+    ...(c.learning.get(market.id) ? { learning: c.learning.get(market.id) } : {}),
     taxonomy: {
       hookTypes: c.hookTypes.map(({ code, label }) => ({ code, label })),
       ctaTypes: c.ctaTypes.map(({ code, label }) => ({ code, label })),
