@@ -79,6 +79,43 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @rc/modules exec vitest run src/publishing/concurrency.postgres.test.ts
 
+  # H-06: secrets must never reach git (plan 12 §12.2). Scans the commits of the push or the pull
+  # request with gitleaks' default rules and .gitleaks.toml; a finding fails the build.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+  # H-06: known vulnerabilities in dependencies. A warning, not a failure: the result shows as an
+  # annotation on the run; fixing them is a task of its own.
+  audit:
+    name: Dependency audit (warning only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: pnpm audit (production dependencies, high and above)
+        run: |
+          if ! pnpm audit --prod --audit-level=high; then
+            echo "::warning title=pnpm audit::Production dependencies have high or critical advisories (see the log of this step)."
+          fi
+      - name: pnpm audit (all dependencies, summary)
+        run: pnpm audit --audit-level=critical || echo "::warning title=pnpm audit::Critical advisories in dev dependencies."
+
   build:
     name: Build (web)
     runs-on: ubuntu-latest

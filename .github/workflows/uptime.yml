@@ -1,0 +1,27 @@
+# Uptime check (H-06, plan 12 §12.9): asks the deployed app's /api/health every 15 minutes. A
+# failed run is GitHub's e-mail to the person who last changed this schedule. The URL is the
+# repository variable HEALTH_URL (Settings → Secrets and variables → Actions → Variables), e.g.
+# https://<the production domain>/api/health; without it the check says so and passes.
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: GET /api/health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: scripts/uptime-check.sh
+          sparse-checkout-cone-mode: false
+      - run: bash scripts/uptime-check.sh "$HEALTH_URL"
+        env:
+          HEALTH_URL: ${{ vars.HEALTH_URL }}

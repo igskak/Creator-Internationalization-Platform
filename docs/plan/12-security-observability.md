@@ -101,7 +101,8 @@ Audit data is redacted with the same scrubber as logs. The Health page and entit
 | AI cost | < 80 % of monthly budget | 80–100 % | > 100 % |
 | DB / storage | `/api/health` ok | slow (> 2 s) | failing |
 
-- **Alerts**: Trigger.dev (failed publish, ingestion, token refresh, insights); Sentry (new issue, spike); uptime monitor on `/api/health` (P1); daily health digest email (P2).
+- **Alerts**: Trigger.dev (failed publish, ingestion, token refresh, insights); Sentry (new issue, spike; the AI budget alert of J24, H-05); uptime monitor on `/api/health` (H-06: the scheduled GitHub workflow `uptime.yml`, variable `HEALTH_URL`); daily health digest email (P2).
+- **CI checks** (H-06): gitleaks secret scan (fails the build), `pnpm audit` (warning only).
 
 ## 12.10 Backups and recovery
 - Supabase daily backups; point-in-time recovery depends on the plan ⚠ V-20 (recommended for prod).
