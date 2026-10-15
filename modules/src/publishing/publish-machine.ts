@@ -392,6 +392,8 @@ class Machine {
       shareToFeed: true,
       // Instagram's own "AI info" label, when the approved snapshot asks for it (V-16, V-25).
       isAiGenerated: this.pc.snapshot.disclosure?.platformLabel === true,
+      // A trial Reel (M8-11): shown to non-followers first.
+      trialGraduation: this.pc.variant.trialGraduation ?? null,
     });
   }
 

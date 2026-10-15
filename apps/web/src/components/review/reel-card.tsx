@@ -28,6 +28,7 @@ import {
   estimateReel,
   generateReel,
   regenerateReelShot,
+  setReelTrial,
 } from "@/server/actions/reels";
 import { VariantActions } from "./variant-actions";
 import { VariantProvider } from "./variant-state";
@@ -465,6 +466,12 @@ function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps })
         regenerations={[]}
       >
         <VariantActions allowed={reel.allowed} flagLabels={review.flagLabels} kind="reel" />
+        <TrialReelControl
+          variantId={reel.variantId}
+          value={reel.trialGraduation}
+          fixed={reel.status === "PUBLISHING" || reel.status === "PUBLISHED"}
+          canManage={publish?.canManage ?? false}
+        />
         {publish && PUBLISHABLE_STATUSES.includes(reel.status) ? (
           <PublishPanel
             variantId={reel.variantId}
@@ -547,5 +554,52 @@ export function ReelCard({
         </div>
       ) : null}
     </section>
+  );
+}
+
+/** Trial Reel (M8-11): off by default; how it graduates when on. */
+function TrialReelControl({
+  variantId,
+  value,
+  fixed,
+  canManage,
+}: {
+  variantId: string;
+  value: "MANUAL" | "SS_PERFORMANCE" | null;
+  fixed: boolean;
+  canManage: boolean;
+}) {
+  const { messages } = useI18n();
+  const t = messages.review.reel.trial;
+  const router = useRouter();
+  const save = useAction(setReelTrial, {
+    onSuccess: () => {
+      toast.success(t.saved);
+      router.refresh();
+    },
+  });
+  return (
+    <div className="flex flex-col gap-1" data-testid="reel-trial">
+      <label className="text-sm font-medium" htmlFor={`trial-${variantId}`}>
+        {t.label}
+      </label>
+      <select
+        id={`trial-${variantId}`}
+        className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+        value={value ?? ""}
+        disabled={!canManage || fixed || save.pending}
+        onChange={(e) =>
+          void save.run({
+            variantId,
+            graduation: (e.target.value || null) as "MANUAL" | "SS_PERFORMANCE" | null,
+          })
+        }
+      >
+        <option value="">{t.off}</option>
+        <option value="MANUAL">{t.MANUAL}</option>
+        <option value="SS_PERFORMANCE">{t.SS_PERFORMANCE}</option>
+      </select>
+      <p className="text-xs text-muted-foreground">{fixed ? t.fixed : t.hint}</p>
+    </div>
   );
 }

@@ -476,5 +476,80 @@ describe("idea context and generation", () => {
       expect(text).toContain(`id=\\"${ids[0]}\\"`);
       expect(text).toContain("Editor's focus: rice");
     });
+
+    it("gives the summary across markets to idea-generator@3 only, and names it in the result (M7-04)", async () => {
+      const ids = [await addCard()];
+      respond = () => answerFor(ids);
+      const [summary] = await t.db
+        .insert(schema.performanceSummaries)
+        .values({
+          marketId: null,
+          windowStart: "2026-08-01",
+          windowEnd: "2026-09-25",
+          summaryJson: {
+            marketCode: "ALL",
+            window: { from: "2026-08-01", to: "2026-09-25" },
+            basis: { publications: 30, metric: "D7", minSample: 3 },
+            topPatterns: [],
+            weakPatterns: [],
+            overusedThemes: [{ category: "GRAINS_RICE_PASTA", count: 4, windowDays: 21 }],
+            coverageGaps: [],
+            untestedHypotheses: [],
+            offerPriorities: [],
+            feedback: { topRejectionReasons: [], mostEditedFields: [], hookRewrites: [] },
+            caveats: [],
+          },
+          statsJson: { marketMedians: {}, groups: [] },
+          minSample: 3,
+          publicationsCount: 30,
+          createdByType: "JOB",
+          createdAt: clock.now(),
+        })
+        .returning();
+      const v2 = await generateIdeaDrafts(ctx, { count: 1, promptVersion: 2 });
+      expect(v2.performanceSummaryId).toBeNull();
+      expect(JSON.stringify(llm.calls[0]?.messages)).not.toContain("<performance_memory>");
+
+      const v3 = await generateIdeaDrafts(ctx, { count: 1, promptVersion: 3 });
+      expect(v3.performanceSummaryId).toBe(summary?.id);
+      const text = JSON.stringify(llm.calls[1]?.messages);
+      expect(text).toContain("<performance_memory>");
+      expect(text).toContain("GRAINS_RICE_PASTA");
+      // Empty lists are left out of the text the model reads.
+      expect(text).not.toContain("coverageGaps");
+      const runs = await t.db.select().from(schema.generationRuns);
+      expect(runs.map((r) => r.promptVersion).sort()).toEqual([2, 3]);
+    });
+
+    it("asks for a third more ideas and keeps the most diverse batch of the size asked (M7-05)", async () => {
+      const ids = [await addCard(), await addCard(), await addCard()];
+      respond = () => answerFor(ids, [{}, {}, {}]);
+      const result = await generateIdeaDrafts(ctx, { count: 2 });
+      expect(JSON.stringify(llm.calls[0]?.messages)).toContain("Propose up to 3 Master Ideas");
+      expect(result.ideas).toHaveLength(2);
+      expect(result.notPicked).toHaveLength(1);
+      // The kept ones stay in the model's order.
+      const order = ["Idea 1", "Idea 2", "Idea 3"];
+      const kept = result.ideas.map((i) => order.indexOf(i.topic));
+      expect(kept).toEqual([...kept].sort((a, b) => a - b));
+    });
+
+    it("does not use a summary older than a month", async () => {
+      const ids = [await addCard()];
+      respond = () => answerFor(ids);
+      await t.db.insert(schema.performanceSummaries).values({
+        marketId: null,
+        windowStart: "2026-06-01",
+        windowEnd: "2026-07-25",
+        summaryJson: {} as never,
+        statsJson: { marketMedians: {}, groups: [] },
+        minSample: 3,
+        publicationsCount: 0,
+        createdByType: "JOB",
+        createdAt: new Date(clock.now().getTime() - 40 * DAY),
+      });
+      const result = await generateIdeaDrafts(ctx, { count: 1, promptVersion: 3 });
+      expect(result.performanceSummaryId).toBeNull();
+    });
   });
 });

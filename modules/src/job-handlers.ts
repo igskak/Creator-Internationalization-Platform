@@ -1,10 +1,16 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
+import { checkAiBudget } from "./ai";
 import {
+  BuildSummariesPayload,
+  buildPerformanceSummaries,
   CollectAccountInsightsInput,
   CollectInsightsInput,
   collectAccountInsights,
   collectInsights,
+  ensureFreshSummaries,
+  ImportAttributionPayload,
+  importAttributionCsv,
 } from "./analytics";
 import {
   GenerateContentPayload,
@@ -137,7 +143,14 @@ export const transcribePagesJob = defineJob({
  */
 export const generateIdeasJob = defineJob({
   payload: GenerateIdeasPayload,
-  run: (ctx, payload) => runGenerateIdeas(ctx, payload),
+  run: async (ctx, payload) => {
+    // J15 before J4 when the performance memory is more than a week old (06 §6.3). A failure here
+    // must not cost the ideas: they are made without a fresh summary.
+    await ensureFreshSummaries(ctx).catch((error: unknown) =>
+      ctx.logger.warn({ err: error }, "could not refresh the performance summaries"),
+    );
+    return runGenerateIdeas(ctx, payload);
+  },
 });
 
 /**
@@ -267,6 +280,35 @@ export const collectAccountInsightsJob = defineJob({
 });
 
 /**
+ * J18 (plan 06 §6.3, 11 §11.7): imports a stored CSV of leads, sales and refunds. References that
+ * are in the table already are skipped, so a second run adds nothing; a file that cannot be read is
+ * a report with the error, not an exception.
+ */
+export const importAttributionCsvJob = defineJob({
+  payload: ImportAttributionPayload,
+  run: (ctx, payload) => importAttributionCsv(ctx, payload),
+});
+
+/**
+ * J15 (plan 06 §6.3, 11 §11.5): the performance summaries, weekly (Monday 04:11 UTC), on request,
+ * and before ideas when they are older than a week. SQL only; every run stores new rows.
+ */
+export const buildPerformanceSummaryJob = defineJob({
+  payload: BuildSummariesPayload,
+  run: (ctx, payload) => buildPerformanceSummaries(ctx, payload),
+});
+
+/**
+ * J24 (H-05, plan 12 §12.9): the AI cost of the month against `ai.monthly_budget_usd`, daily. A
+ * new level (amber at 80 %, red above 100 %) is returned once per month as `alert`; the task
+ * reports it to Sentry, which sends the e-mail.
+ */
+export const checkAiBudgetJob = defineJob({
+  payload: z.object({}).default({}),
+  run: (ctx) => checkAiBudget(ctx),
+});
+
+/**
  * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
  * ones that were lost. It never fails the cron run for one bad publication.
  */
@@ -315,6 +357,9 @@ export const jobHandlers = {
   "check-account-health": checkAccountHealthJob,
   "collect-insights": collectInsightsJob,
   "collect-account-insights": collectAccountInsightsJob,
+  "import-attribution-csv": importAttributionCsvJob,
+  "build-performance-summary": buildPerformanceSummaryJob,
+  "check-ai-budget": checkAiBudgetJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,

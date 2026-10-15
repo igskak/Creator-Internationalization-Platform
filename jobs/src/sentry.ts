@@ -33,3 +33,24 @@ export function failureTags({ taskId, runId, payload }: FailureContext): Record<
 export function reportJobFailure(error: unknown, context: FailureContext): void {
   Sentry.captureException(error, { tags: failureTags(context) });
 }
+
+/**
+ * An AI budget alert (H-05): one Sentry issue per month and level, so the "new issue" alert rule
+ * e-mails the owner once. Only sums go out, no content.
+ */
+export function reportBudgetAlert(result: unknown): void {
+  const alert = (
+    result as {
+      alert?: { level: string; month: string; monthToDateUsd: number; budgetUsd: number } | null;
+    }
+  )?.alert;
+  if (!alert) return;
+  Sentry.captureMessage(
+    `AI cost ${alert.level === "RED" ? "is over" : "has reached 80 % of"} the monthly budget: $${alert.monthToDateUsd.toFixed(2)} of $${alert.budgetUsd.toFixed(2)} (${alert.month})`,
+    {
+      level: alert.level === "RED" ? "error" : "warning",
+      fingerprint: ["ai-budget", alert.month, alert.level],
+      tags: { alert: "ai_budget", level: alert.level, month: alert.month },
+    },
+  );
+}

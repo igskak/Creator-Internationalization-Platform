@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   generate: vi.fn(),
   changeHook: vi.fn(),
   redoShot: vi.fn(),
+  setTrial: vi.fn(),
   approve: vi.fn(),
   reject: vi.fn(),
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
@@ -46,6 +47,7 @@ vi.mock("@/server/actions/reels", () => ({
   generateReel: mocks.generate,
   changeReelHook: mocks.changeHook,
   regenerateReelShot: mocks.redoShot,
+  setReelTrial: mocks.setTrial,
 }));
 
 const t = en.review.reel;
@@ -85,6 +87,7 @@ const reelOf = (over: Record<string, unknown> = {}): NonNullable<ReelView["reel"
   ({
     variantId: REEL,
     status: "READY_FOR_REVIEW",
+    trialGraduation: null,
     lockVersion: 3,
     allowed: [],
     flags: [],
@@ -495,6 +498,35 @@ describe("a finished Reel", () => {
       );
       expect(screen.getByText(t.review.blocker.RENDER_STALE)).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: en.review.actions.rerender })).toBeNull();
+    });
+
+    it("turns a trial Reel on, off by default (M8-11)", async () => {
+      const user = userEvent.setup();
+      mocks.setTrial.mockResolvedValue({ ok: true, data: { trialGraduation: "SS_PERFORMANCE" } });
+      show(viewOf({ reel: reelOf({ status: "APPROVED" }) }), true, REVIEW);
+      const select = within(screen.getByTestId("reel-trial")).getByRole("combobox", {
+        name: t.trial.label,
+      });
+      expect(select).toHaveValue("");
+      await user.selectOptions(select, "SS_PERFORMANCE");
+      expect(mocks.setTrial).toHaveBeenCalledWith({
+        variantId: REEL,
+        graduation: "SS_PERFORMANCE",
+      });
+    });
+
+    it("fixes the trial setting once the Reel is out", () => {
+      show(
+        viewOf({
+          reel: reelOf({ status: "PUBLISHED", trialGraduation: "MANUAL", changeable: false }),
+        }),
+        true,
+        REVIEW,
+      );
+      const block = screen.getByTestId("reel-trial");
+      expect(within(block).getByRole("combobox")).toBeDisabled();
+      expect(within(block).getByRole("combobox")).toHaveValue("MANUAL");
+      expect(within(block).getByText(t.trial.fixed)).toBeInTheDocument();
     });
 
     it("shows the publishing panel once the Reel is approved", () => {

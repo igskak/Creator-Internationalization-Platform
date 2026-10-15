@@ -1,0 +1,25 @@
+# Secret scanning (H-06, plan 12 §12.2): gitleaks' default rules plus an allowlist for what is
+# synthetic by design: tests, fixtures, snapshots, the example env file and the lockfile. A real
+# secret never belongs in any of them either (CLAUDE.md "Safety rules"); the allowlist only keeps
+# fake tokens such as "IGQV-fake-…" from failing the build.
+title = "Creator Internationalization Platform"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic values in tests and examples"
+paths = [
+  '''(^|/)pnpm-lock\.yaml$''',
+  '''(^|/)\.env\.example$''',
+  '''\.test\.tsx?$''',
+  '''(^|/)__snapshots__/''',
+  '''(^|/)__golden__/''',
+  '''(^|/)fixtures?(\.ts|/)''',
+  '''(^|/)test-support\.ts$''',
+  '''(^|/)e2e/''',
+  '''(^|/)evals/sets/''',
+]
+regexes = [
+  '''(?i)(fake|synthetic|example|dummy|placeholder|redacted)[-_a-z0-9]*''',
+]

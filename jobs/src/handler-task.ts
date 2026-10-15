@@ -13,6 +13,8 @@ type HandlerTaskOptions = {
   machine?: Machine;
   maxDuration?: number;
   /** Replaces the default retry policy of trigger.config.ts (plan 06 §6.2 column "Retries"). */
+  /** Called with the handler's result after a successful run (e.g. to report an alert). */
+  onResult?: (result: unknown) => void;
   retry?: {
     maxAttempts: number;
     factor?: number;
@@ -26,12 +28,19 @@ type HandlerTaskOptions = {
 const isEnvelope = (value: unknown): value is JobEnvelope =>
   typeof value === "object" && value !== null && "payload" in value;
 
-async function runHandler(name: JobName, runId: string, incoming: unknown) {
+async function runHandler(
+  name: JobName,
+  runId: string,
+  incoming: unknown,
+  onResult?: (result: unknown) => void,
+) {
   // A cron run has no payload of ours: the handler gets an empty one (every field is optional).
   const envelope: JobEnvelope = isEnvelope(incoming) ? incoming : { payload: {}, meta: {} };
   const serviceCtx = jobContext(runId, name, envelope.meta ?? {});
   try {
-    return await runJobHandler(jobHandlers[name], serviceCtx, envelope.payload);
+    const result = await runJobHandler(jobHandlers[name], serviceCtx, envelope.payload);
+    onResult?.(result);
+    return result;
   } catch (error) {
     throw classifyJobError(error);
   }
@@ -45,7 +54,8 @@ export function handlerTask(name: JobName, options: HandlerTaskOptions) {
     ...(options.machine ? { machine: options.machine } : {}),
     ...(options.maxDuration ? { maxDuration: options.maxDuration } : {}),
     ...(options.retry ? { retry: options.retry } : {}),
-    run: async (envelope: JobEnvelope, { ctx }) => runHandler(name, ctx.run.id, envelope),
+    run: async (envelope: JobEnvelope, { ctx }) =>
+      runHandler(name, ctx.run.id, envelope, options.onResult),
   });
 }
 
@@ -61,6 +71,7 @@ export function cronHandlerTask(name: JobName, cron: string, options: HandlerTas
     ...(options.machine ? { machine: options.machine } : {}),
     ...(options.maxDuration ? { maxDuration: options.maxDuration } : {}),
     ...(options.retry ? { retry: options.retry } : {}),
-    run: async (incoming: unknown, { ctx }) => runHandler(name, ctx.run.id, incoming),
+    run: async (incoming: unknown, { ctx }) =>
+      runHandler(name, ctx.run.id, incoming, options.onResult),
   });
 }

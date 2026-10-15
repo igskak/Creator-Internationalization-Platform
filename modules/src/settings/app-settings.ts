@@ -16,6 +16,10 @@ export const APP_SETTING_SCHEMAS = {
     .min(0)
     .max(24 * 60),
   "analytics.min_sample": z.number().int().min(1).max(1000),
+  /** H-05: the monthly AI budget in USD; 0 = no budget (no amber or red, no alert). */
+  "ai.monthly_budget_usd": z.number().min(0).max(1_000_000),
+  /** M7-02: D7-measured posts a market needs before the summary lists patterns. */
+  "learning.min_posts_for_patterns": z.number().int().min(1).max(1000),
   "rights.defaults": RightsDefaults,
 } as const;
 export type AppSettingKey = keyof typeof APP_SETTING_SCHEMAS;

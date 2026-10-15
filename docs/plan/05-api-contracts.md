@@ -128,14 +128,17 @@ defineAction({
 | **query** `getGrowth` | `{ marketId?, from, to }` | `{ tiles, followersSeries, reachSeries, nonFollowerShareSeries }` | 11 §11.4 |
 | **query** `getEngagement` | `{ marketId?, from, to }` | `{ tiles, posts: PostRates[] }` | D7-standardized rates |
 | **query** `getContentLearning` | `{ marketId, dimension, from, to, minSample? }` | `{ rows: { value, n, medianSaveRate, medianShareRate, medianReach, liftVsMarket, lowSample }[] }` | – |
-| **query** `getCommercial` | `{ marketId?, from, to }` | `{ byCampaign[], byOffer[], totals }` | P1 |
+| **query** `getCommercial` | `{ marketId?, from, to }` | `{ totals, campaigns[], offers[], markets[] }` | P1 (M6-08). Revenue per currency, never added across currencies; revenue per 1,000 reach over the campaigns whose posts have D7 reach |
 | **query** `getOperations` | `{ from, to }` | `{ generated, approvalRate, rejectionReasons[], avgEditsPerApproved, medianTimeToApproveHours, criticPassRate, costPerApprovedPost }` | – |
 | **query** `getLineage` | `{ publicationId }` | lineage DTO (04 §4.6) + metrics timeline + review events | – |
 | `collectMetricsNow` | `{ publicationId }` | `{ jobRunId }` | Creates a MANUAL snapshot |
-| `createAttributionEvent` (P1) | `{ marketId, type, occurredAt, campaignId?, offerId?, quantity, amount?, currency?, externalRef?, notes? }` | `AttributionEvent` | No customer PII fields exist |
-| `importAttributionCsv` (P1) | `{ csvText, mapping }` | `{ imported, skipped, unknownCampaignIds[] }` | Upsert on `(source, external_ref)` |
-| `buildPerformanceSummary` (P1) | `{ marketId?, windowDays: 28 \| 56 \| 90 }` | `{ jobRunId }` | – |
-| `upsertExperiment` / `setExperimentStatus` (P1) | experiment fields / `{ id, status }` | `Experiment` | – |
+| `recordAttributionEvent` (P1) | `{ type, occurredAt, campaignId?, marketId?, quantity, amount?, currency?, externalRef?, notes? }` | `{ id, campaignKnown }` | Owner, editor. Market and offer from the campaign's post, else `marketId`, else the id's market part; an order id that looks like an e-mail is refused. No customer PII fields exist |
+| `importAttributionCsv` (P1) | `{ fileName, text, mapping? }` | `{ batchId }` | Owner, editor. Stores the file and starts J18; the report (`created`, `duplicates`, `unknownCampaigns`, row errors) is in `listAttributionImports`. Insert-or-skip on `(source, external_ref)`; a row without an order id gets a hash of its row number and content |
+| `reassignCampaign` (P1) | `{ from, to }` | `{ moved }` | Owner, editor. Moves the events of an unknown campaign id to a campaign a post has (reconciliation list `listUnknownCampaigns`) |
+| `deleteAttributionEvent` (P1) | `{ id }` | – | Owner; audited |
+| `buildPerformanceSummary` (P1) | `{ marketId?, windowDays: 28 \| 56 \| 90 }` | `{ runId }` | Owner, editor (M7-03): J15 for every active market and across markets unless a market is given |
+| `upsertExperiment` / `setExperimentStatus` (P1) | experiment fields / `{ id, status, outcome? }` | `{ id }` / `{ id, status }` | Owner, editor (M7-06). Only a draft can be edited; `outcome` (CONFIRMED, REJECTED, INCONCLUSIVE) on completion sets the linked market visual hypothesis |
+| `assignExperimentArm` (P1) | `{ variantId, experimentId \| null, arm? }` | `{ experimentId, arm }` | Owner, editor; a DRAFT or RUNNING experiment of the variant's market |
 
 ## 5.11 Settings, AI, health
 

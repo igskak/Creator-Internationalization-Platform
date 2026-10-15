@@ -4,6 +4,7 @@ import type {
   Growth,
   Operations,
   RankedPost,
+  ReelInsights,
 } from "@rc/modules/analytics";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ import type { Messages } from "@/lib/i18n/messages";
 import { BarList } from "./bar-list";
 import { compact, percent } from "./chart-math";
 import { LineChart } from "./line-chart";
+import { ReelsSection } from "./reels-section";
 import { StatTile } from "./stat-tile";
 
 // The four tabs of /analytics (plan 10, M6-05 to M6-07). Server components: the data comes in as
@@ -123,10 +125,13 @@ export function GrowthTab({ growth, t, locale }: { growth: Growth; t: T; locale:
 
 export function EngagementTab({
   engagement,
+  reels,
   t,
   locale,
 }: {
   engagement: Engagement;
+  /** The Reels of the window (M8-10); absent where they are not shown. */
+  reels?: ReelInsights;
   t: T;
   locale: Locale;
 }) {
@@ -247,6 +252,7 @@ export function EngagementTab({
           </Table>
         </div>
       )}
+      {reels ? <ReelsSection reels={reels} t={t} locale={locale} /> : null}
     </div>
   );
 }

@@ -1,17 +1,26 @@
 import {
+  getCommercial,
   getContentLearning,
   getEngagement,
   getGrowth,
+  getLatestSummary,
   getOperations,
   getRankedPosts,
+  getReelInsights,
   LEARNING_DIMENSIONS,
+  listAttributionEvents,
+  listAttributionImports,
+  listKnownCampaignIds,
   listReasonLabels,
+  listUnknownCampaigns,
 } from "@rc/modules/analytics";
 import { listMarkets } from "@rc/modules/localization";
 import { getProductsOverview } from "@rc/modules/offers";
 import { listTaxonomyTerms } from "@rc/modules/settings";
 import Link from "next/link";
+import { CommercialTab } from "@/components/analytics/commercial";
 import { ParamSelect } from "@/components/analytics/filters";
+import { SummaryTab } from "@/components/analytics/summary";
 import { EngagementTab, GrowthTab, LearningTab, OperationsTab } from "@/components/analytics/tabs";
 import {
   ANALYTICS_TABS,
@@ -28,7 +37,7 @@ import { requestContext } from "@/server/context";
 // /analytics (plan 10 §10.2, M6-05 to M6-07): Growth, Engagement, Content learning and Operations
 // over a window of 7, 28 or 90 days, for one market or all. The filters sit in one row above the
 // content and scope everything below them; they are in the URL, so a view can be shared. The
-// Commercial tab comes with M6-08.
+// Commercial tab (M6-08) also holds the forms for leads and sales.
 export const dynamic = "force-dynamic";
 
 const pill = (active: boolean) =>
@@ -83,6 +92,12 @@ export default async function AnalyticsPage({
                 ...(selected ? { marketId: selected.id } : {}),
               })
             }
+            reels={
+              await getReelInsights(ctx, {
+                ...window,
+                ...(selected ? { marketId: selected.id } : {}),
+              })
+            }
             t={t}
             locale={locale}
           />
@@ -118,6 +133,61 @@ export default async function AnalyticsPage({
         };
         return (
           <LearningTab learning={learning} ranked={ranked} t={t} locale={locale} labels={labels} />
+        );
+      }
+      case "commercial": {
+        const scope = selected ? { marketId: selected.id } : {};
+        const [commercial, unknown, events, imports, known] = await Promise.all([
+          getCommercial(ctx, { ...window, ...scope }),
+          listUnknownCampaigns(ctx),
+          listAttributionEvents(ctx, { limit: 10, ...scope }),
+          listAttributionImports(ctx),
+          user.role === "chef" ? Promise.resolve([]) : listKnownCampaignIds(ctx),
+        ]);
+        return (
+          <CommercialTab
+            commercial={commercial}
+            unknown={unknown}
+            events={events}
+            imports={imports}
+            markets={markets.map((m) => ({
+              id: m.id,
+              code: m.code,
+              label: `${m.flagEmoji ? `${m.flagEmoji} ` : ""}${m.displayName}`,
+            }))}
+            knownCampaigns={known}
+            canEdit={user.role !== "chef"}
+            isOwner={user.role === "owner"}
+            t={t}
+            locale={locale}
+          />
+        );
+      }
+      case "summary": {
+        const [summary, terms, reasonLabels] = await Promise.all([
+          getLatestSummary(ctx, selected?.id ?? null),
+          listTaxonomyTerms(ctx),
+          listReasonLabels(ctx),
+        ]);
+        const labels = {
+          value: (dimension: string, value: string): string => {
+            const kind = TAXONOMY_KIND[dimension];
+            if (kind) return terms.find((x) => x.kind === kind && x.code === value)?.label ?? value;
+            if (dimension === "daypart") {
+              return (t.learning.dayparts as Record<string, string>)[value] ?? value;
+            }
+            return value;
+          },
+        };
+        return (
+          <SummaryTab
+            summary={summary}
+            canBuild={user.role !== "chef"}
+            labels={labels}
+            reasonLabels={reasonLabels}
+            t={t}
+            locale={locale}
+          />
         );
       }
       case "operations":

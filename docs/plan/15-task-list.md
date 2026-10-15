@@ -619,9 +619,10 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Done when:** fixture results correct.
   - **Result (2026-10-15):** the Operations tab: generated, approval rate, rejection reasons, edits per approved variant, time to approve, critic first-pass rate, regenerations, AI cost per approved post; a number with no basis shows a dash.
 
-- [ ] **M6-08 · Attribution events and Commercial dashboard** · P1 · M · deps: M4-11, M6-04
+- [x] **M6-08 · Attribution events and Commercial dashboard** · P1 · M · deps: M4-11, M6-04
   - **Do:** manual entry + CSV import (J18), reconciliation list for unknown campaign ids, Commercial tab (leads, sales, revenue, revenue per 1,000 reach).
   - **Done when:** import tests (dedupe by `external_ref`); fixture dashboard.
+  - **Result (2026-10-15):** `modules/src/analytics/attribution/` (`parseAttributionCsv`: known column names in any case, a mapping for others, `,` `;` or tab, sums like `1.234,50`, only the listed columns are read so names and e-mails in an export are never looked at, an order id that looks like an e-mail or a phone is stored as a hash, a row without an id gets a hash of its row number and content; `recordAttributionEvent`, `createAttributionImport` + J18 `import-attribution-csv` (insert-or-skip on `(source, external_ref)`, report in the audit log, `listAttributionImports`), `listUnknownCampaigns` and `reassignCampaign`, `deleteAttributionEvent` for owners), `queries/commercial.ts` (`getCommercial`: per campaign, offer and market; revenue per currency; revenue per 1,000 reach over the campaigns that have D7 reach). The CSV splitter moved to `@rc/lib/csv`. The **Commercial tab** on `/analytics` (tiles, campaigns with their post, sales by offer, the reconciliation list with a form, the latest events and imports, "Add an event" and "Import a CSV" dialogs; en and ru) and on `/dev/analytics`. 14 module tests (parser, import twice adds nothing, reconciliation, the dashboard numbers), 6 component tests.
 
 - [x] **M6-09 · Published list and lineage view** · P0 · M · deps: M6-03
   - **Do:** `/content/published` (D7 rates, permalink, CSV export) and `/content/published/[id]` lineage (04 §4.6) with metrics timeline and review history.
@@ -642,29 +643,36 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M7 · Learning (P1)
 
-- [ ] **M7-01 · Learning schema (0008)** · P1 · S · deps: M6-01
+- [x] **M7-01 · Learning schema (0008)** · P1 · S · deps: M6-01
   - **Do:** `performance_summaries`, `experiments`, variant experiment columns, `master_ideas.performance_summary_id`.
   - **Done when:** migration + tests.
+  - **Result (2026-10-15):** migration `0012_learning.sql` (reviewed by hand; the custom part adds the `experiments` updated_at trigger and replaces `v_publication_dimensions` with the experiment columns), `db/src/schema/learning.ts`, `db/src/json/learning.ts` (`PerformanceMemory` as a Zod schema, `PerformanceStats`, `EXPERIMENT_DIMENSIONS`). 3 schema tests (a summary per market and across markets linked from an idea; the experiment checks and trigger; an arm needs its experiment and shows in the view). **The owner applies 0012 with `pnpm db:migrate` before this code is deployed.**
 
-- [ ] **M7-02 · Performance summary builder** · P1 · M · deps: M6-04, M7-01
+- [x] **M7-02 · Performance summary builder** · P1 · M · deps: M6-04, M7-01
   - **Do:** `analytics/summaries/` algorithm (11 §11.5), JSON ≤ ~1,500 tokens, caveats.
   - **Done when:** fixture tests (patterns, overuse, gaps, empty-pattern case below data threshold).
+  - **Result (2026-10-15):** `modules/src/analytics/summaries/build.ts` (`buildPerformanceSummary`: posts of the window with D7 numbers, nine dimensions, each post's rate divided by its market's median so the summary across markets (`ALL`, `market_id` null) is fair to a small market; patterns from `min_sample` posts with lift ≥ 1.2 or ≤ 0.8, five each, confidence by n; pattern lists empty with a caveat below `learning.min_posts_for_patterns` (default 20); overused themes and coverage gaps from `content/ideas/overuse.ts` (shared with M7-05); untested visual hypotheses, DRAFT experiments and unused hook types; active offers by priority with leads and sales; top rejection reasons, most-edited field kinds, the last hook rewrites; `fitSummary` keeps the JSON under 6,000 characters; stored with the raw groups in `stats_json`). 6 tests on fixture history (lift with known answers, the empty-pattern case, the cross-market normalization, gaps, untested, offers, feedback, the size limit).
 
-- [ ] **M7-03 · Summary job and view** · P1 · S · deps: M7-02
+- [x] **M7-03 · Summary job and view** · P1 · S · deps: M7-02
   - **Do:** J15 (weekly + manual + stale-before-ideas), Analytics → Learning summary view.
   - **Done when:** job test; view renders.
+  - **Result (2026-10-15):** J15 `build-performance-summary` (cron Monday 04:11 UTC, also triggerable with a payload): `buildPerformanceSummaries` builds one summary per active market and one across them; `ensureFreshSummaries` runs in the J4 handler before ideas when the summary across markets is missing or more than 7 days old (a failure there is logged and the ideas are still made); `requestPerformanceSummary` + action `buildPerformanceSummary` ("Build now", owners and editors, each click its own run). The **Learning summary** tab on `/analytics` (the market's summary, or the one across markets under "All markets": patterns with lift, metric and confidence, overuse, gaps, untested ideas, offers, reviewer feedback, caveats; en and ru) and on `/dev/analytics`. 3 job tests, 4 component tests, the task registration test.
 
-- [ ] **M7-04 · Learning into generation (v2 prompts)** · P1 · M · deps: M7-03, M2-16
+- [x] **M7-04 · Learning into generation (v2 prompts)** · P1 · M · deps: M7-03, M2-16
   - **Do:** `idea-generator@2` (performance memory rules), `content-writer@2` (hook guidance, rejection digest, exemplars by D7); set `performance_summary_id`; eval v1 vs v2; bump `PIPELINE_VERSION` only if no regression.
   - **Done when:** eval results logged; activation decision in `decision-log.md`.
+  - **Result (2026-10-15):** the version numbers moved on since the plan was written: the learning-aware prompts are **`idea-generator@3`** (v2 plus the rules for `<performance_memory>`: prefer strong patterns, avoid overused themes, fill a gap, give an untested idea a chance, respect offers, name the reason in `whyNow`) and **`content-writer@6`** (v5 plus `<learning>`: hook-type guidance from the market's D7 numbers as advice, an avoid list from rejection reasons). `modules/src/content/learning/` reads the newest summary (at most 30 days old) and decides by the active prompt version: idea-generator ≥ 3 gets the summary across markets and the idea stores `performance_summary_id`; content-writer ≥ 6 gets its market's learning and the market's two best posts by D7 save rate as examples. `pnpm eval --stage-version STAGE=N` runs a stage with another version. Fake eval green with the active versions and with `CONTENT_WRITING=6 IDEA_GENERATION=3`. 9 prompt tests, 7 module tests.
+  - **Activation: not yet** (decision log 2026-10-15). `STAGE_CONFIG` stays at idea-generator@2 and content-writer@5 and `PIPELINE_VERSION` at 1.7.0: the shared database has no D7 numbers yet, so a v5/v6 comparison would compare the same input. Activate after about 20 posts per market have D7 numbers: a live eval of both (about $2.5, the owner's yes), then the two `STAGE_CONFIG` entries and `PIPELINE_VERSION` 1.8.0 in one commit.
 
-- [ ] **M7-05 · Overuse filter and idea diversity** · P1 · S · deps: M7-02
+- [x] **M7-05 · Overuse filter and idea diversity** · P1 · S · deps: M7-02
   - **Do:** deterministic pre-filter in the candidate pool (penalize overused categories/angles); MMR over proposed core messages.
   - **Done when:** tests on fixture history.
+  - **Result (2026-10-15):** `content/ideas/overuse.ts` (`findOverusedThemes`: a category, or a narrower category + angle pair, approved at least 3 times in 21 days or more than 30 % of the approvals, counted per variant in a market and per idea across markets; `findCoverageGaps`: categories with at least 5 approved cards and no post in 30 days; `categoryWeightsFrom`: 0.5 for an overused category, 1.3 for a gap) feeds `candidatePool`'s weights in every idea run (active now: deterministic, no prompt change). `content/ideas/diversity.ts`: the model is asked for a third more ideas (at most 10) and MMR over the embeddings of the core messages keeps the asked number (λ 0.7, relevance 0.6 for an idea in an overused theme), in the model's order; the rest is `notPicked` in the result. 8 tests on fixture history and the pick, 1 on the idea stage.
 
-- [ ] **M7-06 · Experiments-lite** · P1 · M · deps: M7-01, M6-04
+- [x] **M7-06 · Experiments-lite** · P1 · M · deps: M7-01, M6-04
   - **Do:** `/experiments` CRUD, arm assignment on the review screen, results (n, medians, Mann–Whitney U when both arms reach the minimum), completion updates visual hypothesis status.
   - **Done when:** tests for "insufficient data" and result math.
+  - **Result (2026-10-15):** `modules/src/analytics/experiments/` (`upsertExperiment` (a draft only), `setExperimentStatus` (DRAFT → RUNNING → COMPLETED, or CANCELLED), `assignExperimentArm` (a draft of the experiment's market into A or B, or out), `getExperimentResults` (assigned and measured per arm, medians of the primary metric at D7; the difference and a two-sided Mann–Whitney U p-value only when both arms reach the minimum, else "insufficient data"; exact for up to 20 per arm without ties, normal approximation with tie and continuity correction otherwise), `getArmChoices` for the review screen; starting an experiment linked to a market visual hypothesis makes it TESTING, completing it with CONFIRMED or REJECTED sets that status, a cancel or an inconclusive end makes it UNTESTED again). `/experiments` (list with arms, results and status buttons, create and edit dialog; en and ru), the **Experiment** section in each market's column on the review screen (`ExperimentArmPicker`). 10 service and statistics tests (known U and p values worked out by hand), 7 component tests.
 
 ## H · Hardening and MVP acceptance
 
@@ -684,13 +692,19 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
   - **Do:** run 13 §13.8 (spec §17 and §18) with evidence links; sign-off by Ihor and Sergey in `docs/decisions/mvp-acceptance.md`.
   - **Done when:** signed off.
 
-- [ ] **H-05 · AI cost view and budget alert** · P1 · S · deps: M1-10
+- [x] **H-05 · AI cost view and budget alert** · P1 · S · deps: M1-10
   - **Do:** `/settings/ai` (stage config read-only, cost month-to-date by stage), `ai.monthly_budget_usd` with amber/red health states and an email alert.
   - **Done when:** fixture costs aggregate correctly.
+  - **Result (2026-10-15):** `modules/src/ai/budget.ts` (`getAiCostOverview`: the UTC month's cost by stage from `generation_runs`, model and video calls alike, runs and failures, the last 24 hours, the active `STAGE_CONFIG`; `budgetState`: none, green, amber from 80 %, red above 100 %; `checkAiBudget` = J24 `check-ai-budget`, daily 06:05 UTC: one alert per month and level, remembered in `app_settings.ai.budget_alert_state`, audited). The **e-mail** goes through Sentry: the J24 task reports the alert as a Sentry message with its own fingerprint per month and level, so the "new issue" rule e-mails once (there is no mail provider in the app; `docs/runbooks/sentry.md`). Settings `ai.monthly_budget_usd` and `learning.min_posts_for_patterns` are now editable keys. `/settings/ai` is a real page: budget with its state in words and a bar, the form for owners, cost by stage, the stage table, and the Reels switch. 3 module tests (fixture costs, the thresholds, alerts once per level and month), 2 Sentry tests, 3 component tests. The health page and dashboard tile for AI cost come with H-01 (the state is `getAiCostOverview().state`).
 
-- [ ] **H-06 · Uptime monitor, secret scanning, dependency audit** · P1 · S · deps: M0-02
+- [x] **H-06 · Uptime monitor, secret scanning, dependency audit** · P1 · S · deps: M0-02
   - **Do:** uptime check on `/api/health`; `gitleaks` and `pnpm audit` in CI (audit as warning).
   - **Done when:** CI shows the new checks.
+  - **Result (2026-10-15):** CI (`.github/workflows/ci.yml`) has two new jobs: **Secret scan (gitleaks)** (`gitleaks/gitleaks-action@v2` over the commits of the push or pull request, default rules plus `.gitleaks.toml`, whose allowlist covers tests, fixtures, snapshots, `.env.example` and the lockfile; a finding fails the build) and **Dependency audit (warning only)** (`pnpm audit --prod --audit-level=high`, then critical across all dependencies; findings are a warning annotation, never a failure). **Uptime**: `.github/workflows/uptime.yml` runs `scripts/uptime-check.sh` every 15 minutes against the repository variable `HEALTH_URL` (200 with `status: ok` passes, `degraded` passes with a warning, anything else after three tries fails, and GitHub e-mails the failure); without the variable it passes with a notice. The script was checked against a local server (ok, degraded, down, unset).
+  - **Open:** the owner sets the repository variable `HEALTH_URL` to the production `/api/health`. The first audit (2026-10-15) found 13 advisories in production dependencies, 6 high: `next` < 16.3.8 (image-optimization SSRF, cache poisoning), `sharp` < 0.35.5, `ws` < 8.21.0, `@modelcontextprotocol/sdk` < 1.31.0, `source-map-js` < 1.2.2, `braces` (no fix): follow-up **H-06a** (upgrade and re-run the checks).
+- [ ] **H-06a · Dependency upgrades from the first audit** · P1 · S · deps: H-06
+  - **Do:** upgrade `next` to 16.3.8 or later (and `@sentry/nextjs` with it), `sharp`, `ws`, `@modelcontextprotocol/sdk`, `source-map-js` (overrides where a direct upgrade is not possible); `braces` has no fix: check that no reachable path takes user input.
+  - **Done when:** `pnpm audit --prod --audit-level=high` is clean or every remaining item has a reason in the decision log; `pnpm check`, build and E2E green.
 
 ## M8 · Reels (video-first, generated on request)
 
@@ -753,10 +767,12 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Refs:** 18 §18.5, 09.
   - **Result (code, 2026-10-15):** migration `0010_reel_versions.sql` (a version points at a carousel render or a reel render); Reel branch of `approveVariant` and `verifyApprovedVersion` (`content/variants/reel.ts`), snapshot `format` and `reel`; `planReelDisclosure`; approve, reject, request changes, un-approve and the publishing panel on the Reel card; Reels in the drafts queue, counters and calendar (badge); `createReelContainer`, the publisher's REELS branch (video guards, 15-minute wait, one remake after a fetch error), the Graph mock's REELS container; `pnpm ig:smoke --reel`; `pnpm rc g3-check`; `docs/runbooks/reels.md`; `docs/decisions/G3.md`. V-25 checked.
   - **Open:** apply 0010, deploy, the Reel dry run on the test account (V-26), the owner's G3 decision, then the first live Reel.
-- [ ] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
+- [x] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
   - **Do:** Reel metrics in snapshots and dashboards; link Reel to its source carousel.
-- [ ] **M8-11 · Trial Reels** · P1 · S · deps: M8-09
+  - **Result (2026-10-15):** the snapshots already held the Reel watch metrics (M6-02/03: `ig_reels_avg_watch_time`, `ig_reels_video_view_total_time`, `reels_skip_rate` in `video_metrics_json`). `modules/src/analytics/queries/reels.ts`: `reelWatch` (average and total watch time from milliseconds, skip rate from a percentage, hook rate = 1 − skip rate, completion = average watch time / the rendered Reel's length, capped at 1; a missing metric stays null), `pickD7` (the view's D7 rule in code, because the view has no video column), `getReelInsights` (each published Reel at D7 next to the carousel it was made from: reach, save and share rate of both; medians of views, watch time, hook rate, completion and Reel reach / carousel reach). The **Reels** section of the Engagement tab and watch tiles on a Reel's lineage page (`/content/published/[id]`); the Reel ↔ carousel links were there since M6-09. 3 module tests, 3 component tests.
+- [x] **M8-11 · Trial Reels** · P1 · S · deps: M8-09
   - **Do:** `trial_params` toggle per Reel, off by default.
+  - **Result (2026-10-15):** checked against Meta's IG User Media reference (2026-10-15): `trial_params` on the REELS container, an object with `graduation_strategy` `MANUAL` (graduated by hand in the Instagram app; the API has no call for it) or `SS_PERFORMANCE` (Instagram graduates it when it does well); REELS only; no field reads the trial state back. Migration `0013_trial_reels.sql`: `content_variants.trial_graduation` (null = a normal Reel; a check allows it on Reels only). `setReelTrial` (owners and editors, refused once the Reel is going out or out) and the **Trial Reel** select on the Reel card, off by default; the publisher sends `trial_params` as JSON on the REELS container (dry runs too, so the dry run checks it). 1 publishing test against the mock Graph API, 2 component tests. **The owner applies 0013 before this code is deployed.**
 
 ---
 

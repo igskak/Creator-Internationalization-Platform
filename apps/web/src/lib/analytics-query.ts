@@ -1,6 +1,13 @@
 // URL state of /analytics: the tab, the market, the window and the dimension of the learning tab.
 
-export const ANALYTICS_TABS = ["growth", "engagement", "learning", "operations"] as const;
+export const ANALYTICS_TABS = [
+  "growth",
+  "engagement",
+  "learning",
+  "commercial",
+  "operations",
+  "summary",
+] as const;
 export type AnalyticsTab = (typeof ANALYTICS_TABS)[number];
 export const RANGES = ["7", "28", "90"] as const;
 export type RangeDays = (typeof RANGES)[number];

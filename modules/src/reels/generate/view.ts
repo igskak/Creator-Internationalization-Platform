@@ -98,6 +98,8 @@ export type ReelDetail = {
   costUsd: number | null;
   /** The Reel can be changed (hook, one shot) or generated again. */
   changeable: boolean;
+  /** A trial Reel (M8-11): how it graduates; null = a normal Reel. */
+  trialGraduation: "MANUAL" | "SS_PERFORMANCE" | null;
 };
 
 export type ReelView = {
@@ -215,6 +217,7 @@ async function detailOf(
   return {
     variantId: reel.id,
     status: reel.status,
+    trialGraduation: reel.trialGraduation ?? null,
     lockVersion: reel.lockVersion,
     allowed: allowedActions(facts, role).filter((a) => REEL_ACTIONS.includes(a.action)),
     flags: reel.flags,

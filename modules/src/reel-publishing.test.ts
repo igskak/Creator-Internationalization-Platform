@@ -21,7 +21,7 @@ import {
   runPublication,
   schedulePublication,
 } from "./publishing";
-import { generateReel, getReelView, requestReel } from "./reels";
+import { generateReel, getReelView, requestReel, setReelTrial } from "./reels";
 import { type ReelFixture, reelFixture, stubAssemble } from "./reels/generate/test-support";
 
 // A Reel from review to Instagram (M8-09): approve and reject, the queues, then the publish
@@ -232,6 +232,42 @@ describe("Reel review and publishing", () => {
       ]);
       expect(g3.items[3]?.details).toEqual(["No live Reel publication exists yet."]);
       expect(formatG3Readiness(g3)).toContain("Gate G3 readiness");
+    });
+
+    it("sends a trial Reel with its graduation, and fixes the choice once it is out (M8-11)", async () => {
+      await setup("dry_run_only");
+      // Off by default: no trial_params on the container.
+      expect((await getReelView(fx.ctx, fx.carouselId)).reel?.trialGraduation).toBeNull();
+      await expect(
+        setReelTrial(fx.as("chef"), { variantId: reelId, graduation: "MANUAL" }),
+      ).rejects.toThrow();
+      await expect(
+        setReelTrial(fx.ctx, { variantId: fx.carouselId, graduation: "MANUAL" }),
+      ).rejects.toThrow("Only a Reel can be a trial.");
+      await setReelTrial(fx.ctx, { variantId: reelId, graduation: "SS_PERFORMANCE" });
+      expect((await getReelView(fx.ctx, fx.carouselId)).reel?.trialGraduation).toBe(
+        "SS_PERFORMANCE",
+      );
+      await approve();
+      const { publication } = await schedulePublication(fx.ctx, {
+        variantId: reelId,
+        dryRun: true,
+      });
+      await runPublication(jobCtx, { publicationId: publication.id });
+      const [post] = mock.calls.filter((c) => c.method === "POST" && c.path.endsWith("/media"));
+      expect(post?.body).toMatchObject({
+        media_type: "REELS",
+        trial_params: JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" }),
+      });
+      // Back to a normal Reel while it is only approved; a published one would refuse the change.
+      await setReelTrial(fx.ctx, { variantId: reelId, graduation: null });
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "PUBLISHED" })
+        .where(eq(schema.contentVariants.id, reelId));
+      await expect(
+        setReelTrial(fx.ctx, { variantId: reelId, graduation: "MANUAL" }),
+      ).rejects.toThrow("fixed");
     });
 
     it("publishes a scheduled Reel and the calendar shows it with a Reel badge", async () => {

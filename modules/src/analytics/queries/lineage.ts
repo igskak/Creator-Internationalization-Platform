@@ -6,6 +6,7 @@ import { PRESIGN_TTL } from "@rc/lib/providers/storage";
 import { z } from "zod";
 import type { ServiceContext } from "../../core";
 import { num } from "./range";
+import { pickD7, type ReelWatch, reelWatch } from "./reels";
 
 // The lineage of one post (plan 04 §4.6, 05 §5.10 `getLineage`, M6-09): from the source and the
 // cards through the idea, the market adaptation and the approved version to the publication and
@@ -118,6 +119,8 @@ export type Lineage = {
         })
       | null;
     timeline: LineageSnapshot[];
+    /** A Reel: what its watch metrics say at the D7 snapshot (M8-10); null for a carousel. */
+    watch: ReelWatch | null;
   };
 };
 
@@ -198,6 +201,13 @@ export async function getLineage(
     .select()
     .from(schema.vPublicationMetricsD7)
     .where(eq(schema.vPublicationMetricsD7.publicationId, publicationId));
+  const [reelRender] = version.reelRenderId
+    ? await ctx.db
+        .select({ durationMs: schema.reelRenders.durationMs })
+        .from(schema.reelRenders)
+        .where(eq(schema.reelRenders.id, version.reelRenderId))
+    : [];
+  const reelDurationMs = reelRender?.durationMs ?? null;
 
   const review = await ctx.db
     .select({
@@ -368,6 +378,10 @@ export async function getLineage(
           }
         : null,
       timeline,
+      watch:
+        variant.format === "REEL"
+          ? reelWatch(pickD7(snapshots)?.videoMetricsJson, reelDurationMs)
+          : null,
     },
   };
 }

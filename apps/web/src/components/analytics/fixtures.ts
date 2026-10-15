@@ -1,10 +1,16 @@
 import type {
+  AttributionEventRow,
+  AttributionImportEntry,
+  Commercial,
   ContentLearning,
   Engagement,
   Growth,
   Lineage,
   Operations,
   RankedPost,
+  ReelInsights,
+  StoredSummary,
+  UnknownCampaign,
 } from "@rc/modules/analytics";
 
 // Synthetic dashboard data: for the component tests and for /dev/analytics (a page that shows the
@@ -321,6 +327,7 @@ export const lineageFixture = (): Lineage => ({
       engagementRate: 0.118,
       commentRate: 0.004,
     },
+    watch: null,
     timeline: [
       snap("H2", 2.1, 160, 6, "2026-10-10T11:06:00Z"),
       snap("D1", 24.4, 1100, 58, "2026-10-11T09:26:00Z"),
@@ -328,4 +335,312 @@ export const lineageFixture = (): Lineage => ({
       snap("D7", 168, 2400, 168, "2026-10-17T09:30:00Z"),
     ],
   },
+});
+
+/** The Commercial tab: the numbers of the module test of `getCommercial` (M6-08). */
+export const commercialFixture = (): Commercial => ({
+  totals: {
+    leads: 7,
+    sales: 4,
+    refunds: 1,
+    revenue: [
+      { currency: "EUR", amount: 60 },
+      { currency: "USD", amount: 25 },
+    ],
+    reachD7: 2500,
+    revenuePer1kReach: [
+      { currency: "EUR", amount: 20 },
+      { currency: "USD", amount: 10 },
+    ],
+  },
+  campaigns: [
+    {
+      campaignId: "rc-es-261001-aaa111",
+      marketCode: "es-ES",
+      offerName: "Guía del arroz",
+      known: true,
+      publicationId: "00000000-0000-4000-8000-0000000000a1",
+      hook: "El error que arruina tu risotto",
+      leads: 4,
+      sales: 2,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 50 }],
+      reachD7: 2000,
+      revenuePer1kReach: [{ currency: "EUR", amount: 25 }],
+    },
+    {
+      campaignId: "rc-en-261001-ccc333",
+      marketCode: "en",
+      offerName: "Rice guide",
+      known: true,
+      publicationId: "00000000-0000-4000-8000-0000000000a2",
+      hook: "Stop rinsing risotto rice",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+      reachD7: 500,
+      revenuePer1kReach: [{ currency: "USD", amount: 50 }],
+    },
+    {
+      campaignId: "rc-es-261001-bbb222",
+      marketCode: "es-ES",
+      offerName: "Guía del arroz",
+      known: true,
+      publicationId: null,
+      hook: "Arroz que no se pega",
+      leads: 0,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "EUR", amount: 10 }],
+      reachD7: null,
+      revenuePer1kReach: null,
+    },
+    {
+      campaignId: null,
+      marketCode: "es-ES",
+      offerName: null,
+      known: false,
+      publicationId: null,
+      hook: null,
+      leads: 2,
+      sales: 0,
+      refunds: 0,
+      revenue: [],
+      reachD7: null,
+      revenuePer1kReach: null,
+    },
+  ],
+  offers: [
+    {
+      offerId: "00000000-0000-4000-8000-0000000000b1",
+      offerName: "Guía del arroz",
+      leads: 4,
+      sales: 3,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 60 }],
+    },
+    {
+      offerId: "00000000-0000-4000-8000-0000000000b2",
+      offerName: "Rice guide",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+    },
+  ],
+  markets: [
+    {
+      marketCode: "en",
+      leads: 1,
+      sales: 1,
+      refunds: 0,
+      revenue: [{ currency: "USD", amount: 25 }],
+    },
+    {
+      marketCode: "es-ES",
+      leads: 6,
+      sales: 3,
+      refunds: 1,
+      revenue: [{ currency: "EUR", amount: 60 }],
+    },
+  ],
+});
+
+export const unknownCampaignsFixture = (): UnknownCampaign[] => [
+  {
+    campaignId: "rc-en-261001-typo00",
+    marketCode: "en",
+    events: 2,
+    leads: 2,
+    sales: 1,
+    firstAt: new Date("2026-10-05T12:00:00Z"),
+    lastAt: new Date("2026-10-06T12:00:00Z"),
+  },
+];
+
+export const attributionEventsFixture = (): AttributionEventRow[] => [
+  {
+    id: "00000000-0000-4000-8000-0000000000c1",
+    type: "SALE",
+    occurredAt: new Date("2026-10-06T00:00:00Z"),
+    campaignId: "rc-en-261001-ccc333",
+    marketCode: "en",
+    quantity: 1,
+    amount: 25,
+    currency: "USD",
+    source: "CSV_IMPORT",
+  },
+  {
+    id: "00000000-0000-4000-8000-0000000000c2",
+    type: "LEAD",
+    occurredAt: new Date("2026-10-03T00:00:00Z"),
+    campaignId: "rc-es-261001-aaa111",
+    marketCode: "es-ES",
+    quantity: 4,
+    amount: null,
+    currency: null,
+    source: "MANUAL",
+  },
+];
+
+export const attributionImportsFixture = (): AttributionImportEntry[] => [
+  {
+    batchId: "00000000-0000-4000-8000-0000000000d1",
+    fileName: "orders-october.csv",
+    requestedAt: new Date("2026-10-08T09:00:00Z"),
+    report: {
+      batchId: "00000000-0000-4000-8000-0000000000d1",
+      totalRows: 9,
+      created: 7,
+      duplicates: 1,
+      unknownCampaigns: 0,
+      errorCount: 1,
+      errors: [{ row: 10, field: "market", message: "Unknown market." }],
+    },
+  },
+  {
+    batchId: "00000000-0000-4000-8000-0000000000d2",
+    fileName: "orders-late.csv",
+    requestedAt: new Date("2026-10-09T09:00:00Z"),
+    report: null,
+  },
+];
+
+/** The Learning summary (M7-03): a summary of Spain as J15 stores it. */
+export const summaryFixture = (): StoredSummary => ({
+  id: "00000000-0000-4000-8000-0000000000f1",
+  marketId: "00000000-0000-4000-8000-0000000000e1",
+  createdAt: new Date("2026-10-12T04:11:00Z"),
+  memory: {
+    marketCode: "es-ES",
+    window: { from: "2026-08-18", to: "2026-10-12" },
+    basis: { publications: 24, metric: "D7", minSample: 3 },
+    topPatterns: [
+      {
+        dimension: "hook_type",
+        value: "QUESTION",
+        n: 7,
+        metric: "save_rate",
+        lift: 1.67,
+        confidence: "medium",
+      },
+      {
+        dimension: "daypart",
+        value: "EVENING",
+        n: 11,
+        metric: "share_rate",
+        lift: 1.3,
+        confidence: "high",
+      },
+    ],
+    weakPatterns: [
+      {
+        dimension: "hook_type",
+        value: "LIST",
+        n: 4,
+        metric: "save_rate",
+        lift: 0.67,
+        confidence: "low",
+      },
+    ],
+    overusedThemes: [
+      { category: "GRAINS_RICE_PASTA", count: 5, windowDays: 21 },
+      { category: "GRAINS_RICE_PASTA", angle: "COMMON_MISTAKE", count: 3, windowDays: 21 },
+    ],
+    coverageGaps: [{ category: "SAUCES", approvedCards: 9, postsLast30d: 0 }],
+    untestedHypotheses: [
+      { source: "visual_hypothesis", description: "Bright daylight photos (visual style BRIGHT)" },
+      { source: "hook_type", description: "Hook type MYTH has no post in the window." },
+    ],
+    offerPriorities: [
+      {
+        offerId: "00000000-0000-4000-8000-0000000000b1",
+        productCode: "rice-guide",
+        priority: 7,
+        leads: 12,
+        sales: 3,
+      },
+    ],
+    feedback: {
+      topRejectionReasons: [
+        { code: "WEAK_HOOK", count: 4 },
+        { code: "TRANSLATIONESE", count: 2 },
+      ],
+      mostEditedFields: [
+        { field: "hook", count: 6 },
+        { field: "slides.slots.title", count: 3 },
+      ],
+      hookRewrites: [{ original: "¿Lavas el arroz?", edited: "Nunca laves el arroz del risotto" }],
+    },
+    caveats: ["Only 24 posts; patterns are directional, not proof."],
+  },
+});
+
+/** The Reels of the Engagement tab (M8-10). */
+export const reelInsightsFixture = (): ReelInsights => ({
+  tiles: {
+    reels: 2,
+    measured: 2,
+    medianViews: 4150,
+    medianAvgWatchSeconds: 7.4,
+    medianHookRate: 0.66,
+    medianCompletion: 0.41,
+    medianReachVsCarousel: 1.35,
+  },
+  reels: [
+    {
+      publicationId: "00000000-0000-4000-8000-0000000000a5",
+      variantId: "00000000-0000-4000-8000-0000000000a6",
+      ideaId: "00000000-0000-4000-8000-0000000000a7",
+      marketCode: "es-ES",
+      publishedAt: new Date("2026-10-02T18:00:00Z"),
+      hook: "Nunca laves el arroz del risotto",
+      permalink: null,
+      durationSeconds: 18,
+      slot: "D7",
+      isExactD7: true,
+      views: 5200,
+      reach: 3100,
+      saveRate: 0.021,
+      shareRate: 0.008,
+      watch: {
+        avgWatchSeconds: 8.2,
+        totalWatchHours: 11.8,
+        skipRate: 0.3,
+        hookRate: 0.7,
+        completion: 0.46,
+      },
+      carousel: {
+        publicationId: "00000000-0000-4000-8000-0000000000a8",
+        reach: 2000,
+        saveRate: 0.034,
+        shareRate: 0.01,
+      },
+    },
+    {
+      publicationId: "00000000-0000-4000-8000-0000000000a9",
+      variantId: "00000000-0000-4000-8000-0000000000aa",
+      ideaId: "00000000-0000-4000-8000-0000000000ab",
+      marketCode: "en",
+      publishedAt: new Date("2026-10-04T18:00:00Z"),
+      hook: "Stop rinsing risotto rice",
+      permalink: null,
+      durationSeconds: 20,
+      slot: "D3",
+      isExactD7: false,
+      views: 3100,
+      reach: 1800,
+      saveRate: null,
+      shareRate: null,
+      watch: {
+        avgWatchSeconds: 6.6,
+        totalWatchHours: null,
+        skipRate: 0.38,
+        hookRate: 0.62,
+        completion: 0.33,
+      },
+      carousel: null,
+    },
+  ],
 });

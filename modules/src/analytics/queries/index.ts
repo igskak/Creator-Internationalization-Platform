@@ -1,3 +1,10 @@
+export {
+  type CampaignRow,
+  type Commercial,
+  type CommercialCounts,
+  getCommercial,
+  type Money,
+} from "./commercial";
 export { type Engagement, getEngagement, type PostRates } from "./engagement";
 export { type Growth, getGrowth, type SeriesPoint } from "./growth";
 export {
@@ -26,3 +33,11 @@ export {
   publishedToCsv,
 } from "./published";
 export { DateRangeInput, DEFAULT_MIN_SAMPLE, getMinSample } from "./range";
+export {
+  getReelInsights,
+  pickD7,
+  type ReelInsight,
+  type ReelInsights,
+  type ReelWatch,
+  reelWatch,
+} from "./reels";

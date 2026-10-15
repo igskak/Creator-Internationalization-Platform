@@ -100,9 +100,9 @@ P0 = first release (generate + review + publish). Estimates: S ≤ ½ day, M ≈
 - [ ] **M8-09 · Review, scheduling and publishing** · P0 · L · deps: M8-06 · ⚠ V-25, V-26
   - **Do:** REEL through approve/schedule/calendar; `modules/instagram` REELS container; J10 format branch; mock Graph API cases; smoke script `pnpm ig:smoke --reel`; runbook `docs/runbooks/reels.md`.
   - **Done when:** dry run FINISHED on the test account; G3 recorded before any live Reel.
-- [ ] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
+- [x] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
   - **Do:** Reel metrics (plays, watch time, completion, hook rate where available) in snapshots and dashboards; link Reel ↔ source carousel.
-- [ ] **M8-11 · Trial Reels** · P1 · S · deps: M8-09
+- [x] **M8-11 · Trial Reels** · P1 · S · deps: M8-09
   - **Do:** `trial_params` toggle per Reel, off by default.
 
 Suggested PR stack (each PR small, `pnpm check` green, merged bottom-up with the upper PR retargeted to `main` first): 1) M8-01 docs · 2) M8-02 provider · 3) M8-04 schema · 4) M8-03 director · 5) M8-05 renderer + M8-08 audio · 6) M8-06 service + job · 7) M8-07 UI · 8) M8-09 publishing · 9) M8-10/11.

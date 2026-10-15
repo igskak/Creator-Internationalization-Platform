@@ -1,5 +1,6 @@
 export const MODULE_NAME = "analytics";
 
+export * from "./attribution";
 export {
   type AccountInsightsResult,
   CollectAccountInsightsInput,
@@ -13,6 +14,7 @@ export {
   RequestMetricsInput,
   requestMetricsNow,
 } from "./collect";
+export * from "./experiments";
 export * from "./queries";
 export {
   AUTOMATIC_SLOTS,
@@ -26,3 +28,4 @@ export {
   type SnapshotSlotName,
   slotDueAt,
 } from "./slots";
+export * from "./summaries";

@@ -1,3 +1,4 @@
+import type { ArmChoice } from "@rc/modules/analytics";
 import type { VariantView } from "@rc/modules/content";
 import type { ReelView } from "@rc/modules/reels";
 import type { MarketInfo } from "@/components/calendar/calendar-dialogs";
@@ -17,6 +18,7 @@ import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
+import { ExperimentArmPicker } from "./experiment-arm-picker";
 import { ProgressPanel } from "./progress-panel";
 import { ReelCard, type ReelReviewProps } from "./reel-card";
 import { RegeneratePicturesButton } from "./regenerate-pictures-button";
@@ -73,6 +75,7 @@ export function VariantColumn({
   ctaTypes,
   publish,
   reel,
+  experiment,
 }: {
   variant: VariantView;
   cardTitles: ReadonlyMap<string, string>;
@@ -90,6 +93,8 @@ export function VariantColumn({
   };
   /** The Reel card of this market's post: absent in tests that do not show it. */
   reel?: { view: ReelView; canManage: boolean; review?: ReelReviewProps };
+  /** The experiment arm of this draft (M7-06); absent where experiments are not shown. */
+  experiment?: { choice: ArmChoice; canManage: boolean };
 }) {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
@@ -241,6 +246,16 @@ export function VariantColumn({
 
           {variant.commercial || variant.campaign ? (
             <CampaignPanel campaign={variant.campaign} />
+          ) : null}
+
+          {experiment ? (
+            <Section title={t.experiment}>
+              <ExperimentArmPicker
+                variantId={variant.id}
+                choice={experiment.choice}
+                canManage={experiment.canManage}
+              />
+            </Section>
           ) : null}
 
           <Section title={t.hashtags}>
