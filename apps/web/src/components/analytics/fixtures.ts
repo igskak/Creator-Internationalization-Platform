@@ -8,6 +8,7 @@ import type {
   Lineage,
   Operations,
   RankedPost,
+  StoredSummary,
   UnknownCampaign,
 } from "@rc/modules/analytics";
 
@@ -503,3 +504,73 @@ export const attributionImportsFixture = (): AttributionImportEntry[] => [
     report: null,
   },
 ];
+
+/** The Learning summary (M7-03): a summary of Spain as J15 stores it. */
+export const summaryFixture = (): StoredSummary => ({
+  id: "00000000-0000-4000-8000-0000000000f1",
+  marketId: "00000000-0000-4000-8000-0000000000e1",
+  createdAt: new Date("2026-10-12T04:11:00Z"),
+  memory: {
+    marketCode: "es-ES",
+    window: { from: "2026-08-18", to: "2026-10-12" },
+    basis: { publications: 24, metric: "D7", minSample: 3 },
+    topPatterns: [
+      {
+        dimension: "hook_type",
+        value: "QUESTION",
+        n: 7,
+        metric: "save_rate",
+        lift: 1.67,
+        confidence: "medium",
+      },
+      {
+        dimension: "daypart",
+        value: "EVENING",
+        n: 11,
+        metric: "share_rate",
+        lift: 1.3,
+        confidence: "high",
+      },
+    ],
+    weakPatterns: [
+      {
+        dimension: "hook_type",
+        value: "LIST",
+        n: 4,
+        metric: "save_rate",
+        lift: 0.67,
+        confidence: "low",
+      },
+    ],
+    overusedThemes: [
+      { category: "GRAINS_RICE_PASTA", count: 5, windowDays: 21 },
+      { category: "GRAINS_RICE_PASTA", angle: "COMMON_MISTAKE", count: 3, windowDays: 21 },
+    ],
+    coverageGaps: [{ category: "SAUCES", approvedCards: 9, postsLast30d: 0 }],
+    untestedHypotheses: [
+      { source: "visual_hypothesis", description: "Bright daylight photos (visual style BRIGHT)" },
+      { source: "hook_type", description: "Hook type MYTH has no post in the window." },
+    ],
+    offerPriorities: [
+      {
+        offerId: "00000000-0000-4000-8000-0000000000b1",
+        productCode: "rice-guide",
+        priority: 7,
+        leads: 12,
+        sales: 3,
+      },
+    ],
+    feedback: {
+      topRejectionReasons: [
+        { code: "WEAK_HOOK", count: 4 },
+        { code: "TRANSLATIONESE", count: 2 },
+      ],
+      mostEditedFields: [
+        { field: "hook", count: 6 },
+        { field: "slides.slots.title", count: 3 },
+      ],
+      hookRewrites: [{ original: "¿Lavas el arroz?", edited: "Nunca laves el arroz del risotto" }],
+    },
+    caveats: ["Only 24 posts; patterns are directional, not proof."],
+  },
+});

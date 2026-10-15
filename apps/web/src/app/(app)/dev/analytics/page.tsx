@@ -10,9 +10,11 @@ import {
   lineageFixture,
   operationsFixture,
   rankedFixture,
+  summaryFixture,
   unknownCampaignsFixture,
 } from "@/components/analytics/fixtures";
 import { LineageView } from "@/components/analytics/lineage";
+import { SummaryTab } from "@/components/analytics/summary";
 import { EngagementTab, GrowthTab, LearningTab, OperationsTab } from "@/components/analytics/tabs";
 import { getI18n } from "@/lib/i18n/server";
 import { requireUser } from "@/server/auth/session";
@@ -77,6 +79,17 @@ export default async function DevAnalyticsPage() {
             TRANSLATIONESE: "Translationese",
             VISUAL_ISSUE: "Visual issue",
           }}
+        />
+      </section>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold">{t.tabs.summary}</h2>
+        <SummaryTab
+          summary={summaryFixture()}
+          canBuild
+          labels={{ value: (_d, v) => labels.value(v) }}
+          reasonLabels={{ WEAK_HOOK: "Weak hook", TRANSLATIONESE: "Translationese" }}
+          t={t}
+          locale={locale}
         />
       </section>
       <section className="flex flex-col gap-4">

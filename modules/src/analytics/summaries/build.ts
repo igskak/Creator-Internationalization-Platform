@@ -497,8 +497,92 @@ export async function buildPerformanceSummary(
       minSample,
       publicationsCount: posts.length,
       createdByType: ctx.actor.type,
+      createdAt: now,
     })
     .returning({ id: schema.performanceSummaries.id });
   if (!row) throw new Error("performance summary: insert returned no row");
   return { summaryId: row.id, marketId: input.marketId, memory, stats: patterns.stats };
+}
+
+// --- J15 and the screen -------------------------------------------------------------------------
+
+/** A summary older than this is rebuilt before ideas are generated (06 J15). */
+export const SUMMARY_MAX_AGE_DAYS = 7;
+
+export const BuildSummariesPayload = z.object({
+  /** One market, null for the summary across markets, absent for every active market and `ALL`. */
+  marketId: z.uuid().nullable().optional(),
+  windowDays: z
+    .union([z.literal(28), z.literal(56), z.literal(90)])
+    .default(DEFAULT_SUMMARY_WINDOW),
+});
+
+/** J15: the summaries asked for; without a market, one per active market and one across them. */
+export async function buildPerformanceSummaries(
+  ctx: ServiceContext,
+  raw: z.input<typeof BuildSummariesPayload>,
+): Promise<{ summaries: { summaryId: string; marketCode: string; publications: number }[] }> {
+  const parsed = BuildSummariesPayload.safeParse(raw);
+  if (!parsed.success) throw ValidationError.fromZod(parsed.error);
+  const { marketId, windowDays } = parsed.data;
+  const targets: (string | null)[] =
+    marketId !== undefined
+      ? [marketId]
+      : [
+          ...(
+            await ctx.db
+              .select({ id: schema.markets.id })
+              .from(schema.markets)
+              .where(eq(schema.markets.isActive, true))
+              .orderBy(asc(schema.markets.sortOrder), asc(schema.markets.code))
+          ).map((m) => m.id),
+          null,
+        ];
+  const summaries = [];
+  for (const target of targets) {
+    const built = await buildPerformanceSummary(ctx, { marketId: target, windowDays });
+    summaries.push({
+      summaryId: built.summaryId,
+      marketCode: built.memory.marketCode,
+      publications: built.memory.basis.publications,
+    });
+  }
+  return { summaries };
+}
+
+export type StoredSummary = {
+  id: string;
+  marketId: string | null;
+  createdAt: Date;
+  memory: PerformanceMemory;
+};
+
+/** The newest summary of a market (null = the one across markets), or null when none exists. */
+export async function getLatestSummary(
+  ctx: ServiceContext,
+  marketId: string | null,
+): Promise<StoredSummary | null> {
+  const p = schema.performanceSummaries;
+  const [row] = await ctx.db
+    .select({ id: p.id, marketId: p.marketId, createdAt: p.createdAt, memory: p.summaryJson })
+    .from(p)
+    .where(marketId ? eq(p.marketId, marketId) : sql`${p.marketId} is null`)
+    .orderBy(desc(p.createdAt))
+    .limit(1);
+  return row ?? null;
+}
+
+/**
+ * Before ideas are generated (06 J15): when the summary across markets is missing or older than
+ * {@link SUMMARY_MAX_AGE_DAYS}, every summary is built again in-process (SQL only, a second or
+ * two). Returns whether it built.
+ */
+export async function ensureFreshSummaries(ctx: ServiceContext): Promise<boolean> {
+  const latest = await getLatestSummary(ctx, null);
+  const age = latest
+    ? ctx.clock.now().getTime() - latest.createdAt.getTime()
+    : Number.POSITIVE_INFINITY;
+  if (age <= SUMMARY_MAX_AGE_DAYS * DAY_MS) return false;
+  await buildPerformanceSummaries(ctx, {});
+  return true;
 }

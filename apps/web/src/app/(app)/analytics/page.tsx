@@ -3,6 +3,7 @@ import {
   getContentLearning,
   getEngagement,
   getGrowth,
+  getLatestSummary,
   getOperations,
   getRankedPosts,
   LEARNING_DIMENSIONS,
@@ -18,6 +19,7 @@ import { listTaxonomyTerms } from "@rc/modules/settings";
 import Link from "next/link";
 import { CommercialTab } from "@/components/analytics/commercial";
 import { ParamSelect } from "@/components/analytics/filters";
+import { SummaryTab } from "@/components/analytics/summary";
 import { EngagementTab, GrowthTab, LearningTab, OperationsTab } from "@/components/analytics/tabs";
 import {
   ANALYTICS_TABS,
@@ -149,6 +151,33 @@ export default async function AnalyticsPage({
             knownCampaigns={known}
             canEdit={user.role !== "chef"}
             isOwner={user.role === "owner"}
+            t={t}
+            locale={locale}
+          />
+        );
+      }
+      case "summary": {
+        const [summary, terms, reasonLabels] = await Promise.all([
+          getLatestSummary(ctx, selected?.id ?? null),
+          listTaxonomyTerms(ctx),
+          listReasonLabels(ctx),
+        ]);
+        const labels = {
+          value: (dimension: string, value: string): string => {
+            const kind = TAXONOMY_KIND[dimension];
+            if (kind) return terms.find((x) => x.kind === kind && x.code === value)?.label ?? value;
+            if (dimension === "daypart") {
+              return (t.learning.dayparts as Record<string, string>)[value] ?? value;
+            }
+            return value;
+          },
+        };
+        return (
+          <SummaryTab
+            summary={summary}
+            canBuild={user.role !== "chef"}
+            labels={labels}
+            reasonLabels={reasonLabels}
             t={t}
             locale={locale}
           />

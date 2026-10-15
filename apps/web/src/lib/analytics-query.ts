@@ -6,6 +6,7 @@ export const ANALYTICS_TABS = [
   "learning",
   "commercial",
   "operations",
+  "summary",
 ] as const;
 export type AnalyticsTab = (typeof ANALYTICS_TABS)[number];
 export const RANGES = ["7", "28", "90"] as const;

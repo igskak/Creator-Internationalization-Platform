@@ -8,9 +8,11 @@ import {
   ReassignCampaignInput,
   RecordAttributionInput,
   RequestMetricsInput,
+  RequestSummaryInput,
   reassignCampaign,
   recordAttributionEvent,
   requestMetricsNow,
+  requestPerformanceSummary,
 } from "@rc/modules/analytics";
 import { defineAction } from "./_define";
 
@@ -51,4 +53,12 @@ export const deleteAttributionEventAction = defineAction({
   input: DeleteAttributionInput,
   roles: ["owner"],
   handler: (ctx, input) => deleteAttributionEvent(ctx, input),
+});
+
+// The Learning summary's "Build now" (M7-03, plan 05 §5.10 buildPerformanceSummary): starts J15.
+export const buildPerformanceSummaryAction = defineAction({
+  name: "buildPerformanceSummary",
+  input: RequestSummaryInput,
+  roles: ["owner", "editor"],
+  handler: (ctx, input) => requestPerformanceSummary(ctx, input),
 });

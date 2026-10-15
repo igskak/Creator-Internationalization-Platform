@@ -4,9 +4,24 @@ import { PerformanceMemory as PerformanceMemorySchema } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
+import { ForbiddenError } from "@rc/lib/errors";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { type ReviewFixture, reviewFixture } from "../../content/variants/test-support";
-import { buildPerformanceSummary, fieldKind, fitSummary, MAX_SUMMARY_CHARS } from "./index";
+import {
+  type ReviewFixture,
+  recordingJobs,
+  reviewFixture,
+} from "../../content/variants/test-support";
+import {
+  buildPerformanceSummaries,
+  buildPerformanceSummary,
+  ensureFreshSummaries,
+  fieldKind,
+  fitSummary,
+  getLatestSummary,
+  MAX_SUMMARY_CHARS,
+  requestPerformanceSummary,
+  SUMMARY_MAX_AGE_DAYS,
+} from "./index";
 
 // The performance memory (M7-02) on fixture history with known answers: patterns and their lift,
 // the empty pattern lists below the data threshold, rates relative to each market across markets,
@@ -327,5 +342,57 @@ describe("summary helpers", () => {
         feedback: { ...memory.feedback, hookRewrites: [] },
       }).caveats,
     ).toEqual([]);
+  });
+});
+
+describe("J15 and the freshness check", () => {
+  let t: TestDb;
+  let fx: ReviewFixture;
+  let jobs: ReturnType<typeof recordingJobs>;
+
+  beforeEach(async () => {
+    t = await createTestDb();
+    await seedDatabase(t.db, { ownerEmails: ["owner@example.com"] });
+    jobs = recordingJobs();
+    fx = await reviewFixture(t.db, { jobs: jobs.runner });
+  });
+  afterEach(async () => {
+    await t.close();
+  });
+
+  it("builds one summary per active market and one across them", async () => {
+    const { summaries } = await buildPerformanceSummaries(fx.ctx, {});
+    const active = (await t.db.select().from(schema.markets))
+      .filter((m) => m.isActive)
+      .map((m) => m.code);
+    expect(summaries.map((s) => s.marketCode)).toEqual([...active, "ALL"]);
+    expect(await t.db.select().from(schema.performanceSummaries)).toHaveLength(active.length + 1);
+    const latest = await getLatestSummary(fx.ctx, null);
+    expect(latest?.memory.marketCode).toBe("ALL");
+  });
+
+  it("rebuilds before ideas only when the summary across markets is missing or a week old", async () => {
+    expect(await ensureFreshSummaries(fx.ctx)).toBe(true);
+    const count = async () => (await t.db.select().from(schema.performanceSummaries)).length;
+    const first = await count();
+    expect(await ensureFreshSummaries(fx.ctx)).toBe(false);
+    expect(await count()).toBe(first);
+    fx.clock.set(new Date(fx.clock.now().getTime() + (SUMMARY_MAX_AGE_DAYS + 1) * 86_400_000));
+    expect(await ensureFreshSummaries(fx.ctx)).toBe(true);
+    expect(await count()).toBe(first * 2);
+  });
+
+  it("starts J15 from the button (owners and editors), each click a run of its own", async () => {
+    await requestPerformanceSummary(fx.ctx, {});
+    await requestPerformanceSummary(fx.as("editor"), { windowDays: 28 });
+    expect(jobs.calls.map((c) => c.name)).toEqual([
+      "build-performance-summary",
+      "build-performance-summary",
+    ]);
+    expect(jobs.calls[1]?.payload).toEqual({ windowDays: 28 });
+    expect(jobs.calls[0]?.options?.idempotencyKey).not.toBe(jobs.calls[1]?.options?.idempotencyKey);
+    await expect(requestPerformanceSummary(fx.as("chef"), {})).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
   });
 });

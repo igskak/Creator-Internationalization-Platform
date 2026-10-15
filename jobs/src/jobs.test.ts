@@ -9,10 +9,12 @@ import { jobHandlers } from "@rc/modules/job-handlers";
 import { AbortTaskRunError } from "@trigger.dev/sdk";
 import { describe, expect, it } from "vitest";
 import { classifyJobError } from "./errors";
+import { buildPerformanceSummary } from "./tasks/build-performance-summary";
 import { checkAccountHealth } from "./tasks/check-account-health";
 import { collectAccountInsights } from "./tasks/collect-account-insights";
 import { collectInsights } from "./tasks/collect-insights";
 import { hello } from "./tasks/hello";
+import { importAttributionCsv } from "./tasks/import-attribution-csv";
 import { publishContent } from "./tasks/publish-content";
 import { publishDispatcher } from "./tasks/publish-dispatcher";
 import { refreshInstagramTokens } from "./tasks/refresh-instagram-tokens";
@@ -65,5 +67,13 @@ describe("tasks", () => {
     expect(checkAccountHealth.id).toBe("check-account-health");
     expect(collectInsights.id).toBe("collect-insights");
     expect(collectAccountInsights.id).toBe("collect-account-insights");
+  });
+
+  it("registers the analytics and learning tasks (J15, J18)", () => {
+    for (const registered of [buildPerformanceSummary, importAttributionCsv]) {
+      expect(Object.keys(jobHandlers)).toContain(registered.id);
+    }
+    expect(buildPerformanceSummary.id).toBe("build-performance-summary");
+    expect(importAttributionCsv.id).toBe("import-attribution-csv");
   });
 });

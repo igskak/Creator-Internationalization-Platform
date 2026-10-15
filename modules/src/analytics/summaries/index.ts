@@ -1,13 +1,20 @@
 export {
+  BuildSummariesPayload,
   BuildSummaryInput,
   type BuiltSummary,
+  buildPerformanceSummaries,
   buildPerformanceSummary,
   DEFAULT_MIN_POSTS_FOR_PATTERNS,
   DEFAULT_SUMMARY_WINDOW,
+  ensureFreshSummaries,
   fieldKind,
   findPatterns,
   fitSummary,
+  getLatestSummary,
   MAX_SUMMARY_CHARS,
+  type StoredSummary,
   SUMMARY_DIMENSIONS,
+  SUMMARY_MAX_AGE_DAYS,
   SUMMARY_WINDOWS,
 } from "./build";
+export { RequestSummaryInput, requestPerformanceSummary } from "./request";

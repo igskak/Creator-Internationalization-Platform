@@ -1,10 +1,13 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
 import {
+  BuildSummariesPayload,
+  buildPerformanceSummaries,
   CollectAccountInsightsInput,
   CollectInsightsInput,
   collectAccountInsights,
   collectInsights,
+  ensureFreshSummaries,
   ImportAttributionPayload,
   importAttributionCsv,
 } from "./analytics";
@@ -139,7 +142,14 @@ export const transcribePagesJob = defineJob({
  */
 export const generateIdeasJob = defineJob({
   payload: GenerateIdeasPayload,
-  run: (ctx, payload) => runGenerateIdeas(ctx, payload),
+  run: async (ctx, payload) => {
+    // J15 before J4 when the performance memory is more than a week old (06 §6.3). A failure here
+    // must not cost the ideas: they are made without a fresh summary.
+    await ensureFreshSummaries(ctx).catch((error: unknown) =>
+      ctx.logger.warn({ err: error }, "could not refresh the performance summaries"),
+    );
+    return runGenerateIdeas(ctx, payload);
+  },
 });
 
 /**
@@ -279,6 +289,15 @@ export const importAttributionCsvJob = defineJob({
 });
 
 /**
+ * J15 (plan 06 §6.3, 11 §11.5): the performance summaries, weekly (Monday 04:11 UTC), on request,
+ * and before ideas when they are older than a week. SQL only; every run stores new rows.
+ */
+export const buildPerformanceSummaryJob = defineJob({
+  payload: BuildSummariesPayload,
+  run: (ctx, payload) => buildPerformanceSummaries(ctx, payload),
+});
+
+/**
  * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
  * ones that were lost. It never fails the cron run for one bad publication.
  */
@@ -328,6 +347,7 @@ export const jobHandlers = {
   "collect-insights": collectInsightsJob,
   "collect-account-insights": collectAccountInsightsJob,
   "import-attribution-csv": importAttributionCsvJob,
+  "build-performance-summary": buildPerformanceSummaryJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,
