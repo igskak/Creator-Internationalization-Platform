@@ -14,6 +14,7 @@ export {
   type ContainerStatus,
   createCarouselContainer,
   createChildContainer,
+  createReelContainer,
   getContainerStatus,
   getFollowerCount,
   getMedia,

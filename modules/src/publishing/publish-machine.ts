@@ -12,6 +12,7 @@ import {
   createCarouselContainer,
   createChildContainer,
   createGraphClient,
+  createReelContainer,
   decryptAccessToken,
   describeInstagramError,
   type GraphCallRecord,
@@ -47,6 +48,8 @@ import {
 export const MAX_PUBLISH_ATTEMPTS = 5;
 /** How long Instagram may take to process a container (09 §9.4.1). */
 export const WAIT_READY_MAX_MS = 10 * 60_000;
+/** A Reel's video is downloaded and transcoded by Meta: it gets longer (18 §18.5). */
+export const WAIT_READY_REEL_MAX_MS = 15 * 60_000;
 const POLL_FAST_MS = 30_000;
 const POLL_SLOW_MS = 60_000;
 const POLL_FAST_UNTIL_MS = 3 * 60_000;
@@ -359,6 +362,10 @@ class Machine {
   // --- CREATE_PARENT ----------------------------------------------------------------------
 
   private async createParent(): Promise<void> {
+    if (!this.publication.igContainerId && this.pc.format === "REEL") {
+      const id = await this.createReel();
+      await this.save({ igContainerId: id, igContainerStatus: "IN_PROGRESS" });
+    }
     if (!this.publication.igContainerId) {
       await this.waitChildren();
       const id = await createCarouselContainer(this.graph(), this.account.instagramAccountId, {
@@ -370,6 +377,22 @@ class Machine {
       await this.save({ igContainerId: id, igContainerStatus: "IN_PROGRESS" });
     }
     await this.save({}, "WAIT_READY");
+  }
+
+  /** The Reel container: Meta fetches the approved video from a fresh presigned link (V-26). */
+  private async createReel(): Promise<string> {
+    const reel = this.pc.snapshot.reel;
+    if (!reel) throw new GuardFailure("VERSION_DAMAGED", "The approved Reel has no video.");
+    const { url } = await this.ctx.storage.presignGet(reel.videoKey, {
+      expiresInSeconds: PRESIGN_TTL.metaFetch,
+    });
+    return createReelContainer(this.graph(), this.account.instagramAccountId, {
+      videoUrl: url,
+      caption: this.pc.caption,
+      shareToFeed: true,
+      // Instagram's own "AI info" label, when the approved snapshot asks for it (V-16, V-25).
+      isAiGenerated: this.pc.snapshot.disclosure?.platformLabel === true,
+    });
   }
 
   /** Children are images and finish at once; a slow one is waited for a little, an errored one ends it. */
@@ -413,14 +436,23 @@ class Machine {
         await this.save({}, "PUBLISH");
         return undefined;
       }
-      if (status === "ERROR") throw new InstagramCallError(containerError(detail));
+      if (status === "ERROR") {
+        const error = containerError(detail);
+        // Meta fetches a Reel's video after it answers: a failed download gets one new link.
+        if (this.pc.format === "REEL" && isMediaFetchFailure(error)) {
+          await this.recreateAfterFetchError(error);
+          return undefined;
+        }
+        throw new InstagramCallError(error);
+      }
       if (status === "EXPIRED") {
         await this.recreateAfterExpiry();
         return undefined;
       }
-      if (waited >= WAIT_READY_MAX_MS) {
+      const maxWait = this.pc.format === "REEL" ? WAIT_READY_REEL_MAX_MS : WAIT_READY_MAX_MS;
+      if (waited >= maxWait) {
         throw new InstagramCallError({
-          message: "Instagram did not finish processing the post within 10 minutes.",
+          message: `Instagram did not finish processing the post within ${maxWait / 60_000} minutes.`,
           classification: "TRANSIENT",
         });
       }
@@ -458,6 +490,25 @@ class Machine {
       { igChildrenContainerIds: [], igContainerId: null, igContainerStatus: null },
       "CREATE_CHILDREN",
     );
+  }
+
+  /** A Reel whose video Meta could not fetch is made again once, with a new link; then it fails. */
+  private async recreateAfterFetchError(error: InstagramError): Promise<void> {
+    const [errored] = await this.ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(schema.publishAttempts)
+      .where(
+        and(
+          eq(schema.publishAttempts.publicationId, this.publication.id),
+          sql`${schema.publishAttempts.response}->>'status_code' = 'ERROR'`,
+        ),
+      );
+    if ((errored?.n ?? 0) > 1) throw new InstagramCallError(error);
+    this.ctx.logger.warn(
+      { publicationId: this.publication.id },
+      "Reel video fetch failed, making the container again",
+    );
+    await this.save({ igContainerId: null, igContainerStatus: null }, "CREATE_PARENT");
   }
 
   private async finishDryRun(): Promise<void> {

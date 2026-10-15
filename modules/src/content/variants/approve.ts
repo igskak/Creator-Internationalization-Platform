@@ -10,6 +10,7 @@ import { planCampaign } from "../../offers";
 import { planDisclosure } from "../../visuals";
 import { contentOf } from "./content";
 import { staleLockError, validateDraftContent } from "./edit";
+import { approveReelVariant, verifyApprovedReelVersion } from "./reel";
 import { currentRenderState } from "./render-state";
 import { approvalBlockers, approvalChecklist, assertTransition } from "./state";
 import { transitionVariant } from "./transition";
@@ -85,6 +86,12 @@ export async function approveVariant(
     .where(eq(schema.contentVariants.id, input.variantId));
   if (!variant) throw new NotFoundError("Variant not found.", { details: { id: input.variantId } });
   assertTransition(variant.status, "APPROVE");
+  if (variant.format === "REEL") {
+    return approveReelVariant(ctx, variant, input, {
+      hashSnapshot,
+      checkTicked: (items) => checkTicked(items, input.checklist),
+    });
+  }
   if (variant.lockVersion !== input.lockVersion) throw await staleLockError(ctx, variant);
   const content = contentOf(variant);
   if (!content) throw new InvalidStateError("There is no draft to approve yet.");
@@ -235,22 +242,27 @@ export async function verifyApprovedVersion(
     .from(schema.contentVariantVersions)
     .where(eq(schema.contentVariantVersions.id, versionId));
   if (!version) throw new NotFoundError("Version not found.", { details: { versionId } });
+  if (version.reelRenderId) return verifyApprovedReelVersion(ctx, version, hashSnapshot);
   const problems: string[] = [];
+  if (!version.carouselRenderId) {
+    return { ok: false, problems: ["The version names no render."] };
+  }
+  const carouselRenderId = version.carouselRenderId;
   if (hashSnapshot(version.snapshot) !== version.contentHash) {
     problems.push("The stored hash does not match the snapshot.");
   }
-  if (version.snapshot.renderId !== version.carouselRenderId) {
+  if (version.snapshot.renderId !== carouselRenderId) {
     problems.push("The snapshot names another render than the version.");
   }
   const [render] = await ctx.db
     .select()
     .from(schema.carouselRenders)
-    .where(eq(schema.carouselRenders.id, version.carouselRenderId));
+    .where(eq(schema.carouselRenders.id, carouselRenderId));
   if (!render || render.status !== "READY") problems.push("The render is missing or not READY.");
   const files = await ctx.db
     .select({ key: schema.renderedSlides.storageKey })
     .from(schema.renderedSlides)
-    .where(eq(schema.renderedSlides.carouselRenderId, version.carouselRenderId))
+    .where(eq(schema.renderedSlides.carouselRenderId, carouselRenderId))
     .orderBy(asc(schema.renderedSlides.slideIndex));
   if (
     JSON.stringify(files.map((f) => f.key)) !== JSON.stringify(version.snapshot.renderedSlideKeys)

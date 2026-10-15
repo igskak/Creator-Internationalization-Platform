@@ -425,9 +425,10 @@ export const contentVariantVersions = pgTable(
       .references(() => contentVariants.id),
     versionNo: integer().notNull(),
     snapshot: jsonb().$type<ApprovedSnapshot>().notNull(),
-    carouselRenderId: uuid()
-      .notNull()
-      .references(() => carouselRenders.id),
+    /** The carousel's render; null for a Reel (0010, M8-09). */
+    carouselRenderId: uuid().references(() => carouselRenders.id),
+    /** The Reel's render; null for a carousel. Exactly one of the two is set (0010, M8-09). */
+    reelRenderId: uuid().references((): AnyPgColumn => reelRenders.id),
     /** Hash of the snapshot content; the render's input hash is bound to it. */
     contentHash: text().notNull(),
     approvedBy: uuid()
@@ -435,7 +436,13 @@ export const contentVariantVersions = pgTable(
       .references(() => appUsers.id),
     approvedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("content_variant_versions_variant_no_uq").on(t.contentVariantId, t.versionNo)],
+  (t) => [
+    unique("content_variant_versions_variant_no_uq").on(t.contentVariantId, t.versionNo),
+    check(
+      "content_variant_versions_render_check",
+      sql`(${t.carouselRenderId} is null) <> (${t.reelRenderId} is null)`,
+    ),
+  ],
 ).enableRLS();
 
 /** P1 [S§20: Sergey's edits]. */

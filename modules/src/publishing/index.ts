@@ -45,6 +45,7 @@ export {
   type G2Readiness,
   type G2State,
 } from "./g2";
+export { checkG3Readiness, formatG3Readiness, type G3Item, type G3Readiness } from "./g3";
 export {
   getPublishingStatus,
   type PublishingStatus,

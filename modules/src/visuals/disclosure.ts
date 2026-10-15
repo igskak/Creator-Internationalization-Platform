@@ -71,3 +71,34 @@ export async function planDisclosure(
       return { mode: "PLATFORM_LABEL", platformLabel: true };
   }
 }
+
+/** The note under a Reel: its video is always made by an AI video model. */
+export const REEL_DISCLOSURE_NOTES: Record<string, string> = {
+  es: "Vídeo creado con IA.",
+  en: "Video created with AI.",
+  ru: "Видео создано с помощью ИИ.",
+};
+
+/**
+ * The disclosure of a Reel (M8-09). Every shot of a Reel is generated, so the market's setting
+ * always applies. A badge cannot be added to a video after the fact, so SLIDE_BADGE becomes the
+ * caption note for a Reel.
+ */
+export async function planReelDisclosure(
+  ctx: ServiceContext,
+  input: { marketId: string },
+): Promise<SnapshotDisclosure | undefined> {
+  const [market] = await ctx.db
+    .select({
+      mode: schema.markets.aiImageryDisclosure,
+      language: schema.markets.language,
+    })
+    .from(schema.markets)
+    .where(eq(schema.markets.id, input.marketId));
+  if (!market || market.mode === "NONE") return undefined;
+  if (market.mode === "PLATFORM_LABEL") return { mode: "PLATFORM_LABEL", platformLabel: true };
+  return {
+    mode: "CAPTION_NOTE",
+    captionNote: REEL_DISCLOSURE_NOTES[market.language] ?? (REEL_DISCLOSURE_NOTES.en as string),
+  };
+}

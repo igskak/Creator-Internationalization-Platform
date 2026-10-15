@@ -5,6 +5,9 @@ import { DownloadIcon, FilmIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { MarketInfo } from "@/components/calendar/calendar-dialogs";
+import { PublishPanel } from "@/components/publishing/publish-panel";
+import { PUBLISHABLE_STATUSES } from "@/components/publishing/statuses";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,17 +22,21 @@ import {
 import { useAction } from "@/hooks/use-action";
 import { format } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
+import type { VariantPublicationsDto } from "@/lib/publication-dto";
 import {
   changeReelHook,
   estimateReel,
   generateReel,
   regenerateReelShot,
 } from "@/server/actions/reels";
+import { VariantActions } from "./variant-actions";
+import { VariantProvider } from "./variant-state";
 
 // The Reel card of a market's column (plan 18 §18.2, M8-07): the Generate Reel button with its
 // estimate dialog, the progress of a Reel being made, and, once it exists, the video, the hook
-// options, the scenes with their shots, the cost and the download. Approval and publishing come
-// with M8-09. The page refreshes while the Reel is made (ReviewPoller).
+// options, the scenes with their shots, the cost and the download; then (M8-09) approve, reject,
+// request changes and, once approved, the same publishing panel as a carousel (schedule, publish
+// now, dry run). The page refreshes while the Reel is made (ReviewPoller).
 
 type Detail = NonNullable<ReelView["reel"]>;
 type ModelId = keyof ReelView["estimates"];
@@ -420,7 +427,70 @@ function Ready({ view, reel, canManage }: { view: ReelView; reel: Detail; canMan
   );
 }
 
-export function ReelCard({ view, canManage }: { view: ReelView; canManage: boolean }) {
+/** What the Reel's review block needs from the page: reasons for the dialogs, publishing facts. */
+export type ReelReviewProps = {
+  reasons: { code: string; label: string }[];
+  flagLabels: Record<string, string>;
+  publish?: {
+    ideaId: string;
+    market: MarketInfo;
+    canManage: boolean;
+    publications: VariantPublicationsDto;
+  };
+};
+
+/** Approve, reject, request changes; then schedule and publish, like a carousel. */
+function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps }) {
+  const { messages } = useI18n();
+  const t = messages.review.reel.review;
+  const { publish } = review;
+  const hook = reel.script?.hookOptions.find((h) => h.id === reel.script?.chosenHookId)?.card;
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border p-3" data-testid="reel-review">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-medium">{t.title}</h4>
+        <Badge variant="outline">
+          {format(t.status, {
+            status: (messages.review.status as Record<string, string>)[reel.status] ?? reel.status,
+          })}
+        </Badge>
+      </div>
+      <VariantProvider
+        variantId={reel.variantId}
+        lockVersion={reel.lockVersion}
+        editBlocker={null}
+        confirmKind={null}
+        reasons={review.reasons}
+        templates={{}}
+        regenerations={[]}
+      >
+        <VariantActions allowed={reel.allowed} flagLabels={review.flagLabels} kind="reel" />
+        {publish && PUBLISHABLE_STATUSES.includes(reel.status) ? (
+          <PublishPanel
+            variantId={reel.variantId}
+            ideaId={publish.ideaId}
+            title={`${messages.review.reel.title}: ${hook ? plain(hook) : publish.market.name}`}
+            variantStatus={reel.status}
+            market={publish.market}
+            canManage={publish.canManage}
+            publications={publish.publications}
+          />
+        ) : null}
+      </VariantProvider>
+    </div>
+  );
+}
+
+export function ReelCard({
+  view,
+  canManage,
+  review,
+}: {
+  view: ReelView;
+  canManage: boolean;
+  /** Absent in tests that only look at generating. */
+  review?: ReelReviewProps;
+}) {
   const t = useI18n().messages.review.reel;
   const reel = view.reel;
   const failed = reel !== null && reel.status === "DRAFT" && reel.lastError !== null;
@@ -459,6 +529,10 @@ export function ReelCard({ view, canManage }: { view: ReelView; canManage: boole
 
       {reel && !generating && !queued && !failed ? (
         <Ready view={view} reel={reel} canManage={canManage} />
+      ) : null}
+
+      {reel && review && !generating && !queued && reel.script ? (
+        <ReelReview reel={reel} review={review} />
       ) : null}
 
       {!generating && !queued ? (

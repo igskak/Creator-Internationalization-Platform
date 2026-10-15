@@ -12,7 +12,12 @@ import { embedAndSuggest, indexSourceChunks } from "./knowledge/embedding";
 import { canProcessWithAI } from "./knowledge/rights";
 import { completeSourceUpload, createSourceUpload, getSourceReport } from "./knowledge/sources";
 import { transcribeSourcePages } from "./knowledge/transcription";
-import { checkG2Readiness, formatG2Readiness } from "./publishing";
+import {
+  checkG2Readiness,
+  checkG3Readiness,
+  formatG2Readiness,
+  formatG3Readiness,
+} from "./publishing";
 import { listAppSettings, setAppSetting } from "./settings";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -87,6 +92,14 @@ export const cliCommands: CliCommands = {
     usage: "g2-check",
     run: async (ctx) => {
       console.log(formatG2Readiness(await checkG2Readiness(ctx)));
+    },
+  },
+  "g3-check": {
+    description:
+      "What the database says about Gate G3, the first live Reel (Reel dry runs, approved Reels, live Reels)",
+    usage: "g3-check",
+    run: async (ctx) => {
+      console.log(formatG3Readiness(await checkG3Readiness(ctx)));
     },
   },
   "voice-import": {

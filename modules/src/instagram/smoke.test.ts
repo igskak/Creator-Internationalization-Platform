@@ -60,6 +60,47 @@ describe("Instagram smoke test", () => {
     await t.close();
   });
 
+  it("a Reel dry run makes a REELS container from a presigned mp4 and posts nothing", async () => {
+    const report = await runInstagramSmoke(ctx, {
+      socialAccountId: accountId,
+      live: false,
+      slides: [],
+      video: new Uint8Array([0, 0, 0, 24]),
+    });
+    expect(report.passed).toBe(true);
+    expect(report.reel).toBe(true);
+    expect(report.steps.map((s) => s.name)).toEqual([
+      "environment",
+      "token and profile",
+      "publishing limit",
+      "reel container",
+      "container ready",
+      "publish",
+      "permalink",
+      "insights",
+    ]);
+    const post = mock.calls.find((c) => c.method === "POST" && c.path.endsWith("/media"));
+    expect(post?.body).toMatchObject({ media_type: "REELS", share_to_feed: true });
+    expect(String(post?.body.video_url)).toContain("reel.mp4");
+    expect(report.findings.join("\n")).toMatch(/V-26: Meta downloaded the video/);
+    expect(mock.publishedMedia()).toHaveLength(0);
+    expect(storage.keys()).toEqual([]);
+    expect(formatSmokeReport(report)).toContain("smoke test (Reel)");
+  });
+
+  it("a Reel whose video Meta cannot fetch fails with the V-26 hint", async () => {
+    mock.options.unfetchableUrlPart = "reel.mp4";
+    const report = await runInstagramSmoke(ctx, {
+      socialAccountId: accountId,
+      live: false,
+      slides: [],
+      video: new Uint8Array([0, 0, 0, 24]),
+    });
+    expect(report.passed).toBe(false);
+    expect(report.steps.at(-1)).toMatchObject({ name: "container ready", ok: false });
+    expect(report.findings.join("\n")).toMatch(/V-26: the REELS container ended ERROR.*2207052/);
+  });
+
   it("a dry run goes as far as the finished container and posts nothing", async () => {
     const report = await runInstagramSmoke(ctx, {
       socialAccountId: accountId,

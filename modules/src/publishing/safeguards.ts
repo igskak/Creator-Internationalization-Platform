@@ -27,6 +27,8 @@ export const GUARD_CODES = [
   "VERSION_DAMAGED",
   "SLIDES_INVALID",
   "IMAGE_CHANGED",
+  "VIDEO_INVALID",
+  "VIDEO_CHANGED",
   "NO_ACCOUNT",
   "ACCOUNT_NOT_ACTIVE",
   "TOKEN_NOT_VALID",
@@ -58,6 +60,8 @@ export type PublishContext = {
   variant: Variant;
   version: typeof schema.contentVariantVersions.$inferSelect;
   snapshot: ApprovedSnapshot;
+  /** CAROUSEL posts slides; REEL posts the approved video (`snapshot.reel`). */
+  format: "CAROUSEL" | "REEL";
   slides: RenderedSlide[];
   account: SocialAccount | null;
   caption: string;
@@ -82,11 +86,13 @@ export async function loadPublishContext(
     .from(schema.contentVariantVersions)
     .where(eq(schema.contentVariantVersions.id, publication.contentVariantVersionId));
   if (!variant || !version) throw new NotFoundError("The post's variant or version is missing.");
-  const slides = await ctx.db
-    .select()
-    .from(schema.renderedSlides)
-    .where(eq(schema.renderedSlides.carouselRenderId, version.carouselRenderId))
-    .orderBy(asc(schema.renderedSlides.slideIndex));
+  const slides = version.carouselRenderId
+    ? await ctx.db
+        .select()
+        .from(schema.renderedSlides)
+        .where(eq(schema.renderedSlides.carouselRenderId, version.carouselRenderId))
+        .orderBy(asc(schema.renderedSlides.slideIndex))
+    : [];
   let account: SocialAccount | null = null;
   if (publication.socialAccountId) {
     [account = null] = await ctx.db
@@ -99,6 +105,7 @@ export async function loadPublishContext(
     variant,
     version,
     snapshot: version.snapshot,
+    format: version.reelRenderId ? "REEL" : "CAROUSEL",
     slides,
     account,
     caption: composeCaption(version.snapshot),
@@ -229,6 +236,7 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
  * and each stored file is the one that was rendered (its SHA-256 matches `rendered_slides`).
  */
 export async function checkMedia(ctx: ServiceContext, pc: PublishContext): Promise<void> {
+  if (pc.format === "REEL") return checkReelMedia(ctx, pc);
   const check = await verifyApprovedVersion(ctx, pc.version.id);
   if (!check.ok) {
     refuse(
@@ -268,6 +276,59 @@ export async function checkMedia(ctx: ServiceContext, pc: PublishContext): Promi
         `The image of slide ${slide.slideIndex + 1} is not the one that was rendered and approved.`,
       );
     }
+  }
+}
+
+/** Instagram's Reel rules (V-25, checked 2026-10-15). Our renderer makes 1080×1920, 12–30 s. */
+export const REEL_LIMITS = {
+  minDurationMs: 3_000,
+  maxDurationMs: 15 * 60_000,
+  maxBytes: 300 * 1024 * 1024,
+  maxWidth: 1920,
+  /** Width / height: 9:16 is what we make and what Instagram recommends. */
+  aspect: 9 / 16,
+} as const;
+
+/**
+ * The approved Reel: the version is intact, the video is within Instagram's limits (V-25), and the
+ * stored file is the one that was approved (its size and SHA-256 match the snapshot).
+ */
+export async function checkReelMedia(ctx: ServiceContext, pc: PublishContext): Promise<void> {
+  const check = await verifyApprovedVersion(ctx, pc.version.id);
+  if (!check.ok) {
+    refuse(
+      "VERSION_DAMAGED",
+      `The approved version does not match its video: ${check.problems.join(" ")}`,
+    );
+  }
+  const reel = pc.snapshot.reel;
+  if (!reel) return refuse("VERSION_DAMAGED", "The approved Reel has no video in its snapshot.");
+  if (reel.durationMs < REEL_LIMITS.minDurationMs || reel.durationMs > REEL_LIMITS.maxDurationMs) {
+    refuse(
+      "VIDEO_INVALID",
+      `A Reel must last 3 seconds to 15 minutes, this one lasts ${(reel.durationMs / 1000).toFixed(1)} s.`,
+    );
+  }
+  if (
+    reel.width > REEL_LIMITS.maxWidth ||
+    Math.abs(reel.width / reel.height - REEL_LIMITS.aspect) > 0.01
+  ) {
+    refuse(
+      "VIDEO_INVALID",
+      `The Reel is ${reel.width}×${reel.height}, it must be 9:16 (1080×1920).`,
+    );
+  }
+  if (reel.bytes > REEL_LIMITS.maxBytes) refuse("VIDEO_INVALID", "The Reel is larger than 300 MB.");
+  const info = await ctx.storage.head(reel.videoKey);
+  if (!info) refuse("VIDEO_CHANGED", "The Reel's video is missing from storage.");
+  if (info?.size !== undefined && info.size !== reel.bytes) {
+    refuse("VIDEO_CHANGED", "The Reel's video in storage is not the one that was approved.");
+  }
+  const digest = createHash("sha256")
+    .update(await ctx.storage.getBytes(reel.videoKey))
+    .digest("hex");
+  if (digest !== reel.sha256) {
+    refuse("VIDEO_CHANGED", "The Reel's video in storage is not the one that was approved.");
   }
 }
 

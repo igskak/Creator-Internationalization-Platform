@@ -71,6 +71,13 @@
       "when": 1791959179909,
       "tag": "0009_reels",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792060295907,
+      "tag": "0010_reel_versions",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { schema } from "@rc/db";
 import type { Slide } from "@rc/db/json";
@@ -13,7 +14,12 @@ import {
   reviewFixture,
   testLogger,
 } from "../../content/variants/test-support";
-import { createServiceContext, type JobRunner, type ServiceContext } from "../../core";
+import {
+  createServiceContext,
+  type InstagramRuntime,
+  type JobRunner,
+  type ServiceContext,
+} from "../../core";
 import type { AssembledReel, AssembleInput } from "../render";
 import { assemblyInputHash } from "../render";
 
@@ -56,10 +62,16 @@ const png = (color: string) =>
     .png()
     .toBuffer();
 
-export async function reelFixture(db: Db): Promise<ReelFixture> {
+export async function reelFixture(
+  db: Db,
+  options: { instagram?: InstagramRuntime } = {},
+): Promise<ReelFixture> {
   if (!POST) throw new Error("missing synthetic post");
   const jobs = recordingJobs();
-  const fx = await reviewFixture(db, { jobs: jobs.runner });
+  const fx = await reviewFixture(db, {
+    jobs: jobs.runner,
+    ...(options.instagram ? { instagram: options.instagram } : {}),
+  });
   const { variantId: carouselId } = await fx.makeVariant({ status: "READY_FOR_REVIEW" });
   const [brand] = await db.select().from(schema.brands);
 
@@ -155,7 +167,8 @@ export function stubAssemble() {
       width: 1080,
       height: 1920,
       bytes: 10,
-      sha256: "f".repeat(64),
+      // The real hash of the bytes written above, so the publisher's file check passes.
+      sha256: createHash("sha256").update("reel-bytes").digest("hex"),
       qa: {
         durationMs: 14_880,
         width: 1080,
