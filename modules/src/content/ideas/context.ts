@@ -8,6 +8,7 @@ import {
   candidatePool,
   recentPrimaryCardIds,
 } from "../../knowledge/retrieval";
+import { categoryWeightsFrom, findCoverageGaps, findOverusedThemes } from "./overuse";
 
 // Context of one idea-generation call (plan 07 §7.6.1, §7.9.1, M2-06): the card pool, the ideas of
 // the last 60 days, the active offers by priority, the market notes and the taxonomy.
@@ -74,10 +75,15 @@ export async function buildIdeaContext(
   ctx: ServiceContext,
   options: IdeaContextOptions,
 ): Promise<IdeaContext> {
+  // M7-05: overused categories are drawn less, neglected ones more; weights given by the caller win.
+  const categoryWeights = {
+    ...categoryWeightsFrom(await findOverusedThemes(ctx), await findCoverageGaps(ctx)),
+    ...options.categoryWeights,
+  };
   const pool = await candidatePool(ctx, {
     ...(options.categories ? { categories: options.categories } : {}),
     ...(options.language ? { language: options.language } : {}),
-    ...(options.categoryWeights ? { categoryWeights: options.categoryWeights } : {}),
+    categoryWeights,
     recentlyUsedIds: await recentPrimaryCardIds(ctx),
   });
   if (pool.cards.length === 0) {

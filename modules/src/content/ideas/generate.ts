@@ -5,6 +5,8 @@ import { runStage, STAGE_CONFIG, type StageStatus } from "../../ai";
 import type { ServiceContext } from "../../core";
 import { ideasUseMemory, latestMemory, memoryForIdeas } from "../learning";
 import { buildIdeaContext, type IdeaContextOptions } from "./context";
+import { diversifyIdeas, overAsk } from "./diversity";
+import { findOverusedThemes } from "./overuse";
 import { type DroppedIdea, dropNearDuplicates, validateIdeaOutput } from "./validate";
 
 type Output = ideaGenerator.IdeaGeneratorOutput;
@@ -16,6 +18,8 @@ export type IdeaDraftsResult = {
   ideas: ideaGenerator.IdeaDraft[];
   /** Ideas left out because they repeat a recent idea or an earlier one of the batch. */
   dropped: DroppedIdea[];
+  /** Valid ideas beyond the count asked for that the diversity pick left out (M7-05). */
+  notPicked: ideaGenerator.IdeaDraft[];
   /** Non-blocking issues of the answer (blocking ones when the status is INVALID_OUTPUT). */
   issues: ValidationIssue[];
   runIds: string[];
@@ -49,8 +53,11 @@ export async function generateIdeaDrafts(
   const { promptVersion = STAGE_CONFIG.IDEA_GENERATION.version, ...contextOptions } = options;
   // The memory across markets goes only to a version that has the rules for it (M7-04).
   const memory = ideasUseMemory(promptVersion) ? await latestMemory(ctx, null) : null;
+  // M7-05: ask for a few more ideas than wanted; the most diverse `count` are kept below.
+  const wanted = contextOptions.count;
   const { input, pool } = await buildIdeaContext(ctx, {
     ...contextOptions,
+    count: overAsk(wanted),
     ...(memory ? { performanceMemory: memoryForIdeas(memory.memory) } : {}),
   });
   const cardIds = input.cards.map((c) => c.id);
@@ -82,12 +89,16 @@ export async function generateIdeaDrafts(
     performanceSummaryId: memory?.summaryId ?? null,
     context,
   };
-  if (!stage.data) return { ...base, ideas: [], dropped: [] };
+  if (!stage.data) return { ...base, ideas: [], dropped: [], notPicked: [] };
 
   const { kept, dropped } = await dropNearDuplicates(
     ctx.embeddings,
     stage.data.ideas,
     input.recentIdeas.map((i) => i.coreMessage),
   );
-  return { ...base, ideas: kept, dropped };
+  const diverse = await diversifyIdeas(ctx.embeddings, kept, {
+    count: wanted,
+    overused: await findOverusedThemes(ctx),
+  });
+  return { ...base, ideas: diverse.kept, dropped, notPicked: diverse.left };
 }

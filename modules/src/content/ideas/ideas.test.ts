@@ -521,6 +521,19 @@ describe("idea context and generation", () => {
       expect(runs.map((r) => r.promptVersion).sort()).toEqual([2, 3]);
     });
 
+    it("asks for a third more ideas and keeps the most diverse batch of the size asked (M7-05)", async () => {
+      const ids = [await addCard(), await addCard(), await addCard()];
+      respond = () => answerFor(ids, [{}, {}, {}]);
+      const result = await generateIdeaDrafts(ctx, { count: 2 });
+      expect(JSON.stringify(llm.calls[0]?.messages)).toContain("Propose up to 3 Master Ideas");
+      expect(result.ideas).toHaveLength(2);
+      expect(result.notPicked).toHaveLength(1);
+      // The kept ones stay in the model's order.
+      const order = ["Idea 1", "Idea 2", "Idea 3"];
+      const kept = result.ideas.map((i) => order.indexOf(i.topic));
+      expect(kept).toEqual([...kept].sort((a, b) => a - b));
+    });
+
     it("does not use a summary older than a month", async () => {
       const ids = [await addCard()];
       respond = () => answerFor(ids);
