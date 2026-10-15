@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -5,9 +6,20 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { defaultExec } from "../render/exec";
 import { createE2eVideo } from "./e2e-video";
 
-// The E2E video provider: real, playable clips, a different one per shot. Needs ffmpeg and ffprobe.
+// The E2E video provider: real, playable clips, a different one per shot. Needs ffmpeg and ffprobe
+// (skipped where they are missing, like the other tests that run ffmpeg).
 
-describe("createE2eVideo", () => {
+const haveFfmpeg = (() => {
+  try {
+    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" });
+    execFileSync("ffprobe", ["-version"], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
+describe.skipIf(!haveFfmpeg)("createE2eVideo", () => {
   let dir: string;
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), "e2e-video-test-"));
