@@ -15,6 +15,20 @@ export {
   SCORE_WEIGHTS,
 } from "./policy";
 export {
+  buildDraftProgress,
+  type DraftProgress,
+  getActivity,
+  getDraftProgress,
+  PROGRESS_STEPS,
+  type ProgressFacts,
+  type ProgressPhase,
+  type ProgressStep,
+  type ProgressStepKey,
+  STALL_AFTER_MS,
+  type StepState,
+  usualDraftDurationMs,
+} from "./progress";
+export {
   GenerateContentPayload,
   GenerateVariantsInput,
   MAX_VARIANTS_PER_RUN,

@@ -230,6 +230,8 @@ export const PipelineState = z.object({
   pipelineRunId: z.string().min(1),
   stage: z.string().min(1),
   startedAt: z.string().min(1),
+  /** When a stage last finished (ISO); the progress panel's "nothing moved for a while" reads it. */
+  updatedAt: z.string().min(1).optional(),
   completedStages: z.array(z.string()),
   runIds: z.record(z.string(), z.string()),
 });

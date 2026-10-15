@@ -1,5 +1,5 @@
 import { NotFoundError } from "@rc/lib/errors";
-import { getReviewBundle } from "@rc/modules/content";
+import { getDraftProgress, getReviewBundle, usualDraftDurationMs } from "@rc/modules/content";
 import { listMarkets } from "@rc/modules/localization";
 import { listVariantPublications } from "@rc/modules/publishing";
 import { getReelViews } from "@rc/modules/reels";
@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/knowledge/cards-states";
 import { GenerateDraftsButton } from "@/components/review/generate-drafts-button";
+import { ReviewProgressProvider } from "@/components/review/progress-state";
 import { RegenerateAllDialog } from "@/components/review/regenerate-all-dialog";
 import { ReviewPoller } from "@/components/review/review-poller";
 import { VariantColumn } from "@/components/review/variant-column";
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { format } from "@/lib/i18n/format";
 import { getI18n } from "@/lib/i18n/server";
+import { isActive } from "@/lib/progress-model";
 import { toVariantPublicationsDto } from "@/lib/publication-dto";
 import { requireUser } from "@/server/auth/session";
 import { requestContext } from "@/server/context";
@@ -45,7 +47,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     listTaxonomyTerms(ctx),
   ]);
   const { idea: detail, variants, costUsd } = bundle;
-  const [markets, publications, reels] = await Promise.all([
+  const [markets, publications, reels, progress, usualMs] = await Promise.all([
     listMarkets(ctx),
     listVariantPublications(
       ctx,
@@ -55,7 +57,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
       ctx,
       variants.map((v) => v.id),
     ),
+    getDraftProgress(ctx, ideaId),
+    usualDraftDurationMs(ctx),
   ]);
+  const busy = progress.some(isActive);
   // The Reels' own posts (M8-09): a Reel is scheduled and published like its carousel.
   const reelPublications = await listVariantPublications(
     ctx,
@@ -135,167 +140,181 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
   const generationVersion = variants.find((v) => v.generationVersion)?.generationVersion;
 
   return (
-    <main className="flex flex-col gap-4 p-6">
-      <Link
-        href={`/content/ideas/${idea.id}`}
-        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {t.back}
-      </Link>
+    <ReviewProgressProvider
+      ideaId={idea.id}
+      initial={progress}
+      usualMs={usualMs}
+      shown={Object.fromEntries(variants.map((v) => [v.id, v.status]))}
+    >
+      <main className="flex flex-col gap-4 p-6">
+        <Link
+          href={`/content/ideas/${idea.id}`}
+          className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeftIcon aria-hidden="true" className="size-4" />
+          {t.back}
+        </Link>
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold">{idea.topic}</h1>
-          <p className="text-muted-foreground">{t.subtitle}</p>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <Badge variant="outline">{idea.status}</Badge>
-            <span className="text-muted-foreground">
-              {label("category", idea.category)} · {label("angle", idea.angle)}
-            </span>
-            {product ? <Badge variant="secondary">{product.name}</Badge> : null}
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-semibold">{idea.topic}</h1>
+            <p className="text-muted-foreground">{t.subtitle}</p>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <Badge variant="outline">{idea.status}</Badge>
+              <span className="text-muted-foreground">
+                {label("category", idea.category)} · {label("angle", idea.angle)}
+              </span>
+              {product ? <Badge variant="secondary">{product.name}</Badge> : null}
+            </div>
           </div>
-        </div>
-        {variants.length > 0 ? (
-          <RegenerateAllDialog ideaId={idea.id} reasons={reasons} disabled={!canRegenerate} />
-        ) : null}
-      </header>
+          {variants.length > 0 ? (
+            <RegenerateAllDialog
+              ideaId={idea.id}
+              reasons={reasons}
+              disabled={!canRegenerate}
+              disabledReason={busy ? t.progress.busy : undefined}
+            />
+          ) : null}
+        </header>
 
-      <ReviewPoller
-        variants={[
-          ...variants.map((v) => ({
-            id: v.id,
-            status: v.status,
-            inProgress:
-              v.status === "GENERATING" || (v.status === "DRAFT" && !v.hasContent && !v.lastError),
-            rendering: v.render.state === "RENDERING" || v.render.state === "STALE",
-          })),
-          // A Reel being made (or waiting for its job) is polled like a draft; a video that is
-          // being rebuilt refreshes the page.
-          ...Object.values(reels).flatMap((view) =>
-            view.reel
-              ? [
-                  {
-                    id: view.reel.variantId,
-                    status: view.reel.status,
-                    inProgress:
-                      view.reel.status === "GENERATING" ||
-                      (view.reel.status === "DRAFT" && !view.reel.script && !view.reel.lastError),
-                    rendering:
-                      view.reel.render.state === "RENDERING" || view.reel.render.state === "STALE",
-                  },
-                ]
-              : [],
-          ),
-        ]}
-      />
+        <ReviewPoller
+          variants={[
+            ...variants.map((v) => ({
+              id: v.id,
+              status: v.status,
+              // The progress provider polls the carousel drafts; this poller keeps the page fresh
+              // while the slides render and follows the Reels.
+              inProgress: false,
+              rendering: v.render.state === "RENDERING" || v.render.state === "STALE",
+            })),
+            // A Reel being made (or waiting for its job) is polled like a draft; a video that is
+            // being rebuilt refreshes the page.
+            ...Object.values(reels).flatMap((view) =>
+              view.reel
+                ? [
+                    {
+                      id: view.reel.variantId,
+                      status: view.reel.status,
+                      inProgress:
+                        view.reel.status === "GENERATING" ||
+                        (view.reel.status === "DRAFT" && !view.reel.script && !view.reel.lastError),
+                      rendering:
+                        view.reel.render.state === "RENDERING" ||
+                        view.reel.render.state === "STALE",
+                    },
+                  ]
+                : [],
+            ),
+          ]}
+        />
 
-      {variants.length === 0 ? (
-        idea.status === "ACCEPTED" ? (
-          <section className="flex flex-col items-start gap-3 rounded-lg border border-dashed p-8">
-            <h2 className="text-lg font-medium">{t.emptyTitle}</h2>
-            <p className="text-sm text-muted-foreground">{t.emptyBody}</p>
-            <GenerateDraftsButton ideaId={idea.id} />
-          </section>
-        ) : (
-          <EmptyState
-            title={t.emptyTitle}
-            body={format(t.notAccepted, { status: idea.status })}
-            action={{ href: `/content/ideas/${idea.id}`, label: t.idea.openIdea }}
-          />
-        )
-      ) : (
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
-          <aside
-            aria-label={t.idea.title}
-            className="flex w-full flex-col gap-4 rounded-xl border bg-muted/30 p-4 xl:sticky xl:top-4 xl:w-80 xl:shrink-0"
-          >
-            <section className="flex flex-col gap-1">
-              <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t.idea.coreMessage}
-              </h2>
-              <p lang="en">{idea.coreMessage}</p>
+        {variants.length === 0 ? (
+          idea.status === "ACCEPTED" ? (
+            <section className="flex flex-col items-start gap-3 rounded-lg border border-dashed p-8">
+              <h2 className="text-lg font-medium">{t.emptyTitle}</h2>
+              <p className="text-sm text-muted-foreground">{t.emptyBody}</p>
+              <GenerateDraftsButton ideaId={idea.id} />
             </section>
-            {idea.evidenceSummary ? (
+          ) : (
+            <EmptyState
+              title={t.emptyTitle}
+              body={format(t.notAccepted, { status: idea.status })}
+              action={{ href: `/content/ideas/${idea.id}`, label: t.idea.openIdea }}
+            />
+          )
+        ) : (
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+            <aside
+              aria-label={t.idea.title}
+              className="flex w-full flex-col gap-4 rounded-xl border bg-muted/30 p-4 xl:sticky xl:top-4 xl:w-80 xl:shrink-0"
+            >
               <section className="flex flex-col gap-1">
                 <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  {t.idea.evidence}
+                  {t.idea.coreMessage}
                 </h2>
-                <p className="text-sm">{idea.evidenceSummary}</p>
+                <p lang="en">{idea.coreMessage}</p>
               </section>
-            ) : null}
-            <section className="flex flex-col gap-2">
-              <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t.idea.cards}
-              </h2>
-              <ul className="flex flex-col gap-2">
-                {cards.map((card) => (
-                  <li key={card.id} className="rounded-lg border bg-background p-2 text-sm">
-                    <p className="font-medium">
-                      {card.title}{" "}
-                      <span className="font-normal text-muted-foreground">
-                        {format(t.idea.version, { version: card.version })}
-                      </span>
-                    </p>
-                    <p lang={card.language}>{card.claim}</p>
-                    {card.sourceTitle ? (
-                      <p className="text-xs text-muted-foreground">
-                        {format(t.idea.source, { title: card.sourceTitle })}
-                        {card.page ? `, ${format(t.idea.page, { page: card.page })}` : ""}
+              {idea.evidenceSummary ? (
+                <section className="flex flex-col gap-1">
+                  <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    {t.idea.evidence}
+                  </h2>
+                  <p className="text-sm">{idea.evidenceSummary}</p>
+                </section>
+              ) : null}
+              <section className="flex flex-col gap-2">
+                <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  {t.idea.cards}
+                </h2>
+                <ul className="flex flex-col gap-2">
+                  {cards.map((card) => (
+                    <li key={card.id} className="rounded-lg border bg-background p-2 text-sm">
+                      <p className="font-medium">
+                        {card.title}{" "}
+                        <span className="font-normal text-muted-foreground">
+                          {format(t.idea.version, { version: card.version })}
+                        </span>
                       </p>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section className="flex flex-col gap-1 text-sm">
-              <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t.idea.offer}
-              </h2>
-              <p>{product ? product.name : t.idea.noOffer}</p>
-            </section>
-            {worst ? (
+                      <p lang={card.language}>{card.claim}</p>
+                      {card.sourceTitle ? (
+                        <p className="text-xs text-muted-foreground">
+                          {format(t.idea.source, { title: card.sourceTitle })}
+                          {card.page ? `, ${format(t.idea.page, { page: card.page })}` : ""}
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </section>
               <section className="flex flex-col gap-1 text-sm">
                 <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  {t.idea.differentiation}
+                  {t.idea.offer}
                 </h2>
-                <p>{t.differentiation.verdict[worst.verdict]}</p>
-                <p className="text-xs text-muted-foreground">
-                  {format(t.differentiation.thresholds, { version: worst.thresholdsVersion })}
+                <p>{product ? product.name : t.idea.noOffer}</p>
+              </section>
+              {worst ? (
+                <section className="flex flex-col gap-1 text-sm">
+                  <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    {t.idea.differentiation}
+                  </h2>
+                  <p>{t.differentiation.verdict[worst.verdict]}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(t.differentiation.thresholds, { version: worst.thresholdsVersion })}
+                  </p>
+                </section>
+              ) : null}
+              <section className="flex flex-col gap-1 text-xs text-muted-foreground">
+                <h2 className="font-medium tracking-wide uppercase">{t.idea.generation}</h2>
+                {generationVersion ? (
+                  <p>{format(t.generationLine, { version: generationVersion })}</p>
+                ) : null}
+                <p>
+                  {costUsd === null
+                    ? t.idea.noCost
+                    : format(t.idea.cost, { cost: money.format(costUsd) })}
                 </p>
               </section>
-            ) : null}
-            <section className="flex flex-col gap-1 text-xs text-muted-foreground">
-              <h2 className="font-medium tracking-wide uppercase">{t.idea.generation}</h2>
-              {generationVersion ? (
-                <p>{format(t.generationLine, { version: generationVersion })}</p>
-              ) : null}
-              <p>
-                {costUsd === null
-                  ? t.idea.noCost
-                  : format(t.idea.cost, { cost: money.format(costUsd) })}
-              </p>
-            </section>
-          </aside>
+            </aside>
 
-          <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-x-auto lg:flex-row">
-            {variants.map((variant) => (
-              <VariantColumn
-                key={variant.id}
-                variant={variant}
-                cardTitles={cardTitles}
-                t={t}
-                locale={locale}
-                reasons={reasons}
-                templates={templates}
-                ctaTypes={ctaTypes}
-                {...publishProps(variant)}
-                {...reelProps(variant)}
-              />
-            ))}
+            <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-x-auto lg:flex-row">
+              {variants.map((variant) => (
+                <VariantColumn
+                  key={variant.id}
+                  variant={variant}
+                  cardTitles={cardTitles}
+                  t={t}
+                  locale={locale}
+                  reasons={reasons}
+                  templates={templates}
+                  ctaTypes={ctaTypes}
+                  {...publishProps(variant)}
+                  {...reelProps(variant)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </main>
+        )}
+      </main>
+    </ReviewProgressProvider>
   );
 }

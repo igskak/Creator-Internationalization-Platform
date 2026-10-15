@@ -1,9 +1,10 @@
-import { getWorkQueue } from "@rc/modules/content";
+import { getActivity, getWorkQueue } from "@rc/modules/content";
 import { getInstagramBanners } from "@rc/modules/instagram";
 import { listMarkets } from "@rc/modules/localization";
 import { getPublishingStatus } from "@rc/modules/publishing";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ActivityIndicator } from "@/components/shell/activity-indicator";
 import { type Banner, Banners } from "@/components/shell/banners";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { PublishingIndicator } from "@/components/shell/publishing-indicator";
@@ -23,11 +24,12 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
   const ctx = await requestContext({ type: "USER", userId: user.id, role: user.role });
   const { locale, messages } = await getI18n();
-  const [markets, queue, instagramBanners, publishing] = await Promise.all([
+  const [markets, queue, instagramBanners, publishing, activity] = await Promise.all([
     listMarkets(ctx),
     getWorkQueue(ctx),
     getInstagramBanners(ctx),
     getPublishingStatus(ctx),
+    getActivity(ctx),
   ]);
   const publishingState = publishingIndicator(publishing);
   // What waits for a person (plan 10 §10.1): proposed ideas, cards to review, drafts to review.
@@ -87,6 +89,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <span className="font-semibold md:hidden">Content Engine</span>
           </div>
           <div className="flex items-center gap-3">
+            <ActivityIndicator running={activity.running} />
             <PublishingIndicator state={publishingState} />
             <UserMenu
               user={{ email: user.email, displayName: user.displayName, role: user.role }}

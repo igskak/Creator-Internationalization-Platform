@@ -216,6 +216,7 @@ export async function generateVariants(
     run.state = {
       ...run.state,
       stage: key,
+      updatedAt: ctx.clock.now().toISOString(),
       completedStages: [...run.state.completedStages, key],
       runIds: { ...run.state.runIds, [key]: result.runId },
     };
@@ -680,7 +681,14 @@ async function finish(
       action: "variant.generated",
       entityType: "content_variant",
       marketId: run.row.marketId,
-      data: { pipelineRunId, verdict: decision.verdict, rewrites: run.rewrites, flags },
+      data: {
+        pipelineRunId,
+        verdict: decision.verdict,
+        rewrites: run.rewrites,
+        flags,
+        // The progress panel shows "usually N min" from the median of these.
+        durationMs: Math.max(0, ctx.clock.now().getTime() - Date.parse(run.state.startedAt)),
+      },
     },
   });
   run.decision = { ...decision, flags };

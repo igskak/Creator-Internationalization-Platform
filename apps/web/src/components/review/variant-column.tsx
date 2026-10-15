@@ -17,6 +17,7 @@ import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
+import { ProgressPanel } from "./progress-panel";
 import { ReelCard, type ReelReviewProps } from "./reel-card";
 import { RegeneratePicturesButton } from "./regenerate-pictures-button";
 import { SlideCard } from "./slide-card";
@@ -143,13 +144,19 @@ export function VariantColumn({
         </div>
       ) : null}
 
-      {!variant.hasContent ? (
-        pending ? (
-          <p className="text-sm text-muted-foreground" aria-live="polite">
-            {variant.status === "GENERATING" ? t.status.GENERATING : t.queuedStatus}
-          </p>
-        ) : null
-      ) : (
+      <ProgressPanel
+        variantId={variant.id}
+        hideError={variant.lastError !== null}
+        fallback={
+          !variant.hasContent && pending ? (
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {variant.status === "GENERATING" ? t.status.GENERATING : t.queuedStatus}
+            </p>
+          ) : null
+        }
+      />
+
+      {!variant.hasContent ? null : (
         <VariantProvider
           variantId={variant.id}
           lockVersion={variant.lockVersion}
