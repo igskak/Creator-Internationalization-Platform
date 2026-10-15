@@ -11,3 +11,11 @@ export {
   reelDirectorOutputFor,
 } from "./schema";
 export { default as reelDirectorV1 } from "./v1";
+export {
+  default as reelDirectorV2,
+  REEL_POST_LIMITS,
+  ReelDirectorInputV2,
+  ReelDirectorOutputV2,
+  ReelPostCta,
+  reelDirectorV2OutputFor,
+} from "./v2";

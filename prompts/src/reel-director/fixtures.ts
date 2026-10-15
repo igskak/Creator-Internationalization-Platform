@@ -1,4 +1,5 @@
 import type { ReelDirectorInput, ReelDirectorOutput, ReelDirectorScene } from "./schema";
+import type { ReelDirectorInputV2, ReelDirectorOutputV2, ReelPostCta } from "./v2";
 
 // Synthetic posts for the Reel director: the inputs of its tests and evals (three carousels in two
 // languages) and a valid answer for each, which the scripted fake model returns and the validators
@@ -46,10 +47,11 @@ const scenes = (rows: SceneRow[]): ReelDirectorScene[] =>
     claimSlideIds,
   }));
 
+/** A post of the eval set: reel-director@2's input and answer (v1 reads the same input). */
 export type ReelPost = {
   key: string;
-  input: ReelDirectorInput;
-  output: ReelDirectorOutput;
+  input: ReelDirectorInputV2;
+  output: ReelDirectorOutputV2;
 };
 
 // 1 · es-ES: risotto rice that is not rinsed (mistake callout)
@@ -474,12 +476,87 @@ const PASTA_OUTPUT: ReelDirectorOutput = {
   ]),
 };
 
-/** The three synthetic posts of the eval set. */
-export const REEL_POSTS: readonly ReelPost[] = [
-  { key: "risotto-rice", input: RISOTTO_INPUT, output: RISOTTO_OUTPUT },
-  { key: "bulgur-hot-water", input: BULGUR_INPUT, output: BULGUR_OUTPUT },
-  { key: "pasta-oil", input: PASTA_INPUT, output: PASTA_OUTPUT },
+// --- The post of each Reel (reel-director@2) ------------------------------------------------
+
+const CTA_TYPES = [
+  { code: "SHARE", label: "Share" },
+  { code: "FOLLOW", label: "Follow" },
+  { code: "SAVE", label: "Save" },
 ];
 
+const withPost = (
+  input: ReelDirectorInput,
+  carousel: { caption: string; cta: ReelPostCta },
+  recent: { ctaTypes: string[]; hashtags: string[] },
+): ReelDirectorInputV2 => ({
+  ...input,
+  carousel: { ...input.carousel, ...carousel },
+  ctaTypes: CTA_TYPES,
+  recentCtaTypes: recent.ctaTypes,
+  recentHashtags: recent.hashtags,
+});
+
+const RISOTTO_INPUT_V2 = withPost(
+  RISOTTO_INPUT,
+  {
+    caption:
+      "¿Lavas el arroz del risotto? Ahí se va lo meloso.\n\nEl almidón de la superficie es lo que hace el risotto meloso. Tuesta el arroz en seco 2 min y añade el caldo caliente, un cucharón cada vez.\n\nGuárdalo para tu próximo risotto.",
+    cta: { type: "SAVE", text: "Guárdalo para tu próximo risotto." },
+  },
+  { ctaTypes: ["SAVE", "SAVE"], hashtags: ["#cocinacasera", "#recetasfaciles", "#trucosdecocina"] },
+);
+const RISOTTO_OUTPUT_V2: ReelDirectorOutputV2 = {
+  ...RISOTTO_OUTPUT,
+  caption:
+    "El almidón de la superficie es lo que hace el risotto meloso. Si lo lavas, el almidón se va y el arroz queda suelto.\n\nTuesta el arroz en seco 2 min y añade el caldo caliente, un cucharón cada vez, sin dejar de remover.\n\nMándaselo a quien hace el risotto en casa.",
+  cta: { type: "SHARE", text: "Mándaselo a quien hace el risotto en casa." },
+  hashtags: ["#risotto", "#arroz", "#trucosdecocina", "#cocinacasera"],
+};
+
+const BULGUR_INPUT_V2 = withPost(
+  BULGUR_INPUT,
+  {
+    caption:
+      "Hot water on bulgur? Only if it's fine.\n\nFine bulgur is already cooked, so hot water is enough to soften it. Coarse bulgur needs simmering with a lid on. Rest it for 10 min with the lid on, then fluff with a fork.\n\nSave this for your next grain bowl.",
+    cta: { type: "SAVE", text: "Save this for your next grain bowl." },
+  },
+  { ctaTypes: ["SAVE"], hashtags: ["#cookingtips", "#mealprep", "#grainbowl", "#homecooking"] },
+);
+const BULGUR_OUTPUT_V2: ReelDirectorOutputV2 = {
+  ...BULGUR_OUTPUT,
+  caption:
+    "Fine bulgur is already cooked, so hot water is enough to soften it. Coarse bulgur needs simmering with a lid on.\n\nToast the dry grains first for a nutty taste, then rest it for 10 min with the lid on and fluff with a fork.\n\nFollow for more grain rules like this one.",
+  cta: { type: "FOLLOW", text: "Follow for more grain rules like this one." },
+  hashtags: ["#bulgur", "#wholegrains", "#grainbowl", "#cookingtips"],
+};
+
+const PASTA_INPUT_V2 = withPost(
+  PASTA_INPUT,
+  {
+    caption:
+      "The worst pasta advice: oil in the water.\n\nOil floats on top of the water and does not stop pasta from sticking. Stir in the first minute, salt the water well and save a cup of the starchy water for the sauce.\n\nSave this before your next pasta night.",
+    cta: { type: "SAVE", text: "Save this before your next pasta night." },
+  },
+  { ctaTypes: ["SAVE", "FOLLOW"], hashtags: ["#cookingtips", "#weeknightdinner"] },
+);
+const PASTA_OUTPUT_V2: ReelDirectorOutputV2 = {
+  ...PASTA_OUTPUT,
+  caption:
+    "Oil floats on top of the water and does not stop pasta from sticking. What does: stirring the pasta in the first minute.\n\nSalt the water well, it seasons the pasta from the inside, and save a cup of the starchy water for the sauce.\n\nSend this to whoever still pours oil in the pasta pot.",
+  cta: { type: "SHARE", text: "Send this to whoever still pours oil in the pasta pot." },
+  hashtags: ["#pasta", "#pastatips", "#spaghetti", "#cookingtips"],
+};
+
+/** The three synthetic posts of the eval set. */
+export const REEL_POSTS: readonly ReelPost[] = [
+  { key: "risotto-rice", input: RISOTTO_INPUT_V2, output: RISOTTO_OUTPUT_V2 },
+  { key: "bulgur-hot-water", input: BULGUR_INPUT_V2, output: BULGUR_OUTPUT_V2 },
+  { key: "pasta-oil", input: PASTA_INPUT_V2, output: PASTA_OUTPUT_V2 },
+];
+
+/** reel-director@1's fixture (its snapshot). */
 export const FIXTURE_INPUT: ReelDirectorInput = RISOTTO_INPUT;
 export const FIXTURE_OUTPUT: ReelDirectorOutput = RISOTTO_OUTPUT;
+/** reel-director@2's fixture. */
+export const FIXTURE_INPUT_V2: ReelDirectorInputV2 = RISOTTO_INPUT_V2;
+export const FIXTURE_OUTPUT_V2: ReelDirectorOutputV2 = RISOTTO_OUTPUT_V2;

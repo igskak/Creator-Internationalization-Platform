@@ -10,6 +10,7 @@ import {
 } from "@rc/lib/providers/video";
 import { z } from "zod";
 import { audit, type ServiceContext, triggerJob } from "../../core";
+import { swapHookLine } from "../director";
 import { assertReelsEnabled, reelsEnabled } from "./enabled";
 import { estimateReel, type ReelEstimate } from "./estimate";
 import { applyChosenHook } from "./generate";
@@ -120,7 +121,8 @@ export async function requestReel(
         format: "REEL",
         status: "DRAFT",
         sourceVariantId: carousel.id,
-        // The Reel posts with the carousel's caption, hashtags and call to action.
+        // The carousel's caption, hashtags and call to action until the director writes the
+        // Reel's own (reel-director@2).
         hook: carousel.hook,
         hookType: carousel.hookType,
         caption: carousel.caption,
@@ -260,6 +262,20 @@ export async function changeReelHook(
     chosenHookId: changed.chosenHookId,
     scenes: changed.scenes,
   });
+  // The caption's first line is the hook's: it follows the new hook unless the reviewer rewrote it.
+  const from = script.hookOptions.find((h) => h.id === script.chosenHookId);
+  const to = script.hookOptions.find((h) => h.id === input.hookId);
+  const caption = from && to && reel.caption ? swapHookLine(reel.caption, from, to) : null;
+  if (to) {
+    await ctx.db
+      .update(schema.contentVariants)
+      .set({
+        hook: to.card.replaceAll("**", ""),
+        hookType: to.hookType,
+        ...(caption !== null ? { caption } : {}),
+      })
+      .where(eq(schema.contentVariants.id, reel.id));
+  }
   const requestId = ctx.requestId ?? randomUUID();
   const { runId } = await triggerJob(
     ctx,

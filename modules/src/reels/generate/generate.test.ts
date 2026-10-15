@@ -86,6 +86,18 @@ describe("generateReel", () => {
     const v = await reel();
     expect(v).toMatchObject({ status: "READY_FOR_REVIEW", pipelineState: null, lastError: null });
     expect(v.currentReelRenderId).toBe(result.renderId);
+    // reel-director@2 wrote the Reel's own post: the hook line, then its caption; its ask and tags.
+    expect(v.caption).toBe(
+      "¿Aún lavas el arroz del risotto? Ahí se va lo meloso.\n\nEl almidón de la superficie es lo que hace el risotto meloso. Si lo lavas, el almidón se va y el arroz queda suelto.\n\nTuesta el arroz en seco 2 min y añade el caldo caliente, un cucharón cada vez, sin dejar de remover.\n\nMándaselo a quien hace el risotto en casa.",
+    );
+    expect(v).toMatchObject({
+      hook: "¿Aún lavas el arroz del risotto?",
+      hookType: "MISTAKE_CALLOUT",
+      ctaType: "SHARE",
+      cta: "Mándaselo a quien hace el risotto en casa.",
+      ctaJson: { type: "SHARE", text: "Mándaselo a quien hace el risotto en casa." },
+      hashtags: ["#risotto", "#arroz", "#trucosdecocina", "#cocinacasera"],
+    });
 
     const [script] = await scripts();
     expect(script).toMatchObject({
@@ -93,7 +105,7 @@ describe("generateReel", () => {
       chosenHookId: "h1",
       flashOpener: "ON",
       shotModel: "alibaba/wan-3.0",
-      promptVersion: "reel-director@1",
+      promptVersion: "reel-director@2",
     });
     expect(script?.scenes).toHaveLength(7);
     expect(script?.scenes.every((s) => s.shotId)).toBe(true);

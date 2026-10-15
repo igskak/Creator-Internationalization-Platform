@@ -829,6 +829,11 @@ export const ru: Messages = {
         saved: "Настройка пробного Reels сохранена.",
         fixed: "Нельзя изменить: Reels уже публикуется или опубликован.",
       },
+      post: {
+        caption: "Подпись Reel",
+        cta: "Призыв: {type} · {text}",
+        hashtags: "Хештеги Reel",
+      },
       review: {
         title: "Проверка и публикация",
         status: "Статус рилса: {status}",

@@ -100,6 +100,8 @@ export type ReelDetail = {
   changeable: boolean;
   /** A trial Reel (M8-11): how it graduates; null = a normal Reel. */
   trialGraduation: "MANUAL" | "SS_PERFORMANCE" | null;
+  /** What the Reel posts with: its caption, ask and hashtags (reel-director@2 writes its own). */
+  post: { caption: string; cta: { type: string; text: string }; hashtags: string[] };
 };
 
 export type ReelView = {
@@ -218,6 +220,11 @@ async function detailOf(
     variantId: reel.id,
     status: reel.status,
     trialGraduation: reel.trialGraduation ?? null,
+    post: {
+      caption: reel.caption ?? "",
+      cta: { type: reel.ctaType ?? "NONE", text: reel.cta ?? "" },
+      hashtags: reel.hashtags,
+    },
     lockVersion: reel.lockVersion,
     allowed: allowedActions(facts, role).filter((a) => REEL_ACTIONS.includes(a.action)),
     flags: reel.flags,

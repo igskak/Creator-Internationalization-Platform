@@ -5,13 +5,14 @@ import { createLogger } from "@rc/lib/logging";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import { computeCostUsd, STAGE_CONFIG } from "@rc/modules/ai";
 import { createServiceContext } from "@rc/modules/core";
-import { directReel, type ReelScriptDraft } from "@rc/modules/reels";
+import { directReel, type ReelScriptDraft, reelCaption } from "@rc/modules/reels";
 import { REEL_LIMITS } from "@rc/prompts";
 import type { ReelPost } from "@rc/prompts/fixtures/reel-director";
 
 // Eval of the Reel director (task M8-03, verification V-29): each post (an approved carousel and
 // its pictures) goes through the real `directReel` stage in a throw-away database, and what came
-// out is checked by the same validators the pipeline uses. Hook quality and claim fidelity are
+// out is checked by the same validators the pipeline uses (from reel-director@2 the post too: the
+// caption as it will be posted, the ask and the hashtags). Hook quality and claim fidelity are
 // judged by the owner on the review sheet; the numbers here only prove the rules hold. A fake
 // model costs nothing; a live run prints an estimate first (reels-cli.ts).
 
@@ -168,6 +169,18 @@ export function reelReviewSheet(
       ),
       "",
     );
+    const reelPost = result.script.post;
+    const hook = result.script.hookOptions.find((h) => h.id === result.script?.chosenHookId);
+    if (reelPost && hook) {
+      out.push(
+        `Post (reel-director@2): ask ${reelPost.cta.type}, hashtags ${reelPost.hashtags.join(" ")}`,
+        "",
+        ...reelCaption(hook, reelPost.body)
+          .split("\n")
+          .map((line) => `> ${line}`),
+        "",
+      );
+    }
     if (result.issues.length > 0) {
       out.push(
         "Notes:",

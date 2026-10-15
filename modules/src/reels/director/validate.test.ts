@@ -461,3 +461,95 @@ describe("a Reel that reuses another market's shots", () => {
     ).toContain("REEL_BASE_CHANGED");
   });
 });
+
+describe("the post (reel-director@2)", () => {
+  const pasta = post("pasta-oil");
+  const v1Input = (p: ReelPost): ReelPost["input"] => {
+    const { ctaTypes: _c, recentCtaTypes: _r, recentHashtags: _h, ...rest } = p.input;
+    return rest as ReelPost["input"];
+  };
+
+  it("is not checked for a v1 input, and is required for a v2 one", () => {
+    const { caption: _c, cta: _t, hashtags: _h, ...script } = structuredClone(rice.output);
+    const context = (input: ReelPost["input"]) => reelValidationContext(input, { locale: "es-ES" });
+    expect(validateReelScript(script, context(v1Input(rice)))).toEqual([]);
+    expect(codes(validateReelScript(script, context(rice.input)))).toEqual(["REEL_POST_MISSING"]);
+  });
+
+  it("refuses carousel words, bait, tags and links in the caption of a video", () => {
+    const with_ = (text: string) =>
+      codes(run(bulgur, (o) => (o.caption = `${text}\n\n${o.cta.text}`)));
+    expect(with_("Swipe through for the method.")).toContain("REEL_CAPTION_CAROUSEL");
+    expect(with_("All 4 slides in order.")).toContain("REEL_CAPTION_CAROUSEL");
+    expect(with_("The method 👉")).toContain("REEL_CAPTION_CAROUSEL");
+    expect(with_("The Save button won't press itself.")).toContain("REEL_CAPTION_BAIT");
+    expect(with_("Tag a friend who needs this.")).toContain("REEL_CAPTION_BAIT");
+    expect(with_("Fine bulgur #grains")).toContain("REEL_CAPTION_TAG_OR_LINK");
+    expect(with_("More at www.example.com")).toContain("REEL_CAPTION_TAG_OR_LINK");
+    expect(
+      codes(run(rice, (o) => (o.caption = `Desliza para ver el método.\n\n${o.cta.text}`))),
+    ).toContain("REEL_CAPTION_CAROUSEL");
+  });
+
+  it("allows only the carousel's numbers, and an empty or long caption is refused", () => {
+    expect(
+      codes(run(bulgur, (o) => (o.caption = `Rest it for 25 min.\n\n${o.cta.text}`))),
+    ).toContain("NUMERIC_MISMATCH");
+    expect(
+      codes(run(bulgur, (o) => (o.caption = `Use 3 pots at once.\n\n${o.cta.text}`))),
+    ).toContain("REEL_NUMBER_UNSUPPORTED");
+    expect(codes(run(bulgur, (o) => (o.caption = "  ")))).toContain("REEL_CAPTION_EMPTY");
+    expect(
+      codes(run(bulgur, (o) => (o.caption = `${"Fine bulgur. ".repeat(130)}${o.cta.text}`))),
+    ).toContain("REEL_CAPTION_LONG");
+  });
+
+  it("needs one allowed ask that ends the caption", () => {
+    expect(codes(run(bulgur, (o) => (o.cta.type = "LINK_IN_BIO")))).toContain("REEL_CTA_TYPE");
+    expect(codes(run(bulgur, (o) => (o.cta.text = "Follow along.")))).toContain(
+      "REEL_CTA_NOT_IN_CAPTION",
+    );
+    expect(codes(run(bulgur, (o) => (o.cta.keyword = "BULGUR")))).toContain("REEL_CTA_KEYWORD");
+  });
+
+  it("keeps a keyword ask of the carousel", () => {
+    const locked: ReelPost["input"] = {
+      ...rice.input,
+      carousel: {
+        ...rice.input.carousel,
+        cta: { type: "COMMENT_KEYWORD", text: "Comenta ARROZ.", keyword: "ARROZ" },
+      },
+      ctaTypes: [{ code: "COMMENT_KEYWORD", label: "Keyword" }],
+    };
+    const keep = (o: ReelPost["output"]) => {
+      o.cta = { type: "COMMENT_KEYWORD", text: "Comenta ARROZ.", keyword: "ARROZ" };
+      o.caption = "El almidón hace el risotto meloso.\n\nComenta ARROZ.";
+    };
+    expect(run(rice, keep, locked)).toEqual([]);
+    expect(
+      codes(
+        run(
+          rice,
+          (o) => {
+            keep(o);
+            o.cta.keyword = "RISOTTO";
+          },
+          locked,
+        ),
+      ),
+    ).toContain("REEL_CTA_CHANGED");
+  });
+
+  it("needs 3 to 5 distinct valid hashtags, and notes a reused block", () => {
+    expect(codes(run(pasta, (o) => (o.hashtags = ["#pasta"])))).toContain("REEL_HASHTAG_COUNT");
+    expect(codes(run(pasta, (o) => o.hashtags.push("#a", "#b")))).toContain("REEL_HASHTAG_COUNT");
+    expect(codes(run(pasta, (o) => (o.hashtags[0] = "#pasta tips")))).toContain(
+      "REEL_HASHTAG_FORMAT",
+    );
+    expect(codes(run(pasta, (o) => (o.hashtags[1] = "#Pasta")))).toContain(
+      "REEL_HASHTAG_DUPLICATE",
+    );
+    const reused = run(bulgur, (o) => (o.hashtags = ["#cookingtips", "#mealprep", "#grainbowl"]));
+    expect(reused.map((i) => [i.code, i.severity])).toEqual([["REEL_HASHTAGS_RECENT", "MAJOR"]]);
+  });
+});

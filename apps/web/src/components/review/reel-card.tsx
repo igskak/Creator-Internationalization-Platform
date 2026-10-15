@@ -30,6 +30,8 @@ import {
   regenerateReelShot,
   setReelTrial,
 } from "@/server/actions/reels";
+import { EditableHashtags } from "./editable-hashtags";
+import { EditableText } from "./editable-text";
 import { VariantActions } from "./variant-actions";
 import { VariantProvider } from "./variant-state";
 
@@ -440,6 +442,32 @@ export type ReelReviewProps = {
   };
 };
 
+/** What the Reel posts with: its caption (editable by hand), its ask and its hashtags. */
+function ReelPost({ reel }: { reel: Detail }) {
+  const { messages } = useI18n();
+  const t = messages.review.reel.post;
+  const edit = messages.review.edit.field;
+  return (
+    <div className="flex flex-col gap-2 text-sm" data-testid="reel-post">
+      <h5 className="text-xs font-medium text-muted-foreground">{t.caption}</h5>
+      <EditableText
+        path="caption"
+        label={t.caption}
+        fieldLabel={edit.caption}
+        value={reel.post.caption}
+        maxChars={2200}
+        rows={6}
+        regenerate={false}
+      />
+      <p className="text-xs text-muted-foreground">
+        {format(t.cta, { type: reel.post.cta.type, text: reel.post.cta.text || "—" })}
+      </p>
+      <h5 className="text-xs font-medium text-muted-foreground">{t.hashtags}</h5>
+      <EditableHashtags value={reel.post.hashtags} regenerate={false} />
+    </div>
+  );
+}
+
 /** Approve, reject, request changes; then schedule and publish, like a carousel. */
 function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps }) {
   const { messages } = useI18n();
@@ -465,6 +493,7 @@ function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps })
         templates={{}}
         regenerations={[]}
       >
+        <ReelPost reel={reel} />
         <VariantActions allowed={reel.allowed} flagLabels={review.flagLabels} kind="reel" />
         <TrialReelControl
           variantId={reel.variantId}

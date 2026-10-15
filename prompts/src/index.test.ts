@@ -90,6 +90,7 @@ describe("@rc/prompts", () => {
       "visual-qa@1",
       "visual-qa@2",
       "reel-director@1",
+      "reel-director@2",
     ]);
   });
 });

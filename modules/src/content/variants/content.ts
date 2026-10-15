@@ -8,7 +8,9 @@ type VariantRow = typeof schema.contentVariants.$inferSelect;
 
 /** The editable content of a stored variant. A variant with no draft yet has no content. */
 export function contentOf(row: VariantRow): VariantContent | null {
-  if (row.slidesJson.length === 0 || row.hook === null || row.caption === null) return null;
+  if (row.hook === null || row.caption === null) return null;
+  // A Reel has no slides of its own: its caption, ask and hashtags are its editable content.
+  if (row.slidesJson.length === 0 && row.format !== "REEL") return null;
   return {
     hook: row.hook,
     caption: row.caption,

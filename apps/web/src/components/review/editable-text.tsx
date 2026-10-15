@@ -26,6 +26,7 @@ export function EditableText({
   rows = 2,
   className,
   textClassName,
+  regenerate = true,
 }: {
   path: string;
   /** Label of the input and of the buttons, e.g. "Hook". */
@@ -40,6 +41,8 @@ export function EditableText({
   rows?: number;
   className?: string;
   textClassName?: string;
+  /** Offer ↻ (a field the field editor can redo); a Reel's caption is edited by hand only. */
+  regenerate?: boolean;
 }) {
   const t = useI18n().messages.review.edit;
   const variant = useVariant();
@@ -134,7 +137,7 @@ export function EditableText({
             >
               <PencilIcon />
             </Button>
-            <RegeneratePopover path={path} fieldLabel={fieldLabel} />
+            {regenerate ? <RegeneratePopover path={path} fieldLabel={fieldLabel} /> : null}
           </span>
         </div>
       )}

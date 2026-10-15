@@ -197,6 +197,9 @@ export async function validateEdit(
  * A stale `lockVersion` is a CONFLICT. An approved, scheduled or failed variant goes back to
  * READY_FOR_REVIEW and its open publication is cancelled, but only with `confirmed: true`.
  */
+/** What a reviewer edits by hand on a Reel; its cards and shots change on the Reel card. */
+const REEL_FIELDS = new Set<ParsedFieldPath["kind"]>(["caption", "cta", "hashtags"]);
+
 export async function editVariantField(
   ctx: ServiceContext,
   raw: EditVariantFieldInput,
@@ -216,6 +219,12 @@ export async function editVariantField(
     throw new InvalidStateError(
       `This ${variant.status} variant is approved: editing it undoes the approval and cancels its post.`,
       { details: { requiresConfirmation: true, status: variant.status } },
+    );
+  }
+  if (variant.format === "REEL" && !REEL_FIELDS.has(field.kind)) {
+    throw new InvalidStateError(
+      "On a Reel only the caption, the call to action and the hashtags are edited; change the hook on the Reel card.",
+      { details: { code: "reel_field", field: input.field } },
     );
   }
   const content = contentOf(variant);

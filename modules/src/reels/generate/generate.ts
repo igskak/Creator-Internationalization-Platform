@@ -8,10 +8,11 @@ import { and, desc, eq } from "@rc/db/orm";
 import { InvalidStateError, NotFoundError, PermanentError, TransientError } from "@rc/lib/errors";
 import { DEFAULT_VIDEO_MODEL, VIDEO_MODELS, type VideoModelId } from "@rc/lib/providers/video";
 import { z } from "zod";
+import { STAGE_CONFIG } from "../../ai";
 import { transitionVariant } from "../../content/variants/transition";
 import { audit, type ServiceContext } from "../../core";
 import { synthesizeBeat } from "../audio";
-import { type DirectedReel, directReel, type ReelScriptDraft } from "../director";
+import { type DirectedReel, directReel, type ReelScriptDraft, reelCaption } from "../director";
 import {
   type AssembledReel,
   type AssembleInput,
@@ -155,12 +156,43 @@ async function insertScript(
       scenes: script.scenes,
       shotModel: model,
       costEstimateUsd: estimate.totalUsd.toFixed(4),
-      promptVersion: "reel-director@1",
+      promptVersion: `${STAGE_CONFIG.REEL_DIRECTION.promptId}@${STAGE_CONFIG.REEL_DIRECTION.version}`,
       generationRunId: directed.runId,
     })
     .returning();
   if (!row) throw new Error("reel_scripts: the insert returned no row");
   return row;
+}
+
+/**
+ * The Reel's own post (reel-director@2) on its variant: the caption under the chosen hook's line,
+ * the ask and the hashtags, so the Reel no longer posts with the carousel's text. A keyword ask
+ * tied to an offer stays the carousel's own (the director had one code to choose from).
+ */
+async function savePost(
+  ctx: ServiceContext,
+  variant: Variant,
+  source: ReelSource,
+  script: ReelScriptDraft,
+): Promise<void> {
+  const { post } = script;
+  const hook = script.hookOptions.find((h) => h.id === script.chosenHookId);
+  if (!post || !hook) return;
+  const carouselCta = source.carousel.ctaJson;
+  const keepsCarouselCta =
+    carouselCta !== null && carouselCta.type === post.cta.type && carouselCta.keyword !== undefined;
+  await ctx.db
+    .update(schema.contentVariants)
+    .set({
+      caption: reelCaption(hook, post.body),
+      hook: hook.card.replaceAll("**", ""),
+      hookType: hook.hookType,
+      cta: post.cta.text,
+      ctaType: post.cta.type,
+      ctaJson: keepsCarouselCta ? { ...carouselCta, text: post.cta.text } : post.cta,
+      hashtags: post.hashtags,
+    })
+    .where(eq(schema.contentVariants.id, variant.id));
 }
 
 export async function generateReel(
@@ -252,6 +284,7 @@ export async function generateReel(
         ? applyChosenHook(directed.script, payload.hookId)
         : directed.script;
       script = await insertScript(ctx, variant, directed, draft, model);
+      await savePost(ctx, variant, source, draft);
       ids.DIRECTION = directed.runId;
       ids.SCRIPT = script.id;
       completed.push("DIRECTION");
