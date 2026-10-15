@@ -1153,6 +1153,18 @@ export const en = {
     code: "Confirmation code {code}",
     unknown: "We have no data deletion request with this confirmation code.",
   },
+  reelsSwitch: {
+    title: "Reel generation",
+    description:
+      "Off, the Generate Reel button is disabled everywhere and nothing is spent on video shots. On, a Reel is still made only when someone confirms its estimate. Publishing has its own switch in Settings → Instagram.",
+    on: "On",
+    off: "Off",
+    turnOn: "Switch on",
+    turnOff: "Switch off",
+    ownersOnly: "Only owners can use the switch.",
+    switchedOn: "Reel generation is on.",
+    switchedOff: "Reel generation is off.",
+  },
   publishing: {
     indicator: {
       label: "Publishing",

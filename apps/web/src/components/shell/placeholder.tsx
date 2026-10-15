@@ -1,8 +1,18 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { SCREENS, type ScreenKey } from "./screens";
 
 /** Placeholder until the task in the screen catalog builds the real page. */
-export function PlaceholderPage({ screen, subject }: { screen: ScreenKey; subject?: string }) {
+export function PlaceholderPage({
+  screen,
+  subject,
+  children,
+}: {
+  screen: ScreenKey;
+  subject?: string;
+  /** Parts of the screen that are built already, shown under the placeholder text. */
+  children?: ReactNode;
+}) {
   const s = SCREENS[screen];
   return (
     <main className="flex max-w-3xl flex-col gap-3 p-6">
@@ -17,6 +27,7 @@ export function PlaceholderPage({ screen, subject }: { screen: ScreenKey; subjec
       <p className="text-sm text-muted-foreground">
         Not built yet — arrives with task <span className="font-mono">{s.task}</span>.
       </p>
+      {children}
     </main>
   );
 }

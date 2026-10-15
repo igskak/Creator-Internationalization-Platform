@@ -6,7 +6,9 @@ import { createEmbeddingProvider, type EmbeddingProvider } from "@rc/lib/provide
 import { createImageProvider, type ImageProvider } from "@rc/lib/providers/image";
 import { createLlmProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import { createStorage, type StorageProvider } from "@rc/lib/providers/storage";
+import { createVideoProvider, type VideoProvider } from "@rc/lib/providers/video";
 import { createE2eLlm } from "@rc/modules/ai";
+import { createE2eVideo } from "@rc/modules/reels";
 import { after } from "next/server";
 
 // Process-wide clients, created on first use (never at build time).
@@ -19,6 +21,7 @@ let storage: StorageProvider | undefined;
 let llm: LLMProvider | undefined;
 let embeddings: EmbeddingProvider | undefined;
 let images: ImageProvider | undefined;
+let video: VideoProvider | undefined;
 
 export function serverEnv(): ServerEnv {
   env ??= loadServerEnv();
@@ -98,4 +101,16 @@ export function serverEmbeddings(): EmbeddingProvider {
 export function serverImages(): ImageProvider {
   images ??= createImageProvider(serverEnv().ai);
   return images;
+}
+
+/**
+ * Shots for Reels. Only the in-process job runner (`JOBS_MODE=inline`) uses it: on a deployment the
+ * jobs run in Trigger.dev with their own provider. The E2E server gets real small clips from the
+ * fake provider so that the Reel can be assembled for real.
+ */
+export function serverVideo(): VideoProvider {
+  const e = serverEnv();
+  video ??=
+    e.ai.provider === "fake" && e.e2e.testAuthSecret ? createE2eVideo() : createVideoProvider(e.ai);
+  return video;
 }

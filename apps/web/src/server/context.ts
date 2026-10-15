@@ -21,6 +21,7 @@ import {
   serverLlm,
   serverLogger,
   serverStorage,
+  serverVideo,
 } from "./runtime";
 
 let jobs: JobRunner | undefined;
@@ -47,6 +48,7 @@ function jobRunner(): JobRunner {
         llm: serverLlm(),
         embeddings: serverEmbeddings(),
         images: serverImages(),
+        video: serverVideo(),
         instagram: instagramRuntimeFromEnv(serverEnv()),
       }),
   });

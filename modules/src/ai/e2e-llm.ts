@@ -5,6 +5,7 @@ import {
   scriptedReview,
   scriptedVisualBrief,
 } from "./scripted-answers";
+import { scriptedReelScript } from "./scripted-reel";
 
 // The fake model of the E2E server (plan 13 §13.4: `AI_PROVIDER=fake`). It answers the knowledge
 // extractor from the pages it is given, so a pasted text becomes cards whose quotes really are in
@@ -165,6 +166,7 @@ export function createE2eLlm() {
       }
       if (promptId === "visual-director") return scriptedVisualBrief(text);
       if (promptId === "field-regenerator") return answerFieldRegenerator(text);
+      if (promptId === "reel-director") return scriptedReelScript(text);
       if (promptId !== "knowledge-extractor" && promptId !== "idea-generator") {
         throw new Error(`The E2E model has no answer for ${promptId}.`);
       }
