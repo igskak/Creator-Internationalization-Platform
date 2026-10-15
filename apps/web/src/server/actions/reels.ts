@@ -9,6 +9,8 @@ import {
   RequestReelInput,
   regenerateReelShot as regenerateReelShotService,
   requestReel,
+  SetReelTrialInput,
+  setReelTrial as setReelTrialService,
 } from "@rc/modules/reels";
 import { defineAction } from "./_define";
 
@@ -45,4 +47,12 @@ export const regenerateReelShot = defineAction({
   input: RegenerateReelShotInput,
   roles: ["owner", "editor"],
   handler: (ctx, input) => regenerateReelShotService(ctx, input),
+});
+
+/** Trial Reel on or off (M8-11): shown to non-followers first; off by default. */
+export const setReelTrial = defineAction({
+  name: "setReelTrial",
+  input: SetReelTrialInput,
+  roles: ["owner", "editor"],
+  handler: (ctx, input) => setReelTrialService(ctx, input),
 });

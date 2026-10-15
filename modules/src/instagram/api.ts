@@ -83,12 +83,20 @@ export async function createCarouselContainer(
 /**
  * A Reel container (V-25, checked 2026-10-15): Meta downloads `videoUrl` itself, after it answers,
  * so a bad link shows up later as status ERROR. `share_to_feed` puts it on the grid as well as in
- * the Reels tab. `isAiGenerated` is Instagram's AI info label, as for carousels.
+ * the Reels tab. `isAiGenerated` is Instagram's AI info label, as for carousels. `trialGraduation`
+ * makes it a trial Reel (IG User Media reference, `trial_params`, read 2026-10-15).
  */
 export async function createReelContainer(
   client: GraphClient,
   accountId: string,
-  input: { videoUrl: string; caption: string; shareToFeed?: boolean; isAiGenerated?: boolean },
+  input: {
+    videoUrl: string;
+    caption: string;
+    shareToFeed?: boolean;
+    isAiGenerated?: boolean;
+    /** A trial Reel (M8-11): sent as `trial_params`, JSON of `{ graduation_strategy }`. */
+    trialGraduation?: "MANUAL" | "SS_PERFORMANCE" | null;
+  },
 ): Promise<string> {
   const reply = Id.parse(
     await client.post(`/${accountId}/media`, {
@@ -97,6 +105,9 @@ export async function createReelContainer(
       caption: input.caption,
       share_to_feed: input.shareToFeed ?? true,
       ...(input.isAiGenerated ? { is_ai_generated: true } : {}),
+      ...(input.trialGraduation
+        ? { trial_params: JSON.stringify({ graduation_strategy: input.trialGraduation }) }
+        : {}),
     }),
   );
   return reply.id;

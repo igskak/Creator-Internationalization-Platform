@@ -1,0 +1,2 @@
+ALTER TABLE "content_variants" ADD COLUMN "trial_graduation" text;--> statement-breakpoint
+ALTER TABLE "content_variants" ADD CONSTRAINT "content_variants_trial_check" CHECK ("content_variants"."trial_graduation" is null or ("content_variants"."format" = 'REEL' and "content_variants"."trial_graduation" in ('MANUAL', 'SS_PERFORMANCE')));

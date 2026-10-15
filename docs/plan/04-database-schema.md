@@ -672,6 +672,14 @@ alter table content_variant_versions
 ```
 The snapshot of a Reel has `format = 'REEL'` and `reel` (render, script, the mp4's key, size and SHA-256); see `ApprovedReel` in `db/src/json/review.ts`.
 
+### 0013_trial_reels (M8-11)
+```sql
+alter table content_variants add column trial_graduation text;   -- MANUAL | SS_PERFORMANCE; null = a normal Reel
+alter table content_variants add constraint content_variants_trial_check
+  check (trial_graduation is null or (format = 'REEL' and trial_graduation in ('MANUAL', 'SS_PERFORMANCE')));
+```
+The choice is kept on the Reel variant (not on the publication) so it can be set before scheduling from the Reel card; the publisher reads it when it makes the REELS container, and `setReelTrial` refuses a change once the Reel is going out.
+
 ## 4.4 JSON field shapes (Zod schemas in `db/src/json/`)
 
 ```ts

@@ -804,6 +804,15 @@ export const en = {
     reel: {
       title: "Reel",
       subtitle: "A short vertical video made from the pictures of this carousel.",
+      trial: {
+        label: "Trial Reel",
+        hint: "A trial Reel is shown to people who do not follow the account first. Instagram shows how it did after 24 hours.",
+        off: "Off: a normal Reel",
+        MANUAL: "On, I share it with followers myself in the Instagram app",
+        SS_PERFORMANCE: "On, Instagram shares it with followers if it does well",
+        saved: "Trial setting saved.",
+        fixed: "Fixed: the Reel is going out or out already.",
+      },
       review: {
         title: "Review and publish",
         status: "Reel status: {status}",

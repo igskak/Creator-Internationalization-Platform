@@ -256,6 +256,11 @@ export const contentVariants = pgTable(
     /** The experiment this variant is an arm of (0012, M7-06), assigned on the review screen. */
     experimentId: uuid().references((): AnyPgColumn => experiments.id),
     experimentArm: text().$type<"A" | "B">(),
+    /**
+     * A Reel published as a trial (0013, M8-11): shown to non-followers first. MANUAL = graduated by
+     * hand in the Instagram app, SS_PERFORMANCE = by Instagram when it does well; null = a normal Reel.
+     */
+    trialGraduation: text().$type<"MANUAL" | "SS_PERFORMANCE">(),
     contentLength: jsonb().$type<ContentLength>(),
     /** Pipeline version, e.g. 'p1.0.0'. */
     generationVersion: text(),
@@ -293,6 +298,10 @@ export const contentVariants = pgTable(
       "content_variants_experiment_arm_check",
       // Both or neither; written without OR so a null arm cannot make the check unknown (= pass).
       sql`(${t.experimentId} is null) = (${t.experimentArm} is null) and coalesce(${t.experimentArm} in ('A', 'B'), true)`,
+    ),
+    check(
+      "content_variants_trial_check",
+      sql`${t.trialGraduation} is null or (${t.format} = 'REEL' and ${t.trialGraduation} in ('MANUAL', 'SS_PERFORMANCE'))`,
     ),
     index("content_variants_experiment_idx")
       .on(t.experimentId)

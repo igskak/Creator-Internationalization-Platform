@@ -52,3 +52,11 @@ pnpm rc g3-check
 ## What Instagram accepts (V-25, checked 2026-10-15)
 
 `media_type=REELS`, `video_url` on a public HTTPS server (Meta fetches it with cURL; US-ASCII only), MOV or MP4 with the moov atom first, H.264 or HEVC, 4:2:0, closed GOP, AAC up to 48 kHz, 23–60 fps, at most 1920 px wide, 3 s to 15 min, at most 300 MB, VBR up to 25 Mbps; 9:16 recommended. `share_to_feed` true shows it on the grid too. A container lives 24 h. Our renderer makes 1080 × 1920, 30 fps, H.264 High yuv420p, AAC, faststart, 12–30 s. Reels count toward the 24-hour publishing limit (read `content_publishing_limit`).
+
+## Trial Reels (M8-11)
+A Reel can go out as a trial: Instagram shows it to people who do not follow the account first and reports how it did after 24 hours. Set it on the Reel card ("Trial Reel"), off by default, before the Reel is published:
+- **On, I share it with followers myself** (`MANUAL`): graduate it in the Instagram app; there is no API call for it.
+- **On, Instagram shares it if it does well** (`SS_PERFORMANCE`).
+
+The publisher sends `trial_params={"graduation_strategy": …}` on the REELS container; the dry run sends it too. After publishing the setting is fixed.
+
