@@ -233,7 +233,14 @@ export default async function CalendarPage({
                             loading="lazy"
                           />
                         ) : null}
-                        <span className="line-clamp-2">{item.title}</span>
+                        <span className="line-clamp-2">
+                          {item.format === "REEL" ? (
+                            <Badge variant="secondary" className="mr-1">
+                              {t.reelBadge}
+                            </Badge>
+                          ) : null}
+                          {item.title}
+                        </span>
                         <Badge variant="ghost" className={cn("w-fit", STATUS_STYLE[item.status])}>
                           {t.status[item.status]}
                         </Badge>
@@ -277,7 +284,14 @@ export default async function CalendarPage({
                         ) : null}
                         {item.market.name}
                       </TableCell>
-                      <TableCell className="max-w-md whitespace-normal">{item.title}</TableCell>
+                      <TableCell className="max-w-md whitespace-normal">
+                        {item.format === "REEL" ? (
+                          <Badge variant="secondary" className="mr-1">
+                            {t.reelBadge}
+                          </Badge>
+                        ) : null}
+                        {item.title}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="ghost" className={cn(STATUS_STYLE[item.status])}>
                           {t.status[item.status]}
@@ -329,6 +343,11 @@ export default async function CalendarPage({
                     href={`/content/review/${draft.ideaId}`}
                     className="line-clamp-2 underline-offset-4 hover:underline"
                   >
+                    {draft.format === "REEL" ? (
+                      <Badge variant="secondary" className="mr-1">
+                        {t.reelBadge}
+                      </Badge>
+                    ) : null}
                     {draft.title}
                   </Link>
                   <span className="text-xs text-muted-foreground">

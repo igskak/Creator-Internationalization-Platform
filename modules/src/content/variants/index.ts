@@ -54,6 +54,7 @@ export {
   type WorkQueue,
 } from "./queries";
 export { assertReasonCode } from "./reason";
+export { reelRenderState, reelReviewFacts } from "./reel";
 export {
   MAX_INSTRUCTION_CHARS,
   RegenerateFieldPayload,

@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/test/setup-dom";
 import { en } from "@/lib/i18n/en";
 import { I18nProvider } from "@/lib/i18n/provider";
-import { ReelCard } from "./reel-card";
+import { ReelCard, type ReelReviewProps } from "./reel-card";
 
 // The Reel card of a market: the estimate dialog, progress, the finished Reel and its changes.
 // The actions are mocked. Synthetic content only.
@@ -18,10 +18,29 @@ const mocks = vi.hoisted(() => ({
   generate: vi.fn(),
   changeHook: vi.fn(),
   redoShot: vi.fn(),
+  approve: vi.fn(),
+  reject: vi.fn(),
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock("sonner", () => ({ toast: mocks.toast }));
+vi.mock("@/server/actions/content", () => ({
+  approveVariant: mocks.approve,
+  rejectVariant: mocks.reject,
+  requestChanges: vi.fn(),
+  resubmitVariant: vi.fn(),
+  triggerRender: vi.fn(),
+  unapproveVariant: vi.fn(),
+}));
+vi.mock("@/server/actions/statuses", () => ({ getStatuses: vi.fn() }));
+vi.mock("@/server/actions/publishing", () => ({
+  schedulePublication: vi.fn(),
+  cancelPublication: vi.fn(),
+  reschedulePublication: vi.fn(),
+  retryPublication: vi.fn(),
+  setPublishingEnabled: vi.fn(),
+  getPublication: vi.fn(),
+}));
 vi.mock("@/server/actions/reels", () => ({
   estimateReel: mocks.estimate,
   generateReel: mocks.generate,
@@ -66,6 +85,8 @@ const reelOf = (over: Record<string, unknown> = {}): NonNullable<ReelView["reel"
   ({
     variantId: REEL,
     status: "READY_FOR_REVIEW",
+    lockVersion: 3,
+    allowed: [],
     flags: [],
     lastError: null,
     stage: null,
@@ -121,13 +142,32 @@ const viewOf = (over: Partial<ReelView> = {}): ReelView => ({
   ...over,
 });
 
-function show(view: ReelView, canManage = true) {
+function show(view: ReelView, canManage = true, review?: ReelReviewProps) {
   return render(
     <I18nProvider locale="en" messages={en}>
-      <ReelCard view={view} canManage={canManage} />
+      <ReelCard view={view} canManage={canManage} {...(review ? { review } : {})} />
     </I18nProvider>,
   );
 }
+
+const REVIEW: ReelReviewProps = {
+  reasons: [{ code: "WEAK_HOOK", label: "Weak hook" }],
+  flagLabels: {},
+  publish: {
+    ideaId: "33333333-3333-4333-8333-333333333333",
+    market: { code: "es-ES", name: "Spain", flagEmoji: null, timeZone: "Europe/Madrid" },
+    canManage: true,
+    publications: { current: null, lastDryRun: null },
+  },
+};
+const action = (name: string, over: Record<string, unknown> = {}) => ({
+  action: name,
+  enabled: true,
+  blockers: [],
+  confirm: false,
+  ...(name === "approve" ? { checklist: ["factsChecked"] } : {}),
+  ...over,
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -406,5 +446,68 @@ describe("a finished Reel", () => {
     show(viewOf({ reel: reelOf() }), false);
     expect(screen.getByRole("button", { name: t.hook.use })).toBeDisabled();
     expect(screen.queryByRole("button", { name: t.scenes.redo })).not.toBeInTheDocument();
+  });
+
+  describe("review (M8-09)", () => {
+    it("approves the Reel with its lock version and the checklist", async () => {
+      const user = userEvent.setup();
+      mocks.approve.mockResolvedValue({
+        ok: true,
+        data: { versionNo: 1, status: "APPROVED", lockVersion: 4 },
+      });
+      show(
+        viewOf({ reel: reelOf({ allowed: [action("approve"), action("reject")] }) }),
+        true,
+        REVIEW,
+      );
+      const block = screen.getByTestId("reel-review");
+      expect(within(block).getByText(/Reel status: Ready for review/i)).toBeInTheDocument();
+      await user.click(within(block).getByRole("button", { name: en.review.actions.approve }));
+      const dialog = screen.getByRole("dialog");
+      expect(within(dialog).getByText(t.review.approveDescription)).toBeInTheDocument();
+      await user.click(within(dialog).getByRole("checkbox"));
+      await user.click(
+        within(dialog).getByRole("button", { name: en.review.actions.approveSubmit }),
+      );
+      expect(mocks.approve).toHaveBeenCalledWith({
+        variantId: REEL,
+        lockVersion: 3,
+        checklist: { factsChecked: true },
+      });
+      // No "render again" for a Reel: its video is made by the Reel job.
+      expect(screen.queryByRole("button", { name: en.review.actions.rerender })).toBeNull();
+    });
+
+    it("explains in Reel words what blocks the approval", () => {
+      show(
+        viewOf({
+          reel: reelOf({
+            allowed: [
+              action("approve", {
+                enabled: false,
+                blockers: [{ code: "RENDER_STALE", message: "x" }],
+              }),
+            ],
+          }),
+        }),
+        true,
+        REVIEW,
+      );
+      expect(screen.getByText(t.review.blocker.RENDER_STALE)).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: en.review.actions.rerender })).toBeNull();
+    });
+
+    it("shows the publishing panel once the Reel is approved", () => {
+      show(
+        viewOf({
+          blockedBy: "reel_in_use",
+          reel: reelOf({ status: "APPROVED", changeable: false, allowed: [action("schedule")] }),
+        }),
+        true,
+        REVIEW,
+      );
+      expect(screen.getByTestId("reel-review")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: en.publish.panel.schedule })).toBeInTheDocument();
+    });
   });
 });

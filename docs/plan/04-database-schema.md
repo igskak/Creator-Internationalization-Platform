@@ -659,6 +659,17 @@ create unique index reel_shots_live_uq on reel_shots (brand_id, prompt_hash)
 ```
 RLS on the three new tables, no policies. `reel_scripts` and `reel_renders` are declared in the Drizzle file next to `content_variants` (module cycle), `reel_shots` in `schema/reels.ts`.
 
+### 0010_reel_versions (M8-09, plan 18 §18.5)
+An approved version of a Reel freezes its video, not a carousel render.
+```sql
+alter table content_variant_versions
+  alter column carousel_render_id drop not null,
+  add column reel_render_id uuid references reel_renders,
+  add constraint content_variant_versions_render_check
+    check ((carousel_render_id is null) <> (reel_render_id is null));   -- exactly one
+```
+The snapshot of a Reel has `format = 'REEL'` and `reel` (render, script, the mp4's key, size and SHA-256); see `ApprovedReel` in `db/src/json/review.ts`.
+
 ## 4.4 JSON field shapes (Zod schemas in `db/src/json/`)
 
 ```ts

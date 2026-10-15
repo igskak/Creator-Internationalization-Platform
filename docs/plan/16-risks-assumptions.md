@@ -103,8 +103,8 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-22 | R2: presigned PUT and CORS; single PUT size limit; EU jurisdiction; public bucket option | M0-13 | Cloudflare docs |
 | V-23 | Legal: EU AI Act transparency obligations (scope, dates); Meta AI-generated content policy | B-13 (legal) | Counsel |
 | V-24 | Higgsfield API: commercial use of outputs, file retention, rate limits, moderation (`nsfw` false positives), request/status schema and error codes | M8-02 | docs.higgsfield.ai, terms of service. **Checked 2026-10-13: partly**, see decision log |
-| V-25 | Instagram Reels container: `media_type=REELS`, codecs, max length and size, aspect ratio, `video_url`, processing time, `trial_params` | M8-09 | Instagram Content Publishing docs |
-| V-26 | Does Meta fetch a presigned R2 URL for video (V-14 passed for images)? | M8-09 | Dry run on the test account |
+| V-25 | Instagram Reels container: `media_type=REELS`, codecs, max length and size, aspect ratio, `video_url`, processing time, `trial_params` | M8-09 | Instagram Content Publishing docs **Checked 2026-10-15: ✓**, see decision log (M8-09). |
+| V-26 | Does Meta fetch a presigned R2 URL for video (V-14 passed for images)? | M8-09 | Dry run on the test account **open**: `pnpm ig:smoke --reel` or a Reel dry run from the app (`docs/runbooks/reels.md`) |
 | V-27 | ffmpeg and Chromium together on Trigger.dev prod machines; memory and time for a 20 s render | M8-05 | Trigger.dev docs, a deploy test |
 | V-28 | Audio licence: only owner-supplied tracks with a licence note; Instagram's music library is not available through the API | M8-08 | Owner, counsel |
 | V-29 | `reel-director` quality: claim fidelity and hook strength on real posts | M8-03 | Eval harness + owner review. **Closed 2026-10-14**: live run on 3 synthetic posts, scripts accepted by the owner (not yet real posts) |

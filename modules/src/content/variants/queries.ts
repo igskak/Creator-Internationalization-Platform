@@ -38,6 +38,8 @@ export type DraftRow = {
   marketCode: string;
   marketName: string;
   flagEmoji: string | null;
+  /** A Reel opens on the same review page as its carousel (its card sits in the market's column). */
+  format: "CAROUSEL" | "REEL" | "SINGLE_IMAGE";
   status: VariantStatus;
   /** 1–5, null while there is no review. */
   qualityScore: number | null;
@@ -66,8 +68,6 @@ export async function listDrafts(
 ): Promise<DraftList> {
   const input = ListDraftsInput.parse(raw);
   const filters = [
-    // The queues hold carousels; Reels join them with M8-09.
-    eq(v.format, "CAROUSEL"),
     ...(input.market ? [eq(schema.markets.code, input.market)] : []),
     ...(input.flagged ? [sql`cardinality(${v.flags}) > 0`] : []),
   ];
@@ -80,6 +80,7 @@ export async function listDrafts(
         marketCode: schema.markets.code,
         marketName: schema.markets.displayName,
         flagEmoji: schema.markets.flagEmoji,
+        format: v.format,
         status: v.status,
         qualityScore: v.qualityScore,
         flags: v.flags,
@@ -140,11 +141,11 @@ export type WorkQueue = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** The counters in one query (the layout asks for them on every page). */
+/** The counters in one query (the layout asks for them on every page); carousels and Reels alike. */
 export async function getWorkQueue(ctx: ServiceContext): Promise<WorkQueue> {
   const horizon = new Date(ctx.clock.now().getTime() + 7 * DAY_MS);
   const variants = (status: VariantStatus) =>
-    sql<number>`(select count(*)::int from ${v} where ${v.status} = ${status} and ${v.format} = 'CAROUSEL')`;
+    sql<number>`(select count(*)::int from ${v} where ${v.status} = ${status})`;
   const [row] = await ctx.db
     .select({
       cardsToReview: sql<number>`(select count(*)::int from ${schema.knowledgeItems} where ${schema.knowledgeItems.reviewStatus} = 'NEEDS_REVIEW')`,

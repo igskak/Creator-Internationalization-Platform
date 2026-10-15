@@ -740,6 +740,8 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
   - **Do:** REEL through approve, schedule and calendar; `modules/instagram` REELS container, longer status wait, J10 format branch; mock Graph API cases; `pnpm ig:smoke --reel` (dry by default); `docs/runbooks/reels.md`; Gate **G3** record `docs/decisions/G3.md`.
   - **Done when:** a dry run reaches FINISHED on the test account; no live Reel before G3.
   - **Refs:** 18 §18.5, 09.
+  - **Result (code, 2026-10-15):** migration `0010_reel_versions.sql` (a version points at a carousel render or a reel render); Reel branch of `approveVariant` and `verifyApprovedVersion` (`content/variants/reel.ts`), snapshot `format` and `reel`; `planReelDisclosure`; approve, reject, request changes, un-approve and the publishing panel on the Reel card; Reels in the drafts queue, counters and calendar (badge); `createReelContainer`, the publisher's REELS branch (video guards, 15-minute wait, one remake after a fetch error), the Graph mock's REELS container; `pnpm ig:smoke --reel`; `pnpm rc g3-check`; `docs/runbooks/reels.md`; `docs/decisions/G3.md`. V-25 checked.
+  - **Open:** apply 0010, deploy, the Reel dry run on the test account (V-26), the owner's G3 decision, then the first live Reel.
 - [ ] **M8-10 · Insights for Reels** · P1 · M · deps: M8-09
   - **Do:** Reel metrics in snapshots and dashboards; link Reel to its source carousel.
 - [ ] **M8-11 · Trial Reels** · P1 · S · deps: M8-09

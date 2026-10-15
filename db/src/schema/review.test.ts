@@ -6,6 +6,8 @@ import {
   contentVariants,
   contentVariantVersions,
   masterIdeas,
+  reelRenders,
+  reelScripts,
   reviewEvents,
   voiceExamples,
 } from "./content";
@@ -240,6 +242,51 @@ describe("0006_review_scheduling", () => {
         .update(contentVariants)
         .set({ approvedVersionId: "00000000-0000-4000-8000-000000000000" })
         .where(eq(contentVariants.id, variantId)),
+    ).rejects.toThrow();
+  });
+
+  it("points a version at exactly one render: a carousel's or a Reel's (0010_reel_versions)", async () => {
+    const [script] = await t.db
+      .insert(reelScripts)
+      .values({ contentVariantId: variantId, version: 1, shotModel: "alibaba/wan-3.0" })
+      .returning();
+    const [reelRender] = await t.db
+      .insert(reelRenders)
+      .values({
+        contentVariantId: variantId,
+        reelScriptId: script?.id ?? "",
+        inputHash: "reel-h1",
+        rendererVersion: "r1",
+      })
+      .returning();
+    const snapshot = {
+      hook: "Hook",
+      hookType: "QUESTION",
+      caption: "Caption",
+      cta: { type: "SAVE", text: "Save it" },
+      hashtags: [],
+      slides: [],
+      visualStyle: "",
+      templateSequence: [],
+      renderId: reelRender?.id ?? "",
+      renderedSlideKeys: [],
+      knowledge: [],
+      generationVersion: "",
+    };
+    const version = (versionNo: number, ids: { carousel?: string | null; reel?: string | null }) =>
+      t.db.insert(contentVariantVersions).values({
+        contentVariantId: variantId,
+        versionNo,
+        snapshot,
+        carouselRenderId: ids.carousel ?? null,
+        reelRenderId: ids.reel ?? null,
+        contentHash: `x${versionNo}`,
+        approvedBy: userId,
+      });
+    await expect(version(101, { reel: reelRender?.id ?? "" })).resolves.toBeDefined();
+    await expect(version(102, {})).rejects.toThrow();
+    await expect(
+      version(103, { carousel: renderId, reel: reelRender?.id ?? "" }),
     ).rejects.toThrow();
   });
 

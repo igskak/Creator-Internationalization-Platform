@@ -4,6 +4,8 @@ export {
   DISCLOSURE_NOTES,
   disclosureNote,
   planDisclosure,
+  planReelDisclosure,
+  REEL_DISCLOSURE_NOTES,
   slidesWithGeneratedImages,
 } from "./disclosure";
 export {

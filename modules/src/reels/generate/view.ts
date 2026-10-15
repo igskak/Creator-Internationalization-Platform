@@ -3,6 +3,7 @@ import type { ReelHookOption } from "@rc/db/json";
 import { and, desc, eq, inArray, ne, or, sql } from "@rc/db/orm";
 import { InvalidStateError } from "@rc/lib/errors";
 import { VIDEO_MODELS, type VideoModelId } from "@rc/lib/providers/video";
+import { type AllowedAction, allowedActions, reelReviewFacts } from "../../content";
 import type { ServiceContext } from "../../core";
 import { reelsEnabled } from "./enabled";
 import { estimateReel, type ReelEstimate } from "./estimate";
@@ -13,6 +14,22 @@ import { loadReelSource } from "./source";
 // video and cost. Plain data: it goes straight to the client.
 
 const PLAY_URL_SECONDS = 60 * 60;
+/**
+ * The reviewer actions a Reel offers (M8-09): the carousel's editing actions do not apply (a Reel is
+ * changed by a new hook or a redone shot), the decisions and the publishing ones do.
+ */
+const REEL_ACTIONS: readonly AllowedAction["action"][] = [
+  "approve",
+  "requestChanges",
+  "resubmit",
+  "reject",
+  "unapprove",
+  "schedule",
+  "cancelSchedule",
+  "publishNow",
+  "retry",
+];
+
 /** A Reel in these states can be changed (the same states `requestReel` accepts). */
 const CHANGEABLE: readonly string[] = ["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"];
 
@@ -53,6 +70,10 @@ export type ReelRenderView = {
 export type ReelDetail = {
   variantId: string;
   status: string;
+  /** Optimistic lock of the Reel variant (approve sends it back). */
+  lockVersion: number;
+  /** What the reviewer can do now, with what blocks it (the same rules as a carousel's). */
+  allowed: AllowedAction[];
   flags: string[];
   lastError: { code: string; message: string } | null;
   /** Where a running generation is; null when none runs. */
@@ -189,9 +210,13 @@ async function detailOf(
     );
 
   const state = reel.pipelineState;
+  const { facts } = await reelReviewFacts(ctx, reel);
+  const role = ctx.actor.type === "USER" ? ctx.actor.role : undefined;
   return {
     variantId: reel.id,
     status: reel.status,
+    lockVersion: reel.lockVersion,
+    allowed: allowedActions(facts, role).filter((a) => REEL_ACTIONS.includes(a.action)),
     flags: reel.flags,
     lastError: reel.lastError
       ? { code: reel.lastError.code, message: reel.lastError.message }

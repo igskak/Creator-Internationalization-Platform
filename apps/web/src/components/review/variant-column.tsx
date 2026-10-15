@@ -17,7 +17,7 @@ import { DisclosureNote } from "./disclosure-note";
 import { EditableCta } from "./editable-cta";
 import { EditableHashtags } from "./editable-hashtags";
 import { EditableText } from "./editable-text";
-import { ReelCard } from "./reel-card";
+import { ReelCard, type ReelReviewProps } from "./reel-card";
 import { RegeneratePicturesButton } from "./regenerate-pictures-button";
 import { SlideCard } from "./slide-card";
 import { SlideDrawer } from "./slide-drawer";
@@ -88,7 +88,7 @@ export function VariantColumn({
     publications: VariantPublicationsDto;
   };
   /** The Reel card of this market's post: absent in tests that do not show it. */
-  reel?: { view: ReelView; canManage: boolean };
+  reel?: { view: ReelView; canManage: boolean; review?: ReelReviewProps };
 }) {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
@@ -179,7 +179,13 @@ export function VariantColumn({
             />
           </Section>
 
-          {reel ? <ReelCard view={reel.view} canManage={reel.canManage} /> : null}
+          {reel ? (
+            <ReelCard
+              view={reel.view}
+              canManage={reel.canManage}
+              {...(reel.review ? { review: reel.review } : {})}
+            />
+          ) : null}
 
           <Section title={t.hook}>
             <EditableText

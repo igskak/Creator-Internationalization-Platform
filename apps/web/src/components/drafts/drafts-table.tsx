@@ -80,6 +80,11 @@ export function DraftsTable({
                 >
                   {row.ideaTopic}
                 </Link>
+                {row.format === "REEL" ? (
+                  <Badge variant="secondary" className="ml-2">
+                    {t.reelBadge}
+                  </Badge>
+                ) : null}
               </TableCell>
               <TableCell>
                 {row.flagEmoji ? <span aria-hidden="true">{row.flagEmoji} </span> : null}

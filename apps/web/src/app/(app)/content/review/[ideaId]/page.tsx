@@ -56,6 +56,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
       variants.map((v) => v.id),
     ),
   ]);
+  // The Reels' own posts (M8-09): a Reel is scheduled and published like its carousel.
+  const reelPublications = await listVariantPublications(
+    ctx,
+    Object.values(reels).flatMap((view) => (view.reel ? [view.reel.variantId] : [])),
+  );
   const canMakeReels = user.role === "owner" || user.role === "editor";
   const { idea, product, cards } = detail;
   const label = (kind: string, code: string) =>
@@ -94,26 +99,38 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
     )[0];
   const canRegenerate =
     variants.length > 0 && variants.every((v) => REGENERABLE.has(v.status)) && reasons.length > 0;
-  const publishProps = (variant: (typeof variants)[number]) => {
-    const market = markets.find((m) => m.code === variant.marketCode);
-    if (!market) return {};
+  const publishFor = (marketCode: string, variantId: string) => {
+    const market = markets.find((m) => m.code === marketCode);
+    if (!market) return undefined;
     return {
-      publish: {
-        ideaId: idea.id,
-        market: {
-          code: market.code,
-          name: market.displayName,
-          flagEmoji: market.flagEmoji,
-          timeZone: market.timezone,
-        },
-        canManage: user.role === "owner" || user.role === "editor",
-        publications: toVariantPublicationsDto(publications[variant.id]),
+      ideaId: idea.id,
+      market: {
+        code: market.code,
+        name: market.displayName,
+        flagEmoji: market.flagEmoji,
+        timeZone: market.timezone,
       },
+      canManage: user.role === "owner" || user.role === "editor",
+      publications: toVariantPublicationsDto(
+        publications[variantId] ?? reelPublications[variantId],
+      ),
     };
   };
-  const reelProps = (variantId: string) => {
-    const view = reels[variantId];
-    return view ? { reel: { view, canManage: canMakeReels } } : {};
+  const publishProps = (variant: (typeof variants)[number]) => {
+    const publish = publishFor(variant.marketCode, variant.id);
+    return publish ? { publish } : {};
+  };
+  const reelProps = (variant: (typeof variants)[number]) => {
+    const view = reels[variant.id];
+    if (!view) return {};
+    const publish = view.reel ? publishFor(variant.marketCode, view.reel.variantId) : undefined;
+    return {
+      reel: {
+        view,
+        canManage: canMakeReels,
+        review: { reasons, flagLabels: t.flags, ...(publish ? { publish } : {}) },
+      },
+    };
   };
   const generationVersion = variants.find((v) => v.generationVersion)?.generationVersion;
 
@@ -273,7 +290,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ ideaId:
                 templates={templates}
                 ctaTypes={ctaTypes}
                 {...publishProps(variant)}
-                {...reelProps(variant.id)}
+                {...reelProps(variant)}
               />
             ))}
           </div>

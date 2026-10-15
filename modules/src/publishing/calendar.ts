@@ -45,6 +45,8 @@ export type CalendarItem = {
   /** When it goes out (scheduled time), or went out. */
   at: Date;
   status: (typeof CALENDAR_STATUSES)[number];
+  /** A Reel gets a badge; its thumbnail is null (there is no still image of it). */
+  format: "CAROUSEL" | "REEL";
   title: string;
   /** Presigned URL of the first image of the approved version; null if there is none. */
   thumbnailUrl: string | null;
@@ -155,6 +157,7 @@ export async function getCalendar(
         },
         at,
         status: r.status as CalendarItem["status"],
+        format: r.snapshot.format ?? "CAROUSEL",
         title: r.snapshot.hook,
         thumbnailUrl: await thumbnail(ctx, r.snapshot.renderedSlideKeys[0]),
         warnings: [],
@@ -184,6 +187,7 @@ export async function getCalendar(
 export type ApprovedDraft = {
   variantId: string;
   ideaId: string;
+  format: "CAROUSEL" | "REEL";
   title: string;
   ideaTopic: string;
   market: CalendarItem["market"];
@@ -221,6 +225,7 @@ export async function listApprovedNotScheduled(ctx: ServiceContext): Promise<App
     rows.map(async (r) => ({
       variantId: r.variantId,
       ideaId: r.ideaId,
+      format: r.snapshot.format ?? "CAROUSEL",
       title: r.snapshot.hook,
       ideaTopic: r.ideaTopic,
       market: {

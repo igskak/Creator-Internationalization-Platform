@@ -775,6 +775,18 @@ export const en = {
     reel: {
       title: "Reel",
       subtitle: "A short vertical video made from the pictures of this carousel.",
+      review: {
+        title: "Review and publish",
+        status: "Reel status: {status}",
+        approveDescription:
+          "The Reel is frozen as it is now: this exact video with its caption and hashtags. You can still withdraw the approval later.",
+        blocker: {
+          RENDER_MISSING: "The Reel has no video yet.",
+          RENDER_RUNNING: "The Reel is being made: wait for it.",
+          RENDER_STALE: "The video is older than the script: wait for the new video.",
+          RENDER_FAILED: "The video could not be made: generate the Reel again.",
+        },
+      },
       generate: "Generate Reel",
       generateAgain: "Generate again",
       blocked: {
@@ -1187,7 +1199,7 @@ export const en = {
   publish: {
     panel: {
       title: "Publishing",
-      hint: "A dry run sends the images to Instagram to be checked and publishes nothing.",
+      hint: "A dry run sends the images or the video to Instagram to be checked and publishes nothing.",
       publishNow: "Publish now",
       schedule: "Schedule…",
       dryRun: "Dry run",
@@ -1385,6 +1397,7 @@ export const en = {
   },
   calendar: {
     title: "Calendar",
+    reelBadge: "Reel",
     subtitle:
       "Approved posts by day and market. Pick a time for a draft, move a post or call it off.",
     views: { week: "Week", list: "List" },
@@ -1447,6 +1460,7 @@ export const en = {
   },
   drafts: {
     title: "Drafts",
+    reelBadge: "Reel",
     subtitle: "Every market's draft in one queue. Open one to review it next to its sibling.",
     tabs: {
       REVIEW: "In review",

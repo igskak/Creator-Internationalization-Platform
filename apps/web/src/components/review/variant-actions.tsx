@@ -39,19 +39,23 @@ const RERENDER = new Set(["RENDER_MISSING", "RENDER_STALE", "RENDER_FAILED"]);
 /**
  * The buttons of a draft, driven by the server's allowed actions (plan 10 §10.3, M4-06): approve
  * (with its checklist and, while it is blocked, the list of what blocks it), request changes,
- * resubmit, reject, and withdraw the approval. Scheduling joins them in M4-09.
+ * resubmit, reject, and withdraw the approval. Scheduling joins them in M4-09. A Reel (M8-09)
+ * uses the same buttons with its own wording, and has no "render again" (its video is made by J23).
  */
 export function VariantActions({
   allowed,
   flagLabels,
   disclosure = null,
+  kind = "carousel",
 }: {
   allowed: AllowedAction[];
   flagLabels: Record<string, string>;
   disclosure?: SnapshotDisclosure | null;
+  kind?: "carousel" | "reel";
 }) {
   const { messages } = useI18n();
   const t = messages.review.actions;
+  const reelText = messages.review.reel.review;
   const router = useRouter();
   const variant = useVariant();
   const [open, setOpen] = useState<Dialogs>(null);
@@ -67,10 +71,16 @@ export function VariantActions({
   });
 
   const blockerText = (blocker: AllowedAction["blockers"][number]) =>
-    format(t.blocker[blocker.code], {
-      flag: blocker.flag ? (flagLabels[blocker.flag] ?? blocker.flag) : "",
-    });
-  const needsRender = approve?.blockers.some((b) => RERENDER.has(b.code)) ?? false;
+    format(
+      kind === "reel" && blocker.code in reelText.blocker
+        ? reelText.blocker[blocker.code as keyof typeof reelText.blocker]
+        : t.blocker[blocker.code],
+      {
+        flag: blocker.flag ? (flagLabels[blocker.flag] ?? blocker.flag) : "",
+      },
+    );
+  const needsRender =
+    kind === "carousel" && (approve?.blockers.some((b) => RERENDER.has(b.code)) ?? false);
 
   return (
     <div className="flex flex-col gap-2" data-testid="variant-actions">
@@ -132,6 +142,7 @@ export function VariantActions({
         onClose={() => setOpen(null)}
         checklist={(approve?.checklist ?? ["factsChecked"]) as Checklist[]}
         disclosure={disclosure}
+        description={kind === "reel" ? reelText.approveDescription : t.approveDescription}
       />
       <ReasonDialog
         open={open === "changes"}
@@ -191,11 +202,13 @@ function ApproveDialog({
   onClose,
   checklist,
   disclosure,
+  description,
 }: {
   open: boolean;
   onClose: () => void;
   checklist: Checklist[];
   disclosure: SnapshotDisclosure | null;
+  description: string;
 }) {
   const { messages } = useI18n();
   const t = messages.review.actions;
@@ -221,7 +234,7 @@ function ApproveDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t.approveTitle}</DialogTitle>
-          <DialogDescription>{t.approveDescription}</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form
           className="flex flex-col gap-4"

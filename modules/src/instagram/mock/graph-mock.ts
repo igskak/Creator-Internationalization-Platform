@@ -17,8 +17,12 @@ export type MockAccount = {
 type Container = {
   id: string;
   accountId: string;
-  kind: "CHILD" | "CAROUSEL";
+  kind: "CHILD" | "CAROUSEL" | "REELS";
   imageUrl?: string;
+  videoUrl?: string;
+  shareToFeed?: boolean;
+  /** The reason Meta gives next to ERROR (the `status` field). */
+  statusDetail?: string;
   children?: string[];
   caption?: string;
   isAiGenerated?: boolean;
@@ -378,6 +382,31 @@ export function createMockGraphApi(options: MockGraphOptions = {}) {
         );
       }
     }
+    if (body.media_type === "REELS") {
+      const videoUrl = typeof body.video_url === "string" ? body.video_url : undefined;
+      if (!videoUrl) {
+        return error(400, "Invalid parameter: video_url is required for REELS.", 100, 2207052);
+      }
+      // Meta fetches a video after it answers: a URL it cannot read shows up as ERROR on a poll.
+      const unfetchable =
+        options.unfetchableUrlPart !== undefined && videoUrl.includes(options.unfetchableUrlPart);
+      const container: Container = {
+        id: nextId("177"),
+        accountId: account.id,
+        kind: "REELS",
+        videoUrl,
+        shareToFeed: body.share_to_feed === true,
+        status: unfetchable ? "ERROR" : "IN_PROGRESS",
+        polls: 0,
+        ...(unfetchable
+          ? { statusDetail: "Error: Media upload has failed with error code 2207052" }
+          : {}),
+        ...(caption === undefined ? {} : { caption }),
+        ...(body.is_ai_generated === true ? { isAiGenerated: true } : {}),
+      };
+      containers.set(container.id, container);
+      return ok({ id: container.id });
+    }
     if (body.media_type === "CAROUSEL") {
       const children = String(body.children ?? "")
         .split(",")
@@ -438,7 +467,7 @@ export function createMockGraphApi(options: MockGraphOptions = {}) {
     }
     const out: Record<string, unknown> = { id: container.id };
     if (fields.includes("status_code") || fields === "") out.status_code = container.status;
-    if (fields.includes("status")) out.status = container.status;
+    if (/(^|,)status(,|$)/.test(fields)) out.status = container.statusDetail ?? container.status;
     return ok(out);
   }
 

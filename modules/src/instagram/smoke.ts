@@ -9,6 +9,7 @@ import {
   type ContainerStatus,
   createCarouselContainer,
   createChildContainer,
+  createReelContainer,
   getContainerStatus,
   getMedia,
   getPublishingLimit,
@@ -20,7 +21,8 @@ import { createGraphClient, type GraphCallRecord, requireInstagramApp } from "./
 // The smoke test of one Instagram account (plan 13 §13.6 item 4, M5-10): the same calls the
 // publisher makes, on synthetic slides, with the verdicts the open verification items need
 // (V-14 presigned links, V-08 a second media_publish, V-06 the allowance). Dry by default: nothing
-// is posted unless `live` is set. Nothing is written to the database.
+// is posted unless `live` is set. Nothing is written to the database. With `video` it posts a Reel
+// instead of a carousel (M8-09: V-26, a presigned link to an mp4).
 
 export type SmokeStep = {
   name: string;
@@ -35,6 +37,8 @@ export type SmokeReport = {
   username: string;
   instagramAccountId: string;
   live: boolean;
+  /** A Reel was tried instead of a carousel. */
+  reel: boolean;
   mode: string;
   startedAt: string;
   steps: SmokeStep[];
@@ -62,9 +66,11 @@ export type SmokeInput = {
   live: boolean;
   /** After a live post, call `media_publish` once more on the same container to learn what Meta answers (V-08). */
   probeRepublish?: boolean;
-  /** 2–10 JPEG images, 1080 × 1350 (the CLI makes them). */
+  /** 2–10 JPEG images, 1080 × 1350 (the CLI makes them). Ignored when `video` is set. */
   slides: readonly Uint8Array[];
-  /** How long to wait for the container (default 10 minutes). */
+  /** An mp4 (H.264 + AAC, 9:16): the smoke test makes a REELS container from it instead. */
+  video?: Uint8Array;
+  /** How long to wait for the container (default 10 minutes, 15 for a Reel). */
   maxWaitMs?: number;
 };
 
@@ -88,6 +94,7 @@ export async function runInstagramSmoke(
     username: account.username,
     instagramAccountId: account.instagramAccountId,
     live: input.live,
+    reel: input.video !== undefined,
     mode: ctx.instagram.publishMode,
     startedAt: started.toISOString(),
     steps: [],
@@ -187,54 +194,89 @@ export async function runInstagramSmoke(
       };
     });
 
-    // 4. Slides in storage, presigned like in production, and one child container each (V-14).
     const prefix = `smoke/${randomUUID()}`;
-    const children = await step("child containers", async () => {
-      const ids: string[] = [];
-      for (const [i, bytes] of input.slides.entries()) {
-        const key = `${prefix}/${i}.jpg`;
-        await ctx.storage.put(key, bytes, { contentType: "image/jpeg" });
+    let containerId: string | undefined;
+    if (input.video) {
+      // 4. A Reel: the mp4 in storage, presigned like in production, one REELS container (V-26).
+      const video = input.video;
+      containerId = await step("reel container", async () => {
+        const key = `${prefix}/reel.mp4`;
+        await ctx.storage.put(key, video, { contentType: "video/mp4" });
         uploaded.push(key);
         const { url } = await ctx.storage.presignGet(key, {
           expiresInSeconds: PRESIGN_TTL.metaFetch,
         });
-        ids.push(await createChildContainer(client, account.instagramAccountId, url));
-      }
-      report.findings.push(
-        `V-14: Instagram accepted ${ids.length} presigned image links as image_url (query strings included).`,
-      );
-      return { detail: `${ids.length} children created from presigned links`, value: ids };
-    });
-    if (!children) {
-      report.findings.push(
-        "V-14: a child container could not be made from a presigned link. If the message says the image could not be downloaded, Meta does not accept presigned URLs: set RENDERS_PUBLIC_BASE_URL (plan 09 §9.3).",
-      );
-      return finish();
-    }
-
-    // 5. The carousel container and its readiness.
-    const containerId = await step("carousel container", async () => {
-      const id = await createCarouselContainer(client, account.instagramAccountId, {
-        childIds: children,
-        caption: CAPTION(report.startedAt),
+        const id = await createReelContainer(client, account.instagramAccountId, {
+          videoUrl: url,
+          caption: CAPTION(report.startedAt),
+          shareToFeed: true,
+        });
+        return { detail: `REELS container ${id} from a presigned mp4 link`, value: id };
       });
-      return { detail: `container ${id}`, value: id };
-    });
-    if (!containerId) return finish();
+      if (!containerId) return finish();
+    } else {
+      // 4. Slides in storage, presigned like in production, and one child container each (V-14).
+      const children = await step("child containers", async () => {
+        const ids: string[] = [];
+        for (const [i, bytes] of input.slides.entries()) {
+          const key = `${prefix}/${i}.jpg`;
+          await ctx.storage.put(key, bytes, { contentType: "image/jpeg" });
+          uploaded.push(key);
+          const { url } = await ctx.storage.presignGet(key, {
+            expiresInSeconds: PRESIGN_TTL.metaFetch,
+          });
+          ids.push(await createChildContainer(client, account.instagramAccountId, url));
+        }
+        report.findings.push(
+          `V-14: Instagram accepted ${ids.length} presigned image links as image_url (query strings included).`,
+        );
+        return { detail: `${ids.length} children created from presigned links`, value: ids };
+      });
+      if (!children) {
+        report.findings.push(
+          "V-14: a child container could not be made from a presigned link. If the message says the image could not be downloaded, Meta does not accept presigned URLs: set RENDERS_PUBLIC_BASE_URL (plan 09 §9.3).",
+        );
+        return finish();
+      }
+
+      // 5. The carousel container and its readiness.
+      containerId = await step("carousel container", async () => {
+        const id = await createCarouselContainer(client, account.instagramAccountId, {
+          childIds: children,
+          caption: CAPTION(report.startedAt),
+        });
+        return { detail: `container ${id}`, value: id };
+      });
+      if (!containerId) return finish();
+    }
+    const container = containerId;
 
     const finished = await step("container ready", async () => {
-      const limit = input.maxWaitMs ?? 10 * 60_000;
+      const limit = input.maxWaitMs ?? (input.video ? 15 : 10) * 60_000;
       let waited = 0;
       let status: ContainerStatus = "IN_PROGRESS";
+      let detail: string | undefined;
       while (waited <= limit) {
-        status = (await getContainerStatus(client, containerId)).status;
+        ({ status, detail } = await getContainerStatus(client, container));
         if (status !== "IN_PROGRESS") break;
         await ctx.sleep(30_000);
         waited += 30_000;
       }
-      if (status !== "FINISHED")
-        throw new Error(`The container is ${status} after ${waited / 1000} s.`);
-      report.findings.push(`V-07: the container reached FINISHED after about ${waited / 1000} s.`);
+      if (status !== "FINISHED") {
+        if (input.video) {
+          report.findings.push(
+            `V-26: the REELS container ended ${status}${detail ? ` (${detail})` : ""}. If Meta could not download the video (2207052 / 2207003), presigned links do not work for video: set RENDERS_PUBLIC_BASE_URL.`,
+          );
+        }
+        throw new Error(
+          `The container is ${status} after ${waited / 1000} s${detail ? `: ${detail}` : ""}.`,
+        );
+      }
+      report.findings.push(
+        input.video
+          ? `V-26: Meta downloaded the video from a presigned R2 link; the REELS container reached FINISHED after about ${waited / 1000} s.`
+          : `V-07: the container reached FINISHED after about ${waited / 1000} s.`,
+      );
       return { detail: `FINISHED after about ${waited / 1000} s`, value: true };
     });
     if (!finished) return finish();
@@ -248,7 +290,7 @@ export async function runInstagramSmoke(
 
     // 6. Publish for real, read the permalink, and try the insights call.
     const mediaId = await step("publish", async () => {
-      const id = await publishContainer(client, account.instagramAccountId, containerId);
+      const id = await publishContainer(client, account.instagramAccountId, container);
       return { detail: `media ${id}`, value: id };
     });
     if (!mediaId) return finish();
@@ -265,7 +307,7 @@ export async function runInstagramSmoke(
 
     if (input.probeRepublish) {
       try {
-        const again = await publishContainer(client, account.instagramAccountId, containerId);
+        const again = await publishContainer(client, account.instagramAccountId, container);
         report.findings.push(
           `V-08: a second media_publish of the same container was ACCEPTED and returned media ${again}${again === mediaId ? " (the same id)" : " (a different id: a duplicate post exists!)"}.`,
         );
@@ -309,7 +351,7 @@ export async function runInstagramSmoke(
 /** The report as the text pasted into the runbook's log. */
 export function formatSmokeReport(report: SmokeReport): string {
   const lines = [
-    `# Instagram smoke test — @${report.username}`,
+    `# Instagram smoke test${report.reel ? " (Reel)" : ""} — @${report.username}`,
     "",
     `- Started: ${report.startedAt}`,
     `- Mode: ${report.mode}${report.live ? " (LIVE: a public test post was made)" : " (dry run)"}`,

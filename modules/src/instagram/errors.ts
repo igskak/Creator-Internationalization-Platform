@@ -104,9 +104,13 @@ function classOf(
 
 /** The error of a container that reached `status_code = ERROR` (no HTTP failure involved). */
 export function containerError(detail?: string): InstagramError {
+  // Meta puts the reason in the `status` field, e.g. "Error: ... failed with error code 2207052".
+  const match = /\b(2207\d{3}|9004|9007)\b/.exec(detail ?? "")?.[1];
+  const subcode = match === undefined ? undefined : Number(match);
   return {
     message: detail ?? "Instagram could not process the media container (status ERROR).",
     classification: "INVALID_MEDIA",
+    ...(subcode === undefined ? {} : { subcode }),
   };
 }
 
@@ -182,7 +186,7 @@ export function describeInstagramError(error: InstagramError): { title: string; 
     case "INVALID_MEDIA":
       return {
         title: isMediaFetchFailure(error)
-          ? "Instagram could not download the slide images."
+          ? "Instagram could not download the slide images or the video."
           : "Instagram refused the images or the caption.",
         nextStep: isMediaFetchFailure(error)
           ? "Retry in a few minutes. If it keeps failing, tell the team: the image links may be blocked."

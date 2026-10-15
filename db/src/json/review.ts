@@ -26,7 +26,31 @@ export const SnapshotDisclosure = z.object({
 });
 export type SnapshotDisclosure = z.infer<typeof SnapshotDisclosure>;
 
+/** What a Reel's approval froze (M8-09): the exact video file and the script it was made from. */
+export const ApprovedReel = z.object({
+  /** `reel_renders.id`, the same as the snapshot's `renderId`. */
+  renderId: z.string().min(1),
+  scriptId: z.string().min(1),
+  scriptVersion: z.number().int().positive(),
+  chosenHookId: z.string().min(1).nullable(),
+  /** The carousel the Reel was made from. */
+  sourceVariantId: z.string().min(1).nullable(),
+  /** The mp4 in storage and its SHA-256: the publisher checks the file is still this one. */
+  videoKey: z.string().min(1),
+  sha256: z.string().min(1),
+  bytes: z.number().int().positive(),
+  durationMs: z.number().int().positive(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  audioKind: z.string().min(1),
+  /** The text cards in order, as approved (what the viewer reads). */
+  cards: z.array(z.string()),
+});
+export type ApprovedReel = z.infer<typeof ApprovedReel>;
+
 export const ApprovedSnapshot = z.object({
+  /** Absent on carousels approved before M8-09. A Reel has no slides and carries `reel`. */
+  format: z.enum(["CAROUSEL", "REEL"]).optional(),
   hook: z.string(),
   hookType: z.string(),
   caption: z.string(),
@@ -43,6 +67,7 @@ export const ApprovedSnapshot = z.object({
   knowledge: z.array(z.object({ id: z.string().min(1), version: z.number().int().positive() })),
   generationVersion: z.string(),
   disclosure: SnapshotDisclosure.optional(),
+  reel: ApprovedReel.optional(),
 });
 export type ApprovedSnapshot = z.infer<typeof ApprovedSnapshot>;
 

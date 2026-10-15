@@ -80,11 +80,34 @@ export async function createCarouselContainer(
   return reply.id;
 }
 
+/**
+ * A Reel container (V-25, checked 2026-10-15): Meta downloads `videoUrl` itself, after it answers,
+ * so a bad link shows up later as status ERROR. `share_to_feed` puts it on the grid as well as in
+ * the Reels tab. `isAiGenerated` is Instagram's AI info label, as for carousels.
+ */
+export async function createReelContainer(
+  client: GraphClient,
+  accountId: string,
+  input: { videoUrl: string; caption: string; shareToFeed?: boolean; isAiGenerated?: boolean },
+): Promise<string> {
+  const reply = Id.parse(
+    await client.post(`/${accountId}/media`, {
+      media_type: "REELS",
+      video_url: input.videoUrl,
+      caption: input.caption,
+      share_to_feed: input.shareToFeed ?? true,
+      ...(input.isAiGenerated ? { is_ai_generated: true } : {}),
+    }),
+  );
+  return reply.id;
+}
+
 export async function getContainerStatus(
   client: GraphClient,
   containerId: string,
 ): Promise<{ status: ContainerStatus; detail: string | undefined }> {
-  const reply = Status.parse(await client.get(`/${containerId}`, { fields: "status_code" }));
+  // `status` carries Meta's reason next to ERROR (e.g. "... error code 2207026").
+  const reply = Status.parse(await client.get(`/${containerId}`, { fields: "status_code,status" }));
   return { status: reply.status_code, detail: reply.status };
 }
 
