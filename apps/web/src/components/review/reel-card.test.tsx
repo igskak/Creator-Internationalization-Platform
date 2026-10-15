@@ -494,7 +494,7 @@ describe("a finished Reel", () => {
         ok: true,
         data: { lockVersion: 4, warnings: [], reviewEventId: "e1" },
       });
-      show(viewOf({ reel: reelOf() }), true, REVIEW);
+      show(viewOf({ reel: reelOf({ allowed: [action("edit")] }) }), true, REVIEW);
       const post = screen.getByTestId("reel-post");
       expect(within(post).getByText(/Fine bulgur is already cooked\./)).toBeInTheDocument();
       expect(
@@ -518,6 +518,14 @@ describe("a finished Reel", () => {
           value: "New caption.",
         }),
       );
+    });
+
+    it("does not offer editing when the Reel's status does not allow it", () => {
+      show(viewOf({ reel: reelOf({ status: "PUBLISHED", allowed: [] }) }), true, REVIEW);
+      const post = screen.getByTestId("reel-post");
+      expect(
+        within(post).getByRole("button", { name: `Edit: ${en.review.edit.field.caption}` }),
+      ).toBeDisabled();
     });
 
     it("explains in Reel words what blocks the approval", () => {

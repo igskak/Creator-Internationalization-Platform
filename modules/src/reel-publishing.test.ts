@@ -94,10 +94,11 @@ describe("Reel review and publishing", () => {
       await setup();
     });
 
-    it("offers approve and reject on a finished Reel, not the carousel's editing actions", async () => {
+    it("offers approve, reject and editing its post on a finished Reel, not the carousel's other actions", async () => {
       const view = await getReelView(fx.ctx, fx.carouselId);
       const actions = view.reel?.allowed.map((a) => a.action);
-      expect(actions?.sort()).toEqual(["approve", "reject", "requestChanges"]);
+      // "edit" is the Reel's caption, ask and hashtags (G-01); field regeneration and renders are not offered.
+      expect(actions?.sort()).toEqual(["approve", "edit", "reject", "requestChanges"]);
       expect(view.reel?.allowed.find((a) => a.action === "approve")).toMatchObject({
         enabled: true,
         checklist: ["factsChecked"],

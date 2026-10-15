@@ -19,6 +19,7 @@ const PLAY_URL_SECONDS = 60 * 60;
  * changed by a new hook or a redone shot), the decisions and the publishing ones do.
  */
 const REEL_ACTIONS: readonly AllowedAction["action"][] = [
+  "edit",
   "approve",
   "requestChanges",
   "resubmit",
