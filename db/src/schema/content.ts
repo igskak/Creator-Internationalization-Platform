@@ -34,6 +34,7 @@ import type { ReelAudioKind, ReelHookOption, ReelQaReport, ReelScene } from "../
 import type { ApprovedSnapshot } from "../json/review";
 import { appUsers, brands, markets } from "./core";
 import { contentFormat, generationRuns, knowledgeItems, sourceAssets } from "./knowledge";
+import { experiments, performanceSummaries } from "./learning";
 
 // 0003_content (plan 04 §4.3). RLS on every table, no policies (04 §4.1).
 // content_format was created in 0002 (decision log, M1-01) and is reused here.
@@ -151,7 +152,7 @@ export const offers = pgTable(
   ],
 ).enableRLS();
 
-/** [S§7.1] performance_summary_id is added in 0008 (spec: created_from_metrics_window). */
+/** [S§7.1] performance_summary_id is added in 0012 (spec: created_from_metrics_window). */
 export const masterIdeas = pgTable(
   "master_ideas",
   {
@@ -175,6 +176,8 @@ export const masterIdeas = pgTable(
     rationale: text(),
     rejectedReason: text(),
     generationRunId: uuid().references(() => generationRuns.id),
+    /** The performance memory the idea was generated with (0012, M7-04); null for manual ideas. */
+    performanceSummaryId: uuid().references((): AnyPgColumn => performanceSummaries.id),
     createdBy: uuid().references(() => appUsers.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -207,7 +210,7 @@ export const masterIdeaKnowledge = pgTable(
 
 /**
  * [S§5] current_render_id is added in 0004, approved_version_id in 0005,
- * experiment_id and experiment_arm in 0008.
+ * experiment_id and experiment_arm in 0012.
  */
 export const contentVariants = pgTable(
   "content_variants",
@@ -250,6 +253,9 @@ export const contentVariants = pgTable(
     offerId: uuid().references(() => offers.id),
     campaignId: text().unique(),
     utmJson: jsonb().$type<UtmSpec>(),
+    /** The experiment this variant is an arm of (0012, M7-06), assigned on the review screen. */
+    experimentId: uuid().references((): AnyPgColumn => experiments.id),
+    experimentArm: text().$type<"A" | "B">(),
     contentLength: jsonb().$type<ContentLength>(),
     /** Pipeline version, e.g. 'p1.0.0'. */
     generationVersion: text(),
@@ -283,6 +289,14 @@ export const contentVariants = pgTable(
       "content_variants_source_variant_check",
       sql`${t.sourceVariantId} is null or ${t.format} = 'REEL'`,
     ),
+    check(
+      "content_variants_experiment_arm_check",
+      // Both or neither; written without OR so a null arm cannot make the check unknown (= pass).
+      sql`(${t.experimentId} is null) = (${t.experimentArm} is null) and coalesce(${t.experimentArm} in ('A', 'B'), true)`,
+    ),
+    index("content_variants_experiment_idx")
+      .on(t.experimentId)
+      .where(sql`${t.experimentId} is not null`),
   ],
 ).enableRLS();
 

@@ -643,9 +643,10 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M7 · Learning (P1)
 
-- [ ] **M7-01 · Learning schema (0008)** · P1 · S · deps: M6-01
+- [x] **M7-01 · Learning schema (0008)** · P1 · S · deps: M6-01
   - **Do:** `performance_summaries`, `experiments`, variant experiment columns, `master_ideas.performance_summary_id`.
   - **Done when:** migration + tests.
+  - **Result (2026-10-15):** migration `0012_learning.sql` (reviewed by hand; the custom part adds the `experiments` updated_at trigger and replaces `v_publication_dimensions` with the experiment columns), `db/src/schema/learning.ts`, `db/src/json/learning.ts` (`PerformanceMemory` as a Zod schema, `PerformanceStats`, `EXPERIMENT_DIMENSIONS`). 3 schema tests (a summary per market and across markets linked from an idea; the experiment checks and trigger; an arm needs its experiment and shows in the view). **The owner applies 0012 with `pnpm db:migrate` before this code is deployed.**
 
 - [ ] **M7-02 · Performance summary builder** · P1 · M · deps: M6-04, M7-01
   - **Do:** `analytics/summaries/` algorithm (11 §11.5), JSON ≤ ~1,500 tokens, caveats.

@@ -172,6 +172,9 @@ export const vPublicationDimensions = pgView("v_publication_dimensions", {
   captionChars: integer(),
   generationVersion: text(),
   campaignId: text(),
+  /** 0012 (M7-01). */
+  experimentId: uuid(),
+  experimentArm: text(),
 }).existing();
 
 /** One row per post: the snapshot closest to 168 h among those at least 72 h old, with the rates. */

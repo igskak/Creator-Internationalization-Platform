@@ -572,6 +572,7 @@ create table attribution_events (                -- leads and sales [S§13.1]
 Views in the same migration: `v_publication_dimensions`, `v_publication_metrics_d7`, `v_campaign_attribution` (definitions in 11 §11.3).
 
 ### 0008_learning (M7-01)
+Numbering note: this is the twelfth migration file, `0012_learning.sql`. Changes made when it was written: `experiments` has `visual_hypothesis_id` (the market visual hypothesis a completed experiment confirms or rejects, 11 §11.6), checks on the metric (`save_rate`, `share_rate`), on the minimum per arm (2–100) and on two different arms, and the `set_updated_at` trigger; `content_variants` checks that the experiment and the arm are set together (written without OR, so a null arm cannot pass it) and has a partial index on `experiment_id`; `v_publication_dimensions` is replaced with `experiment_id` and `experiment_arm` added at the end.
 ```sql
 create table performance_summaries (             -- "performance memory" [S§12.4]
   pk, market_id uuid references markets,         -- null = cross-market
