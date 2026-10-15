@@ -525,6 +525,7 @@ create index integration_events_open_idx on integration_events (integration, occ
 ```
 
 ### 0007_analytics (M6-01)
+Numbering note: this is the eleventh migration file, `0011_analytics.sql`. Changes made when it was written: `metric_snapshots` has an extra index on `(publication_id, media_age_hours)` and a check that the age is not negative; the enum names are `snapshot_slot` and `attribution_event_type` (`LEAD`, `SALE`, `REFUND`); `v_publication_dimensions` leaves out `experiment_id` and `experiment_arm` until 0012 adds the columns; `v_publication_metrics_d7` breaks a tie between snapshots at the same distance from 168 h by the newest `measured_at`; `v_campaign_attribution` counts `quantity` (an import row of 3 leads is 3 leads) and returns whole numbers.
 ```sql
 create table metric_snapshots (                  -- [S§5, §12.1]
   pk, publication_id uuid not null references publications,

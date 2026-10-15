@@ -584,17 +584,20 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## M6 · Analytics
 
-- [ ] **M6-01 · Analytics schema (0007) and views** · P0 · M · deps: M5-01
+- [x] **M6-01 · Analytics schema (0007) and views** · P0 · M · deps: M5-01
   - **Do:** `metric_snapshots`, `account_metric_snapshots`, `attribution_events`; views `v_publication_dimensions`, `v_publication_metrics_d7`, `v_campaign_attribution` (11 §11.3).
   - **Done when:** view tests on fixture data (D7 choice, fallback to D3, dayparts in market time zone).
+  - **Result (2026-10-15):** `db/src/schema/analytics.ts`, migration `0011_analytics.sql` (the three tables, the enums `snapshot_slot` and `attribution_event_type`, the three views written by hand), `db/src/json/analytics.ts`. 18 view and table tests on fixture data: the D7 choice (D7 beats D28, the D3 fallback flagged by `is_exact_d7`, the age and not the slot name decides, nothing under 72 h), null rates without reach, the engagement rate from total interactions or its parts, dayparts and weekday in the market's zone (Madrid and New York, every cut at 6, 11, 15 and 18), dry runs left out, campaign sums with refunds and quantities, event dedupe by source and reference. Differences from plan 11 §11.3 are in plan 04 (no experiment columns yet, `quantity` counts).
 
-- [ ] **M6-02 · Insights client** · P0 · M · deps: M5-01 · ⚠ V-10, V-11
+- [x] **M6-02 · Insights client** · P0 · M · deps: M5-01 · ⚠ V-10, V-11
   - **Do:** media and account insights calls; metric list per media type; unsupported-metric handling with cached availability; mapping to columns; raw storage.
   - **Done when:** MSW tests (full response, unsupported metric, missing values stay null).
+  - **Result (2026-10-15):** `modules/src/instagram/insights.ts` (V-10 and V-11 read from Meta's docs, live check open): metric lists per media type (FEED for a carousel, REELS), `getMediaInsights` (plain call plus `profile_activity` with its breakdown; an unsupported metric is dropped by name and the call repeated, or each metric asked alone), the mapping to the snapshot columns (`saved` → `saves`, `follows` → `follower_change`, profile actions, Reels watch metrics), the cached availability in `app_settings.instagram.metric_availability`, `getAccountInsights` (reach by `follow_type`, views, accounts engaged, interactions, follows and unfollows, followers count; each call stands alone). The mock Graph API answers insights (a media that refuses metrics, holes in the answer, account metrics refused under 100 followers). Error 80002 is now a rate limit. 13 tests: full answer, unsupported metric (named and not named), missing values stay null, deprecated metrics never sent, token and rate-limit errors thrown.
 
-- [ ] **M6-03 · Snapshot jobs** · P0 · M · deps: M6-01, M6-02
+- [x] **M6-03 · Snapshot jobs** · P0 · M · deps: M6-01, M6-02
   - **Do:** `analytics/slots.ts` (due-slot computation), J11 and J12, `collectMetricsNow` action, `integration_events` on errors.
   - **Done when:** tests: one snapshot per slot, late slot stored with real age, one failing post does not block others.
+  - **Result (2026-10-15):** `modules/src/analytics/slots.ts` (due-slot rules: a slot is collected when its time has come and no snapshot is already as old as the slot; of those the latest is measured, so a post first looked at on day ten gets one snapshot named D7 with its true age, flagged late), `collect.ts` (`collectInsights` = J11, `collectAccountInsights` = J12, `requestMetricsNow`), jobs `collect-insights` (hourly at :07) and `collect-account-insights` (daily 02:17), the action `collectMetricsNow` (owner and editor; there is no screen for it until M6-09). One failing post is a finding on its account (`INSIGHTS_FAILED`) and does not stop the others; a refused token makes the account NEEDS_REAUTH and ends its posts; a rate limit stops the run and is rethrown; a finding is closed only by a run in which none of the account's posts failed. 26 tests in `analytics`: one snapshot per slot and never twice, a late slot with its real age, nulls, Reel and carousel columns, dry runs and posts without a media id left out, the per-run limit with the oldest due first, the remembered unsupported metric, manual snapshots, the market-local day for account metrics (also a 25-hour day), overwrite of the day on a second run.
 
 - [ ] **M6-04 · Metric definitions and query layer** · P0 · M · deps: M6-01
   - **Do:** `analytics/queries/`: rates, D7 standardization, dimension grouping (whitelisted dimensions), min sample, lift, Operations metrics from `review_events`/`audit_events`/`generation_runs`.

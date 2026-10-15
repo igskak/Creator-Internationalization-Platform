@@ -87,7 +87,7 @@ function classOf(
   if (code === 190) return "AUTH";
   if (code === 10 || (code !== undefined && code >= 200 && code <= 299)) return "PERMISSION";
   if (signal.httpStatus === 429) return "RATE_LIMIT";
-  if (code !== undefined && [4, 17, 32, 341, 368, 613].includes(code)) return "RATE_LIMIT";
+  if (code !== undefined && [4, 17, 32, 341, 368, 613, 80002].includes(code)) return "RATE_LIMIT";
   if (/request limit reached|too many calls/i.test(message)) return "RATE_LIMIT";
   if (code === 1 || code === 2) return "TRANSIENT";
   if (subcode !== undefined && NOT_READY_SUBCODES.has(subcode)) return "TRANSIENT";

@@ -10,6 +10,8 @@ import { AbortTaskRunError } from "@trigger.dev/sdk";
 import { describe, expect, it } from "vitest";
 import { classifyJobError } from "./errors";
 import { checkAccountHealth } from "./tasks/check-account-health";
+import { collectAccountInsights } from "./tasks/collect-account-insights";
+import { collectInsights } from "./tasks/collect-insights";
 import { hello } from "./tasks/hello";
 import { publishContent } from "./tasks/publish-content";
 import { publishDispatcher } from "./tasks/publish-dispatcher";
@@ -52,6 +54,8 @@ describe("tasks", () => {
     for (const scheduled of [
       refreshInstagramTokens,
       checkAccountHealth,
+      collectInsights,
+      collectAccountInsights,
       publishDispatcher,
       publishContent,
     ]) {
@@ -59,5 +63,7 @@ describe("tasks", () => {
     }
     expect(refreshInstagramTokens.id).toBe("refresh-instagram-tokens");
     expect(checkAccountHealth.id).toBe("check-account-health");
+    expect(collectInsights.id).toBe("collect-insights");
+    expect(collectAccountInsights.id).toBe("collect-account-insights");
   });
 });
