@@ -18,3 +18,13 @@ allowBuilds:
   esbuild: false
   # dependency-cruiser parses TypeScript with swc (TS 7 is not supported by its TS parser); binary is an optional dependency.
   "@swc/core": false
+
+overrides:
+  # H-06a: transitive versions with high advisories (decision log 2026-10-15).
+  # ws comes from @trigger.dev/core > socket.io-client > engine.io-client (pins ~8.17.1).
+  "ws@>=8.0.0 <8.21.0": "^8.21.0"
+  # sharp and source-map-js come from next and postcss; the lockfile kept the old patch versions.
+  "sharp@<0.35.5": "^0.35.5"
+  "source-map-js@<1.2.2": "^1.2.2"
+  # Dev only since H-06a (shadcn CLI); kept current so the full audit stays honest.
+  "@modelcontextprotocol/sdk@<1.31.0": "^1.31.0"
