@@ -2,11 +2,11 @@ import { schema } from "@rc/db";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { type ReviewFixture, reviewFixture } from "../content/variants/test-support";
-import { setAppSetting } from "../settings";
-import { budgetState, checkAiBudget, getAiCostOverview } from "./budget";
+import { budgetState, checkAiBudget, getAiCostOverview } from "./ai/budget";
+import { type ReviewFixture, reviewFixture } from "./content/variants/test-support";
+import { setAppSetting } from "./settings";
 
-// H-05 on fixture costs: the month to date by stage (UTC month), the amber and red states, and
+// H-05 on fixture costs (a cross-module test: ai with settings and the review fixture): the month to date by stage (UTC month), the amber and red states, and
 // one alert per month and level. The fixture clock is 2026-10-10 12:00 UTC.
 
 describe("AI cost and budget", () => {
