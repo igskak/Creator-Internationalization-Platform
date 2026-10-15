@@ -20,11 +20,12 @@ export function openDb() {
 }
 
 export const E2E_EDITOR_EMAIL = "e2e-editor@content.test";
+export const E2E_OWNER_EMAIL = "e2e-owner@content.test";
 
 /** An active user the tests sign in as (the magic-link allowlist is the `app_users` table); a chef by default. */
 export async function ensureE2eUser(
   email: string = E2E_EMAIL,
-  role: "chef" | "editor" = "chef",
+  role: "chef" | "editor" | "owner" = "chef",
 ): Promise<void> {
   const { db, close } = openDb();
   try {
@@ -42,6 +43,50 @@ export async function ensureE2eUser(
         .insert(schema.appUsers)
         .values({ email, displayName: `E2E ${role}`, role, isActive: true });
     }
+  } finally {
+    await close();
+  }
+}
+
+/** Switches a test user off again (an owner must not stay able to sign in on a shared project). */
+export async function deactivateE2eUser(email: string): Promise<void> {
+  const { db, close } = openDb();
+  try {
+    await db
+      .update(schema.appUsers)
+      .set({ isActive: false })
+      .where(eq(schema.appUsers.email, email));
+  } finally {
+    await close();
+  }
+}
+
+/** The stored value of an `app_settings` key, or undefined when there is no row. */
+export async function readSetting(key: string): Promise<unknown> {
+  const { db, close } = openDb();
+  try {
+    const [row] = await db
+      .select({ value: schema.appSettings.value })
+      .from(schema.appSettings)
+      .where(eq(schema.appSettings.key, key));
+    return row?.value;
+  } finally {
+    await close();
+  }
+}
+
+/** Sets an `app_settings` key, or removes its row when the value is undefined (to put back what a test found). */
+export async function writeSetting(key: string, value: unknown): Promise<void> {
+  const { db, close } = openDb();
+  try {
+    if (value === undefined) {
+      await db.delete(schema.appSettings).where(eq(schema.appSettings.key, key));
+      return;
+    }
+    await db
+      .insert(schema.appSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({ target: schema.appSettings.key, set: { value } });
   } finally {
     await close();
   }
@@ -227,7 +272,12 @@ async function removeIdeasOfSourceOnce(sourceTitle: string): Promise<void> {
         .where(inArray(schema.publications.contentVariantId, variantIds));
       await db
         .update(schema.contentVariants)
-        .set({ currentRenderId: null, approvedVersionId: null })
+        .set({
+          currentRenderId: null,
+          currentReelRenderId: null,
+          approvedVersionId: null,
+          sourceVariantId: null,
+        })
         .where(inArray(schema.contentVariants.id, variantIds));
       await db
         .delete(schema.reviewEvents)
@@ -235,6 +285,16 @@ async function removeIdeasOfSourceOnce(sourceTitle: string): Promise<void> {
       await db
         .delete(schema.contentVariantVersions)
         .where(inArray(schema.contentVariantVersions.contentVariantId, variantIds));
+      // A Reel: its videos, then its scripts, then the shots it ordered (renders point at scripts).
+      await db
+        .delete(schema.reelRenders)
+        .where(inArray(schema.reelRenders.contentVariantId, variantIds));
+      await db
+        .delete(schema.reelScripts)
+        .where(inArray(schema.reelScripts.contentVariantId, variantIds));
+      await db
+        .delete(schema.reelShots)
+        .where(inArray(schema.reelShots.contentVariantId, variantIds));
       await db
         .delete(schema.carouselRenders)
         .where(inArray(schema.carouselRenders.contentVariantId, variantIds));
@@ -246,6 +306,12 @@ async function removeIdeasOfSourceOnce(sourceTitle: string): Promise<void> {
     await db
       .delete(schema.generationRuns)
       .where(inArray(schema.generationRuns.masterIdeaId, ideaIds));
+    // The shots of a Reel are model runs of the variant that carry no idea.
+    if (variantIds.length > 0) {
+      await db
+        .delete(schema.generationRuns)
+        .where(inArray(schema.generationRuns.contentVariantId, variantIds));
+    }
     await db
       .delete(schema.contentVariants)
       .where(inArray(schema.contentVariants.masterIdeaId, ideaIds));

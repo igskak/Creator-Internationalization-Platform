@@ -1,3 +1,4 @@
+export { createE2eVideo } from "./e2e-video";
 export { assertReelsEnabled, reelsEnabled } from "./enabled";
 export {
   DIRECTOR_COST_USD,
