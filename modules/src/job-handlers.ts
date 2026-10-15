@@ -1,6 +1,12 @@
 import { PermanentError } from "@rc/lib/errors";
 import { z } from "zod";
 import {
+  CollectAccountInsightsInput,
+  CollectInsightsInput,
+  collectAccountInsights,
+  collectInsights,
+} from "./analytics";
+import {
   GenerateContentPayload,
   generateVariants,
   RegenerateFieldPayload,
@@ -245,6 +251,22 @@ export const checkAccountHealthJob = defineJob({
 });
 
 /**
+ * J11 (plan 06 §6.3, 11 §11.2): the snapshots that are due, hourly at :07, or one manual snapshot
+ * of one post. One failing post is a finding on its account and does not stop the others; a rate
+ * limit is rethrown for the backoff, what was stored stays.
+ */
+export const collectInsightsJob = defineJob({
+  payload: CollectInsightsInput,
+  run: (ctx, payload) => collectInsights(ctx, payload),
+});
+
+/** J12 (plan 06 §6.3): yesterday's account metrics, daily at 02:17 UTC; one row per account and day. */
+export const collectAccountInsightsJob = defineJob({
+  payload: CollectAccountInsightsInput,
+  run: (ctx, payload) => collectAccountInsights(ctx, payload),
+});
+
+/**
  * J9 (plan 06 §6.3): every minute, hands the due publications to the publish job and restarts the
  * ones that were lost. It never fails the cron run for one bad publication.
  */
@@ -291,6 +313,8 @@ export const jobHandlers = {
   "transcribe-pages": transcribePagesJob,
   "refresh-instagram-tokens": refreshInstagramTokensJob,
   "check-account-health": checkAccountHealthJob,
+  "collect-insights": collectInsightsJob,
+  "collect-account-insights": collectAccountInsightsJob,
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,

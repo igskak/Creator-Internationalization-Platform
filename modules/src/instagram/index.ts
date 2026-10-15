@@ -63,6 +63,22 @@ export {
   requireInstagramApp,
 } from "./http";
 export {
+  type AccountInsights,
+  getAccountInsights,
+  getMediaInsights,
+  type InsightsMediaType,
+  isUnsupportedMetricError,
+  loadMetricAvailability,
+  MEDIA_METRICS,
+  METRIC_AVAILABILITY_KEY,
+  type MediaInsights,
+  type MetricAvailability,
+  REEL_VIDEO_METRICS,
+  rememberUnsupportedMetrics,
+  type SnapshotColumns,
+  toSnapshotColumns,
+} from "./insights";
+export {
   completeInstagramOAuth,
   OAUTH_STATE_COOKIE,
   OAUTH_STATE_TTL_MS,

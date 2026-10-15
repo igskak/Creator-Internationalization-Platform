@@ -88,8 +88,8 @@ Spec §23.1 item 16 (§23 item 17). Also covers §22 ("flag choices that materia
 | V-07 | Container status values; polling guidance; container expiry (~24 h) | M5-00 | Content publishing docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
 | V-08 | Behavior of `media_publish` on an already-published container | M5-00 / M5-10 | Docs + smoke test **Checked 2026-10-11: open (smoke)**, see decision log (M5-00). |
 | V-09 | Error codes and subcodes for publishing failures (rate limit, media fetch, invalid media, token) | M5-00 | Error reference + smoke test **Checked 2026-10-11: partly**, see decision log (M5-00). |
-| V-10 | Media insights metric names for carousels; deprecated metrics (impressions, plays, video_views); new metrics | M6-02 | Insights docs (Instagram Login) |
-| V-11 | Account insights metrics, `follow_type` breakdown, `metric_type=total_value`, follower thresholds | M6-02 | Insights docs |
+| V-10 | Media insights metric names for carousels; deprecated metrics (impressions, plays, video_views); new metrics | M6-02 | Insights docs (Instagram Login) **Checked 2026-10-15: ✓ from the docs, live check open** (a carousel parent is read as FEED; the error for an unsupported metric is undocumented), see decision log (M6-02). |
+| V-11 | Account insights metrics, `follow_type` breakdown, `metric_type=total_value`, follower thresholds | M6-02 | Insights docs **Checked 2026-10-15: ✓ from the docs, live check open** (day boundary and the meaning of the follows/unfollows split are undocumented), see decision log (M6-02). |
 | V-12 | Business Use Case rate limits for the Instagram Platform | M5-00 | Rate limiting docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
 | V-13 | Deauthorize and data-deletion callback requirements; `signed_request` format | M5-05 | App settings / data deletion docs **Checked 2026-10-11: ✓**, see decision log (M5-00). |
 | V-14 | Meta accepts presigned R2 URLs (with query strings) as `image_url` | M5-10 | Smoke test **Checked 2026-10-11: open (smoke)**, see decision log (M5-00). |
