@@ -98,9 +98,25 @@ describe("LineageView", () => {
     ).toContain("—");
   });
 
+  it("shows the watch numbers of a Reel at day 7 (M8-10)", () => {
+    const lineage = lineageFixture();
+    lineage.metrics.watch = {
+      avgWatchSeconds: 8.24,
+      totalWatchHours: 11.8,
+      skipRate: 0.3,
+      hookRate: 0.7,
+      completion: 0.46,
+    };
+    show(lineage);
+    const watch = screen.getByTestId("watch");
+    expect(watch).toHaveTextContent("Average watch time8.2 s");
+    expect(watch).toHaveTextContent("Stayed past the first seconds70.0%");
+    expect(watch).toHaveTextContent("Total watch time11.8 h");
+  });
+
   it("has a no-numbers state for a post that was never measured", () => {
     const lineage = lineageFixture();
-    lineage.metrics = { d7: null, timeline: [] };
+    lineage.metrics = { d7: null, timeline: [], watch: null };
     show(lineage);
     expect(screen.getByText(en.lineage.numbers.none)).toBeTruthy();
     expect(document.querySelector('tr[data-slot="D7"]')).toBeNull();

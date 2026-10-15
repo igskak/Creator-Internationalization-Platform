@@ -10,6 +10,7 @@ import {
   lineageFixture,
   operationsFixture,
   rankedFixture,
+  reelInsightsFixture,
   summaryFixture,
   unknownCampaignsFixture,
 } from "@/components/analytics/fixtures";
@@ -41,7 +42,12 @@ export default async function DevAnalyticsPage() {
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">{t.tabs.engagement}</h2>
-        <EngagementTab engagement={engagementFixture()} t={t} locale={locale} />
+        <EngagementTab
+          engagement={engagementFixture()}
+          reels={reelInsightsFixture()}
+          t={t}
+          locale={locale}
+        />
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">{t.tabs.learning}</h2>

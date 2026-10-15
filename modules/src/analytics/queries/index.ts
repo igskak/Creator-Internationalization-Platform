@@ -33,3 +33,11 @@ export {
   publishedToCsv,
 } from "./published";
 export { DateRangeInput, DEFAULT_MIN_SAMPLE, getMinSample } from "./range";
+export {
+  getReelInsights,
+  pickD7,
+  type ReelInsight,
+  type ReelInsights,
+  type ReelWatch,
+  reelWatch,
+} from "./reels";

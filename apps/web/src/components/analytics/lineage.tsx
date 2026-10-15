@@ -143,6 +143,48 @@ export function LineageView({
             {n.none}
           </p>
         )}
+        {metrics.watch && d7 ? (
+          <ul
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            aria-label={n.watch}
+            data-testid="watch"
+          >
+            <li>
+              <StatTile
+                testId="avgWatch"
+                label={n.avgWatch}
+                value={
+                  metrics.watch.avgWatchSeconds === null
+                    ? "—"
+                    : format(n.seconds, { n: Math.round(metrics.watch.avgWatchSeconds * 10) / 10 })
+                }
+              />
+            </li>
+            <li>
+              <StatTile testId="hookRate" label={n.hookRate} value={rate(metrics.watch.hookRate)} />
+            </li>
+            <li>
+              <StatTile
+                testId="completion"
+                label={n.completion}
+                value={rate(metrics.watch.completion)}
+              />
+            </li>
+            <li>
+              <StatTile
+                testId="totalWatch"
+                label={n.totalWatch}
+                value={
+                  metrics.watch.totalWatchHours === null
+                    ? "—"
+                    : format(n.watchHours, {
+                        n: Math.round(metrics.watch.totalWatchHours * 10) / 10,
+                      })
+                }
+              />
+            </li>
+          </ul>
+        ) : null}
         {metrics.timeline.length > 0 ? (
           <div className="flex flex-col gap-4">
             {metrics.timeline.length > 1 ? (

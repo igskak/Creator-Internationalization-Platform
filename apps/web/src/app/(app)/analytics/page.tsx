@@ -6,6 +6,7 @@ import {
   getLatestSummary,
   getOperations,
   getRankedPosts,
+  getReelInsights,
   LEARNING_DIMENSIONS,
   listAttributionEvents,
   listAttributionImports,
@@ -87,6 +88,12 @@ export default async function AnalyticsPage({
           <EngagementTab
             engagement={
               await getEngagement(ctx, {
+                ...window,
+                ...(selected ? { marketId: selected.id } : {}),
+              })
+            }
+            reels={
+              await getReelInsights(ctx, {
                 ...window,
                 ...(selected ? { marketId: selected.id } : {}),
               })

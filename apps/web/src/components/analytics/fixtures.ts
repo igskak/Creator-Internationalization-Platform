@@ -8,6 +8,7 @@ import type {
   Lineage,
   Operations,
   RankedPost,
+  ReelInsights,
   StoredSummary,
   UnknownCampaign,
 } from "@rc/modules/analytics";
@@ -326,6 +327,7 @@ export const lineageFixture = (): Lineage => ({
       engagementRate: 0.118,
       commentRate: 0.004,
     },
+    watch: null,
     timeline: [
       snap("H2", 2.1, 160, 6, "2026-10-10T11:06:00Z"),
       snap("D1", 24.4, 1100, 58, "2026-10-11T09:26:00Z"),
@@ -573,4 +575,72 @@ export const summaryFixture = (): StoredSummary => ({
     },
     caveats: ["Only 24 posts; patterns are directional, not proof."],
   },
+});
+
+/** The Reels of the Engagement tab (M8-10). */
+export const reelInsightsFixture = (): ReelInsights => ({
+  tiles: {
+    reels: 2,
+    measured: 2,
+    medianViews: 4150,
+    medianAvgWatchSeconds: 7.4,
+    medianHookRate: 0.66,
+    medianCompletion: 0.41,
+    medianReachVsCarousel: 1.35,
+  },
+  reels: [
+    {
+      publicationId: "00000000-0000-4000-8000-0000000000a5",
+      variantId: "00000000-0000-4000-8000-0000000000a6",
+      ideaId: "00000000-0000-4000-8000-0000000000a7",
+      marketCode: "es-ES",
+      publishedAt: new Date("2026-10-02T18:00:00Z"),
+      hook: "Nunca laves el arroz del risotto",
+      permalink: null,
+      durationSeconds: 18,
+      slot: "D7",
+      isExactD7: true,
+      views: 5200,
+      reach: 3100,
+      saveRate: 0.021,
+      shareRate: 0.008,
+      watch: {
+        avgWatchSeconds: 8.2,
+        totalWatchHours: 11.8,
+        skipRate: 0.3,
+        hookRate: 0.7,
+        completion: 0.46,
+      },
+      carousel: {
+        publicationId: "00000000-0000-4000-8000-0000000000a8",
+        reach: 2000,
+        saveRate: 0.034,
+        shareRate: 0.01,
+      },
+    },
+    {
+      publicationId: "00000000-0000-4000-8000-0000000000a9",
+      variantId: "00000000-0000-4000-8000-0000000000aa",
+      ideaId: "00000000-0000-4000-8000-0000000000ab",
+      marketCode: "en",
+      publishedAt: new Date("2026-10-04T18:00:00Z"),
+      hook: "Stop rinsing risotto rice",
+      permalink: null,
+      durationSeconds: 20,
+      slot: "D3",
+      isExactD7: false,
+      views: 3100,
+      reach: 1800,
+      saveRate: null,
+      shareRate: null,
+      watch: {
+        avgWatchSeconds: 6.6,
+        totalWatchHours: null,
+        skipRate: 0.38,
+        hookRate: 0.62,
+        completion: 0.33,
+      },
+      carousel: null,
+    },
+  ],
 });
