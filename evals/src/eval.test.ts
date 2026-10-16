@@ -137,7 +137,7 @@ describe("a run with the fake model on the synthetic set", () => {
       differentiationFails: 0,
       judge: { factualFidelity: 5, localization: 4, voice: 4 },
     });
-    expect(report.pipelineVersion).toBe("p1.7.0");
+    expect(report.pipelineVersion).toBe("p1.8.0");
     expect(summarize(report)).toContain("cases meeting expectations   3/3");
 
     const dir = await mkdtemp(join(tmpdir(), "eval-out-"));

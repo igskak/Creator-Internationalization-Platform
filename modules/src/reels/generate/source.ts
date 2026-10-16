@@ -37,13 +37,20 @@ export type ReelSource = {
   market: Market;
   locale: NumberLocale;
   pictures: ReelPicture[];
-  directorInput: reelDirector.ReelDirectorInput;
+  directorInput: reelDirector.ReelDirectorInputV2;
 };
 
 export const numberLocaleOf = (language: string): NumberLocale =>
   language === "es" ? "es-ES" : language === "ru" ? "ru" : "en";
 
 const RECENT_HOOKS = 5;
+/** Posts whose asks and hashtags the Reel's post should not repeat. */
+const RECENT_POSTS = 8;
+/** The asks a Reel chooses from (reel-director@2): reach first, then the save. */
+const REEL_CTA_TYPES = ["SHARE", "FOLLOW", "SAVE"];
+/** Carousel asks the Reel keeps as they are: tied to a keyword, an offer or a link. */
+const KEPT_CTA_TYPES = new Set(["COMMENT_KEYWORD", "DM_KEYWORD", "LINK_IN_BIO"]);
+const LATER_STATUSES: Variant["status"][] = ["APPROVED", "SCHEDULED", "PUBLISHING", "PUBLISHED"];
 
 export async function loadReelSource(
   ctx: ServiceContext,
@@ -147,12 +154,55 @@ export async function loadReelSource(
     return chosen ? [chosen.hookType] : [];
   });
 
+  // The asks and hashtags of the market's latest approved or posted variants, newest first.
+  const latest = await ctx.db
+    .select({ ctaType: schema.contentVariants.ctaType, hashtags: schema.contentVariants.hashtags })
+    .from(schema.contentVariants)
+    .where(
+      and(
+        eq(schema.contentVariants.marketId, market.id),
+        inArray(schema.contentVariants.status, LATER_STATUSES),
+      ),
+    )
+    .orderBy(desc(schema.contentVariants.updatedAt))
+    .limit(RECENT_POSTS);
+  const recentCtaTypes = latest.flatMap((v) => (v.ctaType ? [v.ctaType] : []));
+  const tagCounts = new Map<string, number>();
+  for (const tag of [...latest.flatMap((v) => v.hashtags), ...carousel.hashtags]) {
+    const key = tag.toLowerCase();
+    tagCounts.set(key, (tagCounts.get(key) ?? 0) + 1);
+  }
+  const recentHashtags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([tag]) => tag);
+
+  const ctaTerms = await ctx.db
+    .select({ code: schema.taxonomyTerms.code, label: schema.taxonomyTerms.label })
+    .from(schema.taxonomyTerms)
+    .where(and(eq(schema.taxonomyTerms.kind, "cta_type"), eq(schema.taxonomyTerms.isActive, true)));
+  const labelOf = (code: string) => ctaTerms.find((t) => t.code === code)?.label ?? code;
+  const carouselCta = carousel.ctaJson ?? {
+    type: carousel.ctaType ?? "SAVE",
+    text: carousel.cta ?? "",
+  };
+  const keepsCta = KEPT_CTA_TYPES.has(carouselCta.type) || carouselCta.keyword !== undefined;
+  const ctaTypes = (keepsCta ? [carouselCta.type] : REEL_CTA_TYPES).map((code) => ({
+    code,
+    label: labelOf(code),
+  }));
+
   const brief = carousel.marketBriefJson;
   const codes = new Set(hookTypes.map((t) => t.code));
   const carouselHookType = [carousel.hookType, brief?.hookType].find((c) => c && codes.has(c));
-  const directorInput: reelDirector.ReelDirectorInput = {
+  const directorInput: reelDirector.ReelDirectorInputV2 = {
     market: { code: market.code, displayName: market.displayName, language: market.language },
     carousel: {
+      caption: carousel.caption ?? "",
+      cta: {
+        type: carouselCta.type,
+        text: carouselCta.text,
+        ...(carouselCta.keyword ? { keyword: carouselCta.keyword } : {}),
+      },
       hook: carousel.hook ?? "",
       hookType: carouselHookType ?? hookTypes[0]?.code ?? "",
       slides: slides.map((s) => ({
@@ -178,6 +228,9 @@ export async function loadReelSource(
     },
     taxonomy: { hookTypes },
     recentHookTypes,
+    ctaTypes,
+    recentCtaTypes,
+    recentHashtags,
   };
   return {
     carousel,

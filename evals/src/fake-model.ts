@@ -5,7 +5,7 @@ import {
   type StructuredRequest,
 } from "@rc/lib/providers/llm";
 import { createE2eLlm } from "@rc/modules/ai";
-import { reelDirector, renderPrompt } from "@rc/prompts";
+import { type AnyPrompt, reelDirector, renderPrompt } from "@rc/prompts";
 import { FIXTURE_OUTPUT as JUDGE_ANSWER } from "@rc/prompts/fixtures/eval-judge";
 import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
 
@@ -22,14 +22,19 @@ function reelDirectorAnswer(request: StructuredRequest<unknown>) {
     .flatMap((m) => m.content)
     .map((c) => (c.type === "text" ? c.text : ""))
     .join("");
-  const post = REEL_POSTS.find(
-    (p) =>
-      renderPrompt(reelDirector.reelDirectorV1, p.input)
-        .map((part) => part.text)
-        .join("") === sent,
-  );
-  if (!post) throw new Error("The fake model has no Reel script for this request.");
-  return post.output;
+  const rendered = (prompt: AnyPrompt, input: unknown) =>
+    renderPrompt(prompt, input)
+      .map((part) => part.text)
+      .join("");
+  // reel-director@2 answers with the post; v1 (an eval of the old version) without it.
+  for (const post of REEL_POSTS) {
+    if (rendered(reelDirector.reelDirectorV2, post.input) === sent) return post.output;
+    if (rendered(reelDirector.reelDirectorV1, post.input) === sent) {
+      const { caption: _c, cta: _t, hashtags: _h, ...script } = post.output;
+      return script;
+    }
+  }
+  throw new Error("The fake model has no Reel script for this request.");
 }
 
 export function createFakeEvalModel(): LLMProvider {

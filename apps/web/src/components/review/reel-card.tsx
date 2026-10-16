@@ -30,8 +30,10 @@ import {
   regenerateReelShot,
   setReelTrial,
 } from "@/server/actions/reels";
+import { EditableHashtags } from "./editable-hashtags";
+import { EditableText } from "./editable-text";
 import { VariantActions } from "./variant-actions";
-import { VariantProvider } from "./variant-state";
+import { type ConfirmKind, VariantProvider } from "./variant-state";
 
 // The Reel card of a market's column (plan 18 §18.2, M8-07): the Generate Reel button with its
 // estimate dialog, the progress of a Reel being made, and, once it exists, the video, the hook
@@ -440,12 +442,48 @@ export type ReelReviewProps = {
   };
 };
 
+/** Editing an approved, scheduled or failed Reel asks first (it undoes the approval), as for a carousel. */
+const CONFIRM_KIND: Partial<Record<string, ConfirmKind>> = {
+  APPROVED: "approved",
+  SCHEDULED: "scheduled",
+  FAILED: "failed",
+};
+
+/** What the Reel posts with: its caption (editable by hand), its ask and its hashtags. */
+function ReelPost({ reel }: { reel: Detail }) {
+  const { messages } = useI18n();
+  const t = messages.review.reel.post;
+  const edit = messages.review.edit.field;
+  return (
+    <div className="flex flex-col gap-2 text-sm" data-testid="reel-post">
+      <h5 className="text-xs font-medium text-muted-foreground">{t.caption}</h5>
+      <EditableText
+        path="caption"
+        label={t.caption}
+        fieldLabel={edit.caption}
+        value={reel.post.caption}
+        maxChars={2200}
+        rows={6}
+        regenerate={false}
+      />
+      <p className="text-xs text-muted-foreground">
+        {format(t.cta, { type: reel.post.cta.type, text: reel.post.cta.text || "—" })}
+      </p>
+      <h5 className="text-xs font-medium text-muted-foreground">{t.hashtags}</h5>
+      <EditableHashtags value={reel.post.hashtags} regenerate={false} />
+    </div>
+  );
+}
+
 /** Approve, reject, request changes; then schedule and publish, like a carousel. */
 function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps }) {
   const { messages } = useI18n();
   const t = messages.review.reel.review;
   const { publish } = review;
   const hook = reel.script?.hookOptions.find((h) => h.id === reel.script?.chosenHookId)?.card;
+  const edit = reel.allowed.find((a) => a.action === "edit");
+  const editBlocker = !edit ? messages.review.edit.noEdit : (edit.blockers[0]?.message ?? null);
+  const confirmKind = edit?.confirm ? (CONFIRM_KIND[reel.status] ?? null) : null;
   return (
     <div className="flex flex-col gap-2 rounded-lg border p-3" data-testid="reel-review">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -459,12 +497,13 @@ function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps })
       <VariantProvider
         variantId={reel.variantId}
         lockVersion={reel.lockVersion}
-        editBlocker={null}
-        confirmKind={null}
+        editBlocker={editBlocker}
+        confirmKind={confirmKind}
         reasons={review.reasons}
         templates={{}}
         regenerations={[]}
       >
+        <ReelPost reel={reel} />
         <VariantActions allowed={reel.allowed} flagLabels={review.flagLabels} kind="reel" />
         <TrialReelControl
           variantId={reel.variantId}

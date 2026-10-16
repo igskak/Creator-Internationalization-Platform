@@ -321,13 +321,14 @@ class Machine {
   // --- CREATE_CHILDREN --------------------------------------------------------------------
 
   private async createChildren(): Promise<void> {
-    const { slides } = this.pc;
+    const { slides, snapshot } = this.pc;
+    const altOf = new Map(snapshot.slides.map((s) => [s.id, s.altText]));
     const ids = [...this.publication.igChildrenContainerIds];
     const client = this.graph();
     for (let i = ids.length; i < slides.length; i += 1) {
       const slide = slides[i];
       if (!slide) break;
-      ids.push(await this.createChild(client, slide.storageKey));
+      ids.push(await this.createChild(client, slide.storageKey, altOf.get(slide.slideId)));
       // One row update per child: a crash keeps the children already made.
       await this.save({ igChildrenContainerIds: [...ids] });
     }
@@ -335,13 +336,17 @@ class Machine {
   }
 
   /** One child container. If Meta cannot download the image, the link is made again once. */
-  private async createChild(client: GraphClient, storageKey: string): Promise<string> {
+  private async createChild(
+    client: GraphClient,
+    storageKey: string,
+    altText: string | undefined,
+  ): Promise<string> {
     for (let attempt = 0; ; attempt += 1) {
       const { url } = await this.ctx.storage.presignGet(storageKey, {
         expiresInSeconds: PRESIGN_TTL.metaFetch,
       });
       try {
-        return await createChildContainer(client, this.account.instagramAccountId, url);
+        return await createChildContainer(client, this.account.instagramAccountId, url, altText);
       } catch (error) {
         if (
           attempt === 0 &&

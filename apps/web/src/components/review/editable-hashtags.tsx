@@ -15,7 +15,14 @@ import { fieldDomId, useVariant } from "./variant-state";
 const split = (text: string) => text.split(/\s+/).filter(Boolean);
 
 /** The hashtags: badges, with an input that takes them separated by spaces. */
-export function EditableHashtags({ value }: { value: string[] }) {
+export function EditableHashtags({
+  value,
+  regenerate = true,
+}: {
+  value: string[];
+  /** Offer ↻; a Reel's hashtags are edited by hand only. */
+  regenerate?: boolean;
+}) {
   const { messages } = useI18n();
   const t = messages.review.edit;
   const variant = useVariant();
@@ -97,7 +104,9 @@ export function EditableHashtags({ value }: { value: string[] }) {
             >
               <PencilIcon />
             </Button>
-            <RegeneratePopover path="hashtags" fieldLabel={t.field.hashtags} />
+            {regenerate ? (
+              <RegeneratePopover path="hashtags" fieldLabel={t.field.hashtags} />
+            ) : null}
           </span>
         </div>
       )}

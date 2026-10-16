@@ -3,7 +3,10 @@ import { asc } from "@rc/db/orm";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { createLogger } from "@rc/lib/logging";
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
-import { FIXTURE_INPUT, FIXTURE_OUTPUT } from "@rc/prompts/fixtures/reel-director";
+import {
+  FIXTURE_INPUT_V2 as FIXTURE_INPUT,
+  FIXTURE_OUTPUT_V2 as FIXTURE_OUTPUT,
+} from "@rc/prompts/fixtures/reel-director";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext } from "../../core";
 import { directReel, toReelScriptDraft } from "./direct";
@@ -66,7 +69,7 @@ describe("directReel", () => {
     expect(rows[0]).toMatchObject({
       stage: "REEL_DIRECTION",
       promptId: "reel-director",
-      promptVersion: 1,
+      promptVersion: 2,
     });
   });
 

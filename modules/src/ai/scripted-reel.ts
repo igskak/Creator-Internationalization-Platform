@@ -3,9 +3,68 @@ import type { reelDirector } from "@rc/prompts";
 // A valid answer of the Reel director for a rendered request (M8-07a): the fake model of the E2E
 // server returns it, built from the slide ids, picture ids and hook types the request contains, so
 // it passes `validateReelScript` for any carousel. Cards carry no numbers and no claims of their
-// own; every RULE, STEP and PEAK scene cites slides of the request.
+// own; every RULE, STEP and PEAK scene cites slides of the request. A reel-director@2 request (it
+// has <cta_types>) also gets the post: a caption without numbers, the first allowed ask and three
+// hashtags that are not in <recent_hashtags>.
 
-type Output = reelDirector.ReelDirectorOutput;
+type Output = reelDirector.ReelDirectorOutput | reelDirector.ReelDirectorOutputV2;
+
+const POST = {
+  en: {
+    caption: "Watch the starch: it does the work, so leave it on the grains.",
+    asks: {
+      SHARE: "Send this to whoever cooks the rice at home.",
+      FOLLOW: "Follow for more kitchen rules like this one.",
+      SAVE: "Save this for the next pot of rice.",
+    } as Record<string, string>,
+    tags: ["#ricetips", "#homecooking", "#kitchenrules", "#grains", "#cookingbasics"],
+  },
+  es: {
+    caption: "Mira el almidón: hace el trabajo, así que déjalo en el grano.",
+    asks: {
+      SHARE: "Mándaselo a quien hace el arroz en casa.",
+      FOLLOW: "Sígueme para más reglas de cocina como esta.",
+      SAVE: "Guárdalo para la próxima olla de arroz.",
+    } as Record<string, string>,
+    tags: ["#trucosdecocina", "#arroz", "#cocinacasera", "#recetasfaciles", "#cocinafacil"],
+  },
+} as const;
+
+const unescapeXml = (text: string) =>
+  text
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&");
+
+/** The post of a reel-director@2 answer, or nothing for a v1 request. */
+function scriptedPost(requestText: string, language: "en" | "es") {
+  const types = /<cta_types>([\s\S]*?)<\/cta_types>/u.exec(requestText)?.[1];
+  if (types === undefined) return {};
+  const codes = [...types.matchAll(/<term code="([^"]+)"/gu)].map((m) => m[1] ?? "");
+  const type = codes[0] ?? "SAVE";
+  const carousel =
+    /<post of="carousel">[\s\S]*?<cta type="([^"]+)"(?: keyword="([^"]+)")?>\n([\s\S]*?)\n<\/cta>/u.exec(
+      requestText,
+    );
+  const post = POST[language];
+  const kept = codes.length === 1 && carousel?.[1] === type;
+  const ask = kept ? unescapeXml(carousel?.[3] ?? "") : (post.asks[type] ?? post.asks.SAVE ?? "");
+  const recent = new Set(
+    [
+      ...(/<recent_hashtags>([\s\S]*?)<\/recent_hashtags>/u.exec(requestText)?.[1] ?? "").matchAll(
+        /<tag>\n([^\n]+)\n<\/tag>/gu,
+      ),
+    ].map((m) => (m[1] ?? "").toLowerCase()),
+  );
+  const fresh = post.tags.filter((t) => !recent.has(t));
+  const hashtags = [...fresh, ...post.tags.filter((t) => recent.has(t))].slice(0, 3);
+  return {
+    caption: `${post.caption}\n\n${ask}`,
+    cta: { type, text: ask, ...(kept && carousel?.[2] ? { keyword: carousel[2] } : {}) },
+    hashtags,
+  };
+}
 
 const CARDS = {
   en: {
@@ -96,6 +155,7 @@ export function scriptedReelScript(requestText: string): Output {
     ["CTA", "SAVE_IT", 3, cards.ending, []],
   ];
   return {
+    ...scriptedPost(requestText, language),
     hookOptions,
     chosenHookId: first.id,
     flashOpener: "ON",

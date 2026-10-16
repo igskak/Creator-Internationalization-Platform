@@ -8,10 +8,10 @@ import { reelValidationContext, validateReelScript } from "./validate";
 // The scripted Reel director of the E2E server (M8-07a): its answer must pass the same checks a
 // real script does, whatever carousel the request holds. Synthetic content only.
 
-type Input = reelDirector.ReelDirectorInput;
+type Input = reelDirector.ReelDirectorInputV2;
 
 const textOf = (input: Input) =>
-  reelDirector.reelDirectorV1
+  reelDirector.reelDirectorV2
     .render(input)
     .flatMap((m) => (m.type === "text" ? [m.text] : []))
     .join("\n");
@@ -20,6 +20,8 @@ const textOf = (input: Input) =>
 const e2eInput = (code: string, language: string, slides: number): Input => ({
   market: { code, displayName: code, language },
   carousel: {
+    caption: "Copy caption.",
+    cta: { type: "SAVE", text: "Copy ask." },
     hook: "Copy hook",
     hookType: "MYTH_BUST",
     slides: Array.from({ length: slides }, (_, i) => ({
@@ -44,6 +46,13 @@ const e2eInput = (code: string, language: string, slides: number): Input => ({
     ],
   },
   recentHookTypes: [],
+  ctaTypes: [
+    { code: "SHARE", label: "Share" },
+    { code: "FOLLOW", label: "Follow" },
+    { code: "SAVE", label: "Save" },
+  ],
+  recentCtaTypes: ["SAVE"],
+  recentHashtags: ["#ricetips"],
 });
 
 const LOCALES: Record<string, NumberLocale> = { "es-ES": "es-ES", en: "en" };
@@ -57,12 +66,41 @@ const inputs: [string, Input][] = [
 describe("scriptedReelScript", () => {
   it.each(inputs)("answers %s with a script that passes every check", (_name, input) => {
     const output = scriptedReelScript(textOf(input));
-    expect(() => reelDirector.reelDirectorOutputFor(input).parse(output)).not.toThrow();
+    expect(() => reelDirector.reelDirectorV2OutputFor(input).parse(output)).not.toThrow();
     const issues = validateReelScript(
       output,
       reelValidationContext(input, { locale: LOCALES[input.market.code] ?? "en" }),
     );
     expect(issues).toEqual([]);
+  });
+
+  it("writes the post for reel-director@2: the first ask, fresh tags, a kept keyword ask", () => {
+    const en = scriptedReelScript(textOf(e2eInput("en", "en", 6)));
+    expect(en).toMatchObject({
+      cta: { type: "SHARE" },
+      hashtags: ["#homecooking", "#kitchenrules", "#grains"],
+    });
+    const locked = scriptedReelScript(
+      textOf({
+        ...e2eInput("es-ES", "es", 5),
+        carousel: {
+          ...e2eInput("es-ES", "es", 5).carousel,
+          cta: { type: "COMMENT_KEYWORD", text: "Comenta ARROZ y te lo mando.", keyword: "ARROZ" },
+        },
+        ctaTypes: [{ code: "COMMENT_KEYWORD", label: "Keyword" }],
+      }),
+    );
+    expect(locked).toMatchObject({
+      cta: { type: "COMMENT_KEYWORD", keyword: "ARROZ", text: "Comenta ARROZ y te lo mando." },
+    });
+    // A v1 request gets no post.
+    const v1 = scriptedReelScript(
+      reelDirector.reelDirectorV1
+        .render(e2eInput("en", "en", 6))
+        .map((m) => m.text)
+        .join("\n"),
+    );
+    expect("caption" in v1).toBe(false);
   });
 
   it("writes the cards in the language of the market and three different hook types", () => {

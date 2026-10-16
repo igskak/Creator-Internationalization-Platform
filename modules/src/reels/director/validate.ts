@@ -1,7 +1,18 @@
 import type { ForbiddenPattern, ValidationIssue } from "@rc/db/json";
-import { findBannedHookPatterns, hookLanguage, REEL_LIMITS, type reelDirector } from "@rc/prompts";
-import { stripEmphasis } from "@rc/templates";
-import { compileForbiddenPatterns, integersIn, withoutUnitNumbers } from "../../content/validation";
+import {
+  findBannedHookPatterns,
+  hookLanguage,
+  REEL_LIMITS,
+  REEL_POST_LIMITS,
+  type reelDirector,
+} from "@rc/prompts";
+import { countChars, stripEmphasis } from "@rc/templates";
+import {
+  CTA_KEYWORD,
+  compileForbiddenPatterns,
+  integersIn,
+  withoutUnitNumbers,
+} from "../../content/validation";
 import { checkNumericFidelity, type NumberLocale } from "../../localization";
 
 // Deterministic checks of a Reel script (plan 18 §18.4 step 1, docs/design/reel-style.md,
@@ -9,10 +20,24 @@ import { checkNumericFidelity, type NumberLocale } from "../../localization";
 // BLOCKER issues go to the repair of `runStage` (once); MAJOR and MINOR ones are returned as notes.
 
 type Output = reelDirector.ReelDirectorOutput;
+type OutputV2 = reelDirector.ReelDirectorOutputV2;
 type Scene = reelDirector.ReelDirectorScene;
 type Input = reelDirector.ReelDirectorInput;
+type InputV2 = reelDirector.ReelDirectorInputV2;
 
 const L = REEL_LIMITS;
+const P = REEL_POST_LIMITS;
+
+/** What the Reel's own post is checked against (reel-director@2 and later). */
+export type ReelPostContext = {
+  /** The carousel's slides and caption: the facts the Reel's caption may retell. */
+  facts: string[];
+  ctaTypes: ReadonlySet<string>;
+  /** The carousel's ask when the Reel must keep it (one code given, e.g. a keyword CTA). */
+  lockedCta?: { type: string; keyword?: string };
+  /** Lower-case hashtags of the market's recent posts. */
+  recentHashtags: ReadonlySet<string>;
+};
 
 export type ReelValidationContext = {
   /** Number convention of the cards. */
@@ -25,13 +50,33 @@ export type ReelValidationContext = {
   baseScript?: Input["baseScript"];
   /** `markets.forbidden_patterns`. */
   forbiddenPatterns: readonly ForbiddenPattern[];
+  /** Set when the director also writes the post (reel-director@2). */
+  post?: ReelPostContext;
 };
 
+const isInputV2 = (input: Input | InputV2): input is InputV2 => "ctaTypes" in input;
+
 export function reelValidationContext(
-  input: Input,
+  input: Input | InputV2,
   options: { locale: NumberLocale; forbiddenPatterns?: readonly ForbiddenPattern[] },
 ): ReelValidationContext {
+  const post: ReelPostContext | undefined = isInputV2(input)
+    ? {
+        facts: [...input.carousel.slides.map((s) => s.text), input.carousel.caption],
+        ctaTypes: new Set(input.ctaTypes.map((t) => t.code)),
+        ...(input.ctaTypes.length === 1
+          ? {
+              lockedCta: {
+                type: input.carousel.cta.type,
+                ...(input.carousel.cta.keyword ? { keyword: input.carousel.cta.keyword } : {}),
+              },
+            }
+          : {}),
+        recentHashtags: new Set(input.recentHashtags.map((t) => t.toLowerCase())),
+      }
+    : undefined;
   return {
+    ...(post ? { post } : {}),
     locale: options.locale,
     slides: new Map(input.carousel.slides.map((s) => [s.id, s.text])),
     pictureIds: new Set(input.pictures.map((p) => p.id)),
@@ -580,10 +625,230 @@ function checkBase(output: Output, context: ReelValidationContext): ValidationIs
   return issues;
 }
 
+// --- the post (reel-director@2) -------------------------------------------------------------
+
+/** A Reel is a video: its caption never sends the viewer swiping through slides. */
+const CAROUSEL_WORDS: Record<string, RegExp> = {
+  en: /\b(?:swipe\w*|slides?|carousel\w*)\b|👉|➡️/iu,
+  es: /\b(?:desliza\w*|diapositivas?|carrusel\w*)\b|👉|➡️/iu,
+};
+const ENGAGEMENT_BAIT: Record<string, RegExp> = {
+  en: /\bcomment\s+["“]?(?:yes|below)\b|\btag\s+(?:a|your|\d+|three|two)\s+friends?\b|\bdouble[-\s]tap\b|\bwon'?t\s+press\s+itself\b/iu,
+  es: /\bcomenta\s+["“]?s[ií]\b|\betiqueta\s+a\b|\bdoble\s+toque\b|\bno\s+se\s+(?:pulsa|guarda)\s+solo\b/iu,
+};
+const HASHTAG = /^#[\p{L}\p{N}_]+$/u;
+const URL_OR_TAG = /\b(?:https?:\/\/|www\.)\S+|(?:^|\s)#[\p{L}\p{N}_]+/u;
+const squash = (text: string) => text.replace(/\s+/gu, " ").trim().toLowerCase();
+
+function checkPost(output: OutputV2, context: ReelValidationContext): ValidationIssue[] {
+  const post = context.post;
+  if (!post) return [];
+  const issues: ValidationIssue[] = [];
+  const language = context.locale.split("-")[0] ?? "en";
+  const caption = output.caption.trim();
+
+  if (caption === "") {
+    issues.push(
+      blocker("REEL_CAPTION_EMPTY", "caption", "The caption is empty.", "Write the caption."),
+    );
+  } else {
+    const chars = countChars(caption);
+    if (chars > P.maxCaptionChars) {
+      issues.push(
+        blocker(
+          "REEL_CAPTION_LONG",
+          "caption",
+          `The caption has ${chars} characters, the limit is ${P.maxCaptionChars}.`,
+          `Shorten it to ${P.maxCaptionChars} characters or fewer.`,
+        ),
+      );
+    }
+    const carousel = (CAROUSEL_WORDS[language] ?? CAROUSEL_WORDS.en)?.exec(caption);
+    if (carousel) {
+      issues.push(
+        blocker(
+          "REEL_CAPTION_CAROUSEL",
+          "caption",
+          `"${carousel[0]}" belongs to a carousel; this caption goes under a video.`,
+          "Rewrite without swiping, slides or arrows.",
+        ),
+      );
+    }
+    const bait = (ENGAGEMENT_BAIT[language] ?? ENGAGEMENT_BAIT.en)?.exec(caption);
+    if (bait) {
+      issues.push(
+        blocker(
+          "REEL_CAPTION_BAIT",
+          "caption",
+          `"${bait[0]}" is engagement bait, which Instagram shows less.`,
+          "Ask for one real action instead.",
+        ),
+      );
+    }
+    const extra = URL_OR_TAG.exec(caption);
+    if (extra) {
+      issues.push(
+        blocker(
+          "REEL_CAPTION_TAG_OR_LINK",
+          "caption",
+          `The caption has "${extra[0].trim()}"; hashtags go in "hashtags" and links are not allowed.`,
+          "Remove it from the caption.",
+        ),
+      );
+    }
+    for (const issue of checkNumericFidelity(
+      [{ fieldPath: "caption", text: caption }],
+      { texts: post.facts, textLocale: context.locale },
+      { locale: context.locale },
+    )) {
+      issues.push({ ...issue, message: issue.message.replace("cited cards", "carousel") });
+    }
+    const allowed = new Set(post.facts.flatMap((t) => integersIn(t)));
+    for (const n of integersIn(withoutUnitNumbers(caption, context.locale))) {
+      if (n === 1 || allowed.has(n)) continue;
+      issues.push(
+        blocker(
+          "REEL_NUMBER_UNSUPPORTED",
+          "caption",
+          `The caption says ${n}, which the carousel does not say.`,
+          "Use the carousel's numbers only, or drop the number.",
+        ),
+      );
+    }
+  }
+
+  // The ask.
+  const cta = output.cta;
+  if (!post.ctaTypes.has(cta.type)) {
+    issues.push(
+      blocker(
+        "REEL_CTA_TYPE",
+        "cta.type",
+        `"${cta.type}" is not one of the allowed asks (${[...post.ctaTypes].join(", ")}).`,
+        "Use a code from <cta_types>.",
+      ),
+    );
+  }
+  if (post.lockedCta) {
+    if (cta.type !== post.lockedCta.type || cta.keyword !== post.lockedCta.keyword) {
+      issues.push(
+        blocker(
+          "REEL_CTA_CHANGED",
+          "cta",
+          "The Reel must keep the carousel's ask and keyword.",
+          `Use the type ${post.lockedCta.type}${post.lockedCta.keyword ? ` and the keyword ${post.lockedCta.keyword}` : ""}.`,
+        ),
+      );
+    }
+  } else if (cta.keyword !== undefined) {
+    issues.push(
+      blocker("REEL_CTA_KEYWORD", "cta.keyword", "This ask has no keyword.", "Leave it out."),
+    );
+  }
+  if (cta.keyword !== undefined && !CTA_KEYWORD.test(cta.keyword)) {
+    issues.push(
+      blocker(
+        "REEL_CTA_KEYWORD",
+        "cta.keyword",
+        `"${cta.keyword}" is not a keyword of 3–16 capitals or digits.`,
+        "Keep the carousel's keyword exactly.",
+      ),
+    );
+  }
+  if (cta.text.trim() === "") {
+    issues.push(blocker("REEL_CTA_EMPTY", "cta.text", "The ask is empty.", "Write the ask."));
+  } else if (caption !== "" && !squash(caption).includes(squash(cta.text))) {
+    issues.push(
+      blocker(
+        "REEL_CTA_NOT_IN_CAPTION",
+        "cta.text",
+        "The ask is not in the caption.",
+        "End the caption with the ask, word for word.",
+      ),
+    );
+  }
+
+  // Hashtags.
+  const tags = output.hashtags;
+  if (tags.length < P.minHashtags || tags.length > P.maxHashtags) {
+    issues.push(
+      blocker(
+        "REEL_HASHTAG_COUNT",
+        "hashtags",
+        `${tags.length} hashtags, the rule is ${P.minHashtags}–${P.maxHashtags}.`,
+        `Use ${P.minHashtags} to ${P.maxHashtags} hashtags.`,
+      ),
+    );
+  }
+  const seen = new Set<string>();
+  for (const [i, tag] of tags.entries()) {
+    if (!HASHTAG.test(tag)) {
+      issues.push(
+        blocker(
+          "REEL_HASHTAG_FORMAT",
+          `hashtags.${i}`,
+          `"${tag}" is not a valid hashtag.`,
+          "Start with # and use letters, digits or underscores only.",
+        ),
+      );
+    }
+    const key = tag.toLowerCase();
+    if (seen.has(key)) {
+      issues.push(
+        blocker("REEL_HASHTAG_DUPLICATE", `hashtags.${i}`, `"${tag}" is repeated.`, "Drop it."),
+      );
+    }
+    seen.add(key);
+  }
+  const reused = [...seen].filter((t) => post.recentHashtags.has(t));
+  if (reused.length > P.maxRecentHashtags) {
+    issues.push(
+      major(
+        "REEL_HASHTAGS_RECENT",
+        "hashtags",
+        `${reused.length} of the tags were used on the latest posts (${reused.join(" ")}).`,
+        `Reuse at most ${P.maxRecentHashtags}; pick tags for this dish and technique.`,
+      ),
+    );
+  }
+
+  // The market's forbidden patterns apply to the caption as well.
+  for (const { pattern, regex } of compileForbiddenPatterns(context.forbiddenPatterns)) {
+    const match = regex.exec(caption.normalize("NFC"));
+    if (match) {
+      issues.push(
+        blocker(
+          "FORBIDDEN_PATTERN",
+          "caption",
+          `"${match[0]}" is not allowed for this market: ${pattern.reason}.`,
+          `Rephrase without "${match[0]}".`,
+        ),
+      );
+    }
+  }
+  return issues;
+}
+
+const hasPost = (output: Output | OutputV2): output is OutputV2 =>
+  "caption" in output && "cta" in output && "hashtags" in output;
+
 export function validateReelScript(
-  output: Output,
+  output: Output | OutputV2,
   context: ReelValidationContext,
 ): ValidationIssue[] {
+  const post =
+    context.post === undefined
+      ? []
+      : hasPost(output)
+        ? checkPost(output, context)
+        : [
+            blocker(
+              "REEL_POST_MISSING",
+              "caption",
+              "The answer has no caption, ask or hashtags.",
+              'Add "caption", "cta" and "hashtags".',
+            ),
+          ];
   return [
     ...checkStructure(output),
     ...checkHooks(output, context),
@@ -591,5 +856,6 @@ export function validateReelScript(
     ...checkClaimsAndNumbers(output, context),
     ...checkWording(output, context),
     ...checkBase(output, context),
+    ...post,
   ];
 }

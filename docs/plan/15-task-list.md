@@ -778,6 +778,37 @@ Plan and decisions: `docs/plan/18-reels.md`. Owner decisions 2026-10-13: video-f
 
 ---
 
+## G · Growth (Instagram promotion)
+
+Why: the first week on the English account (2026-10-12…15, 2 followers) showed the carousels reaching 1–3 accounts each and the two Reels 16 and 30 within hours; 63–81 % of the Reel viewers left in the first three seconds; the Reels posted with the carousel's caption ("Swipe through 👉"); every post asked for a save and carried the same hashtag block. The strategy (owner's copy, not in git) puts Reels first and lists the cheap fixes below. Rules that hold for every task: nothing automated on other people's accounts (no follows, likes, comments or DMs), nothing audience-facing names the source brand.
+
+- [x] **G-01 · The Reel's own post (reel-director@2)** · P0 · M · deps: M8-09
+  - **Do:** reel-director@2 writes the Reel's caption (without its first line, which the code writes from the chosen hook and keeps in step when the hook changes), one ask that prefers SHARE or FOLLOW and rotates against the market's recent asks (a keyword ask tied to an offer is kept), 3–5 hashtags that reuse at most 2 of the recent block; flash opener ON by default; a doubt-about-a-habit hook recommended. Deterministic checks (no carousel words, no bait, no tags or links in the caption, the carousel's numbers only, the ask ends the caption, hashtag count and format). The review card shows the Reel's caption, ask and hashtags, editable by hand.
+  - **Done when:** `pnpm check` and `pnpm eval:reels` (fake) green; a live Reel eval recorded in the decision log before the merge.
+  - **Result (2026-10-16):** `prompts/src/reel-director/v2.ts`, `modules/src/reels/director/{caption,validate}.ts`, `generate.ts` (`savePost`), `request.ts` (hook change moves the first line), `content/variants/edit.ts` (a Reel's caption, CTA and hashtags can be edited; hook and slides cannot), Reel card block; `PIPELINE_VERSION` 1.8.0. Live eval 2026-10-16: 3/3 valid, $0.31 (decision log).
+- [ ] **G-02 · Alt text on carousel images** · P0 · S · deps: M5-06 · ⚠ V-30
+  - **Do:** send each slide's approved `altText` as `alt_text` of its carousel child container (images only; Reels have none).
+  - **Done when:** tests; the next dry run on @chef.skk reaches FINISHED with alt text sent (V-30).
+  - **Result (code, 2026-10-16):** `createChildContainer` takes the alt text (whitespace folded, cut to 1,000 characters, left out when empty); the publish machine passes each rendered slide the `altText` of its slide in the approved snapshot. **Open:** V-30 on the next dry run.
+- [ ] **G-03 · Account metrics are collected (V-11)** · P0 · S · deps: M6-03
+  - **Do:** check the first runs of J12 (`collect-account-insights`, cron 02:17 UTC): `account_metric_snapshots` was still empty on 2026-10-15 22:35 UTC only because M6 went live that day and the job had not run yet. Close V-11 on the first rows (day boundary, follows vs unfollows); fix what they show.
+  - **Done when:** a daily row per account; the dashboard shows the follower line.
+- [ ] **G-04 · Carousel asks and hashtags (content-writer@7)** · P1 · M · deps: M7-04
+  - **Do:** the carousel writer gets the market's recent asks and hashtags (as the Reel director does), rotates the goal of the post (save, send, comment, follow) and does not repeat the tag block; no engagement bait.
+  - **Done when:** live eval (about $2.5, owner's yes) without regression; decision log.
+- [ ] **G-05 · Spanish market live** · P0 · S · deps: owner
+  - **Do:** connect the Spanish account, give the 7 waiting drafts their pictures and review them, first Reels on the English shots (M8-06a).
+  - **Done when:** first Spanish posts and Reels published.
+- [ ] **G-06 · Weekly growth report** · P1 · M · deps: M6-04
+  - **Do:** per market and week: outlier multiple (reach / the account's median), share of non-follower reach, sends and saves per reach, follows per reach, Reel skip rate and average watch time; top and bottom five with a plain verdict ("profile problem" vs "hook problem"), honest about sample size.
+  - **Done when:** a screen or a Markdown export the owner reads weekly.
+- [ ] **G-07 · First-hour comment assistant** · P1 · M · deps: M6-03
+  - **Do:** new comments on our posts of the last two hours, sorted (question, lead, praise, noise), a reply drafted in the market's language; a person sends it (`instagram_business_manage_comments`).
+  - **Done when:** an inbox screen; replies are sent only by a click.
+- [ ] **G-08 · Topic pillars and an opinion slot** · P1 · M · deps: M7-05
+  - **Do:** the idea generator spreads ideas over pillars per market (grains, eggs, meat and doneness, roasted vegetables, sauces and the salt-acid-fat balance, kitchen myths) and plans one opinion post a week (the expert's position against a habit, with the reason, from the knowledge base only).
+  - **Done when:** a week of ideas covers at least three pillars and one opinion.
+
 ## P2 · Post-MVP backlog (not scheduled)
 - **P2-01** Reels Type A (talking video, narrower than M8, see `docs/plan/18-reels.md`): transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].
 - **P2-02** Reels Type B voice-over: localized voice-over for the M8 video-first Reels [S§14.2].

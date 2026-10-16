@@ -4,6 +4,7 @@ import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { createFakeVideoProvider } from "@rc/lib/providers/video";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { editVariantField } from "../../content/variants";
 import { generateReel } from "./generate";
 import { changeReelHook, estimateShotRedo, regenerateReelShot, requestReel } from "./request";
 import { type ReelFixture, reelFixture, stubAssemble } from "./test-support";
@@ -53,6 +54,50 @@ describe("changing a Reel", () => {
     return { result, stub };
   };
 
+  describe("editing the Reel's post by hand", () => {
+    const variant = async () =>
+      (
+        await t.db
+          .select()
+          .from(schema.contentVariants)
+          .where(eq(schema.contentVariants.id, reelId))
+      )[0];
+
+    it("saves the caption and the hashtags of the Reel, and refuses its hook", async () => {
+      const before = await variant();
+      const edited = await editVariantField(fx.ctx, {
+        variantId: reelId,
+        lockVersion: before?.lockVersion ?? 0,
+        field: "caption",
+        value:
+          "¿Aún lavas el arroz del risotto?\n\nNo lo laves.\n\nMándaselo a quien hace el risotto en casa.",
+      });
+      expect(edited.reviewEventId).not.toBeNull();
+      await editVariantField(fx.ctx, {
+        variantId: reelId,
+        lockVersion: edited.variant.lockVersion,
+        field: "hashtags",
+        value: ["#risotto", "#arroz", "#cocinacasera"],
+      });
+      const after = await variant();
+      expect(after).toMatchObject({
+        caption:
+          "¿Aún lavas el arroz del risotto?\n\nNo lo laves.\n\nMándaselo a quien hace el risotto en casa.",
+        hashtags: ["#risotto", "#arroz", "#cocinacasera"],
+        slidesJson: [],
+        format: "REEL",
+      });
+      await expect(
+        editVariantField(fx.ctx, {
+          variantId: reelId,
+          lockVersion: after?.lockVersion ?? 0,
+          field: "hook",
+          value: "Otro gancho",
+        }),
+      ).rejects.toThrow(/only the caption/);
+    });
+  });
+
   describe("changeReelHook", () => {
     it("writes the next script with the other hook's two cards and queues the pipeline from the shots", async () => {
       const out = await changeReelHook(fx.ctx, { variantId: reelId, hookId: "h2" });
@@ -74,6 +119,42 @@ describe("changing a Reel", () => {
         .from(schema.auditEvents)
         .where(eq(schema.auditEvents.action, "reel.hook_changed"));
       expect(events[0]?.data).toMatchObject({ from: "h1", to: "h2" });
+    });
+
+    it("moves the caption's first line to the new hook, unless the reviewer rewrote it", async () => {
+      const variant = async () =>
+        (
+          await t.db
+            .select()
+            .from(schema.contentVariants)
+            .where(eq(schema.contentVariants.id, reelId))
+        )[0];
+      const before = (await variant())?.caption ?? "";
+      expect(before.startsWith("¿Aún lavas el arroz del risotto? Ahí se va lo meloso.\n\n")).toBe(
+        true,
+      );
+      await changeReelHook(fx.ctx, { variantId: reelId, hookId: "h2" });
+      const after = await variant();
+      expect(after?.caption).toBe(
+        before.replace(
+          "¿Aún lavas el arroz del risotto? Ahí se va lo meloso.",
+          "El secreto del risotto: el almidón. No lo tires por el desagüe.",
+        ),
+      );
+      expect(after).toMatchObject({
+        hook: "El secreto del risotto: el almidón.",
+        hookType: "CURIOSITY_GAP",
+      });
+
+      // A first line the reviewer wrote is theirs: it stays when the hook changes again.
+      await runQueued();
+      await t.db
+        .update(schema.contentVariants)
+        .set({ caption: "Mi propia primera línea.\n\nEl resto." })
+        .where(eq(schema.contentVariants.id, reelId));
+      await changeReelHook(fx.ctx, { variantId: reelId, hookId: "h3" });
+      expect((await variant())?.caption).toBe("Mi propia primera línea.\n\nEl resto.");
+      expect((await variant())?.hookType).toBe("RELATABLE_PROBLEM");
     });
 
     it("costs nothing: the job reuses every shot, asks no director, and makes a new video", async () => {

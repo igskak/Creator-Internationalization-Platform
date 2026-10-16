@@ -57,10 +57,12 @@ describe("independent prompt versions", () => {
   });
 
   it.each(WRITTEN_INDEPENDENT)("%s@%i was written without a brand name", (id, version, to) => {
-    const prompt = promptRegistry.get(id, version);
-    expect(promptRegistry.latest(id)).toBe(prompt);
-    expect(prompt.system[0]?.text.startsWith(to)).toBe(true);
-    expect(prompt.system.map((b) => b.text).join("\n")).not.toMatch(/Reg\.?Chef/i);
+    // The first version and every later one keep the neutral opening and name no brand.
+    for (const prompt of promptRegistry.list().filter((p) => p.id === id)) {
+      expect(prompt.version).toBeGreaterThanOrEqual(version);
+      expect(prompt.system[0]?.text.startsWith(to)).toBe(true);
+      expect(prompt.system.map((b) => b.text).join("\n")).not.toMatch(/Reg\.?Chef/i);
+    }
   });
 
   it("refuses a released prompt whose opening has moved", () => {

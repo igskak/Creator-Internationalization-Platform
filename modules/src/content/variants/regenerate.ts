@@ -130,6 +130,11 @@ export async function requestFieldRegeneration(
       { details: { requiresConfirmation: true, status: variant.status } },
     );
   }
+  if (variant.format === "REEL") {
+    throw new InvalidStateError("A Reel's caption, ask and hashtags are edited by hand.", {
+      details: { code: "reel_field" },
+    });
+  }
   const content = contentOf(variant);
   if (!content) throw new InvalidStateError("The variant has no draft to change yet.");
   readField(content, field); // a missing slide is refused here
@@ -315,7 +320,7 @@ export async function runFieldRegeneration(
   if (invalidates && !payload.confirmed) {
     return discard({ status: "SKIPPED", reason: "The approval was not confirmed." }, "unconfirmed");
   }
-  const content = contentOf(variant);
+  const content = variant.format === "REEL" ? null : contentOf(variant);
   const brief = variant.marketBriefJson;
   if (!content || !brief) {
     return discard({ status: "SKIPPED", reason: "The variant has no draft or plan." }, "no draft");

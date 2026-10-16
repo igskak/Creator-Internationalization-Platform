@@ -813,6 +813,11 @@ export const en = {
         saved: "Trial setting saved.",
         fixed: "Fixed: the Reel is going out or out already.",
       },
+      post: {
+        caption: "Reel caption",
+        cta: "Ask: {type} · {text}",
+        hashtags: "Reel hashtags",
+      },
       review: {
         title: "Review and publish",
         status: "Reel status: {status}",

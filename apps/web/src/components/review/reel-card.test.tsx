@@ -21,12 +21,14 @@ const mocks = vi.hoisted(() => ({
   setTrial: vi.fn(),
   approve: vi.fn(),
   reject: vi.fn(),
+  edit: vi.fn(),
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock("sonner", () => ({ toast: mocks.toast }));
 vi.mock("@/server/actions/content", () => ({
   approveVariant: mocks.approve,
+  editVariantField: mocks.edit,
   rejectVariant: mocks.reject,
   requestChanges: vi.fn(),
   resubmitVariant: vi.fn(),
@@ -88,6 +90,11 @@ const reelOf = (over: Record<string, unknown> = {}): NonNullable<ReelView["reel"
     variantId: REEL,
     status: "READY_FOR_REVIEW",
     trialGraduation: null,
+    post: {
+      caption: "Hot water on bulgur? Only if it's fine.\n\nFine bulgur is already cooked.",
+      cta: { type: "SHARE", text: "Send this to whoever cooks the grains." },
+      hashtags: ["#bulgur", "#grainbowl", "#cookingtips"],
+    },
     lockVersion: 3,
     allowed: [],
     flags: [],
@@ -479,6 +486,46 @@ describe("a finished Reel", () => {
       });
       // No "render again" for a Reel: its video is made by the Reel job.
       expect(screen.queryByRole("button", { name: en.review.actions.rerender })).toBeNull();
+    });
+
+    it("shows the Reel's own caption, ask and hashtags, edited by hand on the Reel", async () => {
+      const user = userEvent.setup();
+      mocks.edit.mockResolvedValue({
+        ok: true,
+        data: { lockVersion: 4, warnings: [], reviewEventId: "e1" },
+      });
+      show(viewOf({ reel: reelOf({ allowed: [action("edit")] }) }), true, REVIEW);
+      const post = screen.getByTestId("reel-post");
+      expect(within(post).getByText(/Fine bulgur is already cooked\./)).toBeInTheDocument();
+      expect(
+        within(post).getByText("Ask: SHARE · Send this to whoever cooks the grains."),
+      ).toBeInTheDocument();
+      expect(within(post).getByText("#grainbowl")).toBeInTheDocument();
+      // No ↻: the field editor rewrites carousels, not Reels.
+      expect(within(post).queryByRole("button", { name: /Regenerate/i })).toBeNull();
+      await user.click(
+        within(post).getByRole("button", { name: `Edit: ${en.review.edit.field.caption}` }),
+      );
+      const box = within(post).getByRole("textbox");
+      await user.clear(box);
+      await user.type(box, "New caption.");
+      await user.click(within(post).getByRole("button", { name: "Save" }));
+      await waitFor(() =>
+        expect(mocks.edit).toHaveBeenCalledWith({
+          variantId: REEL,
+          lockVersion: 3,
+          field: "caption",
+          value: "New caption.",
+        }),
+      );
+    });
+
+    it("does not offer editing when the Reel's status does not allow it", () => {
+      show(viewOf({ reel: reelOf({ status: "PUBLISHED", allowed: [] }) }), true, REVIEW);
+      const post = screen.getByTestId("reel-post");
+      expect(
+        within(post).getByRole("button", { name: `Edit: ${en.review.edit.field.caption}` }),
+      ).toBeDisabled();
     });
 
     it("explains in Reel words what blocks the approval", () => {
