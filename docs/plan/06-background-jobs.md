@@ -31,7 +31,7 @@ Spec §23.1 item 6 (§23 item 5). All jobs are Trigger.dev tasks (D-05) in `jobs
 | J9 | `publish-dispatcher` | cron `* * * * *` | – | default | `FOR UPDATE SKIP LOCKED` claim; SCHEDULED → QUEUED | 0 (next tick) | P0 |
 | J10 | `publish-content` | J9; `schedulePublication(IMMEDIATE)`; `retryPublication` | `{ publicationId }` | instagram-publish, concurrencyKey = account | key = `publications.idempotency_key`; persisted step + container ids | 5 (30 s → 10 min) | P0 |
 | J11 | `collect-insights` | cron hourly (minute 7) + `collectMetricsNow` | `{ publicationId?, slot? }` | instagram-read | unique `(publication, slot)`, `ON CONFLICT DO NOTHING` | 3 | P0 |
-| J12 | `collect-account-insights` | cron daily 02:17 UTC | `{ socialAccountId? }` | instagram-read | unique `(account, metric_date)` upsert | 3 | P0 |
+| J12 | `collect-account-insights` | cron hourly at :17; each account once its market's clock has passed 02:00, a stored day is skipped (G-03) | `{ socialAccountId? }` (one account: read now, overwrite) | instagram-read | unique `(account, metric_date)` upsert | 3 | P0 |
 | J13 | `refresh-instagram-tokens` | cron daily 03:13 UTC | – | instagram-read | per account: skip if refreshed < 24 h ago | 3 | P0 |
 | J14 | `check-account-health` | cron every 6 h; action | `{ socialAccountId? }` | instagram-read | read-only | 2 | P0 |
 | J15 | `build-performance-summary` | cron weekly Mon 04:11 UTC; action; before J4 if latest summary > 7 days old | `{ marketId?, windowDays }` | default | key `summary:{market}:{windowEnd}` | 2 | P1 |
@@ -101,7 +101,7 @@ For each ACTIVE account whose token was refreshed more than 24 h ago and expires
 |---|---|
 | every minute | `publish-dispatcher` |
 | hourly at :07 | `collect-insights` |
-| daily 02:17 | `collect-account-insights` |
+| hourly :17 | `collect-account-insights` (each market after its local 02:00) |
 | daily 03:13 | `refresh-instagram-tokens` |
 | every 6 h at :23 | `check-account-health` |
 | Monday 04:11 | `build-performance-summary` (P1) |

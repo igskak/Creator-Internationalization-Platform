@@ -383,7 +383,8 @@ describe("collecting insights", () => {
     });
 
     it("stores the day per account, overwrites it on a second run, keeps unknowns null", async () => {
-      fx.clock.set(new Date("2026-10-14T02:17:00Z"));
+      // 08:17 UTC: 10:17 in Madrid, 04:17 in New York; both markets have finished 13 Oct.
+      fx.clock.set(new Date("2026-10-14T08:17:00Z"));
       mock.setAccountInsights(ES, {
         reachFollowers: 800,
         reachNonFollowers: 1700,
@@ -407,7 +408,7 @@ describe("collecting insights", () => {
             )
         )[0];
       expect(await rowOf(EN)).toMatchObject({
-        metricDate: "2026-10-12",
+        metricDate: "2026-10-13",
         reachFollowers: 100,
         reachNonFollowers: 300,
         views: null,
@@ -419,15 +420,48 @@ describe("collecting insights", () => {
       // The second run of the day overwrites; there is still one row per account.
       mock.setAccountInsights(ES, { reachFollowers: 900, reachNonFollowers: 1800 });
       mock.unsupportedAccountMetrics.clear();
-      fx.clock.set(new Date("2026-10-14T03:00:00Z"));
+      fx.clock.set(new Date("2026-10-14T09:00:00Z"));
       await collectAccountInsights(fx.ctx, { socialAccountId: accounts[ES]?.id ?? "" });
       const all = await t.db.select().from(schema.accountMetricSnapshots);
       expect(all).toHaveLength(2);
       expect(await rowOf(ES)).toMatchObject({ reachFollowers: 900, reachNonFollowers: 1800 });
     });
 
-    it("sets an account NEEDS_REAUTH on a refused token and goes on", async () => {
+    it("reads each market once its night has passed 02:00, and a stored day only once", async () => {
+      mock.setAccountInsights(ES, { reachFollowers: 10 });
+      mock.setAccountInsights(EN, { reachFollowers: 20 });
+      const reason = (run: Awaited<ReturnType<typeof collectAccountInsights>>, id: string) =>
+        run.skipped.find((s) => s.socialAccountId === accounts[id]?.id)?.reason;
+      // 02:17 UTC: 04:17 in Madrid (its 13 Oct), 22:17 on 13 Oct in New York (its last finished
+      // day is 12 Oct, not stored yet, so it is caught up).
       fx.clock.set(new Date("2026-10-14T02:17:00Z"));
+      const first = await collectAccountInsights(fx.ctx);
+      expect(first.collected.map((c) => c.metricDate).sort()).toEqual(["2026-10-12", "2026-10-13"]);
+      // 04:30 UTC: 00:30 in New York; 13 Oct has just ended there, Meta gets two hours to add it up.
+      fx.clock.set(new Date("2026-10-14T04:30:00Z"));
+      const early = await collectAccountInsights(fx.ctx);
+      expect(early.collected).toEqual([]);
+      expect(reason(early, EN)).toBe("TOO_EARLY");
+      expect(reason(early, ES)).toBe("DONE");
+      // 06:17 UTC: 02:17 in New York, its 13 Oct is read; Madrid's is stored already.
+      fx.clock.set(new Date("2026-10-14T06:17:00Z"));
+      const second = await collectAccountInsights(fx.ctx);
+      expect(second.collected).toEqual([
+        expect.objectContaining({ socialAccountId: accounts[EN]?.id, metricDate: "2026-10-13" }),
+      ]);
+      expect(reason(second, ES)).toBe("DONE");
+      // Later runs that day call Instagram for nobody.
+      const calls = mock.calls.length;
+      fx.clock.set(new Date("2026-10-14T07:17:00Z"));
+      const third = await collectAccountInsights(fx.ctx);
+      expect(third.collected).toEqual([]);
+      expect(third.skipped.map((s) => s.reason)).toEqual(["DONE", "DONE"]);
+      expect(mock.calls.length).toBe(calls);
+      expect(await t.db.select().from(schema.accountMetricSnapshots)).toHaveLength(3);
+    });
+
+    it("sets an account NEEDS_REAUTH on a refused token and goes on", async () => {
+      fx.clock.set(new Date("2026-10-14T08:17:00Z"));
       mock.setAccountInsights(EN, { reachFollowers: 1 });
       mock.fail({
         path: /\/insights$/,

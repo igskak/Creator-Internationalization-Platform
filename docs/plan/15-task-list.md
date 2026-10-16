@@ -790,9 +790,10 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
   - **Do:** send each slide's approved `altText` as `alt_text` of its carousel child container (images only; Reels have none).
   - **Done when:** tests; the next dry run on @chef.skk reaches FINISHED with alt text sent (V-30).
   - **Result (code, 2026-10-16):** `createChildContainer` takes the alt text (whitespace folded, cut to 1,000 characters, left out when empty); the publish machine passes each rendered slide the `altText` of its slide in the approved snapshot. **Open:** V-30 on the next dry run.
-- [ ] **G-03 · Account metrics are collected (V-11)** · P0 · S · deps: M6-03
+- [x] **G-03 · Account metrics are collected (V-11)** · P0 · S · deps: M6-03
   - **Do:** check the first runs of J12 (`collect-account-insights`, cron 02:17 UTC): `account_metric_snapshots` was still empty on 2026-10-15 22:35 UTC only because M6 went live that day and the job had not run yet. Close V-11 on the first rows (day boundary, follows vs unfollows); fix what they show.
   - **Done when:** a daily row per account; the dashboard shows the follower line.
+  - **Result (2026-10-16):** the first run stored 14 Oct for @chef.skk (2 followers; follows and unfollows null). J12 now runs hourly and reads each account once its market's clock has passed 02:00, skipping a stored day (decision log). V-11 stays open for follows and unfollows.
 - [ ] **G-04 · Carousel asks and hashtags (content-writer@7)** · P1 · M · deps: M7-04
   - **Do:** the carousel writer gets the market's recent asks and hashtags (as the Reel director does), rotates the goal of the post (save, send, comment, follow) and does not repeat the tag block; no engagement bait.
   - **Done when:** live eval (about $2.5, owner's yes) without regression; decision log.

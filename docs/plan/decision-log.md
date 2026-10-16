@@ -1344,3 +1344,9 @@ Template:
 - Not done: V-30, the first dry run with alt text through `graph.instagram.com`.
 - Impact on plan: G-02 code done.
 
+## 2026-10-16 · Account metrics are read after each market's own night [G-03]
+- Context: J12 ran once a day at 02:17 UTC and took "yesterday" in the market's zone. At 02:17 UTC it is still 22:17 the day before in New York, so the first run (2026-10-16) stored 14 Oct for the English account; 15 Oct, the day of the first Reels, would have arrived only on 17 Oct, a day and a half late. The first row also showed `follows_and_unfollows` empty (follows and unfollows null) for an account with 2 followers (V-11, to watch).
+- Decision: J12 runs hourly at :17. On a scheduled run an account is read once its market's local clock has passed 02:00 (the day has ended and Meta has had two hours to add it up) and only if that day is not stored yet; a run with one account id reads it now and overwrites the day, as before. In steady state each market is read once a day, about 02:17 local (00:17 UTC for Madrid in summer, 06:17 UTC for New York); a missed day is caught up on the next run. Later runs of the day only read the database, so Meta sees no more calls than before.
+- Evidence: collect tests (the window per zone, Madrid read at 02:17 UTC and New York at 06:17 UTC, "too early" at 00:30 local, a stored day skipped with no Graph call, one account overwritten on request).
+- Impact on plan: G-03 schedule fixed; plan 06 J12 row updated. V-11 stays open until follows and unfollows are seen on a real account.
+

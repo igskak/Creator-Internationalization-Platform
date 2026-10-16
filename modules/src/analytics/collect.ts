@@ -299,9 +299,19 @@ export async function collectInsights(
 
 export const CollectAccountInsightsInput = z.object({ socialAccountId: z.uuid().optional() });
 
+/**
+ * The market-local hour from which yesterday is taken (G-03): the day has ended everywhere in the
+ * market and Meta has had two hours to add it up. J12 runs every hour, so each market is read
+ * soon after its own midnight instead of at one UTC time that was still yesterday evening in
+ * New York (the row then lagged a day and a half).
+ */
+export const ACCOUNT_INSIGHTS_LOCAL_HOUR = 2;
+
 export type AccountInsightsResult = {
   collected: { socialAccountId: string; metricDate: string; unavailable: string[] }[];
   failed: { socialAccountId: string; problem: string }[];
+  /** Not read on this run: too early in the market's night, or the day is already stored. */
+  skipped: { socialAccountId: string; metricDate: string; reason: "TOO_EARLY" | "DONE" }[];
 };
 
 /** The market-local day before `now`, as a date and as an inclusive Unix-seconds window. */
@@ -335,9 +345,11 @@ export function previousLocalDay(
 
 /**
  * Takes yesterday's account metrics (the market's local day) for each ACTIVE account, once per
- * day: a second run overwrites the row of the day. A metric Instagram does not give is null; the
- * token being refused makes the account NEEDS_REAUTH; any other failure is the account's finding
- * and does not stop the next account.
+ * day: the hourly run reads an account once its market's clock has passed
+ * `ACCOUNT_INSIGHTS_LOCAL_HOUR` and skips a day already stored. Asked for one account, it reads
+ * that account now and overwrites the row of the day. A metric Instagram does not give is null;
+ * the token being refused makes the account NEEDS_REAUTH; any other failure is the account's
+ * finding and does not stop the next account.
  */
 export async function collectAccountInsights(
   ctx: ServiceContext,
@@ -355,11 +367,39 @@ export async function collectAccountInsights(
         ...(input.socialAccountId ? [eq(schema.socialAccounts.id, input.socialAccountId)] : []),
       ),
     );
-  const result: AccountInsightsResult = { collected: [], failed: [] };
+  const result: AccountInsightsResult = { collected: [], failed: [], skipped: [] };
   const now = ctx.clock.now();
+  const scheduled = input.socialAccountId === undefined;
 
   for (const { account, timezone } of accounts) {
     const day = previousLocalDay(now, timezone);
+    if (scheduled) {
+      if (localParts(now, timezone).hour < ACCOUNT_INSIGHTS_LOCAL_HOUR) {
+        result.skipped.push({
+          socialAccountId: account.id,
+          metricDate: day.metricDate,
+          reason: "TOO_EARLY",
+        });
+        continue;
+      }
+      const [stored] = await ctx.db
+        .select({ id: schema.accountMetricSnapshots.id })
+        .from(schema.accountMetricSnapshots)
+        .where(
+          and(
+            eq(schema.accountMetricSnapshots.socialAccountId, account.id),
+            eq(schema.accountMetricSnapshots.metricDate, day.metricDate),
+          ),
+        );
+      if (stored) {
+        result.skipped.push({
+          socialAccountId: account.id,
+          metricDate: day.metricDate,
+          reason: "DONE",
+        });
+        continue;
+      }
+    }
     try {
       const client = createGraphClient(ctx.instagram, {
         accessToken: decryptAccessToken(ctx, account),
