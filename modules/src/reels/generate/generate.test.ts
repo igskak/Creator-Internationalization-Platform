@@ -2,7 +2,14 @@ import { schema } from "@rc/db";
 import { eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
-import { InvalidStateError, PermanentError, TransientError } from "@rc/lib/errors";
+import {
+  CREDITS_EXHAUSTED_CODE,
+  CreditsExhaustedError,
+  InvalidStateError,
+  PermanentError,
+  TransientError,
+} from "@rc/lib/errors";
+import { createFakeLLMProvider } from "@rc/lib/providers/llm";
 import {
   createFakeVideoProvider,
   type GeneratedShot,
@@ -318,6 +325,47 @@ describe("generateReel", () => {
       .from(schema.auditEvents)
       .where(eq(schema.auditEvents.action, "reel.failed"));
     expect(events).toHaveLength(1);
+  });
+
+  it("pauses, not fails, when the model account is empty, and continues after the top-up", async () => {
+    const empty = createFakeLLMProvider({
+      handler: () => {
+        throw new CreditsExhaustedError("anthropic", "Your credit balance is too low.");
+      },
+    });
+    const video = createFakeVideoProvider();
+    const first = await run("r1", { llm: empty, video }).done;
+    expect(first).toMatchObject({ status: "PAUSED", error: { code: CREDITS_EXHAUSTED_CODE } });
+
+    const paused = await reel();
+    expect(paused.status).toBe("DRAFT");
+    expect(paused.flags).not.toContain("GENERATION_FAILED");
+    expect(paused.lastError).toMatchObject({
+      code: CREDITS_EXHAUSTED_CODE,
+      details: { stage: "DIRECTION", resumable: true },
+    });
+    expect(paused.lastError?.message).toMatch(/top up/i);
+    // The state is kept, with the stage the run stopped in.
+    expect(paused.pipelineState).toMatchObject({
+      pipelineRunId: `reel:${reelId}:r1`,
+      stage: "DIRECTION",
+      completedStages: [],
+    });
+    expect(video.calls).toHaveLength(0);
+    const actions = (await t.db.select().from(schema.auditEvents)).map((a) => a.action);
+    expect(actions).toContain("reel.paused");
+    expect(actions).not.toContain("reel.failed");
+
+    // Topped up: a new request makes the Reel; the old state does not leak into it.
+    const second = await run("r2", { video }).done;
+    expect(second).toMatchObject({ status: "READY" });
+    expect(await reel()).toMatchObject({
+      status: "READY_FOR_REVIEW",
+      pipelineState: null,
+      lastError: null,
+    });
+    expect((await reel()).flags).not.toContain("GENERATION_FAILED");
+    expect(await scripts()).toHaveLength(1);
   });
 
   it("refuses a second request while one is running", async () => {

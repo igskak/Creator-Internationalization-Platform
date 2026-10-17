@@ -757,6 +757,7 @@ export const en = {
       seconds: "{n} s",
     },
     failedTitle: "Writing failed",
+    pausedTitle: "Waiting for AI credit",
     failedBody: "{message}",
     qualityScore: "Quality {score}",
     flagsTitle: "Flags",
@@ -872,6 +873,7 @@ export const en = {
       },
       failed: {
         title: "The Reel could not be made",
+        pausedTitle: "Waiting for AI credit",
         body: "{message}",
         flag: "Generation failed",
       },
