@@ -46,7 +46,7 @@ export const FIXTURE_INPUT: ContentWriterInput = {
       textSlots: [
         { name: "kicker", maxChars: 24, maxLines: 1, required: false },
         { name: "headline", maxChars: 70, maxLines: 4, required: true },
-        { name: "subline", maxChars: 90, maxLines: 2, required: false },
+        { name: "subline", maxChars: 140, maxLines: 4, required: false },
       ],
     },
     {
@@ -55,8 +55,10 @@ export const FIXTURE_INPUT: ContentWriterInput = {
       textSlots: [
         { name: "number", maxChars: 8, maxLines: 1, required: false },
         { name: "label", maxChars: 40, maxLines: 1, required: false },
-        { name: "headline", maxChars: 60, maxLines: 4, required: false },
-        { name: "body", maxChars: 220, maxLines: 9, required: true },
+        { name: "lead", maxChars: 50, maxLines: 2, required: false },
+        { name: "headline", maxChars: 60, maxLines: 3, required: false },
+        { name: "body", maxChars: 380, maxLines: 13, required: true },
+        { name: "closer", maxChars: 60, maxLines: 2, required: false },
       ],
     },
     {
@@ -64,17 +66,18 @@ export const FIXTURE_INPUT: ContentWriterInput = {
       roles: ["MISTAKE", "CORRECT"],
       textSlots: [
         { name: "mistakeTitle", maxChars: 40, maxLines: 2, required: true },
-        { name: "mistakeText", maxChars: 140, maxLines: 5, required: true },
+        { name: "mistakeText", maxChars: 200, maxLines: 7, required: true },
         { name: "correctTitle", maxChars: 40, maxLines: 3, required: true },
-        { name: "correctText", maxChars: 140, maxLines: 6, required: true },
+        { name: "correctText", maxChars: 300, maxLines: 10, required: true },
+        { name: "closer", maxChars: 60, maxLines: 2, required: false },
       ],
     },
     {
       id: "F",
       roles: ["CTA"],
       textSlots: [
-        { name: "headline", maxChars: 60, maxLines: 4, required: true },
-        { name: "body", maxChars: 160, maxLines: 6, required: true },
+        { name: "headline", maxChars: 60, maxLines: 3, required: true },
+        { name: "body", maxChars: 300, maxLines: 11, required: true },
         { name: "keyword", maxChars: 16, maxLines: 1, required: false },
         { name: "offerName", maxChars: 40, maxLines: 2, required: false },
       ],

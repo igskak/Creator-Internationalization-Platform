@@ -19,7 +19,11 @@ export type VisualSystemLike = {
   logo: { assetKey: string; minHeightPx: number };
   spacing: { safeMarginPx: number };
   themeVariants: Readonly<Record<string, Partial<ThemeColors>>>;
+  /** The cover of template A: white like the inner slides (default since D1, 2026-10-17) or full-bleed and dark. */
+  cover?: CoverStyle;
 };
+
+export type CoverStyle = "dark" | "white";
 
 /**
  * Used while `brands.visual_system` is still `{}`: white page, black type, one red
@@ -47,6 +51,8 @@ export type Theme = {
   logo: { assetKey: string; minHeightPx: number };
   /** The variant that was applied, if any. */
   variant: string | null;
+  /** Template A's cover style (carousel v3, D1). */
+  cover: CoverStyle;
 };
 
 const isConfigured = (v: unknown): v is VisualSystemLike =>
@@ -67,6 +73,8 @@ export function buildTheme(system: unknown, variant?: string | null): Theme {
     safeMarginPx: base.spacing.safeMarginPx,
     logo: base.logo,
     variant: variant && base.themeVariants?.[variant] ? variant : null,
+    // Read even from a system that is otherwise not configured yet ({ cover: "dark" }).
+    cover: (system as { cover?: unknown } | null)?.cover === "dark" ? "dark" : "white",
   };
 }
 

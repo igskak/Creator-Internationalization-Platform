@@ -5,6 +5,7 @@ export { flagsForIssues, isBlocking, splitIssues } from "./issues";
 export { validateNumericFidelity } from "./numeric";
 export { validateSlots } from "./slots";
 export { MAX_SLIDES, MIN_SLIDES, validateStructure } from "./structure";
+export { FILLER_PHRASES, THIN_SHARE, validateSubstance } from "./substance";
 export {
   CTA_KEYWORD,
   MAX_CAPTION_CHARS,

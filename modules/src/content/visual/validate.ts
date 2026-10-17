@@ -152,6 +152,7 @@ export function validateVisualBrief(
   issues.push(...shotListIssues(brief, context));
   issues.push(...colourIssues(brief, context));
   issues.push(...placementIssues(brief, context));
+  issues.push(...momentIssues(brief, context));
 
   // Every required slot of every slide needs a picture.
   for (const slide of context.slides) {
@@ -348,5 +349,113 @@ function placementIssues(brief: VisualBrief, context: VisualValidationContext): 
       }
     }
   });
+  return issues;
+}
+
+/** Dark vessels make the white page heavy; at most this many per carousel (visual-director@7). */
+export const MAX_DARK_VESSELS = 1;
+const DARK_VESSELS = new Set(["CAST_IRON", "DARK_CERAMIC"]);
+/** From this many generated pictures on, at least `MIN_ARRANGEMENTS` arrangements. */
+export const ARRANGED_FROM = 6;
+export const MIN_ARRANGEMENTS = 4;
+
+/** Lower-case words of three letters or more, without the emphasis markers. */
+const words = (text: string): string[] =>
+  stripEmphasis(text)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length >= 3);
+
+/**
+ * One picture, one moment (visual-director@7, carousel-v3 P3, P4, P6): every generated picture
+ * quotes in "depicts" the words of its slide that it shows, the same food never comes back in the
+ * same shot, vessel and arrangement, a dark vessel appears at most once, and six or more pictures
+ * use at least four arrangements. Only briefs that name a "vessel" are checked.
+ */
+function momentIssues(brief: VisualBrief, context: VisualValidationContext): ValidationIssue[] {
+  const generated = brief.slides
+    .map((entry, i) => ({ entry, path: `slides.${i}` }))
+    .filter(({ entry }) => entry.source === "GENERATE");
+  if (!generated.some(({ entry }) => entry.vessel !== undefined)) return [];
+  const issues: ValidationIssue[] = [];
+  const slideById = new Map(context.slides.map((s) => [s.id, s]));
+
+  for (const { entry, path } of generated) {
+    const slide = slideById.get(entry.slideId);
+    const quoted = words(entry.depicts ?? "");
+    if (quoted.length === 0) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_DEPICTS_MISSING",
+          `${path}.depicts`,
+          "The picture does not say which words of its slide it shows.",
+          "Quote in depicts 2 to 8 words of the slide's text that the picture shows.",
+        ),
+      );
+      continue;
+    }
+    if (!slide) continue;
+    const slideWords = new Set(words(Object.values(slide.slots).join(" ")));
+    const found = quoted.filter((w) => slideWords.has(w)).length;
+    if (found * 2 < quoted.length) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_DEPICTS_NOT_IN_SLIDE",
+          `${path}.depicts`,
+          `"${entry.depicts}" is not what slide ${entry.slideId} says.`,
+          "Copy the words exactly from the slide's text, and show that moment in the picture.",
+        ),
+      );
+    }
+  }
+
+  const dark = generated.filter(({ entry }) => DARK_VESSELS.has(entry.vessel ?? ""));
+  if (dark.length > MAX_DARK_VESSELS) {
+    issues.push(
+      issue(
+        "BLOCKER",
+        "VISUAL_VESSEL_DARK",
+        `${dark[MAX_DARK_VESSELS]?.path ?? "slides"}.vessel`,
+        `${dark.length} pictures use a cast-iron or dark ceramic vessel; at most ${MAX_DARK_VESSELS}.`,
+        "Use white porcelain, brushed steel or clear glass, and take the colour from the food.",
+      ),
+    );
+  }
+
+  const seen = new Map<string, string>();
+  for (const { entry, path } of generated) {
+    const key = [entry.shotType ?? "", entry.vessel ?? "", entry.arrangement ?? ""].join("/");
+    const first = seen.get(key);
+    if (first && first !== entry.slideId) {
+      issues.push(
+        issue(
+          "BLOCKER",
+          "VISUAL_PICTURE_REPEATED",
+          path,
+          `Slides ${first} and ${entry.slideId} show the same kind of picture (${key}).`,
+          "Change the state, the step, the vessel or the arrangement of one of them.",
+        ),
+      );
+    } else if (!first) {
+      seen.set(key, entry.slideId);
+    }
+  }
+
+  const arrangements = new Set(generated.map(({ entry }) => entry.arrangement).filter(Boolean));
+  if (generated.length >= ARRANGED_FROM && arrangements.size < MIN_ARRANGEMENTS) {
+    issues.push(
+      issue(
+        "BLOCKER",
+        "VISUAL_ARRANGEMENT_MONOTONOUS",
+        "slides",
+        `${generated.length} pictures use only ${arrangements.size} arrangement(s).`,
+        `Use at least ${MIN_ARRANGEMENTS} arrangements: a hero with depth, a sequence, two states, a mise en place, a tool in action.`,
+      ),
+    );
+  }
   return issues;
 }

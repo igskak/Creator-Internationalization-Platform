@@ -146,6 +146,9 @@ export const VisualBrief = z.object({
       /** Where the picture sits on an inner slide and how its frame is built (visual-director@6 on). */
       placement: z.string().min(1).optional(),
       arrangement: z.string().min(1).optional(),
+      /** The main vessel and the quoted slide words the picture shows (visual-director@7). */
+      vessel: z.string().min(1).optional(),
+      depicts: z.string().optional(),
     }),
   ),
   differentiationFromSibling: z.string(),
@@ -287,6 +290,13 @@ export const QaReport = z.object({
    */
   nonWhitePictures: z
     .array(z.object({ slideId: z.string(), slot: z.string(), mean: z.number().nonnegative() }))
+    .optional(),
+  /**
+   * Cut-out pictures whose subject is cut by the slide edges more than allowed (a warning): the
+   * share of the subject box inside the slide, 0–1 (docs/design/carousel-v3-requirements.md Q3).
+   */
+  croppedPictures: z
+    .array(z.object({ slideId: z.string(), slot: z.string(), visible: z.number().min(0).max(1) }))
     .optional(),
 });
 export type QaReport = z.infer<typeof QaReport>;

@@ -45,6 +45,17 @@ export const ApprovedReel = z.object({
   audioKind: z.string().min(1),
   /** The text cards in order, as approved (what the viewer reads). */
   cards: z.array(z.string()),
+  /**
+   * The grid cover (carousel v3, R3): the source carousel's cover slide in a 9:16 JPEG, sent as
+   * `cover_url`. Absent when it could not be made; Instagram then takes the first frame.
+   */
+  cover: z
+    .object({
+      key: z.string().min(1),
+      sha256: z.string().min(1),
+      bytes: z.number().int().positive(),
+    })
+    .optional(),
 });
 export type ApprovedReel = z.infer<typeof ApprovedReel>;
 

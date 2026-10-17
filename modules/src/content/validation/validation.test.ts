@@ -14,6 +14,7 @@ import {
   validateNumericFidelity,
   validateSlots,
   validateStructure,
+  validateSubstance,
   validateTextRules,
 } from "./index";
 
@@ -134,7 +135,7 @@ describe("validateSlots", () => {
   });
 
   it("reports overflow, a missing required slot and an unknown template", () => {
-    const slides = replace("s2", { slots: { body: "x".repeat(221) } });
+    const slides = replace("s2", { slots: { body: "x".repeat(381) } });
     expect(validateSlots(withSlides(slides), context())).toEqual([
       expect.objectContaining({
         code: "SLOT_OVERFLOW",
@@ -435,6 +436,45 @@ describe("validateTextRules", () => {
     expect(validateTextRules(draft({ caption: "Tasty 🍚 www.example.com" }), context())).toEqual(
       [],
     );
+  });
+});
+
+describe("validateSubstance", () => {
+  it("flags filler lines in the slides and the caption, as whole words, per language", () => {
+    const filler = draft({
+      caption: "Don’t panic. Rice is simpler than you think.",
+      slides: replace("s2", { slots: { body: "First, **breathe.** There's a calm fix." } }),
+    });
+    const issues = validateSubstance(filler, context());
+    expect(codes(issues)).toEqual(["FILLER_PHRASE", "FILLER_PHRASE"]);
+    expect(issues.map((i) => i.fieldPath)).toEqual(["slides.s2.slots.body", "caption"]);
+    expect(issues.every((i) => i.severity === "MAJOR")).toBe(true);
+    // "breathes" is not "breathe"; Spanish filler is checked only for Spanish.
+    expect(
+      validateSubstance(draft({ caption: "The dough breathes. Respira." }), context()),
+    ).toEqual([]);
+    expect(
+      codes(validateSubstance(draft({ caption: "Respira hondo." }), context({ locale: "es-ES" }))),
+    ).toEqual(["FILLER_PHRASE"]);
+  });
+
+  it("notes thin inner slides and steps without a number, only with the templates", () => {
+    const templates = {
+      get: (id: string) =>
+        id === "B"
+          ? ({ textSlots: { headline: { maxChars: 60 }, body: { maxChars: 300 } } } as never)
+          : undefined,
+    };
+    const thin = validateSubstance(draft(), context({ templates }));
+    // s2 PROBLEM, s3 EXPLANATION and s4 STEP have one line of a 300-character body.
+    expect(codes(thin)).toEqual(["THIN_SLIDE", "THIN_SLIDE", "THIN_SLIDE", "STEP_WITHOUT_NUMBER"]);
+    expect(thin.every((i) => i.severity === "MINOR")).toBe(true);
+    const full = "Rinse the rice three or four times.\nUse 330 ml of water.\n".repeat(3);
+    const filled = draft({ slides: replace("s4", { slots: { body: full } }) });
+    expect(
+      validateSubstance(filled, context({ templates })).filter((i) => i.fieldPath === "slides.s4"),
+    ).toEqual([]);
+    expect(validateSubstance(draft(), context())).toEqual([]);
   });
 });
 

@@ -4,6 +4,9 @@ import sharp from "sharp";
 // Image normalization (plan 08 §8.4, M3-04): auto-orient, convert to sRGB, crop to the slot's
 // aspect around the busiest part of the picture (sharp's attention strategy), resize to the slot's
 // pixels and encode WebP q90. The provider's original is kept by the caller next to the result.
+// A cut-out on white (`fit: "contain"`, CV-01/CV-02) is padded with white instead of cropped: a
+// 2:3 picture with a whole bowl at the top or bottom keeps the whole bowl, and the white margin
+// disappears on the white slide.
 
 export const SLOT_PIXELS = {
   "4:5": { width: 1080, height: 1350 },
@@ -35,13 +38,20 @@ export class ImageDecodeError extends Error {
 export async function normalizeImage(
   input: Uint8Array,
   aspect: SlotAspect,
+  options: { fit?: "cover" | "contain" } = {},
 ): Promise<NormalizedImage> {
   const { width, height } = SLOT_PIXELS[aspect];
   try {
-    const { data, info } = await sharp(input, { failOn: "error" })
+    const oriented = sharp(input, { failOn: "error" })
       .rotate() // auto-orient from EXIF and drop the tag
-      .toColourspace("srgb")
-      .resize(width, height, { fit: "cover", position: sharp.strategy.attention })
+      .toColourspace("srgb");
+    const sized =
+      options.fit === "contain"
+        ? oriented
+            .flatten({ background: "#ffffff" })
+            .resize(width, height, { fit: "contain", background: "#ffffff" })
+        : oriented.resize(width, height, { fit: "cover", position: sharp.strategy.attention });
+    const { data, info } = await sized
       .webp({ quality: WEBP_QUALITY })
       .toBuffer({ resolveWithObject: true });
     return {

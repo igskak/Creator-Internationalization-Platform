@@ -9,6 +9,7 @@ import { planCampaign } from "../../offers";
 import { planReelDisclosure } from "../../visuals";
 import type { VersionCheck } from "./approve";
 import { staleLockError } from "./edit";
+import { prepareReelCover } from "./reel-cover";
 import { approvalBlockers, approvalChecklist, type RenderState } from "./state";
 import { transitionVariant } from "./transition";
 
@@ -130,6 +131,12 @@ export async function approveReelVariant(
   // The idea's cards, as the carousel's approval reads them (the cited ones are kept).
   const cards = knowledgeIds.size ? await getIdeaCards(ctx, variant.masterIdeaId) : [];
   const disclosure = await planReelDisclosure(ctx, { marketId: variant.marketId });
+  // The grid cover from the carousel's cover slide; a Reel without one keeps its first frame.
+  const cover = await prepareReelCover(ctx, {
+    variantId: variant.id,
+    sourceVariantId: variant.sourceVariantId,
+    reelRenderId: current.id,
+  });
   const snapshot: ApprovedSnapshot = ApprovedSnapshot.parse({
     format: "REEL",
     hook: plain(chosen?.card ?? variant.hook ?? ""),
@@ -163,6 +170,7 @@ export async function approveReelVariant(
       height: current.height,
       audioKind: current.audioKind,
       cards: [...script.scenes].sort((a, b) => a.index - b.index).map((s) => plain(s.card)),
+      ...(cover ? { cover } : {}),
     },
   });
 

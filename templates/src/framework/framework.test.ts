@@ -147,7 +147,7 @@ describe("slot helpers", () => {
     expect(cutoutSlot(context, "hero", "x")).toBe("");
     const withImage = { ...context, assets: { images: { hero: "data:image/webp;base64,AA" } } };
     expect(cutoutSlot(withImage, "hero", "x")).toBe(
-      '<img class="img cutout x" data-image="hero" alt="" src="data:image/webp;base64,AA">',
+      '<img class="img cutout x" data-image="hero" data-place="corner" alt="" src="data:image/webp;base64,AA">',
     );
   });
 

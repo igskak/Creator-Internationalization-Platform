@@ -75,6 +75,12 @@ export async function generateVisualAssets(
     .from(schema.masterIdeas)
     .where(eq(schema.masterIdeas.id, variant.masterIdeaId));
   const brandId = idea?.brandId ?? "";
+  // The white cover (default) is a cut-out like the inner slides; only a dark cover is cropped full-bleed.
+  const [brand] = await ctx.db
+    .select({ visualSystem: schema.brands.visualSystem })
+    .from(schema.brands)
+    .where(eq(schema.brands.id, brandId));
+  const darkCover = (brand?.visualSystem as { cover?: unknown } | null)?.cover === "dark";
 
   const brief = variant.visualBriefJson;
   const slides: Slide[] = structuredClone(variant.slidesJson);
@@ -181,9 +187,13 @@ export async function generateVisualAssets(
         aspect: entry.aspect as ImageAspect,
         label: `${slideId}/${slot}`,
       });
+      // A cut-out keeps the whole generated frame (padded with white); a dark full-bleed cover is cropped.
+      const fullBleed =
+        darkCover && registry.get(slide.templateId)?.imageSlots[slot]?.fullBleed === true;
       const normalized = await normalizeImage(
         generated.bytes,
         slotAspect(slide, slot, entry.aspect as SlotAspect),
+        { fit: fullBleed ? "cover" : "contain" },
       );
       const keys = assetKeys({
         variantId,

@@ -28,6 +28,7 @@ export {
   estimateLines,
   LINE_FILL_FACTOR,
   type SlideForValidation,
+  slotAtSmallestSize,
   type TemplateIssue,
   validateSlideAgainstTemplate,
 } from "./validate";

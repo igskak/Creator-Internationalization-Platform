@@ -1,6 +1,6 @@
 # Carousel visual style
 
-**Status: ACCEPTED by the owner (2026-10-12).** Replaces the default look of plan 08 §8.3 (cream background, terracotta accent, Fraunces + Inter, small rounded photo in a corner), which read as generic AI output on the first live carousel.
+**Status: ACCEPTED by the owner (2026-10-12).** Next version proposed in [carousel-v3-requirements.md](carousel-v3-requirements.md) (2026-10-17): photo placed by its measured box, pictures with a meaning, an 8-slide arc with concrete text. Replaces the default look of plan 08 §8.3 (cream background, terracotta accent, Fraunces + Inter, small rounded photo in a corner), which read as generic AI output on the first live carousel.
 
 The style was chosen on one test carousel (quinoa: rinse, toast, double liquid; English, 7 slides) in two rounds: three directions as static mock-ups, then the chosen direction with real generated photos. The reference was a Russian-language food account with large cut-out macro photography on white; it is an internal reference only and is not named in anything audience-facing.
 
@@ -45,6 +45,19 @@ One family, **Inter Tight** (SIL OFL 1.1, variable `wght` 100–900, Latin + Lat
 
 Emphasis comes from the text itself: the writer marks key phrases with `**…**`. In a body slot it renders bold (700); in a headline it renders in the accent colour. At most one marked phrase per headline and three per body.
 
+**Templates 3.0.0 (carousel v3, [carousel-v3-requirements.md](carousel-v3-requirements.md) T3–T6).** The inner slides carry a method a reader can cook from, like the reference account:
+
+| Role | Weight | Size (1080 × 1350) | Notes |
+|---|---|---|---|
+| Headline (B, E correct title) | 800 | 72 px, fit-text down to 46 px | up to 3 lines, in a 600 px column |
+| Lead (B, optional) | 400 | 44 px, down to 34 px | uppercase, the quieter first half of a headline |
+| Step number (B) | 800 | 110 px | digits or a step word with digits ("Step 2") in ink; any other figure in accent |
+| Body (B, E, F) | 400 | 30 px, fit-text down to 26 px | a ladder: one sentence per line, a blank line = a half-line gap; 468 px column |
+| Closer (B, E, optional) | 800 | 30 px, down to 26 px | uppercase, the bold last line under the body |
+| Cover subline (A) | 400 | 32 px, down to 28 px | up to 140 characters, 4 lines |
+
+Plan 08's 32 px floor for body text is lowered to 26 px (decision log 2026-10-17): the reference's denser slides use 27–35 px on a 1080 px slide. The cover is the white page of the inner slides (D1, decided 2026-10-17): the text top left in ink and the photo fitted beside it by the placement script. The dark full-bleed cover stays available with `brands.visual_system.cover = "dark"`.
+
 ## Layouts
 
 All on the 1080 × 1350 canvas, footer at 44 px from the bottom: handle bottom-left (ink), page `n/N` bottom-right (muted).
@@ -60,7 +73,7 @@ All on the 1080 × 1350 canvas, footer at 44 px from the bottom: handle bottom-l
 
 ### Photo placement
 
-Inner slides receive a 4:5 picture (1080 × 1350 after normalization, generated as 2:3 portrait). It is drawn as a layer behind the text with `mix-blend-mode: multiply`, so its white disappears into the page, shifted right and down so the subject bleeds off the edge. Accepted offsets from the test carousel: x +190…+330 px, y +10…+290 px, scale 1.0–1.04. The template owns the offset; the photo is never cropped to a box.
+Inner slides receive a 4:5 picture (1080 × 1350 after normalization, generated as 2:3 portrait). It is drawn as a layer behind the text with `mix-blend-mode: multiply`, so its white disappears into the page. **From templates 2.2.0 (CV-01) the placement script measures the subject** (`templates/src/framework/place-photo.ts`): it finds the subject's box on the white, lifts an off-white page to pure white, feathers the picture's edges, and scales and moves the picture so the box sits at its placement (lower right, top right, right column, bottom band) as large as it can be without coming within 28 px of any line of text, at most about 60 % of the slide's width, with at most 7 % of the box past each slide edge. A picture that still touches the text at its smallest size is a TEXT_OVERFLOW blocker; a subject with less than 85 % on the slide is a warning. The fixed template offsets (x +180…+330 px, y +240…+400 px) are only the fallback before the script runs: on top of a prompt that already put the subject low and right they cut most subjects into fragments.
 
 ## Photography
 
