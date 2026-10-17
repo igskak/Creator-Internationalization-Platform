@@ -1370,3 +1370,8 @@ Template:
 - Decision: `validateSlideAgainstTemplate` counts lines against `slotAtSmallestSize` (the box's lines and characters per line scaled by `maxPx / minPx`); `SLOT_LINES` stays MAJOR. A ladder's blank line counts half a line (its drawn gap).
 - Evidence: both live drafts pass; template tests (seven lines in A's headline still flagged; five long words that shrink to fit are not). Live run of the active pipeline on the real wet-rice idea (one bare claim, no numbers; $0.72): a correct 6-slide carousel without invented numbers, critic PASS, but slides 3–5 repeat the same two fixes. With the knowledge base as it is, the next real posts will look like this; CV-07 (the owner's sources) is what makes them look like the rice demo. Total live spend overnight: $2.97.
 
+## 2026-10-17 · Hybrid edit spike: the image model does not keep to the mask [CV-05, D2]
+- Context: D2 option C (render the final text slide, let the image model paint the dish into the empty zone with a mask, keep only the masked pixels) promised the reference's integrated composition with exact text.
+- Evidence: one high 1024 × 1536 edit of the rice step-2 slide with gpt-image-2.5-sunburst, $0.054 from `usage`. The model's answer re-drew the whole slide: the dish was well placed beside the text, but the text was re-rendered (one body line squeezed onto one line) and the pot reached into the text area. Compositing only the masked pixels kept the text exact but cut the pot's left side and left a faint off-white block.
+- Decision: C is dropped; A (measured placement, CV-01) stays the way slides are made. B (whole slide by the model) stays rejected for text control.
+

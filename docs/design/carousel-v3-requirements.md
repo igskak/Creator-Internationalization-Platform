@@ -54,6 +54,8 @@ On 2026-10-17 the planner, writer, critic and visual director of v3 ran live on 
 
 Recommendation: A in the templates now, C as a one-carousel spike compared side by side with A; B is rejected for production because of text control.
 
+**Spike result (2026-10-17, CV-05):** the edit endpoint accepts a mask, but the model does not keep to it: it re-draws the whole slide, text included (one line came back squeezed), and paints the dish into the text area. Taking back only the masked pixels keeps the text exact but cuts the dish. C is dropped; A stays.
+
 ## Requirements: pictures
 
 Owner of the change: `visual-director@7`, `modules/src/content/visual/photo-prompt.ts`, `@rc/templates`.
