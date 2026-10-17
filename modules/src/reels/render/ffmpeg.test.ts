@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boxFilter, buildFfmpegArgs } from "./ffmpeg";
+import { boxFilter, buildFfmpegArgs, liftFilter } from "./ffmpeg";
 import { buildAssemblyPlan, type PlanScene } from "./plan";
 
 const scenes: PlanScene[] = [
@@ -22,6 +22,19 @@ describe("boxFilter", () => {
     expect(boxFilter("FULL")).toBe(
       "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920",
     );
+  });
+});
+
+describe("liftFilter", () => {
+  it("keeps the fixed levels without a measurement", () => {
+    expect(liftFilter(undefined)).toBe("colorlevels=rimax=0.9:gimax=0.9:bimax=0.9");
+  });
+
+  it("lifts only the highlights from the measured page level, within bounds", () => {
+    expect(liftFilter(0.86)).toBe("curves=all='0/0 0.7/0.7 0.86/1 1/1'");
+    expect(liftFilter(0.78)).toBe("curves=all='0/0 0.68/0.68 0.78/1 1/1'");
+    expect(liftFilter(0.5)).toBe("curves=all='0/0 0.65/0.65 0.75/1 1/1'");
+    expect(liftFilter(0.995)).toBe("null");
   });
 });
 

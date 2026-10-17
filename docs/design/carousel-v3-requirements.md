@@ -96,7 +96,7 @@ Owner of the change: `market-adapter@4` (plan), the next `content-writer` (merge
 The reference account's Reels are a different genre (memes about restaurant life and the chef's own footage, with a white speech-bubble caption), so they are not copied. What carries over from the carousel study:
 
 - **R1 · Pictures.** Reels are cut from the carousel's pictures, so CV-01/CV-02 (whole subjects, light vessels, colour from food) improve them directly.
-- **R2 · White stays white.** The image-to-video model leaves a grey cast (the accepted bulgur Reel shows a light grey page); the lift is set per shot from the measured page colour, as the slide placement script does, instead of the fixed 0.9 level.
+- **R2 · White stays white.** The image-to-video model may leave a grey cast (the accepted bulgur test Reel shows a light grey page, made by the spike's script); the lift is set per shot from the measured page colour, as the slide placement script does, instead of the fixed 0.9 level, which also brightened every food by about 11 % (done 2026-10-17).
 - **R3 · A designed cover.** The Reel's grid cover is a slide in the carousel's white system with the hook headline (`cover_url` on the REELS container, ⚠ verify), not the first frame, so the grid reads as one series.
 
 ## Requirements: checks before review

@@ -842,6 +842,7 @@ Why: on 2026-10-17 the owner compared the English carousels with the Russian-lan
 - [ ] **CV-08 · Reels: white page and a designed cover (R2, R3)** · P1 · S · deps: CV-03 · ⚠ `cover_url` on REELS containers
   - **Do:** lift each shot's page to white from its measured page colour instead of the fixed 0.9 level; render the Reel's cover as an A slide (white cover) with the hook and send it as `cover_url`.
   - **Done when:** a Reel dry run shows the designed cover in the grid preview; no grey page in the frames.
+  - **Progress (2026-10-17):** R2 done: the assembly measures each clip's page from one frame (light, neutral ring pixels, lower quarter, `page-level.ts`) and lifts only the highlights from that level with a curve; a white page gets no lift (the fixed 0.9 levels brightened all food by about 11 %); renderer 1.1.0, Reel goldens updated. On the bulgur test clips every page measured about 0.99, so the grey of the accepted v6B file came from the spike's own build script, not from the production renderer. R3 (`cover_url` from the carousel's rendered first slide, kept in the approved snapshot, sent with the REELS container) not started: it touches the publish machine and needs Meta's parameter verified first.
 
 ## P2 · Post-MVP backlog (not scheduled)
 - **P2-01** Reels Type A (talking video, narrower than M8, see `docs/plan/18-reels.md`): transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].

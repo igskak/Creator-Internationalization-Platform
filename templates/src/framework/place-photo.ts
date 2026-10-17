@@ -56,19 +56,21 @@ export const PLACE_PHOTO_SCRIPT = `(function () {
       return [lo, hi + 1];
     }
     var xr = range(cols), yr = range(rows), k = img.naturalWidth / cw;
-    // The page colour of the picture: its outer ring, where the subject rarely is. The darker
-    // tenth of the light ring pixels decides, so a vignette or a grey corner is lifted too.
+    // The page colour of the picture: its outer ring, where the subject rarely is. The lower
+    // quarter of the light, neutral ring pixels decides (light food is coloured and left out),
+    // so a vignette or a grey corner is lifted too.
     var ring = [];
     for (y = 0; y < ch; y++) {
       for (x = 0; x < cw; x++) {
         if (x > 5 && x < cw - 6 && y > 5 && y < ch - 6) continue;
         var j = (y * cw + x) * 4;
         var v = (d[j] + d[j + 1] + d[j + 2]) / 3;
-        if (v > 200) ring.push(v);
+        var spread = Math.max(d[j], d[j + 1], d[j + 2]) - Math.min(d[j], d[j + 1], d[j + 2]);
+        if (v > 200 && spread <= 14) ring.push(v);
       }
     }
     ring.sort(function (p, q) { return p - q; });
-    var paper = ring.length > 0 ? ring[Math.floor(ring.length * 0.1)] : 255;
+    var paper = ring.length > 0 ? ring[Math.floor(ring.length * 0.25)] : 255;
     return {
       x: xr[0] * k, y: yr[0] * k, w: (xr[1] - xr[0]) * k, h: (yr[1] - yr[0]) * k,
       paper: Math.min(paper, 250)
