@@ -37,19 +37,26 @@ export function countChars(text: string): number {
   return count;
 }
 
-/** Greedy word wrap; explicit newlines start a new line; a word longer than a line spans several. */
+/**
+ * Greedy word wrap; explicit newlines start a new line; a word longer than a line spans several.
+ * Blank lines between groups (the "ladder" body of carousel v3) are drawn as one half-line gap
+ * (`textHtml`), so a run of them counts half a line.
+ */
 export function estimateLines(
   text: string,
   slot: Pick<TextSlotSpec, "maxChars" | "maxLines">,
 ): number {
   const perLine = Math.max(1, Math.ceil((slot.maxChars / slot.maxLines) * LINE_FILL_FACTOR));
   let lines = 0;
-  for (const paragraph of text.split(/\r?\n/)) {
+  let inGap = false;
+  for (const paragraph of text.trim().split(/\r?\n/)) {
     const words = paragraph.split(/\s+/).filter(Boolean);
     if (words.length === 0) {
-      lines += 1;
+      if (!inGap) lines += 0.5;
+      inGap = true;
       continue;
     }
+    inGap = false;
     let used = 0;
     let paragraphLines = 1;
     for (const word of words) {
@@ -66,7 +73,7 @@ export function estimateLines(
     }
     lines += paragraphLines;
   }
-  return lines;
+  return Math.ceil(lines);
 }
 
 export function validateSlideAgainstTemplate(

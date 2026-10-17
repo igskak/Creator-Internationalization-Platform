@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { promptRegistry, renderPrompt } from "../index";
+import { renderPrompt } from "../index";
 import { FIXTURE_INPUT } from "./fixtures";
 import v2 from "./v2";
 import v3 from "./v3";
@@ -10,8 +10,7 @@ const textOf = (prompt: typeof v3, input: unknown) =>
     .join("\n");
 
 describe("market-adapter@3", () => {
-  it("is the latest planner, with the stage and defaults of v2", () => {
-    expect(promptRegistry.latest("market-adapter")).toBe(v3);
+  it("keeps the stage and defaults of v2", () => {
     expect(v3).toMatchObject({ key: "market-adapter@3", stage: "MARKET_ADAPTATION" });
     expect(v3.defaults).toEqual(v2.defaults);
     expect(v3.hash).not.toBe(v2.hash);

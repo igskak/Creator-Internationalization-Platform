@@ -1,6 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { extname, join } from "node:path";
 import type { Slide, VisualBrief } from "@rc/db/json";
+import { registry } from "@rc/templates";
 import { buildTheme, type RenderAssets } from "@rc/templates/render";
 import sharp from "sharp";
 import { renderCarousel } from "./renderer";
@@ -9,7 +10,7 @@ import { renderCarousel } from "./renderer";
 // a stored carousel with the current templates, without the database or storage, to compare a
 // template change on real pictures. `post.json` holds a variant's `slides_json` and
 // `visual_brief_json` (a read-only dump); the photo folder holds `photo-<slideId>-<slot>.<ext>`.
-// Writes one JPEG per slide, a contact sheet and the QA verdict. Real content stays out of git:
+// Writes one JPEG per slide, a contact sheet and the QA verdict; --cover white draws the white cover. Real content stays out of git:
 // point --out at a git-ignored folder.
 
 function arg(name: string): string {
@@ -54,7 +55,11 @@ async function main(): Promise<void> {
 
   const slides = post.slides_json.map((slide) => {
     const images: Record<string, string> = {};
-    for (const slot of Object.keys(slide.images ?? {})) {
+    const slots = new Set([
+      ...Object.keys(slide.images ?? {}),
+      ...Object.keys(registry.get(slide.templateId)?.imageSlots ?? {}),
+    ]);
+    for (const slot of slots) {
       const url = photo(slide.id, slot);
       if (url) images[slot] = url;
     }
@@ -65,7 +70,9 @@ async function main(): Promise<void> {
     return { slide, assets };
   });
 
-  const result = await renderCarousel({ slides, theme: buildTheme({}) });
+  // --cover white: the white cover of carousel v3 (D1) instead of the dark full-bleed one.
+  const cover = process.argv.includes("--cover") ? arg("cover") : "dark";
+  const result = await renderCarousel({ slides, theme: buildTheme({ cover }) });
   for (const s of result.slides) {
     writeFileSync(join(outDir, `slide-${String(s.index + 1).padStart(2, "0")}.jpg`), s.jpeg);
   }

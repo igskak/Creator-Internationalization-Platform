@@ -25,10 +25,16 @@ export const stripEmphasis = (text: string): string =>
 
 /**
  * Text with its line breaks kept, escaped. `**phrase**` becomes `<em>`: bold in a body slot, the
- * accent colour in a display slot. A stray marker is dropped.
+ * accent colour in a display slot. A stray marker is dropped. A blank line starts a new group of
+ * lines with a half-line gap (the "ladder" body of carousel v3: one sentence per line, groups
+ * apart).
  */
 export const textHtml = (text: string): string =>
-  escapeHtml(text).replace(EMPHASIS, "<em>$1</em>").replaceAll("**", "").replace(/\r?\n/g, "<br>");
+  escapeHtml(text.trim())
+    .replace(EMPHASIS, "<em>$1</em>")
+    .replaceAll("**", "")
+    .replace(/(?:\r?\n[ \t]*){2,}/g, '<span class="gap"></span>')
+    .replace(/\r?\n/g, "<br>");
 
 /** Line height of the two font roles (08 §8.3; tight uppercase headlines). */
 export const LINE_HEIGHT = { display: 1.02, body: 1.3 } as const;

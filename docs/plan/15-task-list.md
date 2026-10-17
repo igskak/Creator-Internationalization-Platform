@@ -794,7 +794,7 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
   - **Do:** check the first runs of J12 (`collect-account-insights`, cron 02:17 UTC): `account_metric_snapshots` was still empty on 2026-10-15 22:35 UTC only because M6 went live that day and the job had not run yet. Close V-11 on the first rows (day boundary, follows vs unfollows); fix what they show.
   - **Done when:** a daily row per account; the dashboard shows the follower line.
   - **Result (2026-10-16):** the first run stored 14 Oct for @chef.skk (2 followers; follows and unfollows null). J12 now runs hourly and reads each account once its market's clock has passed 02:00, skipping a stored day (decision log). V-11 stays open for follows and unfollows.
-- [ ] **G-04 · Carousel asks and hashtags (content-writer@7)** · P1 · M · deps: M7-04
+- [ ] **G-04 · Carousel asks and hashtags (the next content-writer, after @7 of CV-04)** · P1 · M · deps: M7-04
   - **Do:** the carousel writer gets the market's recent asks and hashtags (as the Reel director does), rotates the goal of the post (save, send, comment, follow) and does not repeat the tag block; no engagement bait.
   - **Done when:** live eval (about $2.5, owner's yes) without regression; decision log.
 - [ ] **G-05 · Spanish market live** · P0 · S · deps: owner
@@ -822,18 +822,26 @@ Why: on 2026-10-17 the owner compared the English carousels with the Russian-lan
   - **Do:** P1, P3–P7: `depicts`, new arrangements (`STAGES_STACK`, `MISE_EN_PLACE`, `PAIR`, `HERO_WITH_DEPTH`, `TOOL_IN_ACTION`), light vessels with colour from food instead of dark vessels, the changed style sentence and negative list; validator for same-state repeats and the dark-vessel limit.
   - **Done when:** live eval on two ideas (owner's yes) shows no repeated object and state, at most one dark vessel per carousel; decision log.
   - **Result (2026-10-17):** `prompts/src/visual-director/v7.ts` active (`PIPELINE_VERSION` 1.9.0); whole-subject compositions, style and negative list for briefs with a `vessel` (`photo-prompt.ts`); validator checks `VISUAL_DEPICTS_*`, `VISUAL_VESSEL_DARK`, `VISUAL_PICTURE_REPEATED`, `VISUAL_ARRANGEMENT_MONOTONOUS`; cut-outs normalized with white padding. Live on the wet rice and buckwheat carousels: $0.92 in total, no dark vessel, no repeat after validation (decision log). Dev tools: `spikes/carousel-v3/fetch-post.ts` (read-only dump of a variant, its pictures and recipe) and `spikes/carousel-v3/visual-bench.ts` (director + pictures without the database).
-- [ ] **CV-03 · Templates 3.0: ladder body, two-weight headline, closer, white cover** · P0 · M · deps: CV-01 · D1
+- [x] **CV-03 · Templates 3.0: ladder body, two-weight headline, closer, white cover** · P0 · M · deps: CV-01 · D1
   - **Do:** T3–T6 in the templates (line-per-row body, `lead` and `closer` slots, body up to 420 characters / 14 lines at 28–30 px in a 500 px column); P9 white cover template next to A.
   - **Done when:** goldens for every template; the owner picks the cover on rendered slides.
-- [ ] **CV-04 · Arc of 8 and concrete text (market-adapter@4, content-writer next version with G-04)** · P0 · M · deps: CV-03 · D3
+  - **Result (2026-10-17):** templates 3.0.0 (A–F): body 400 at 26–30 px in a 468 px column (B body 380 chars/13 lines, E 200 + 300, F 300), a blank line = half-line gap, `text-wrap: pretty`; B `lead` (400, 34–44 px) and `closer` (800 caps, 60 chars), E `closer`; headlines 46–72 px in a 600 px column; "Step 2" in ink; A subline 140 chars. White cover as a brand switch (`visual_system.cover = "white"`, D1 open; default dark). Line estimate counts a ladder gap as half a line. Body floor 26 px (decision log). `bench:carousel --cover white`.
+- [x] **CV-04 · Arc of 8 and concrete text (market-adapter@4, content-writer@7)** · P0 · M · deps: CV-03 · D3
   - **Do:** T1 (roles USUAL_WAY, PORTION, CHECK or their mapping), T2 (a number per STEP, banned filler, one repair), T7 sign-off line from the market's brand settings, T8 hook, C1 caption with the method; merged with G-04 into one writer version so one eval covers both.
   - **Done when:** live eval (about $2.5, owner's yes) without regression on claims; decision log.
+  - **Result (2026-10-17):** `market-adapter@4` (the arc of a lesson, usually 7–8 slides, mapped on PROBLEM/MISTAKE, EXPLANATION, FACT, STEP, SUMMARY) and `content-writer@7` (= v5 + ladder bodies filling 55–95 % of the slot, the cards' numbers and a visible cue on every step, no filler, lead and closer, red emphasis on at most half of the slides, the hook slide says what the carousel delivers, the sign-off line from the brand voice, the caption with the whole method) active, `PIPELINE_VERSION` 1.10.0. Built on v5 so the D7 learning of v6 stays off (`WRITER_LEARNING_VERSIONS` = {6}). `validateSubstance`: FILLER_PHRASE (MAJOR), THIN_SLIDE and STEP_WITHOUT_NUMBER (MINOR notes; the closed book wins). Live run on a private case of the owner's rice method: 9 slides, critic PASS, $0.94 text + $0.38 pictures (decision log). G-04 (asks and hashtags) moves to the next writer version. Dev tool: `spikes/carousel-v3/generate-post.ts`.
 - [ ] **CV-05 · Spike: hybrid edit (text slide first, food painted into the empty zone)** · P1 · S · deps: CV-01 · ⚠ mask support of `/v1/images/edits` for the current gpt-image model
   - **Do:** on one carousel render the final text slides, ask the image model to paint the food into the masked photo zone, compare side by side with the CV-01/CV-02 result; cost per slide measured.
   - **Done when:** the owner chooses D2 on the two contact sheets; decision log.
 - [ ] **CV-06 · Lead magnet and keyword CTA for English** · P1 · S · deps: D4, G-07 or P2-04
   - **Do:** the offer (a free one-page sheet) in the database for the English market; the writer uses COMMENT_KEYWORD with numbered steps (C2); replies go out by hand from G-07 until a DM automation exists.
   - **Done when:** the first keyword post is published and its comments are answered.
+- [ ] **CV-07 · Knowledge deep enough for a method (K1, K2)** · P0 · M · deps: owner (sources)
+  - **Do:** the owner uploads the guides and a Markdown file of the methods of the Russian carousels (each with amounts, times, order, mistakes, limits) as GUIDE or NOTE sources; extraction, review and approval as usual; the idea generator's next version prefers ideas whose cards hold steps and numbers and turns a bare claim into a tip post.
+  - **Done when:** at least 30 approved cards with procedure and numbers; the next five English ideas rest on them.
+- [ ] **CV-08 · Reels: white page and a designed cover (R2, R3)** · P1 · S · deps: CV-03 · ⚠ `cover_url` on REELS containers
+  - **Do:** lift each shot's page to white from its measured page colour instead of the fixed 0.9 level; render the Reel's cover as an A slide (white cover) with the hook and send it as `cover_url`.
+  - **Done when:** a Reel dry run shows the designed cover in the grid preview; no grey page in the frames.
 
 ## P2 · Post-MVP backlog (not scheduled)
 - **P2-01** Reels Type A (talking video, narrower than M8, see `docs/plan/18-reels.md`): transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].

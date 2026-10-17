@@ -1,27 +1,28 @@
-import { cutoutSlot, isRightHand, placementOf, textSlot } from "../framework/html";
+import { cutoutSlot, textSlot } from "../framework/html";
 import type { TemplateRenderer } from "../framework/types";
 
 // Template E, mistake vs correct technique (plan 08 §8.2.1): the mistake in muted type, struck out
-// in the negative colour, then the correct way large and in ink, in a left column. The optional
-// picture is a cut-out bleeding off the right and bottom edges.
+// in the negative colour, then the correct way large and in ink, its ladder text and an optional
+// bold closing line, in a left column (468 px for the texts, carousel v3). The optional picture is
+// a cut-out placed by its measured subject (place-photo.ts).
 
 export const rendererE: TemplateRenderer = {
-  css: `.e-wrap{position:absolute;left:var(--rc-safe-margin);top:112px;bottom:120px;width:560px;display:flex;flex-direction:column}
+  css: `.e-wrap{position:absolute;left:var(--rc-safe-margin);top:100px;bottom:112px;width:600px;display:flex;flex-direction:column}
 .e-mistake-title{color:var(--rc-muted);text-decoration:line-through;text-decoration-color:var(--rc-negative);text-decoration-thickness:.11em}
-.e-mistake-text{color:var(--rc-muted);width:470px;margin-top:16px}
-.e-correct-title{color:var(--rc-positive);margin-top:56px}
-.e-correct-text{width:470px;margin-top:32px}
-.e-photo{transform:translate(330px,400px)}
-.e-wrap.narrow{width:520px}`,
+.e-mistake-text{color:var(--rc-muted);width:468px;margin-top:14px}
+.e-correct-title{color:var(--rc-positive);margin-top:44px}
+.e-correct-text{width:468px;margin-top:24px}
+.e-closer{margin-top:24px}
+.e-photo{transform:translate(330px,400px)}`,
   body: (c) => {
     const photo = cutoutSlot(c, "image", "e-photo");
-    const narrow = photo && isRightHand(placementOf(c, "image")) ? " narrow" : "";
     return `${photo}
-<div class="e-wrap${narrow}">
+<div class="e-wrap">
 ${textSlot(c, "mistakeTitle", "e-mistake-title")}
 ${textSlot(c, "mistakeText", "e-mistake-text")}
 ${textSlot(c, "correctTitle", "e-correct-title")}
 ${textSlot(c, "correctText", "e-correct-text")}
+${textSlot(c, "closer", "closer e-closer")}
 </div>`;
   },
 };

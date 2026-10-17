@@ -84,12 +84,14 @@ describe("validateWriterOutput", () => {
     });
   });
 
-  it("passes the fixture draft", () => {
-    expect(validateWriterOutput(FIXTURE_OUTPUT, context)).toEqual([]);
+  it("passes the fixture draft (its short synthetic slides only get thin-slide notes)", () => {
+    const issues = validateWriterOutput(FIXTURE_OUTPUT, context);
+    expect(issues.filter((i) => i.code !== "THIN_SLIDE")).toEqual([]);
+    expect(issues.every((i) => i.severity === "MINOR")).toBe(true);
   });
 
   it("blocks a slot over its limit and reports the path by slide index", () => {
-    const issues = validateWriterOutput(withSlot(2, "body", "x".repeat(300)), context);
+    const issues = validateWriterOutput(withSlot(2, "body", "x".repeat(400)), context);
     const overflow = issues.find((i) => i.code === "SLOT_OVERFLOW");
     expect(overflow).toMatchObject({ severity: "BLOCKER", fieldPath: "slides.2.slots.body" });
   });
@@ -189,7 +191,7 @@ describe("content writer stage", () => {
   });
 
   it("repairs once after a slot overflow, sending the issue with its field path", async () => {
-    answers = [withSlot(2, "body", "x".repeat(300)), FIXTURE_OUTPUT];
+    answers = [withSlot(2, "body", "x".repeat(400)), FIXTURE_OUTPUT];
     const result = await run();
     expect(result.status).toBe("REPAIRED");
     expect(result.data).toEqual(FIXTURE_OUTPUT);
@@ -199,7 +201,7 @@ describe("content writer stage", () => {
   });
 
   it("gives up when the draft is still over the limit after the repair", async () => {
-    answers = [withSlot(2, "body", "x".repeat(300))];
+    answers = [withSlot(2, "body", "x".repeat(400))];
     const result = await run();
     expect(result.status).toBe("INVALID_OUTPUT");
     expect(result.issues.map((i) => i.code)).toContain("SLOT_OVERFLOW");
@@ -209,6 +211,8 @@ describe("content writer stage", () => {
     answers = [{ ...FIXTURE_OUTPUT, hookType: "CURIOSITY_GAP" }];
     const result = await run();
     expect(result.status).toBe("SUCCEEDED");
-    expect(result.issues.map((i) => i.code)).toEqual(["HOOK_TYPE_CHANGED"]);
+    expect(result.issues.map((i) => i.code).filter((c) => c !== "THIN_SLIDE")).toEqual([
+      "HOOK_TYPE_CHANGED",
+    ]);
   });
 });

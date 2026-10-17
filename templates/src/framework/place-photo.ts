@@ -19,7 +19,8 @@ export const PLACE_PHOTO_SCRIPT = `(function () {
     "corner": { w: 0.62, h: 0.7 },
     "top-right": { w: 0.6, h: 0.72 },
     "right-column": { w: 0.5, h: 0.86 },
-    "bottom-band": { w: 0.92, h: 0.5 }
+    "bottom-band": { w: 0.92, h: 0.5 },
+    "cover": { w: 0.66, h: 0.76 }
   };
 
   function subjectBox(img) {

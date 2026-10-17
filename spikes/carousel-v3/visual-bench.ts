@@ -72,6 +72,11 @@ async function main(): Promise<void> {
     cards,
   });
 
+  // --use-brief: draw the pictures of the post's own brief (made by the pipeline) without a new
+  // director call.
+  if (process.argv.includes("--use-brief") && post.visual_brief_json) {
+    return draw(post.visual_brief_json, 0);
+  }
   const llm = createAnthropicProvider({ apiKey: anthropicKey });
   const answer = await llm.generateStructured({
     model: stage.model,
@@ -111,6 +116,9 @@ async function main(): Promise<void> {
     );
   }
 
+  return draw(brief, directorCost);
+
+  async function draw(brief: VisualBrief, directorCost: number): Promise<void> {
   let imageCost = 0;
   if (process.argv.includes("--generate")) {
     if (!openaiKey) throw new Error("OPENAI_API_KEY is not set.");
@@ -149,6 +157,7 @@ async function main(): Promise<void> {
     JSON.stringify({ ...post, visual_brief_json: brief }, null, 2),
   );
   console.log(`total $${(directorCost + imageCost).toFixed(3)}`);
+  }
 }
 
 main().catch((error: unknown) => {

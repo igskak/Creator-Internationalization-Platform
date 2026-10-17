@@ -30,8 +30,8 @@ const stage = (
 export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   KNOWLEDGE_EXTRACTION: stage("knowledge-extractor", "medium", 32_000, { stream: true }, 2),
   IDEA_GENERATION: stage("idea-generator", "high", 16_000, {}, 2),
-  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 3),
-  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 5),
+  MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 4),
+  CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 7),
   CRITIC: stage("critic", "high", 16_000, {}, 3),
   VISUAL_DIRECTION: stage("visual-director", "medium", 16_000, {}, 7),
   FIELD_REGENERATION: stage("field-regenerator", "high", 8_000),

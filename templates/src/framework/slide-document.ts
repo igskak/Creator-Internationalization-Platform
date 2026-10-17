@@ -53,7 +53,11 @@ html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;over
 .rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:${CANVAS.width}px;height:${CANVAS.height}px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
 .slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
 .slot.display{font-family:var(--rc-font-display);line-height:${LINE_HEIGHT.display};padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;overflow-wrap:normal}
-.slot.body{font-family:var(--rc-font-body);line-height:${LINE_HEIGHT.body};padding-block:.06em;font-weight:300}
+.slot.body{font-family:var(--rc-font-body);line-height:${LINE_HEIGHT.body};padding-block:.06em;font-weight:400}
+.slot.body{text-wrap:pretty}
+.slot .gap{display:block;height:.5em}
+.slot.lead{font-weight:400}
+.slot.closer{font-weight:800}
 .slot em{font-style:normal}
 .slot.body em{font-weight:700}
 .slot.display em{color:var(--rc-accent)}

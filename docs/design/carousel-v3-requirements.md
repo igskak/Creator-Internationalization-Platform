@@ -1,6 +1,6 @@
 # Carousel v3: requirements for pictures and posts
 
-**Status: PROPOSED (2026-10-17), waiting for the owner's decisions D1–D4.** Builds on [carousel-style.md](carousel-style.md) (white page, Inter Tight, cut-out photos), which stays valid where this document does not change it.
+**Status: IMPLEMENTED on branch `feat/carousel-v3` (PR #117, 2026-10-17): CV-01…CV-04 and the white cover switch; waiting for the owner's review and decisions D1–D4.** Builds on [carousel-style.md](carousel-style.md) (white page, Inter Tight, cut-out photos), which stays valid where this document does not change it.
 
 ## Why
 
@@ -38,6 +38,11 @@ Each slide prompt has the same skeleton: square, pure white `#FFFFFF`, "premium 
 | F10 | Covers are dark full-bleed photos; Reel covers without text sit between them. | The cover uses the same white system as the inner slides (headline left, photo right); the grid reads as one series of pages. |
 | F11 | Caption: a few generic paragraphs, emoji numbering, "save this". | Caption repeats the whole method with the numbers, adds an "Important:" limit (which varieties it does not cover), one personal line, the signature line, a lead-magnet CTA in steps (follow + comment a keyword → a bot sends the link), a light joke about following, 5 hashtags. |
 | F12 | **Layout bugs:** body text under the photo (buckwheat slide 5, bottom band); a headline broken inside a word ("BUCKWHE / AT NIGHT", slide 6). | — |
+| F13 | **Thin knowledge.** The approved cards behind our posts are a single claim each: of 81 cards (22 approved) only 20 have steps, 13 ingredients, 5 timings and 1 a temperature; all of them come from one 18-page guide and two posts. The closed-book writer cannot add an amount the cards lack, so the slides stay general however good the prompt is. | The posts are written from deep knowledge: amounts (240 ml, 330 ml), times (13 min, 10 min), the order of steps, the limits of the method. |
+
+### What the new prompts make from deep knowledge
+
+On 2026-10-17 the planner, writer, critic and visual director of v3 ran live on one private case made from the owner's own rice method (two cards with steps, amounts and times; the case stays outside git): a 9-slide English carousel with the reference's arc (hook, the usual mistakes, why it works, the ratio, three steps with their numbers, a checklist with an "Important:" limit, the closing line), ladder bodies of 150–330 characters, leads and closers, and a 1,288-character caption with the whole method; pictures in white porcelain, steel, clear glass and a copper measuring cup, three spoons of rice in states, a strainer over a glass bowl. Text $0.94, pictures $0.38. On a card that holds one bare claim the closed book leaves the writer nothing to add (not run live yet): **the knowledge depth (K1) decides as much as the prompts.**
 
 ## Decision D2: how a slide is produced
 
@@ -81,6 +86,19 @@ Owner of the change: `market-adapter@4` (plan), the next `content-writer` (merge
 - **C1 · The caption carries the method.** 1,200–2,200 characters: the hook line, the problem in one or two sentences, the method in short paragraphs with the numbers of the slides, "Important:" with the limits (which varieties or sizes it does not cover), one personal line that states no fact, the signature line, the CTA. Plain numbering ("1.", "2."), not emoji digits.
 - **C2 · Keyword CTA (D4).** Where a market has an offer (a free lead magnet first, for example a one-page grain ratio sheet), the CTA is "follow + comment WORD and get it", in numbered steps. Needs the offer in the database and a DM path (P2-04 or a manual reply from G-07). Until then G-04's rotation of save, send and follow applies.
 
+## Requirements: knowledge
+
+- **K1 · Ingest the owner's methods.** The owner's guides and the methods of the Russian posts go into the source library (GUIDE or NOTE, Markdown or PDF): each method with its amounts, times, temperatures, order of steps, usual mistakes and limits. The extractor already keeps procedure, ingredients, timings, temperatures and mistakes as fields; the cards then reach the writer as data it may use. Ideas are generated from those cards.
+- **K2 · An idea needs enough knowledge.** The idea generator prefers ideas whose cards hold steps and numbers; an idea resting on one bare claim becomes a short tip post or a Reel, not an 8-slide carousel.
+
+## Requirements: Reels
+
+The reference account's Reels are a different genre (memes about restaurant life and the chef's own footage, with a white speech-bubble caption), so they are not copied. What carries over from the carousel study:
+
+- **R1 · Pictures.** Reels are cut from the carousel's pictures, so CV-01/CV-02 (whole subjects, light vessels, colour from food) improve them directly.
+- **R2 · White stays white.** The image-to-video model leaves a grey cast (the accepted bulgur Reel shows a light grey page); the lift is set per shot from the measured page colour, as the slide placement script does, instead of the fixed 0.9 level.
+- **R3 · A designed cover.** The Reel's grid cover is a slide in the carousel's white system with the hook headline (`cover_url` on the REELS container, ⚠ verify), not the first frame, so the grid reads as one series.
+
 ## Requirements: checks before review
 
 - **Q1 · No text over the photo.** The measured subject box and the rendered text boxes (from the slide DOM) do not intersect; a 24 px gap. Blocking.
@@ -99,4 +117,4 @@ Owner of the change: `market-adapter@4` (plan), the next `content-writer` (merge
 
 ## Plan
 
-Tasks are in `docs/plan/15-task-list.md`, section **CV · Carousel v3**. Order: CV-01 (templates, fixes the visible bugs without any prompt change) → CV-02 (pictures) and CV-03 (templates 3.0) → CV-04 (plan and writer) → CV-05 spike → CV-06 after D4. Every prompt change is a new version with a live eval (owner's yes, about $2.5 per carousel run) and a decision-log entry.
+Tasks are in `docs/plan/15-task-list.md`, section **CV · Carousel v3**. Order: CV-01 (templates, fixes the visible bugs without any prompt change) → CV-02 (pictures) and CV-03 (templates 3.0) → CV-04 (plan and writer) → CV-05 spike → CV-06 after D4 → CV-07 knowledge (K1, K2) → CV-08 Reels (R2, R3). Every prompt change is a new version with a live eval and a decision-log entry.

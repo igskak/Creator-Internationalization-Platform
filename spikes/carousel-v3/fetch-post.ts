@@ -55,6 +55,41 @@ try {
     }
     const cards = await getIdeaCards({ db } as unknown as ServiceContext, v.master_idea_id);
     await writeFile(`${outDir}/recipe.json`, JSON.stringify(cards, null, 2));
+    // The same idea as an eval case (evals/src/case.ts) for spikes/carousel-v3/generate-post.ts.
+    const [idea] = await sql.unsafe(
+      `select topic, category, angle, core_message from master_ideas where id = $1`,
+      [v.master_idea_id],
+    );
+    const evalCase = {
+      id: "real-post",
+      description: `Read-only copy of variant ${variantId}'s idea.`,
+      idea: {
+        topic: idea.topic,
+        category: idea.category,
+        angle: idea.angle,
+        coreMessage: idea.core_message,
+      },
+      cards: cards.map((c, i) => ({
+        key: `card-${i + 1}`,
+        role: c.role,
+        title: c.title,
+        category: c.category,
+        claim: c.claim,
+        explanation: c.explanation ?? "",
+        procedure: c.procedure ?? [],
+        ingredients: c.ingredients ?? [],
+        temperatures: c.temperatures ?? [],
+        timings: c.timings ?? [],
+        commonMistakes: c.commonMistakes ?? [],
+        safetySensitive: c.safetySensitive ?? false,
+        safetyNotes: c.safetyNotes ?? null,
+        language: c.language ?? "ru",
+      })),
+      markets: ["en"],
+      expect: { mustCite: [], forbiddenPhrases: [], requiredText: [], hookTypesDiffer: false },
+    };
+    await mkdir(`${outDir}/case`, { recursive: true });
+    await writeFile(`${outDir}/case/real-post.json`, JSON.stringify(evalCase, null, 2));
     console.log(`${outDir}: ${v.slides_json.length} slides, ${assets.length} pictures, ${cards.length} cards`);
   }
 } finally {

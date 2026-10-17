@@ -5,6 +5,7 @@ import { flagsForIssues, splitIssues } from "./issues";
 import { validateNumericFidelity } from "./numeric";
 import { validateSlots } from "./slots";
 import { validateStructure } from "./structure";
+import { validateSubstance } from "./substance";
 import { validateTextRules } from "./text-rules";
 import type { DraftContent, ValidationContext, ValidationIssue, Validator } from "./types";
 
@@ -17,6 +18,7 @@ export const VALIDATORS: readonly Validator[] = [
   validateForbiddenPatterns,
   validateHookLine,
   validateTextRules,
+  validateSubstance,
 ];
 
 export type DraftValidation = {

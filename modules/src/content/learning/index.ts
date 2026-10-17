@@ -21,10 +21,15 @@ const MAX_EXEMPLAR_CHARS = 1200;
 /** The first prompt versions with the rules for the memory. */
 export const IDEA_MEMORY_VERSION = 3;
 export const WRITER_LEARNING_VERSION = 6;
+/**
+ * Writer versions that read `<learning>`. content-writer@7 (carousel v3) is built on v5 on purpose:
+ * the learning waits for D7 numbers (decision log 2026-10-15), so it is not switched on by v7.
+ */
+export const WRITER_LEARNING_VERSIONS: ReadonlySet<number> = new Set([WRITER_LEARNING_VERSION]);
 export const ideasUseMemory = (version: number = STAGE_CONFIG.IDEA_GENERATION.version) =>
   version >= IDEA_MEMORY_VERSION;
 export const writerUsesLearning = (version: number = STAGE_CONFIG.CONTENT_WRITING.version) =>
-  version >= WRITER_LEARNING_VERSION;
+  WRITER_LEARNING_VERSIONS.has(version);
 
 export type LoadedMemory = { summaryId: string; memory: PerformanceMemory };
 

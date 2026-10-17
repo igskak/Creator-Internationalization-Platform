@@ -45,6 +45,19 @@ One family, **Inter Tight** (SIL OFL 1.1, variable `wght` 100–900, Latin + Lat
 
 Emphasis comes from the text itself: the writer marks key phrases with `**…**`. In a body slot it renders bold (700); in a headline it renders in the accent colour. At most one marked phrase per headline and three per body.
 
+**Templates 3.0.0 (carousel v3, [carousel-v3-requirements.md](carousel-v3-requirements.md) T3–T6).** The inner slides carry a method a reader can cook from, like the reference account:
+
+| Role | Weight | Size (1080 × 1350) | Notes |
+|---|---|---|---|
+| Headline (B, E correct title) | 800 | 72 px, fit-text down to 46 px | up to 3 lines, in a 600 px column |
+| Lead (B, optional) | 400 | 44 px, down to 34 px | uppercase, the quieter first half of a headline |
+| Step number (B) | 800 | 110 px | digits or a step word with digits ("Step 2") in ink; any other figure in accent |
+| Body (B, E, F) | 400 | 30 px, fit-text down to 26 px | a ladder: one sentence per line, a blank line = a half-line gap; 468 px column |
+| Closer (B, E, optional) | 800 | 30 px, down to 26 px | uppercase, the bold last line under the body |
+| Cover subline (A) | 400 | 32 px, down to 28 px | up to 140 characters, 4 lines |
+
+Plan 08's 32 px floor for body text is lowered to 26 px (decision log 2026-10-17): the reference's denser slides use 27–35 px on a 1080 px slide. The cover can be the white page of the inner slides (`brands.visual_system.cover = "white"`, D1): the text top left in ink and the photo fitted beside it by the placement script; the default stays the dark full-bleed cover.
+
 ## Layouts
 
 All on the 1080 × 1350 canvas, footer at 44 px from the bottom: handle bottom-left (ink), page `n/N` bottom-right (muted).

@@ -6,7 +6,7 @@ import { defineTemplate } from "../define-template";
  */
 export const templateC = defineTemplate({
   id: "C",
-  version: "2.2.0",
+  version: "3.0.0",
   name: "Before vs after",
   priority: "P1",
   roles: ["COMPARISON"],

@@ -60,6 +60,22 @@ describe("template A", () => {
     expect(render("A", "es-long", false)).toContain('data-image-missing data-required="true"');
   });
 
+  it("draws the white cover of carousel v3 when the brand asks for it (D1)", () => {
+    const slide = TEMPLATE_FIXTURES.A?.["es-long"];
+    if (!slide) throw new Error("no fixture");
+    const html = renderSlideHtml({
+      slide,
+      theme: buildTheme({ cover: "white" }),
+      assets: { images: { hero: PICTURE } },
+      page: { index: 1, count: 6 },
+    });
+    expect(html).toContain('<div class="a-white">');
+    expect(html).toContain('class="img cutout a-cut" data-image="hero" data-place="cover"');
+    expect(html).not.toContain('<div class="a-shade">');
+    expect(buildTheme({}).cover).toBe("dark");
+    expect(buildTheme({ cover: "sepia" }).cover).toBe("dark");
+  });
+
   it("leaves out the optional kicker and subline", () => {
     const html = render("A", "no-optionals");
     expect(html).not.toContain('data-slot="kicker"');
