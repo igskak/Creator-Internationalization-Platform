@@ -1981,6 +1981,8 @@ export const en = {
       NO_ACTIVE_ACCOUNT: "No Instagram account is connected for this market.",
       PUBLISHING_DISABLED: "Publishing is switched off.",
       MIN_GAP: "Another post of this market is close.",
+      TOPIC_GAP:
+        "A post of the same idea is less than two days away: Reel first, carousel 2–3 days later.",
       OVERDUE: "The time has passed and the post has not gone out.",
     },
     list: { time: "Time", market: "Market", post: "Post", status: "Status", warnings: "Warnings" },

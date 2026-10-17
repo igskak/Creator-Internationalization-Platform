@@ -40,4 +40,33 @@ describe("reelCoverFromSlide", () => {
     expect((await pixel(cover, 540, 400)).every((v) => v > 245)).toBe(true);
     expect((await pixel(cover, 540, 1500)).every((v) => v < 50)).toBe(true);
   });
+
+  it("keeps the whole slide inside the profile grid's 3:4 crop (G-10)", async () => {
+    // The grid shows the middle 1080 × 1440 of the 9:16 cover: rows 240 to 1680.
+    const crop = { top: (REEL_COVER.height - 1440) / 2, bottom: (REEL_COVER.height + 1440) / 2 };
+    // A white slide with blue marks 30 px inside its top and bottom edges (the safe margin is 72).
+    const mark = await sharp({
+      create: { width: 1080, height: 20, channels: 3, background: "#0000ff" },
+    })
+      .png()
+      .toBuffer();
+    const marked = new Uint8Array(
+      await sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#ffffff" } })
+        .composite([
+          { input: mark, left: 0, top: 30 },
+          { input: mark, left: 0, top: 1300 },
+        ])
+        .png()
+        .toBuffer(),
+    );
+    const cover = await reelCoverFromSlide(marked);
+    const slideTop = (REEL_COVER.height - 1350) / 2;
+    for (const y of [slideTop + 40, slideTop + 1310]) {
+      expect(y).toBeGreaterThanOrEqual(crop.top);
+      expect(y).toBeLessThan(crop.bottom);
+      const [r = 0, g = 0, b = 0] = await pixel(cover, 540, y);
+      expect(b).toBeGreaterThan(200);
+      expect(r + g).toBeLessThan(80);
+    }
+  });
 });

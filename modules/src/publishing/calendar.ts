@@ -17,6 +17,7 @@ export const CALENDAR_STATUSES = [
 ] as const;
 
 const DEFAULT_MIN_GAP_MINUTES = 180;
+const DEFAULT_TOPIC_GAP_HOURS = 48;
 
 export const GetCalendarInput = z.object({
   /** ISO 8601, inclusive. */
@@ -27,7 +28,12 @@ export const GetCalendarInput = z.object({
 });
 export type GetCalendarInput = z.input<typeof GetCalendarInput>;
 
-export type CalendarWarning = "NO_ACTIVE_ACCOUNT" | "PUBLISHING_DISABLED" | "MIN_GAP" | "OVERDUE";
+export type CalendarWarning =
+  | "NO_ACTIVE_ACCOUNT"
+  | "PUBLISHING_DISABLED"
+  | "MIN_GAP"
+  | "TOPIC_GAP"
+  | "OVERDUE";
 
 export type CalendarItem = {
   publicationId: string;
@@ -138,6 +144,11 @@ export async function getCalendar(
   const withAccount = new Set(accounts.map((a) => a.marketId));
   const enabled = (await setting<boolean>(ctx, "publishing.enabled", false)) === true;
   const gap = await setting<number>(ctx, "publishing.min_gap_minutes", DEFAULT_MIN_GAP_MINUTES);
+  const topicGap = await setting<number>(
+    ctx,
+    "publishing.topic_gap_hours",
+    DEFAULT_TOPIC_GAP_HOURS,
+  );
   const now = ctx.clock.now().getTime();
 
   const items = await Promise.all(
@@ -179,6 +190,17 @@ export async function getCalendar(
           Math.abs(other.at.getTime() - item.at.getTime()) < gap * MINUTE_MS,
       );
       if (close) item.warnings.push("MIN_GAP");
+    }
+    // The Reel and the carousel of one idea (G-10); only posts inside the range are compared.
+    if (topicGap > 0) {
+      const sameIdea = items.some(
+        (other) =>
+          other.variantId !== item.variantId &&
+          other.ideaId === item.ideaId &&
+          other.market.id === item.market.id &&
+          Math.abs(other.at.getTime() - item.at.getTime()) < topicGap * 60 * MINUTE_MS,
+      );
+      if (sameIdea) item.warnings.push("TOPIC_GAP");
     }
   }
   return items;
