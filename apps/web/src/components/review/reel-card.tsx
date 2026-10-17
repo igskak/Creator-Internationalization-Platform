@@ -1,5 +1,6 @@
 "use client";
 
+import { CREDITS_EXHAUSTED_CODE } from "@rc/lib/errors";
 import type { ReelView } from "@rc/modules/reels";
 import { DownloadIcon, FilmIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -568,7 +569,11 @@ export function ReelCard({
 
       {failed && reel ? (
         <div role="alert" className="rounded-md bg-red-50 p-3 text-sm dark:bg-red-950/40">
-          <p className="font-medium">{t.failed.title}</p>
+          <p className="font-medium">
+            {reel.lastError?.code === CREDITS_EXHAUSTED_CODE
+              ? t.failed.pausedTitle
+              : t.failed.title}
+          </p>
           <p>{format(t.failed.body, { message: reel.lastError?.message ?? "" })}</p>
         </div>
       ) : null}

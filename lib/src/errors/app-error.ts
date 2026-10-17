@@ -152,3 +152,26 @@ export class PermanentError extends AppError {
     this.name = "PermanentError";
   }
 }
+
+/** `lastError.code` of a variant whose generation stopped for want of credit (it resumes later). */
+export const CREDITS_EXHAUSTED_CODE = "AI_CREDITS_EXHAUSTED";
+
+/** What a person reads on a variant that stopped because the model account is empty. */
+export const CREDITS_EXHAUSTED_MESSAGE =
+  "The AI account is out of credit. Top up the balance, then generate again: the steps already finished are kept and are not paid for twice.";
+
+/**
+ * A vendor refused the call because the account is out of credit (Anthropic: 400 "credit balance
+ * is too low", or a 402 billing error). Retrying cannot help until someone tops up, so it is a
+ * PermanentError (jobs abort without retrying), but pipelines that store their progress treat it
+ * as a pause: they keep the finished stages and resume after the top-up.
+ */
+export class CreditsExhaustedError extends PermanentError {
+  readonly provider: string;
+
+  constructor(provider: string, message: string, options?: AppErrorOptions) {
+    super(message, options);
+    this.name = "CreditsExhaustedError";
+    this.provider = provider;
+  }
+}

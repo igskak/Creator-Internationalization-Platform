@@ -2,7 +2,7 @@ import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { PermanentError, TransientError } from "../../errors";
+import { CreditsExhaustedError, PermanentError, TransientError } from "../../errors";
 import { createAnthropicProvider, FALLBACK_BETA } from "./anthropic";
 import type { StructuredRequest } from "./types";
 
@@ -343,6 +343,43 @@ describe("error mapping", () => {
     const e = await error();
     expect(e).toBeInstanceOf(PermanentError);
     expect(e).not.toBeInstanceOf(TransientError);
+  });
+
+  it("maps an empty balance (400 credit balance too low) to CreditsExhaustedError", async () => {
+    server.use(
+      http.post(URL, () =>
+        HttpResponse.json(
+          {
+            type: "error",
+            error: {
+              type: "invalid_request_error",
+              message:
+                "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.",
+            },
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    const e = (await error()) as CreditsExhaustedError;
+    expect(e).toBeInstanceOf(CreditsExhaustedError);
+    // Still a PermanentError: jobs abort without a retry, callers that only know that keep working.
+    expect(e).toBeInstanceOf(PermanentError);
+    expect(e.provider).toBe("anthropic");
+  });
+
+  it("maps a 402 billing error to CreditsExhaustedError and other 400s stay permanent", async () => {
+    server.use(
+      http.post(URL, () =>
+        HttpResponse.json(
+          { type: "error", error: { type: "billing_error", message: "Payment required." } },
+          { status: 402 },
+        ),
+      ),
+    );
+    expect(await error()).toBeInstanceOf(CreditsExhaustedError);
+    fail(400);
+    expect(await error()).not.toBeInstanceOf(CreditsExhaustedError);
   });
 
   it("maps network failures to a TransientError", async () => {

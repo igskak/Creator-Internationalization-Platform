@@ -3,7 +3,12 @@ import type { MarketBrief } from "@rc/db/json";
 import { asc, eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
-import { InvalidStateError, TransientError } from "@rc/lib/errors";
+import {
+  CREDITS_EXHAUSTED_CODE,
+  CreditsExhaustedError,
+  InvalidStateError,
+  TransientError,
+} from "@rc/lib/errors";
 import { createLogger } from "@rc/lib/logging";
 import { createFakeEmbeddingProvider } from "@rc/lib/providers/embeddings";
 import { createFakeLLMProvider, type StructuredRequest } from "@rc/lib/providers/llm";
@@ -357,6 +362,135 @@ describe("generateVariants", () => {
       "VISUAL",
       "WRITE:0",
     ]);
+  });
+
+  describe("an empty model account (M2-13c)", () => {
+    const empty = () => new CreditsExhaustedError("anthropic", "Your credit balance is too low.");
+
+    it("pauses every variant as DRAFT with its progress kept, no failure flag", async () => {
+      script = (promptId, market) => {
+        if (promptId === "critic" && market === "en") throw empty();
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toBeInstanceOf(CreditsExhaustedError);
+
+      for (const market of ["en", "es-ES"]) {
+        const row = await variantRow(market);
+        expect(row.status).toBe("DRAFT");
+        expect(row.flags).toEqual([]);
+        expect(row.lastError).toMatchObject({
+          code: CREDITS_EXHAUSTED_CODE,
+          details: { resumable: true },
+        });
+        expect(row.lastError?.message).toMatch(/top up/i);
+      }
+      // en's review was cut off; es-ES's finished while it was in flight, and stays recorded.
+      expect((await variantRow("en")).pipelineState?.completedStages).toEqual(["ADAPT", "WRITE:0"]);
+      expect((await variantRow("es-ES")).pipelineState?.completedStages).toEqual([
+        "ADAPT",
+        "WRITE:0",
+        "CRITIC:0",
+      ]);
+      // The stage that was in flight is named, so the panel can say where it stopped.
+      expect((await variantRow("en")).lastError?.details).toMatchObject({ stage: "CRITIC:0" });
+      const actions = (await t.db.select().from(schema.auditEvents)).map((a) => a.action);
+      expect(actions).toContain("variant.generation_paused");
+      expect(actions).not.toContain("variant.generation_failed");
+    });
+
+    it("lets the stages of the other markets that were in flight finish and keeps them", async () => {
+      script = (promptId, market) => {
+        if (promptId === "content-writer" && market === "en") throw empty();
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toBeInstanceOf(CreditsExhaustedError);
+      expect((await variantRow("es-ES")).pipelineState?.completedStages).toEqual([
+        "ADAPT",
+        "WRITE:0",
+      ]);
+      expect((await variantRow("en")).pipelineState?.completedStages).toEqual(["ADAPT"]);
+    });
+
+    it("continues from the last finished stage under a new run id and repeats no paid call", async () => {
+      let credit = false;
+      script = (promptId, market) => {
+        if (promptId === "critic" && market === "en" && !credit) throw empty();
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toBeInstanceOf(CreditsExhaustedError);
+      const before = {
+        adapters: calls("market-adapter").length,
+        writers: calls("content-writer").length,
+        critics: calls("critic").length,
+      };
+      const paused = await variantRow("en");
+
+      credit = true; // the owner topped up
+      const result = await run("run-2");
+
+      expect(result.outcomes.map((o) => o.status)).toEqual([
+        "READY_FOR_REVIEW",
+        "READY_FOR_REVIEW",
+      ]);
+      expect(calls("market-adapter")).toHaveLength(before.adapters);
+      expect(calls("content-writer")).toHaveLength(before.writers);
+      // Only the reviews that had not finished: en's (it threw) is asked again, es-ES's was done.
+      expect(calls("critic").length - before.critics).toBe(1);
+      const en = await variantRow("en");
+      expect(en).toMatchObject({ status: "READY_FOR_REVIEW", flags: [], lastError: null });
+      expect(en.pipelineState).toMatchObject({ pipelineRunId: "run-2", stage: "DONE" });
+      // The stages finished before the pause are the very runs of the first attempt.
+      expect(en.pipelineState?.runIds.ADAPT).toBe(paused.pipelineState?.runIds.ADAPT);
+      expect(en.pipelineState?.runIds["WRITE:0"]).toBe(paused.pipelineState?.runIds["WRITE:0"]);
+      expect(en.pipelineState?.orderSeed).toBe("run-1");
+      const resumed = (await t.db.select().from(schema.auditEvents)).filter(
+        (a) => a.action === "variant.generation_resumed",
+      );
+      expect(resumed).toHaveLength(2);
+      expect(resumed[0]?.data).toMatchObject({ pausedRunId: "run-1", pipelineRunId: "run-2" });
+    });
+
+    it("resumes again when the top-up was too small and the account ran dry a second time", async () => {
+      let dry = 2;
+      script = (promptId, market) => {
+        if (promptId === "critic" && market === "en" && dry-- > 0) throw empty();
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toBeInstanceOf(CreditsExhaustedError);
+      await expect(run("run-2")).rejects.toBeInstanceOf(CreditsExhaustedError);
+      expect((await variantRow("en")).pipelineState).toMatchObject({
+        pipelineRunId: "run-2",
+        orderSeed: "run-1",
+      });
+      const result = await run("run-3");
+      expect(result.outcomes.every((o) => o.status === "READY_FOR_REVIEW")).toBe(true);
+      expect(calls("content-writer")).toHaveLength(2);
+    });
+
+    it("starts over when a person's note changes the writer's input", async () => {
+      let credit = false;
+      script = (promptId, market) => {
+        if (promptId === "critic" && market === "en" && !credit) throw empty();
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toBeInstanceOf(CreditsExhaustedError);
+      credit = true;
+      await run("run-2", { instruction: "Shorter, please." });
+      expect(calls("content-writer")).toHaveLength(4);
+      expect((await variantRow("en")).pipelineState?.orderSeed).toBeUndefined();
+    });
+
+    it("still wipes the state of a variant that failed for another reason", async () => {
+      script = (promptId) => {
+        if (promptId === "content-writer") throw new Error("boom");
+        return undefined;
+      };
+      await expect(run("run-1")).rejects.toThrow("boom");
+      expect((await variantRow("en")).pipelineState).toBeNull();
+      script = () => undefined;
+      await run("run-2");
+      expect(calls("market-adapter")).toHaveLength(4); // nothing was reused
+    });
   });
 
   it("returns a failed variant to DRAFT with GENERATION_FAILED while the other market finishes", async () => {
