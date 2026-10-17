@@ -1,5 +1,5 @@
 import { schema } from "@rc/db";
-import { RightsDefaults } from "@rc/db/json";
+import { RightsDefaults, YOUTUBE_PRIVACY_STATUSES } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
 import { ValidationError } from "@rc/lib/errors";
 import { z } from "zod";
@@ -10,6 +10,10 @@ export const APP_SETTING_SCHEMAS = {
   "publishing.enabled": z.boolean(),
   /** Kill switch of Reel generation (M8-06): off, nothing is spent on shots. Missing means off. */
   "reels.enabled": z.boolean(),
+  /** G-09: the owner's switch of YouTube Shorts uploads (J25). Missing means off. */
+  "youtube.enabled": z.boolean(),
+  /** G-09: privacy of new Shorts; missing means private (the first live upload is checked first). */
+  "youtube.privacy_status": z.enum(YOUTUBE_PRIVACY_STATUSES),
   "publishing.min_gap_minutes": z
     .number()
     .int()

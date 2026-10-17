@@ -8,6 +8,7 @@ import {
   instagramRuntimeFromEnv,
   type JobRunner,
   type ServiceContext,
+  youtubeRuntimeFromEnv,
 } from "@rc/modules/core";
 import { jobHandlers } from "@rc/modules/job-handlers";
 import { headers } from "next/headers";
@@ -50,6 +51,7 @@ function jobRunner(): JobRunner {
         images: serverImages(),
         video: serverVideo(),
         instagram: instagramRuntimeFromEnv(serverEnv()),
+        youtube: youtubeRuntimeFromEnv(serverEnv()),
       }),
   });
   jobs = runner;

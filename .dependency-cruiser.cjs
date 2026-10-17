@@ -61,7 +61,7 @@ module.exports = {
       comment: "Domains with no allowed module deps may import only core and themselves (02 §2.4).",
       severity: "error",
       from: {
-        path: "^modules/src/(offers|ai|instagram|settings)/",
+        path: "^modules/src/(offers|ai|instagram|settings|youtube)/",
       },
       to: { path: "^modules/src/[^/]+/", pathNot: "^modules/src/(core|$1)/" },
     },

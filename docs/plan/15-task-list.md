@@ -809,6 +809,10 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
 - [ ] **G-08 · Topic pillars and an opinion slot** · P1 · M · deps: M7-05
   - **Do:** the idea generator spreads ideas over pillars per market (grains, eggs, meat and doneness, roasted vegetables, sauces and the salt-acid-fat balance, kitchen myths) and plans one opinion post a week (the expert's position against a habit, with the reason, from the knowledge base only).
   - **Done when:** a week of ideas covers at least three pillars and one opinion.
+- [ ] **G-09 · YouTube Shorts as a second destination of Reels** · P0 · M · deps: M8-09, owner (Google Cloud project, OAuth, channel) · ⚠ V-31
+  - **Do:** a Reel that Instagram has published is uploaded to one YouTube channel with `videos.insert` (resumable): title = the Reel's hook line, description = its caption without the Instagram ask, hashtags and `#Shorts`, no brand text; behind `YOUTUBE_PUBLISH_MODE` (off by default) and `youtube.enabled`; dry run; job J25 `sync-youtube-shorts` (hourly, one Short per run); table `youtube_uploads` (0014); a *YouTube Shorts* column on the Published list. Instagram publishing is not touched. Design: `docs/design/youtube-shorts.md`; runbook: `docs/runbooks/youtube-shorts.md`.
+  - **Done when:** `pnpm check` green; the owner has done the runbook's setup, a dry run printed sensible text, and the first live upload (private) was checked in Studio. **Open:** V-31 (does an unaudited API project upload non-private).
+  - **Result (code, 2026-10-17):** `modules/src/youtube/{client,errors,metadata,upload,sync}.ts`, `youtube-shorts.test.ts` against an in-memory YouTube (lost answers, expired sessions, quota, token, guards), `pnpm rc youtube-shorts [--dry-run|--retry]`. Nothing is uploaded until the owner sets the environment and says yes.
 
 ## CV · Carousel v3 (pictures and posts)
 

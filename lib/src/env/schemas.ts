@@ -134,6 +134,37 @@ export const instagramSchema = z
         },
   );
 
+const youtubeApp = {
+  YOUTUBE_CLIENT_ID: required,
+  YOUTUBE_CLIENT_SECRET: required,
+  /** Offline refresh token of the one channel (G-09); access tokens are never stored. */
+  YOUTUBE_REFRESH_TOKEN: required,
+  /** The channel uploads must land on; the token's own channel is checked against it. */
+  YOUTUBE_CHANNEL_ID: z.string().regex(/^UC[\w-]{22}$/, "Expected a channel id like UC…"),
+  /** `markets.code` whose published Reels go to this channel. */
+  YOUTUBE_MARKET: z.string().min(1).max(20).default("en"),
+};
+
+/** YouTube Shorts as a second destination of Reels (G-09, docs/design/youtube-shorts.md). */
+export const youtubeSchema = z
+  .discriminatedUnion("YOUTUBE_PUBLISH_MODE", [
+    z.object({ YOUTUBE_PUBLISH_MODE: z.literal("off") }),
+    z.object({ YOUTUBE_PUBLISH_MODE: z.literal("dry_run_only"), ...youtubeApp }),
+    z.object({ YOUTUBE_PUBLISH_MODE: z.literal("live"), ...youtubeApp }),
+  ])
+  .transform((v) =>
+    v.YOUTUBE_PUBLISH_MODE === "off"
+      ? { publishMode: "off" as const }
+      : {
+          publishMode: v.YOUTUBE_PUBLISH_MODE,
+          clientId: v.YOUTUBE_CLIENT_ID,
+          clientSecret: v.YOUTUBE_CLIENT_SECRET,
+          refreshToken: v.YOUTUBE_REFRESH_TOKEN,
+          channelId: v.YOUTUBE_CHANNEL_ID,
+          marketCode: v.YOUTUBE_MARKET,
+        },
+  );
+
 const KEY_ENTRY = /^(v\d+):([A-Za-z0-9+/]+={0,2})$/;
 
 /** Parses `v1:<base64 of 32 bytes>,v2:…` into key id → key bytes. */
@@ -216,4 +247,5 @@ export const FLAG_DEFAULTS = {
   AI_PROVIDER: "live",
   STORAGE_PROVIDER: "r2",
   INSTAGRAM_PUBLISH_MODE: "off",
+  YOUTUBE_PUBLISH_MODE: "off",
 } as const;

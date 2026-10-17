@@ -134,6 +134,7 @@ export default async function PublishedPage({
                   <TableHead className="text-right">{t.table.comments}</TableHead>
                   <TableHead>{t.table.measured}</TableHead>
                   <TableHead>{t.table.link}</TableHead>
+                  <TableHead>{t.table.youtube}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -181,6 +182,21 @@ export default async function PublishedPage({
                           <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
                         </a>
                       ) : null}
+                    </TableCell>
+                    <TableCell>
+                      {r.youtubeUrl ? (
+                        <a
+                          href={r.youtubeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm underline-offset-4 hover:underline"
+                        >
+                          {t.openOnYouTube}
+                          <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

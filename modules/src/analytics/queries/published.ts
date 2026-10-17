@@ -9,6 +9,7 @@ import { num } from "./range";
 
 const d = schema.vPublicationDimensions;
 const m = schema.vPublicationMetricsD7;
+const yt = schema.youtubeUploads;
 
 export const DEFAULT_PUBLISHED_PAGE_SIZE = 25;
 export const MAX_CSV_ROWS = 5000;
@@ -35,6 +36,8 @@ export type PublishedRow = {
   hookType: string | null;
   publishedAt: Date;
   permalink: string | null;
+  /** The Short on YouTube (G-09), once its upload is PUBLISHED. */
+  youtubeUrl: string | null;
   slot: string | null;
   isExactD7: boolean | null;
   reach: number | null;
@@ -69,6 +72,7 @@ async function query(
       hookType: d.hookType,
       publishedAt: d.publishedAt,
       permalink: schema.publications.permalink,
+      youtubeUrl: yt.url,
       slot: m.snapshotSlot,
       isExactD7: m.isExactD7,
       reach: m.reach,
@@ -81,6 +85,10 @@ async function query(
     .innerJoin(schema.contentVariants, eq(schema.contentVariants.id, d.variantId))
     .innerJoin(schema.publications, eq(schema.publications.id, d.publicationId))
     .leftJoin(m, eq(m.publicationId, d.publicationId))
+    .leftJoin(
+      yt,
+      and(eq(yt.publicationId, d.publicationId), eq(yt.dryRun, false), eq(yt.status, "PUBLISHED")),
+    )
     .where(where)
     .orderBy(desc(d.publishedAt), desc(d.publicationId))
     .limit(limit)
@@ -121,6 +129,7 @@ const CSV_COLUMNS = [
   "hook",
   "hook_type",
   "permalink",
+  "youtube_url",
   "d7_slot",
   "is_exact_d7",
   "reach",
@@ -153,6 +162,7 @@ export function publishedToCsv(rows: readonly PublishedRow[]): string {
         r.hook,
         r.hookType,
         r.permalink,
+        r.youtubeUrl,
         r.slot,
         r.isExactD7,
         r.reach,

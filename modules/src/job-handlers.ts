@@ -49,6 +49,7 @@ import {
   requestRender,
   runVisualQa,
 } from "./visuals";
+import { SyncYouTubeInput, syncYouTubeShorts } from "./youtube";
 
 // Job name → handler (plan 06 §6.5). Used by Trigger.dev tasks (jobs/) and the inline runner.
 // Handlers are thin: business logic lives in the module services they call.
@@ -337,6 +338,17 @@ export const generateReelJob = defineJob({
   run: (ctx, payload) => generateReel(ctx, payload),
 });
 
+/**
+ * J25 (task G-09, docs/design/youtube-shorts.md): hourly, one published English Reel to the
+ * YouTube channel as a Short, when YOUTUBE_PUBLISH_MODE and `youtube.enabled` allow it. An upload
+ * that cannot succeed ends FAILED and the job returns; a failure that may pass is rethrown and the
+ * upload resumes at its step with the same upload session.
+ */
+export const syncYouTubeShortsJob = defineJob({
+  payload: SyncYouTubeInput,
+  run: (ctx) => syncYouTubeShorts(ctx),
+});
+
 export const jobHandlers = {
   hello: helloJob,
   "ingest-source": ingestSourceJob,
@@ -363,6 +375,7 @@ export const jobHandlers = {
   "publish-dispatcher": publishDispatcherJob,
   "publish-content": publishContentJob,
   "generate-reel": generateReelJob,
+  "sync-youtube-shorts": syncYouTubeShortsJob,
 };
 
 type JobHandlers = typeof jobHandlers;
