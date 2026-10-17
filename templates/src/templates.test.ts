@@ -7,7 +7,12 @@ import {
   type TemplateDefinition,
 } from "./define-template";
 import { createRegistry, registry } from "./registry";
-import { countChars, estimateLines, validateSlideAgainstTemplate } from "./validate";
+import {
+  countChars,
+  estimateLines,
+  slotAtSmallestSize,
+  validateSlideAgainstTemplate,
+} from "./validate";
 
 const slide = (overrides: Record<string, unknown> = {}) => ({
   id: "s1",
@@ -176,10 +181,11 @@ describe("validateSlideAgainstTemplate", () => {
   });
 
   it("reports estimated line overflow as a MAJOR issue, not a blocker", () => {
-    // 5 words of 12 chars: 64 characters (within 70) but only one word fits a ~20-char line.
-    const word = "a".repeat(12);
+    // A's headline holds 4 lines at 100 px and 6 at its smallest 64 px: 7 short lines are too many.
     const issues = validateSlideAgainstTemplate(
-      slide({ slots: { headline: [word, word, word, word, word].join(" ") } }),
+      slide({
+        slots: { headline: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis", "Siete"].join("\n") },
+      }),
     );
     expect(issues).toEqual([
       expect.objectContaining({
@@ -188,8 +194,15 @@ describe("validateSlideAgainstTemplate", () => {
         fieldPath: "slides.s1.slots.headline",
       }),
     ]);
-    const four = [word, word, word, word].join(" ");
-    expect(codes(slide({ slots: { headline: four } }))).toEqual([]);
+    // Five words of 12 characters fit once fit-text shrinks them (two words to a line at 64 px).
+    const word = "a".repeat(12);
+    expect(codes(slide({ slots: { headline: [word, word, word, word, word].join(" ") } }))).toEqual(
+      [],
+    );
+    expect(slotAtSmallestSize({ maxChars: 380, maxLines: 13, minPx: 26, maxPx: 30 })).toEqual({
+      maxLines: 15,
+      maxChars: 506,
+    });
   });
 
   it("does not count the emphasis markers", () => {

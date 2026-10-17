@@ -38,6 +38,20 @@ export function countChars(text: string): number {
 }
 
 /**
+ * The slot as fit-text can draw it at its smallest size: the box holds `maxLines` lines of the
+ * largest size, so at `minPx` it holds proportionally more lines, each with proportionally more
+ * characters. A text that fits this slot fits the page; only beyond it does the render overflow.
+ */
+export function slotAtSmallestSize(
+  spec: Pick<TextSlotSpec, "maxChars" | "maxLines" | "minPx" | "maxPx">,
+): Pick<TextSlotSpec, "maxChars" | "maxLines"> {
+  const scale = spec.minPx > 0 ? Math.max(1, spec.maxPx / spec.minPx) : 1;
+  const maxLines = Math.max(spec.maxLines, Math.floor(spec.maxLines * scale + 1e-9));
+  const perLine = (spec.maxChars / spec.maxLines) * scale;
+  return { maxLines, maxChars: Math.round(perLine * maxLines) };
+}
+
+/**
  * Greedy word wrap; explicit newlines start a new line; a word longer than a line spans several.
  * Blank lines between groups (the "ladder" body of carousel v3) are drawn as one half-line gap
  * (`textHtml`), so a run of them counts half a line.
@@ -127,14 +141,19 @@ export function validateSlideAgainstTemplate(
         message: `${name} has ${chars} characters, the limit is ${spec.maxChars}.`,
         fixHint: `Shorten to at most ${spec.maxChars} characters.`,
       });
-    } else if (estimateLines(visible, spec) > spec.maxLines) {
-      issues.push({
-        code: "SLOT_LINES",
-        severity: "MAJOR",
-        fieldPath: path,
-        message: `${name} needs about ${estimateLines(visible, spec)} lines, the limit is ${spec.maxLines}.`,
-        fixHint: "Use shorter words or fewer line breaks.",
-      });
+    } else {
+      // Fit-text shrinks a long text down to `minPx`: the lines are counted at that size.
+      const smallest = slotAtSmallestSize(spec);
+      const lines = estimateLines(visible, smallest);
+      if (lines > smallest.maxLines) {
+        issues.push({
+          code: "SLOT_LINES",
+          severity: "MAJOR",
+          fieldPath: path,
+          message: `${name} needs about ${lines} lines at its smallest size, the limit is ${smallest.maxLines}.`,
+          fixHint: "Use shorter words or fewer line breaks.",
+        });
+      }
     }
   }
   for (const [name, spec] of Object.entries(template.textSlots)) {

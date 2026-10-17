@@ -1365,3 +1365,8 @@ Template:
 - Not done: G-04 moves to the next writer version; CV-05 spike, CV-06 lead magnet, CV-07 knowledge, CV-08 Reels.
 - Impact on plan: CV-03, CV-04 done; CV-07, CV-08 added.
 
+## 2026-10-17 · Slot lines are counted at the smallest size; the new prompts on thin knowledge [CV-04]
+- Context: both live v3 drafts got a TEXT_OVERFLOW flag (SLOT_LINES, "body needs about 15–16 lines, the limit is 13") although the render fitted them: the line estimate used the characters per line of the largest size, while fit-text shrinks a long text down to `minPx`, where the box holds more and longer lines.
+- Decision: `validateSlideAgainstTemplate` counts lines against `slotAtSmallestSize` (the box's lines and characters per line scaled by `maxPx / minPx`); `SLOT_LINES` stays MAJOR. A ladder's blank line counts half a line (its drawn gap).
+- Evidence: both live drafts pass; template tests (seven lines in A's headline still flagged; five long words that shrink to fit are not). Live run of the active pipeline on the real wet-rice idea (one bare claim, no numbers; $0.72): a correct 6-slide carousel without invented numbers, critic PASS, but slides 3–5 repeat the same two fixes. With the knowledge base as it is, the next real posts will look like this; CV-07 (the owner's sources) is what makes them look like the rice demo. Total live spend overnight: $2.97.
+
