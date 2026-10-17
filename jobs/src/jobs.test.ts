@@ -19,6 +19,7 @@ import { importAttributionCsv } from "./tasks/import-attribution-csv";
 import { publishContent } from "./tasks/publish-content";
 import { publishDispatcher } from "./tasks/publish-dispatcher";
 import { refreshInstagramTokens } from "./tasks/refresh-instagram-tokens";
+import { syncYouTubeShorts } from "./tasks/sync-youtube-shorts";
 
 describe("classifyJobError (plan 06 §6.1)", () => {
   it.each([new TransientError("503"), new Error("ECONNRESET")])(
@@ -77,5 +78,10 @@ describe("tasks", () => {
     expect(buildPerformanceSummary.id).toBe("build-performance-summary");
     expect(importAttributionCsv.id).toBe("import-attribution-csv");
     expect(checkAiBudget.id).toBe("check-ai-budget");
+  });
+
+  it("registers the YouTube Shorts cron task under its handler name (J25)", () => {
+    expect(syncYouTubeShorts.id).toBe("sync-youtube-shorts");
+    expect(Object.keys(jobHandlers)).toContain(syncYouTubeShorts.id);
   });
 });

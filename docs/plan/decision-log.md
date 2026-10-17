@@ -1393,3 +1393,10 @@ Template:
 - D4: no lead magnet for now. Until CV-06 the CTA is "send it on and follow": market-adapter@4 plans CTA type SHARE without an offer, and content-writer@7 asks for both in the CTA slide, the CTA text and the end of the caption, without bait. (G-04, the rotation of asks, comes after.)
 - Body text size: left to the engineer; 26–30 px stays.
 
+
+## 2026-10-17 · YouTube Shorts as a second destination of Reels [G-09]
+- Context: Reels reach 60–100 non-followers on Instagram, carousels 1–3, and the account has 3 followers. The approved mp4 (1080×1920 H.264 + AAC, no platform watermark) is a valid Short as it is.
+- Decision: a Reel is uploaded to one YouTube channel only after its Instagram publication is `PUBLISHED`, from the approved snapshot (video key checked against the approved SHA-256). Title = the caption's first line (the Reel's hook line, G-01); description = the rest of the caption without the approved ask and without sentences that only work on Instagram, the AI note, hashtags, `#Shorts`; a check stops any text that names the source brand. `containsSyntheticMedia: true`, not made for kids, privacy `private` until the owner sets `youtube.privacy_status`. Off by default (`YOUTUBE_PUBLISH_MODE`, `youtube.enabled`); a dry run builds and checks everything and uploads nothing.
+- Idempotency: the resumable upload session (stored encrypted) is the key. A run that lost the answer asks the same session (`308` + `Range` = resume, `201` = done); an expired session after bytes were sent is looked up on the channel by title and time, else `FAILED` "manual check required"; never a blind second upload. A FAILED live upload is retried only by a person.
+- Not changed: Instagram publishing, its state machine and tests. The new table `youtube_uploads` (0014) is read by the Published list through a left join.
+- Evidence: official reference read 2026-10-17 (V-31); tests against an in-memory YouTube (`modules/src/youtube-shorts.test.ts`). Open: whether an unaudited API project may upload non-private videos; checked at the first live upload.

@@ -19,6 +19,12 @@ import {
   formatG3Readiness,
 } from "./publishing";
 import { listAppSettings, setAppSetting } from "./settings";
+import {
+  dryRunYouTubeUpload,
+  formatYouTubeStatus,
+  getYouTubeStatus,
+  retryYouTubeUpload,
+} from "./youtube";
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   ".pdf": "application/pdf",
@@ -100,6 +106,32 @@ export const cliCommands: CliCommands = {
     usage: "g3-check",
     run: async (ctx) => {
       console.log(formatG3Readiness(await checkG3Readiness(ctx)));
+    },
+  },
+  "youtube-shorts": {
+    description:
+      "YouTube Shorts (G-09): the switches, the next Reel and the latest uploads; --dry-run checks one published Reel without uploading; --retry starts a failed live upload again",
+    usage: "youtube-shorts [--dry-run [--publication <id>]] [--retry <uploadId>]",
+    run: async (ctx, args) => {
+      const { options } = parseOptions(args, ["dry-run"]);
+      const retry = options.get("retry");
+      if (typeof retry === "string" && retry) {
+        const { uploadId, outcome } = await retryYouTubeUpload(ctx, { uploadId: retry });
+        console.log(`rc youtube-shorts: upload ${uploadId} ${JSON.stringify(outcome)}`);
+        return;
+      }
+      if (options.get("dry-run") === true) {
+        const publication = options.get("publication");
+        const { uploadId, outcome } = await dryRunYouTubeUpload(ctx, {
+          ...(typeof publication === "string" && publication ? { publicationId: publication } : {}),
+        });
+        console.log(`rc youtube-shorts: dry run ${uploadId} ${outcome.status}`);
+        if (outcome.status === "DRY_RUN_PASSED")
+          console.log(JSON.stringify(outcome.metadata, null, 2));
+        if (outcome.status === "FAILED") console.log(`  ${outcome.error.message}`);
+        return;
+      }
+      console.log(formatYouTubeStatus(await getYouTubeStatus(ctx)));
     },
   },
   "voice-import": {

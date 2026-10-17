@@ -84,6 +84,52 @@ export function instagramRuntimeFromEnv(env: ServerEnv): InstagramRuntime {
   };
 }
 
+/** The one YouTube channel of this environment (G-09); only present when uploads are not `off`. */
+export type YouTubeApp = {
+  clientId: string;
+  clientSecret: string;
+  /** Never logged; exchanged for a short-lived access token per run. */
+  refreshToken: string;
+  /** Uploads go only to this channel (the token's channel is checked against it). */
+  channelId: string;
+  /** `markets.code` whose published Reels are uploaded. */
+  marketCode: string;
+};
+
+/** YouTube settings and secrets for `modules/youtube` (docs/design/youtube-shorts.md). */
+export type YouTubeRuntime = {
+  publishMode: PublishMode;
+  app: YouTubeApp | undefined;
+  /** Tests pass a fake; default the global fetch. */
+  fetch: typeof fetch | undefined;
+};
+
+/** Default for contexts that do not talk to YouTube. */
+export const disabledYouTube: YouTubeRuntime = {
+  publishMode: "off",
+  app: undefined,
+  fetch: undefined,
+};
+
+/** Builds the YouTube settings of a context from the validated environment. */
+export function youtubeRuntimeFromEnv(env: ServerEnv): YouTubeRuntime {
+  const yt = env.youtube;
+  return {
+    publishMode: yt.publishMode,
+    app:
+      yt.publishMode === "off"
+        ? undefined
+        : {
+            clientId: yt.clientId,
+            clientSecret: yt.clientSecret,
+            refreshToken: yt.refreshToken,
+            channelId: yt.channelId,
+            marketCode: yt.marketCode,
+          },
+    fetch: undefined,
+  };
+}
+
 /**
  * Everything a service needs (plan 02 §2.2, 03 §3.3). Services never read env or globals.
  */
@@ -108,6 +154,8 @@ export type ServiceContext = {
   video: VideoProvider;
   /** Instagram app, publish mode and token keys (M5). */
   instagram: InstagramRuntime;
+  /** YouTube channel and upload mode (G-09). */
+  youtube: YouTubeRuntime;
   /**
    * Waits without using compute where the runtime can (Trigger.dev `wait.for` in a job); a timer
    * elsewhere. Tests pass a function that advances their manual clock.
@@ -135,6 +183,8 @@ export type CreateServiceContextInput = {
   video?: VideoProvider;
   /** Default: publishing off. */
   instagram?: InstagramRuntime;
+  /** Default: uploads off. */
+  youtube?: YouTubeRuntime;
   /** Default: a timer. */
   sleep?: (ms: number) => Promise<void>;
 };
@@ -158,6 +208,7 @@ export function createServiceContext(input: CreateServiceContextInput): ServiceC
     images: input.images ?? disabledImages,
     video: input.video ?? disabledVideo,
     instagram: input.instagram ?? disabledInstagram,
+    youtube: input.youtube ?? disabledYouTube,
     sleep: input.sleep ?? timerSleep,
   };
 }

@@ -17,6 +17,7 @@
     "./publishing": "./src/publishing/index.ts",
     "./publishing/time": "./src/publishing/time.ts",
     "./instagram": "./src/instagram/index.ts",
+    "./youtube": "./src/youtube/index.ts",
     "./analytics": "./src/analytics/index.ts",
     "./job-handlers": "./src/job-handlers.ts",
     "./settings": "./src/settings/index.ts",

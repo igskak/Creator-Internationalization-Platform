@@ -10,6 +10,7 @@ export {
   disabledLlm,
   disabledStorage,
   disabledVideo,
+  disabledYouTube,
   type InstagramApp,
   type InstagramRuntime,
   instagramRuntimeFromEnv,
@@ -17,6 +18,9 @@ export {
   type ServiceContext,
   type UserRole,
   withTransaction,
+  type YouTubeApp,
+  type YouTubeRuntime,
+  youtubeRuntimeFromEnv,
 } from "./context";
 export {
   createInlineJobRunner,

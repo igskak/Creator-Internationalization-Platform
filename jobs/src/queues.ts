@@ -7,4 +7,6 @@ export const imagesQueue = queue({ name: "images", concurrencyLimit: 3 });
 export const renderQueue = queue({ name: "render", concurrencyLimit: 2 });
 export const instagramPublishQueue = queue({ name: "instagram-publish", concurrencyLimit: 1 });
 export const instagramReadQueue = queue({ name: "instagram-read", concurrencyLimit: 2 });
+/** One YouTube upload at a time (G-09): uploads share the channel's daily quota. */
+export const youtubePublishQueue = queue({ name: "youtube-publish", concurrencyLimit: 1 });
 export const defaultQueue = queue({ name: "default", concurrencyLimit: 5 });

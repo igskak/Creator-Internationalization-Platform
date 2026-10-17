@@ -50,6 +50,7 @@ describe("loadServerEnv: valid", () => {
     expect(env.ai).toEqual({ provider: "fake" });
     expect(env.storage).toEqual({ provider: "memory" });
     expect(env.instagram).toEqual({ publishMode: "off" });
+    expect(env.youtube).toEqual({ publishMode: "off" });
     expect(env.observability.logLevel).toBe("info");
     expect(env.security.activeKeyId).toBe("v1");
     expect(env.security.tokenEncryptionKeys.get("v1")).toEqual(new Uint8Array(32).fill(1));
@@ -82,10 +83,45 @@ describe("loadServerEnv: valid", () => {
     expect([...env.security.tokenEncryptionKeys.keys()]).toEqual(["v1", "v2"]);
   });
 
+  it("parses the YouTube channel when uploads are not off (G-09)", () => {
+    const env = loadServerEnv({
+      ...base,
+      YOUTUBE_PUBLISH_MODE: "dry_run_only",
+      YOUTUBE_CLIENT_ID: "client-id",
+      YOUTUBE_CLIENT_SECRET: "client-secret",
+      YOUTUBE_REFRESH_TOKEN: "refresh-token",
+      YOUTUBE_CHANNEL_ID: "UCabcdefghijklmnopqrstuv",
+    });
+    expect(env.youtube).toEqual({
+      publishMode: "dry_run_only",
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      refreshToken: "refresh-token",
+      channelId: "UCabcdefghijklmnopqrstuv",
+      marketCode: "en",
+    });
+  });
+
   it("treats empty values as unset", () => {
     const env = loadServerEnv({ ...base, DATABASE_URL_DIRECT: "", LOG_LEVEL: " " });
     expect(env.db.directUrl).toBeUndefined();
     expect(env.observability.logLevel).toBe("info");
+  });
+});
+
+describe("loadServerEnv: YouTube", () => {
+  it("names every missing variable and a bad channel id, never a value", () => {
+    const error = problemsOf({ ...base, YOUTUBE_PUBLISH_MODE: "live", YOUTUBE_CHANNEL_ID: "nope" });
+    const names = error.problems.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "YOUTUBE_CLIENT_ID",
+        "YOUTUBE_CLIENT_SECRET",
+        "YOUTUBE_REFRESH_TOKEN",
+        "YOUTUBE_CHANNEL_ID",
+      ]),
+    );
+    expect(error.message).not.toContain("nope");
   });
 });
 

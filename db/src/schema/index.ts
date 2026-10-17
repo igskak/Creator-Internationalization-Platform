@@ -7,3 +7,4 @@ export * from "./knowledge";
 export * from "./learning";
 export * from "./publishing";
 export * from "./reels";
+export * from "./youtube";
