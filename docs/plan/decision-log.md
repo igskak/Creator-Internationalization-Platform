@@ -1386,3 +1386,10 @@ Template:
 - Evidence: the same private rice case for es-ES only ($1.28, the writer was repaired once): 9 slides in peninsular Spanish with the cards' numbers in every step ("Mide: 330 ml de agua por 240 ml de arroz", "Cuece unos 13 min"), ladder bodies, leads and closers, an "Importante:" limit, a 1,583-character caption; no slot overflow in a text-only render. The critic returned FLAG_FOR_HUMAN with UNSUPPORTED_CLAIM: the writer added a cultural comparison the cards do not state ("Como en la paella: no se remueve"). The check works as intended; the reviewer keeps or cuts the line.
 - Total live spend of the carousel v3 night: $4.30 (cap $5).
 
+## 2026-10-17 · Owner decisions D1–D4 for carousel v3
+- D1: the cover of a carousel is white, like the inner slides. The theme default is now `cover: "white"` (the dark full-bleed cover stays as `visual_system.cover = "dark"`); the cover's picture is generated and normalized like an inner picture (whole subject, white padding) unless the brand asks for the dark cover. The Reel's grid cover is the carousel's cover, so it is white too.
+- D2: slides stay as they are made now (text in the template, the photo fitted beside it by its measured subject). The owner did not like a text background over the picture, which the hybrid edit (option C) produced; C stays dropped.
+- D3: the sign-off line per market is the owner's, written from the brand voice and put there by the owner; content-writer@7 uses it as the CTA headline when the brand voice gives one. Nothing to build.
+- D4: no lead magnet for now. Until CV-06 the CTA is "send it on and follow": market-adapter@4 plans CTA type SHARE without an offer, and content-writer@7 asks for both in the CTA slide, the CTA text and the end of the caption, without bait. (G-04, the rotation of asks, comes after.)
+- Body text size: left to the engineer; 26–30 px stays.
+

@@ -34,6 +34,10 @@ const OLD_CAPTION = `- "caption": the hook line first, then the value of the pos
 
 const NEW_CAPTION = `- "caption": the hook line first; then the problem in one or two sentences; then the method in short paragraphs with the same numbers as the slides (amounts, times, temperatures), one step per paragraph, numbered "1.", "2." when there are steps; then, when the cards state a limit (a variety, a size or a case the method does not cover), a line that starts with "Important:" in the market's language; then one personal line in the brand voice that adds no new fact; then the call to action. 900 to ${MAX_CAPTION_CHARS} characters. No hashtags in the caption, no links, at most three emoji.`;
 
+// Owner decision 2026-10-17 (D4): until a lead magnet exists the ask is "send it on and follow".
+const CTA_ASK_RULE =
+  '- When the plan\'s CTA type is SHARE, the CTA slide, the "cta" text and the end of the caption ask for both things in the market\'s language and in the brand voice: send this to someone who cooks (name who it helps, from the post), and follow the account for the next one. One short sentence each, no bait ("comment YES", "tag three friends"), no promise of a guide or a reward.';
+
 const [dataRules, rules] = v5.system;
 if (!dataRules || !rules) throw new Error("content-writer@5 has changed shape.");
 
@@ -48,7 +52,10 @@ for (const [from, to] of [
 }
 const HOOK_ANCHOR = '- "altText" describes';
 if (!WRITER_RULES.includes(HOOK_ANCHOR)) throw new Error("content-writer@5 has changed shape.");
-WRITER_RULES = WRITER_RULES.replace(HOOK_ANCHOR, `${HOOK_DELIVERS_RULE}\n${HOOK_ANCHOR}`);
+WRITER_RULES = WRITER_RULES.replace(
+  HOOK_ANCHOR,
+  `${HOOK_DELIVERS_RULE}\n${CTA_ASK_RULE}\n${HOOK_ANCHOR}`,
+);
 
 export default definePrompt({
   id: "content-writer",

@@ -56,7 +56,7 @@ Emphasis comes from the text itself: the writer marks key phrases with `**…**`
 | Closer (B, E, optional) | 800 | 30 px, down to 26 px | uppercase, the bold last line under the body |
 | Cover subline (A) | 400 | 32 px, down to 28 px | up to 140 characters, 4 lines |
 
-Plan 08's 32 px floor for body text is lowered to 26 px (decision log 2026-10-17): the reference's denser slides use 27–35 px on a 1080 px slide. The cover can be the white page of the inner slides (`brands.visual_system.cover = "white"`, D1): the text top left in ink and the photo fitted beside it by the placement script; the default stays the dark full-bleed cover.
+Plan 08's 32 px floor for body text is lowered to 26 px (decision log 2026-10-17): the reference's denser slides use 27–35 px on a 1080 px slide. The cover is the white page of the inner slides (D1, decided 2026-10-17): the text top left in ink and the photo fitted beside it by the placement script. The dark full-bleed cover stays available with `brands.visual_system.cover = "dark"`.
 
 ## Layouts
 

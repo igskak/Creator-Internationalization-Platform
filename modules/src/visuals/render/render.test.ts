@@ -45,6 +45,8 @@ const CUTOUT = dataUrl(
     .toBuffer(),
 );
 const theme = buildTheme({});
+/** The dark full-bleed cover, for the tests that give template A a photo without a white page. */
+const darkTheme = buildTheme({ cover: "dark" });
 
 const inputFor = (templateId: string, name: string, withImages = true): RenderInputSlide => {
   const slide = TEMPLATE_FIXTURES[templateId]?.[name];
@@ -264,7 +266,7 @@ describe.skipIf(!browser)("renderCarousel", () => {
 
   it("finds no contrast problem in the regular fixtures", async () => {
     const slides = ["A", "B", "C", "D", "E", "F"].map((id) => inputFor(id, "es-long"));
-    const result = await renderCarousel({ slides, theme }, { browser: needBrowser() });
+    const result = await renderCarousel({ slides, theme: darkTheme }, { browser: needBrowser() });
     expect(result.qa.lowContrast).toBeUndefined();
     expect(result.qa.nonWhitePictures).toBeUndefined();
   }, 120_000);
@@ -273,7 +275,7 @@ describe.skipIf(!browser)("renderCarousel", () => {
     // The flat gradient picture has no white corner: fine full-bleed (A), a grey block as a cut-out.
     const grey = { ...inputFor("B", "es-long"), assets: { images: { side: PICTURE } } };
     const result = await renderCarousel(
-      { slides: [inputFor("A", "es-long"), grey], theme },
+      { slides: [inputFor("A", "es-long"), grey], theme: darkTheme },
       { browser: needBrowser() },
     );
     expect(result.qa.nonWhitePictures).toEqual([
@@ -331,6 +333,16 @@ describe.skipIf(!browser)("renderCarousel", () => {
     const headline = result.measurements?.[0]?.slots.find((s) => s.slot === "headline");
     // One word per line at most: "OVERCOOKED" and "BUCKWHEAT" each fit the column whole.
     expect(headline?.box.height).toBeLessThan(84 * 1.02 * 2 + 40);
+  }, 60_000);
+
+  it("draws the white cover (the default) as a cut-out beside the headline, never under it", async () => {
+    const white = { ...inputFor("A", "max-length"), assets: { images: { hero: CUTOUT } } };
+    const result = await renderCarousel({ slides: [white], theme }, { browser: needBrowser() });
+    expect(result.qa.overflow).toEqual([]);
+    expect(result.qa.nonWhitePictures).toBeUndefined();
+    const picture = result.measurements?.[0]?.pictures?.[0];
+    expect(picture).toMatchObject({ slot: "hero", placement: "cover", overlap: [], error: null });
+    expect(picture?.visible).toBeGreaterThanOrEqual(0.85);
   }, 60_000);
 
   it("reports a required picture that is missing", async () => {

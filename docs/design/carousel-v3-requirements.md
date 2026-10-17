@@ -1,6 +1,6 @@
 # Carousel v3: requirements for pictures and posts
 
-**Status: IMPLEMENTED on branch `feat/carousel-v3` (PR #117, 2026-10-17): CV-01…CV-04 and the white cover switch; waiting for the owner's review and decisions D1–D4.** Builds on [carousel-style.md](carousel-style.md) (white page, Inter Tight, cut-out photos), which stays valid where this document does not change it.
+**Status: IMPLEMENTED on branch `feat/carousel-v3` (PR #117, 2026-10-17): CV-01…CV-05, CV-08; owner decisions D1–D4 taken on 2026-10-17 (see below).** Builds on [carousel-style.md](carousel-style.md) (white page, Inter Tight, cut-out photos), which stays valid where this document does not change it.
 
 ## Why
 
@@ -112,10 +112,10 @@ The reference account's Reels are a different genre (memes about restaurant life
 
 | | Question | Recommendation |
 |---|---|---|
-| D1 | White cover for carousels instead of the dark full-bleed one? | Yes for carousels, dark stays for Reels. |
-| D2 | How a slide is produced (A, B or C)? | A now, C as a spike. |
-| D3 | The recurring sign-off line per market. | The owner writes it. |
-| D4 | A lead magnet and keyword CTA for the English account? | Yes, one free sheet first. |
+| D1 | White cover for carousels instead of the dark full-bleed one? | **Decided 2026-10-17: yes**, white is the default (`visual_system.cover = "dark"` brings the dark one back). |
+| D2 | How a slide is produced (A, B or C)? | **Decided 2026-10-17: A** (text in the template, photo fitted beside it). The owner dislikes a text background over the picture, which is what the hybrid edit (C) produced. |
+| D3 | The recurring sign-off line per market. | **The owner writes it** from the brand voice; the writer uses it as the CTA headline when the brand voice has one. |
+| D4 | A lead magnet and keyword CTA for the English account? | **Decided 2026-10-17: not yet.** For now the call is "send it on and follow" (CTA type SHARE); the lead magnet (CV-06) waits. |
 
 ## Plan
 

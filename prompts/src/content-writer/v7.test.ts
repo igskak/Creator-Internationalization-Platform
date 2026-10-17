@@ -29,6 +29,8 @@ describe("content-writer@7", () => {
     expect(rules).toContain("on at most half of the slides wrap");
     expect(rules).toContain("The HOOK slide pairs the hook with one to three short lines");
     expect(rules).toContain("sign-off line");
+    expect(rules).toContain("the plan's CTA type is SHARE");
+    expect(rules).toContain("send this to someone who cooks");
     expect(rules).toContain('a line that starts with "Important:"');
     expect(rules).toContain("900 to 2200 characters");
     // The rules of v5 that stay: closed book, hook limits, CTA keyword.

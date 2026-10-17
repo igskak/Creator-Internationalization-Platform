@@ -701,9 +701,11 @@ describe("whole subjects (visual-director@7)", () => {
     expect(photoPrompt("Three bowls", "side", true, "RIGHT_COLUMN", true)).toContain(
       WHOLE_COMPOSITION.RIGHT_COLUMN,
     );
+    // The white cover (the default) is a corner picture like the inner slides.
     expect(photoPrompt("A served bowl", "cover", false, undefined, true)).toBe(
-      `A served bowl. ${SLOT_COMPOSITION.cover} ${PHOTO_STYLE_WHOLE}`,
+      `A served bowl. ${WHOLE_COMPOSITION.CORNER} ${PHOTO_STYLE_WHOLE}`,
     );
+    expect(photoPrompt("A served bowl", "cover", false)).toContain(SLOT_COMPOSITION.cover);
     const done = photoPrompt("A bowl", "side", false, "CORNER", true);
     expect(photoPrompt(done, "side", false, "CORNER", true)).toBe(done);
     expect(photoNegative("mushy clumps", true)).toBe(`${PHOTO_NEGATIVE_WHOLE}, mushy clumps`);

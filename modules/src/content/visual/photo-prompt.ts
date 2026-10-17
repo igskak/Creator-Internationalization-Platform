@@ -94,9 +94,10 @@ export function photoPrompt(
   const text = subject.trim();
   if (text.endsWith(PHOTO_STYLE) || text.endsWith(PHOTO_STYLE_WHOLE)) return text;
   const sentence = /[.!?]$/.test(text) ? text : `${text}.`;
-  if (whole && kind === "side") {
-    // The placement decides the shape; a comparison in the corner is two servings.
-    const at = isPlacement(placement) ? placement : "CORNER";
+  if (whole && (kind === "side" || kind === "cover")) {
+    // The placement decides the shape; a comparison in the corner is two servings. The cover is a
+    // corner picture like the others: the white cover (the default) fits it beside the headline.
+    const at = kind === "cover" ? "CORNER" : isPlacement(placement) ? placement : "CORNER";
     const composition = at === "CORNER" && split ? WHOLE_COMPOSITION.PAIR : WHOLE_COMPOSITION[at];
     return `${sentence} ${composition} ${PHOTO_STYLE_WHOLE}`;
   }

@@ -19,10 +19,13 @@ describe("market-adapter@4", () => {
     const after = (v4.system[1]?.text ?? "").split("\n");
     expect(after).toHaveLength(before.length + 1);
     const added = after.filter((line) => !before.includes(line));
-    expect(added).toHaveLength(2);
-    expect(added[0]).toContain("- Story: plan the carousel as a short lesson");
-    expect(added[0]).toContain("the portion (FACT");
-    expect(added[0]).toContain("the check (SUMMARY");
-    expect(added[1]).toContain("within that arc");
+    expect(added).toHaveLength(3);
+    // D4: without an offer the call is "send it on and follow".
+    expect(added.some((l) => l.includes("Without an offer use SHARE"))).toBe(true);
+    const story = added.find((l) => l.startsWith("- Story:")) ?? "";
+    expect(story).toContain("plan the carousel as a short lesson");
+    expect(story).toContain("the portion (FACT");
+    expect(story).toContain("the check (SUMMARY");
+    expect(added.some((l) => l.includes("within that arc"))).toBe(true);
   });
 });

@@ -15,7 +15,7 @@ const stripFonts = (html: string) =>
     .replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, "data:font/woff2;base64,…")
     .replace(/<script>[\s\S]*?<\/script>/g, "<script>…</script>");
 
-const render = (templateId: string, name: string, withImages = true) => {
+const render = (templateId: string, name: string, withImages = true, system: object = {}) => {
   const slide = TEMPLATE_FIXTURES[templateId]?.[name];
   if (!slide) throw new Error("no fixture");
   const spec = registry.get(templateId);
@@ -23,7 +23,7 @@ const render = (templateId: string, name: string, withImages = true) => {
   if (withImages) for (const slot of Object.keys(spec?.imageSlots ?? {})) images[slot] = PICTURE;
   return renderSlideHtml({
     slide,
-    theme: buildTheme({}),
+    theme: buildTheme(system),
     assets: { images },
     page: { index: 1, count: 6 },
   });
@@ -56,24 +56,31 @@ describe.each(["A", "F"])("template %s", (id) => {
 
 describe("template A", () => {
   it("fills the canvas with the hero picture and marks a missing one", () => {
-    expect(render("A", "es-long")).toContain('<img class="img a-hero" data-image="hero"');
-    expect(render("A", "es-long", false)).toContain('data-image-missing data-required="true"');
+    // The dark cover (a brand setting) fills the canvas; the white one is the default.
+    const dark = { cover: "dark" };
+    expect(render("A", "es-long", true, dark)).toContain(
+      '<img class="img a-hero" data-image="hero"',
+    );
+    expect(render("A", "es-long", false, dark)).toContain(
+      'data-image-missing data-required="true"',
+    );
   });
 
-  it("draws the white cover of carousel v3 when the brand asks for it (D1)", () => {
+  it("draws the white cover of carousel v3 by default and the dark one when the brand asks (D1)", () => {
     const slide = TEMPLATE_FIXTURES.A?.["es-long"];
     if (!slide) throw new Error("no fixture");
     const html = renderSlideHtml({
       slide,
-      theme: buildTheme({ cover: "white" }),
+      theme: buildTheme({}),
       assets: { images: { hero: PICTURE } },
       page: { index: 1, count: 6 },
     });
     expect(html).toContain('<div class="a-white">');
     expect(html).toContain('class="img cutout a-cut" data-image="hero" data-place="cover"');
     expect(html).not.toContain('<div class="a-shade">');
-    expect(buildTheme({}).cover).toBe("dark");
-    expect(buildTheme({ cover: "sepia" }).cover).toBe("dark");
+    expect(buildTheme({}).cover).toBe("white");
+    expect(buildTheme({ cover: "sepia" }).cover).toBe("white");
+    expect(buildTheme({ cover: "dark" }).cover).toBe("dark");
   });
 
   it("leaves out the optional kicker and subline", () => {

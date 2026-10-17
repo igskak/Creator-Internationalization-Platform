@@ -51,12 +51,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </head>
 <body>
 <div class="rc-slide" data-slide-id="fx-en-short" data-template="A" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
-<img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="a-shade"></div>
+<div class="a-white">
+<img class="img cutout a-cut" data-image="hero" data-place="cover" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-text">
 
 <div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="100" style="font-size:100px;max-height:428px">Stop rinsing your pasta</div>
 
+</div>
 </div>
 
 <div class="rc-page" data-page>1/6</div>
@@ -118,12 +119,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </head>
 <body>
 <div class="rc-slide" data-slide-id="fx-es-long" data-template="A" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
-<img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="a-shade"></div>
+<div class="a-white">
+<img class="img cutout a-cut" data-image="hero" data-place="cover" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-text">
 <div class="slot display rc-kicker a-kicker" data-slot="kicker" data-fit data-fit-min="24" data-fit-max="28" style="font-size:28px;max-height:34px">Error común</div>
 <div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="100" style="font-size:100px;max-height:428px">¿Por qué el arroz del domingo siempre queda <em>pegajoso?</em></div>
 <div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="28" data-fit-max="32" style="font-size:32px;max-height:170px">Tres gestos que cambian el resultado, sin comprar nada nuevo.</div>
+</div>
 </div>
 
 <div class="rc-page" data-page>1/6</div>
@@ -185,12 +187,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </head>
 <body>
 <div class="rc-slide" data-slide-id="fx-max-length" data-template="A" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
-<img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="a-shade"></div>
+<div class="a-white">
+<img class="img cutout a-cut" data-image="hero" data-place="cover" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-text">
 <div class="slot display rc-kicker a-kicker" data-slot="kicker" data-fit data-fit-min="24" data-fit-max="28" style="font-size:28px;max-height:34px">Kicker Kicker Kicker Kic</div>
 <div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="100" style="font-size:100px;max-height:428px">Una frase larga para el límite Una frase larga para el límite Una fras</div>
 <div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="28" data-fit-max="32" style="font-size:32px;max-height:170px">Subtítulo con el máximo de caracteres permitido Subtítulo con el máximo de caracteres permitido Subtítulo con el máximo de caracteres permit</div>
+</div>
 </div>
 
 <div class="rc-page" data-page>1/6</div>
@@ -252,12 +255,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </head>
 <body>
 <div class="rc-slide" data-slide-id="fx-no-optionals" data-template="A" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
-<img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="a-shade"></div>
+<div class="a-white">
+<img class="img cutout a-cut" data-image="hero" data-place="cover" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-text">
 
 <div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="100" style="font-size:100px;max-height:428px">Solo el titular</div>
 
+</div>
 </div>
 
 <div class="rc-page" data-page>1/6</div>
@@ -319,12 +323,13 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 </head>
 <body>
 <div class="rc-slide" data-slide-id="fx-special-chars" data-template="A" style="--rc-bg:#FFFFFF;--rc-surface:#FFFFFF;--rc-text:#111111;--rc-accent:#E1251B;--rc-positive:#111111;--rc-negative:#E1251B;--rc-font-display:&quot;Inter Tight&quot;, sans-serif;--rc-font-body:&quot;Inter Tight&quot;, sans-serif;--rc-safe-margin:72px;">
-<img class="img a-hero" data-image="hero" alt="" src="data:image/webp;base64,UklGRg==">
-<div class="a-shade"></div>
+<div class="a-white">
+<img class="img cutout a-cut" data-image="hero" data-place="cover" alt="" src="data:image/webp;base64,UklGRg==">
 <div class="a-text">
 <div class="slot display rc-kicker a-kicker" data-slot="kicker" data-fit data-fit-min="24" data-fit-max="28" style="font-size:28px;max-height:34px">¡Ojo! ñ ü</div>
 <div class="slot display a-headline" data-slot="headline" data-fit data-fit-min="64" data-fit-max="100" style="font-size:100px;max-height:428px">¿Qué pasa a 180 °C con ½ taza de aceite?</div>
 <div class="slot body a-sub" data-slot="subline" data-fit data-fit-min="28" data-fit-max="32" style="font-size:32px;max-height:170px">Añade “sal” – y prueba: café, crème, naïve</div>
+</div>
 </div>
 
 <div class="rc-page" data-page>1/6</div>
