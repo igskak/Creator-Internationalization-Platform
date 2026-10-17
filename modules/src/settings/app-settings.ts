@@ -15,6 +15,12 @@ export const APP_SETTING_SCHEMAS = {
     .int()
     .min(0)
     .max(24 * 60),
+  /** G-10: hours between the Reel and the carousel of one idea in a market; missing = 48, 0 = off. */
+  "publishing.topic_gap_hours": z
+    .number()
+    .int()
+    .min(0)
+    .max(14 * 24),
   "analytics.min_sample": z.number().int().min(1).max(1000),
   /** H-05: the monthly AI budget in USD; 0 = no budget (no amber or red, no alert). */
   "ai.monthly_budget_usd": z.number().min(0).max(1_000_000),

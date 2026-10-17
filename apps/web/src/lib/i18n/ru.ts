@@ -2022,6 +2022,7 @@ export const ru: Messages = {
       NO_ACTIVE_ACCOUNT: "Для этого рынка не подключён аккаунт Instagram.",
       PUBLISHING_DISABLED: "Публикация выключена.",
       MIN_GAP: "Рядом есть другой пост этого рынка.",
+      TOPIC_GAP: "Пост той же идеи ближе двух дней: сначала Reel, карусель через 2–3 дня.",
       OVERDUE: "Время прошло, а пост не вышел.",
     },
     list: {
