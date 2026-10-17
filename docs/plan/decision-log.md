@@ -1382,3 +1382,7 @@ Template:
 - Evidence: unit test of the cover image; Reel publishing tests (cover made, stored and sent as `cover_url`; no cover without a carousel render); `pnpm check` green.
 - Open: the first Reel dry run with a cover on @chef.skk (V-26 showed Meta fetches a presigned R2 mp4; the JPEG should behave the same).
 
+## 2026-10-17 · Carousel v3 text in Spanish [CV-04]
+- Evidence: the same private rice case for es-ES only ($1.28, the writer was repaired once): 9 slides in peninsular Spanish with the cards' numbers in every step ("Mide: 330 ml de agua por 240 ml de arroz", "Cuece unos 13 min"), ladder bodies, leads and closers, an "Importante:" limit, a 1,583-character caption; no slot overflow in a text-only render. The critic returned FLAG_FOR_HUMAN with UNSUPPORTED_CLAIM: the writer added a cultural comparison the cards do not state ("Como en la paella: no se remueve"). The check works as intended; the reviewer keeps or cuts the line.
+- Total live spend of the carousel v3 night: $4.30 (cap $5).
+
