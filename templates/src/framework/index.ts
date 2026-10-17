@@ -12,6 +12,7 @@ export {
   textHtml,
   textSlot,
 } from "./html";
+export { PLACE_PHOTO_SCRIPT } from "./place-photo";
 export {
   type RenderSlideInput,
   renderSlideHtml,

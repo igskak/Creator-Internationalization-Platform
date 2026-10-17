@@ -26,7 +26,8 @@
     "typecheck": "tsc -p .",
     "test": "vitest run",
     "test:visual": "tsx src/visuals/render/visual-cli.ts",
-    "reels:assemble": "tsx src/reels/render/assemble-cli.ts"
+    "reels:assemble": "tsx src/reels/render/assemble-cli.ts",
+    "bench:carousel": "tsx src/visuals/render/bench-cli.ts"
   },
   "dependencies": {
     "@rc/db": "workspace:*",

@@ -288,5 +288,12 @@ export const QaReport = z.object({
   nonWhitePictures: z
     .array(z.object({ slideId: z.string(), slot: z.string(), mean: z.number().nonnegative() }))
     .optional(),
+  /**
+   * Cut-out pictures whose subject is cut by the slide edges more than allowed (a warning): the
+   * share of the subject box inside the slide, 0–1 (docs/design/carousel-v3-requirements.md Q3).
+   */
+  croppedPictures: z
+    .array(z.object({ slideId: z.string(), slot: z.string(), visible: z.number().min(0).max(1) }))
+    .optional(),
 });
 export type QaReport = z.infer<typeof QaReport>;

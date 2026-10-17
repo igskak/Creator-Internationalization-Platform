@@ -2,7 +2,7 @@
 
 exports[`renderSlideHtml > renders a stable document for a fixture slide 1`] = `
 "<!doctype html>
-<html lang="en" data-template="A" data-template-version="2.1.0">
+<html lang="en" data-template="A" data-template-version="2.2.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080,initial-scale=1">
@@ -13,7 +13,7 @@ exports[`renderSlideHtml > renders a stable document for a fixture slide 1`] = `
 html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:1080px;height:1350px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
 .slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
-.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
+.slot.display{font-family:var(--rc-font-display);line-height:1.02;padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;overflow-wrap:normal}
 .slot.body{font-family:var(--rc-font-body);line-height:1.3;padding-block:.06em;font-weight:300}
 .slot em{font-style:normal}
 .slot.body em{font-weight:700}
@@ -21,6 +21,7 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:1080px;height:1350px;z-index:0;mix-blend-mode:multiply}
+.img.cutout[data-place]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(180deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(180deg,transparent,#000 4%,#000 96%,transparent);mask-composite:intersect}
 .img.cutout.place-top-right{transform:translate(110px,-30px)}
 .img.cutout.place-right-column{transform:translate(110px,0)}
 .img.cutout.place-bottom-band{transform:translate(40px,170px)}
@@ -40,6 +41,200 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
 <div class="rc-page" data-page>1/6</div>
 </div>
 <script>(function () {
+  var W = 1080, H = 1350, GAP = 28, BLEED = 0.07, MIN_SCALE = 0.3, MAX_SCALE = 1.5;
+  // Largest subject box per placement, as a share of the slide.
+  var LIMITS = {
+    "corner": { w: 0.62, h: 0.7 },
+    "top-right": { w: 0.6, h: 0.72 },
+    "right-column": { w: 0.5, h: 0.86 },
+    "bottom-band": { w: 0.92, h: 0.5 }
+  };
+
+  function subjectBox(img) {
+    var cw = 160;
+    var ch = Math.max(1, Math.round(img.naturalHeight * cw / img.naturalWidth));
+    var canvas = document.createElement("canvas");
+    canvas.width = cw;
+    canvas.height = ch;
+    var g = canvas.getContext("2d", { willReadFrequently: true });
+    g.drawImage(img, 0, 0, cw, ch);
+    var d = g.getImageData(0, 0, cw, ch).data;
+    var cols = [], rows = [], total = 0, x, y;
+    for (x = 0; x < cw; x++) cols.push(0);
+    for (y = 0; y < ch; y++) rows.push(0);
+    for (y = 0; y < ch; y++) {
+      for (x = 0; x < cw; x++) {
+        var i = (y * cw + x) * 4;
+        var r = d[i], gg = d[i + 1], b = d[i + 2];
+        var mx = Math.max(r, gg, b), mn = Math.min(r, gg, b);
+        if (255 - (r + gg + b) / 3 > 26 || mx - mn > 24) {
+          cols[x]++;
+          rows[y]++;
+          total++;
+        }
+      }
+    }
+    if (total < cw * ch * 0.002) return null;
+    function range(arr) {
+      var cut = total * 0.01, lo = 0, hi = arr.length - 1, acc = 0;
+      while (lo < hi && acc + arr[lo] <= cut) { acc += arr[lo]; lo++; }
+      acc = 0;
+      while (hi > lo && acc + arr[hi] <= cut) { acc += arr[hi]; hi--; }
+      return [lo, hi + 1];
+    }
+    var xr = range(cols), yr = range(rows), k = img.naturalWidth / cw;
+    // The page colour of the picture: the mean of its outer ring, where the subject rarely is.
+    var ring = 0, ringN = 0;
+    for (y = 0; y < ch; y++) {
+      for (x = 0; x < cw; x++) {
+        if (x > 3 && x < cw - 4 && y > 3 && y < ch - 4) continue;
+        var j = (y * cw + x) * 4;
+        var v = (d[j] + d[j + 1] + d[j + 2]) / 3;
+        if (v > 200) { ring += v; ringN++; }
+      }
+    }
+    return {
+      x: xr[0] * k, y: yr[0] * k, w: (xr[1] - xr[0]) * k, h: (yr[1] - yr[0]) * k,
+      paper: ringN > 0 ? ring / ringN : 255
+    };
+  }
+
+  // An off-white picture shows as a grey block once it no longer covers the slide: lift its
+  // highlights so its page becomes pure white, leaving everything below 80 % as it was.
+  var lifts = 0;
+  function liftToWhite(img, paper) {
+    if (paper >= 252) return;
+    var p = Math.max(0.85, paper / 255), knee = 0.8, values = [];
+    for (var n = 0; n <= 20; n++) {
+      var t = n / 20;
+      values.push((t <= knee ? t : Math.min(1, knee + (t - knee) * (1 - knee) / (p - knee))).toFixed(4));
+    }
+    var id = "rc-lift-" + (lifts++);
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("width", "0");
+    svg.setAttribute("height", "0");
+    svg.setAttribute("style", "position:absolute");
+    var filter = document.createElementNS(ns, "filter");
+    filter.setAttribute("id", id);
+    filter.setAttribute("color-interpolation-filters", "sRGB");
+    var transfer = document.createElementNS(ns, "feComponentTransfer");
+    var channels = ["feFuncR", "feFuncG", "feFuncB"];
+    for (var c = 0; c < 3; c++) {
+      var f = document.createElementNS(ns, channels[c]);
+      f.setAttribute("type", "table");
+      f.setAttribute("tableValues", values.join(" "));
+      transfer.appendChild(f);
+    }
+    filter.appendChild(transfer);
+    svg.appendChild(filter);
+    document.body.appendChild(svg);
+    img.style.filter = "url(#" + id + ")";
+  }
+
+  /** Every line of text on the slide, as tight boxes. */
+  function textBoxes() {
+    var out = [];
+    var slots = document.querySelectorAll("[data-slot]");
+    for (var i = 0; i < slots.length; i++) {
+      var el = slots[i];
+      var name = el.getAttribute("data-slot") || "";
+      var range = document.createRange();
+      range.selectNodeContents(el);
+      var rects = range.getClientRects();
+      var any = false;
+      for (var j = 0; j < rects.length; j++) {
+        var r = rects[j];
+        if (r.width < 1 || r.height < 1) continue;
+        out.push({ l: r.left, t: r.top, r: r.right, b: r.bottom, slot: name });
+        any = true;
+      }
+      if (!any) {
+        var bb = el.getBoundingClientRect();
+        if (bb.width > 0 && bb.height > 0) out.push({ l: bb.left, t: bb.top, r: bb.right, b: bb.bottom, slot: name });
+      }
+    }
+    return out;
+  }
+
+  /** Where the subject box goes at scale s for a placement. */
+  function boxAt(place, box, s) {
+    var w = box.w * s, h = box.h * s;
+    var left = W - (1 - BLEED) * w;
+    var top;
+    if (place === "top-right") top = -BLEED * h;
+    else if (place === "right-column") top = Math.min(H - 110 - h, Math.max(96, (H - h) / 2));
+    else if (place === "bottom-band") { top = H - (1 - BLEED) * h; left = Math.max(-BLEED * w, (W - w) / 2 + 40); }
+    else top = H - (1 - BLEED) * h;
+    return { l: left, t: top, r: left + w, b: top + h };
+  }
+
+  function hits(box, texts) {
+    var names = [];
+    for (var i = 0; i < texts.length; i++) {
+      var t = texts[i];
+      if (box.l < t.r + GAP && box.r > t.l - GAP && box.t < t.b + GAP && box.b > t.t - GAP) {
+        if (names.indexOf(t.slot) < 0) names.push(t.slot);
+      }
+    }
+    return names;
+  }
+
+  function placeOne(img, texts) {
+    var box = subjectBox(img);
+    if (!box || box.w < 1 || box.h < 1) return;
+    var place = img.getAttribute("data-place") || "corner";
+    var lim = LIMITS[place] || LIMITS.corner;
+    var top = Math.min(MAX_SCALE, lim.w * W / box.w, lim.h * H / box.h);
+    var low = Math.min(MIN_SCALE, top);
+    var s;
+    if (hits(boxAt(place, box, top), texts).length === 0) s = top;
+    else if (hits(boxAt(place, box, low), texts).length > 0) s = low;
+    else {
+      var a = low, z = top;
+      for (var n = 0; n < 24; n++) {
+        var m = (a + z) / 2;
+        if (hits(boxAt(place, box, m), texts).length === 0) a = m;
+        else z = m;
+      }
+      s = a;
+    }
+    var at = boxAt(place, box, s);
+    liftToWhite(img, box.paper);
+    img.style.transform = "none";
+    img.style.width = img.naturalWidth * s + "px";
+    img.style.height = img.naturalHeight * s + "px";
+    img.style.left = at.l - box.x * s + "px";
+    img.style.top = at.t - box.y * s + "px";
+    var vis = (Math.max(0, Math.min(W, at.r) - Math.max(0, at.l)) * Math.max(0, Math.min(H, at.b) - Math.max(0, at.t))) /
+      ((at.r - at.l) * (at.b - at.t));
+    img.setAttribute("data-subject", [at.l, at.t, at.r - at.l, at.b - at.t].map(Math.round).join(","));
+    img.setAttribute("data-subject-visible", vis.toFixed(3));
+    img.setAttribute("data-scale", s.toFixed(3));
+    var overlap = hits(at, texts);
+    if (overlap.length > 0) img.setAttribute("data-photo-overlap", overlap.join(","));
+  }
+
+  window.__rcPlace = function () {
+    var imgs = document.querySelectorAll("img[data-place]");
+    var waits = [];
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      waits.push(img.decode ? img.decode().then(null, function () {}) : Promise.resolve());
+    }
+    return Promise.all(waits).then(function () {
+      var texts = textBoxes();
+      for (var i = 0; i < imgs.length; i++) {
+        try {
+          if (imgs[i].naturalWidth > 0) placeOne(imgs[i], texts);
+        } catch (e) {
+          imgs[i].setAttribute("data-place-error", String(e && e.message || e));
+        }
+      }
+    });
+  };
+})();
+(function () {
   var STEP = 2;
   function overflows(el) {
     return el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
@@ -59,6 +254,10 @@ html,body{width:1080px;height:1350px;background:#fff;overflow:hidden}
       if (overflows(el)) el.setAttribute("data-overflow", "true");
       el.setAttribute("data-font-px", String(size));
     }
+    var place = window.__rcPlace ? window.__rcPlace() : Promise.resolve();
+    place.then(done, done);
+  }
+  function done() {
     document.documentElement.setAttribute("data-fit-done", "true");
   }
   window.__rcFit = fit;

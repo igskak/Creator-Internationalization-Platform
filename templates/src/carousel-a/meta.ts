@@ -3,7 +3,7 @@ import { defineTemplate } from "../define-template";
 /** Hero ingredient + strong hook (plan 08 §8.2.1; look: docs/design/carousel-style.md). */
 export const templateA = defineTemplate({
   id: "A",
-  version: "2.1.0",
+  version: "2.2.0",
   name: "Hero ingredient + strong hook",
   priority: "P0",
   roles: ["HOOK"],

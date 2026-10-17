@@ -60,7 +60,7 @@ All on the 1080 × 1350 canvas, footer at 44 px from the bottom: handle bottom-l
 
 ### Photo placement
 
-Inner slides receive a 4:5 picture (1080 × 1350 after normalization, generated as 2:3 portrait). It is drawn as a layer behind the text with `mix-blend-mode: multiply`, so its white disappears into the page, shifted right and down so the subject bleeds off the edge. Accepted offsets from the test carousel: x +190…+330 px, y +10…+290 px, scale 1.0–1.04. The template owns the offset; the photo is never cropped to a box.
+Inner slides receive a 4:5 picture (1080 × 1350 after normalization, generated as 2:3 portrait). It is drawn as a layer behind the text with `mix-blend-mode: multiply`, so its white disappears into the page. **From templates 2.2.0 (CV-01) the placement script measures the subject** (`templates/src/framework/place-photo.ts`): it finds the subject's box on the white, lifts an off-white page to pure white, feathers the picture's edges, and scales and moves the picture so the box sits at its placement (lower right, top right, right column, bottom band) as large as it can be without coming within 28 px of any line of text, at most about 60 % of the slide's width, with at most 7 % of the box past each slide edge. A picture that still touches the text at its smallest size is a TEXT_OVERFLOW blocker; a subject with less than 85 % on the slide is a warning. The fixed template offsets (x +180…+330 px, y +240…+400 px) are only the fallback before the script runs: on top of a prompt that already put the subject low and right they cut most subjects into fragments.
 
 ## Photography
 

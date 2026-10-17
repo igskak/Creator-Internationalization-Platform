@@ -283,6 +283,56 @@ describe.skipIf(!browser)("renderCarousel", () => {
     expect(result.verdict.warnings.some((w) => w.startsWith("Picture not on white"))).toBe(true);
   }, 60_000);
 
+  it("fits a large cut-out beside the text: never under it, most of the subject on the slide", async () => {
+    // A subject that fills the frame: at the template's old fixed offset it ran under the text.
+    const big = dataUrl(
+      await sharp({ create: { width: 540, height: 675, channels: 3, background: "#ffffff" } })
+        .composite([
+          {
+            input: await sharp({
+              create: { width: 480, height: 600, channels: 3, background: "#8a5a2b" },
+            })
+              .png()
+              .toBuffer(),
+            left: 30,
+            top: 40,
+          },
+        ])
+        .png()
+        .toBuffer(),
+    );
+    const slides = ["B", "D", "E", "F"].map((id) => {
+      const input = inputFor(id, "max-length");
+      const slot = Object.keys(registry.get(id)?.imageSlots ?? {})[0] ?? "side";
+      return { ...input, assets: { images: { [slot]: big } } };
+    });
+    const result = await renderCarousel({ slides, theme }, { browser: needBrowser() });
+    expect(result.qa.overflow).toEqual([]);
+    expect(result.qa.croppedPictures).toBeUndefined();
+    const pictures = (result.measurements ?? []).flatMap((m) => m.pictures ?? []);
+    expect(pictures).toHaveLength(4);
+    for (const p of pictures) {
+      expect(p.overlap).toEqual([]);
+      expect(p.error).toBeNull();
+      expect(p.visible).toBeGreaterThanOrEqual(0.85);
+      // At most about 62 % of the slide's width (the corner limit of the placement script).
+      expect(p.subject[2]).toBeLessThanOrEqual(0.62 * 1080 + 1);
+    }
+  }, 120_000);
+
+  it("shrinks a headline with a long word instead of breaking the word", async () => {
+    const input = inputFor("B", "en-short");
+    input.slide = {
+      ...input.slide,
+      slots: { ...input.slide.slots, headline: "Overcooked buckwheat" },
+    };
+    const result = await renderCarousel({ slides: [input], theme }, { browser: needBrowser() });
+    expect(result.qa.overflow).toEqual([]);
+    const headline = result.measurements?.[0]?.slots.find((s) => s.slot === "headline");
+    // One word per line at most: "OVERCOOKED" and "BUCKWHEAT" each fit the column whole.
+    expect(headline?.box.height).toBeLessThan(84 * 1.02 * 2 + 40);
+  }, 60_000);
+
   it("reports a required picture that is missing", async () => {
     const slides = [inputFor("A", "es-long", false)];
     const result = await renderCarousel({ slides, theme }, { browser: needBrowser() });

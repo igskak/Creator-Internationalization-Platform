@@ -3,7 +3,7 @@ import { defineTemplate } from "../define-template";
 /** CTA / lead magnet / offer (plan 08 §8.2.1). */
 export const templateF = defineTemplate({
   id: "F",
-  version: "2.1.0",
+  version: "2.2.0",
   name: "CTA / lead magnet / offer",
   priority: "P0",
   roles: ["CTA"],

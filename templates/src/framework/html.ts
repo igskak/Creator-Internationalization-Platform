@@ -69,7 +69,12 @@ export function textSlot(context: RenderContext, name: string, className = ""): 
  * An image slot: the picture, or a marked empty box when there is none (an optional slot is then
  * simply left out by the renderer; a required one is caught by the QA as `data-image-missing`).
  */
-export function imageSlot(context: RenderContext, name: string, className = ""): string {
+export function imageSlot(
+  context: RenderContext,
+  name: string,
+  className = "",
+  attributes = "",
+): string {
   const spec: ImageSlotSpec | undefined = context.template.imageSlots[name];
   if (!spec) throw new Error(`Template ${context.template.id} has no image slot "${name}".`);
   const src = context.assets.images[name];
@@ -77,7 +82,7 @@ export function imageSlot(context: RenderContext, name: string, className = ""):
   if (!src) {
     return `<div class="${cls} img-missing" data-image="${escapeHtml(name)}" data-image-missing data-required="${spec.required}"></div>`;
   }
-  return `<img class="${cls}" data-image="${escapeHtml(name)}" alt="" src="${src}">`;
+  return `<img class="${cls}" data-image="${escapeHtml(name)}"${attributes} alt="" src="${src}">`;
 }
 
 const PLACEMENT_CLASSES: Readonly<Record<string, string>> = {
@@ -95,14 +100,15 @@ export const isRightHand = (placement: string): boolean =>
   placement === "top-right" || placement === "right-column";
 
 /**
- * A cut-out picture on white (docs/design/carousel-style.md): the whole 4:5 picture as a layer
- * behind the text, multiplied so its white merges with the page, moved right and down by the
- * template (`className`) so the subject bleeds off the edge, or to the placement the brief chose
- * (`place-*`, moved by the shared CSS). Nothing when there is no picture.
+ * A cut-out picture on white (docs/design/carousel-style.md): the picture as a layer behind the
+ * text, multiplied so its white merges with the page. The placement script (place-photo.ts)
+ * measures the subject and fits it, as large as the text allows, to the placement the brief chose
+ * (`data-place`); the template's offset (`className`) and the shared `place-*` offsets are only
+ * the fallback before it runs. Nothing when there is no picture.
  */
 export function cutoutSlot(context: RenderContext, name: string, className = ""): string {
   if (!context.assets.images[name]) return "";
   const placement = placementOf(context, name);
   const place = placement === "corner" ? "" : ` place-${placement}`;
-  return imageSlot(context, name, `cutout ${className}${place}`);
+  return imageSlot(context, name, `cutout ${className}${place}`, ` data-place="${placement}"`);
 }

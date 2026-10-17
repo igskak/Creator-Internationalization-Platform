@@ -48,6 +48,8 @@ export type CarouselRender = {
   slides: RenderedSlide[];
   qa: QaReport;
   verdict: QaVerdict;
+  /** What the browser measured per slide (for tools and tests; the report keeps the findings). */
+  measurements?: PageMeasurement[];
 };
 
 export type RenderOptions = {
@@ -124,6 +126,25 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
   const cutouts = [...document.querySelectorAll("img.cutout[data-image]")].map(
     (img) => img.getAttribute("data-image") || "",
   );
+  // Pictures fitted by the placement script: where the subject went, how much of it shows, and
+  // the text it still touches at its smallest size.
+  const pictures = [...document.querySelectorAll("img[data-place]")].map((img) => ({
+    slot: img.getAttribute("data-image") || "",
+    placement: img.getAttribute("data-place") || "",
+    subject: (img.getAttribute("data-subject") || "").split(",").filter(Boolean).map(Number),
+    visible: img.hasAttribute("data-subject-visible") ? Number(img.getAttribute("data-subject-visible")) : null,
+    scale: img.hasAttribute("data-scale") ? Number(img.getAttribute("data-scale")) : null,
+    overlap: (img.getAttribute("data-photo-overlap") || "").split(",").filter(Boolean),
+    error: img.getAttribute("data-place-error"),
+  }));
+  for (const p of pictures) {
+    for (const slot of p.overlap) {
+      if (!overflow.some((o) => o.slot === slot)) {
+        const el = document.querySelector('[data-slot="' + slot + '"]');
+        overflow.push({ slot, fontPxUsed: el ? num(el, "data-font-px") : 0 });
+      }
+    }
+  }
   const logo = document.querySelector("[data-logo]");
   const box = logo ? logo.getBoundingClientRect() : null;
   const slots = [...document.querySelectorAll("[data-slot]")].map((el) => {
@@ -141,6 +162,7 @@ const MEASURE_SOURCE = `(expected, marginPx) => {
     missingRequiredImages,
     brokenImages,
     cutouts,
+    pictures,
     logo: {
       box: box ? { x: box.x, y: box.y, width: box.width, height: box.height } : null,
       expected,
@@ -300,6 +322,7 @@ export async function renderCarousel(
     slides: rendered,
     qa,
     verdict: judgeQa(qa, { missingRequiredImages: missingImages, brokenImages }),
+    measurements,
   };
 }
 

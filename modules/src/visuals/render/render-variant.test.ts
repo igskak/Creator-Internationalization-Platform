@@ -214,7 +214,7 @@ describe("render-carousel (J8)", () => {
         slideCount: 3,
         width: 1080,
         height: 1350,
-        templatesVersion: "A@2.1.0,B@2.1.0,F@2.1.0",
+        templatesVersion: "A@2.2.0,B@2.2.0,F@2.2.0",
         qaReport: { dimensionsOk: true, logoPlacementOk: true, overflow: [] },
       });
       const files = await t.db

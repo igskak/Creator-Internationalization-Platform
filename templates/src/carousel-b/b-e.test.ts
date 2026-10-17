@@ -9,8 +9,11 @@ import { validateSlideAgainstTemplate } from "../validate";
 // renderer (M3-11) and the golden images (M3-14).
 
 const PICTURE = "data:image/webp;base64,UklGRg==";
+/** Fonts are megabytes of base64 and the page scripts are snapshotted once in the framework test. */
 const stripFonts = (html: string) =>
-  html.replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, "data:font/woff2;base64,…");
+  html
+    .replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, "data:font/woff2;base64,…")
+    .replace(/<script>[\s\S]*?<\/script>/g, "<script>…</script>");
 
 const render = (templateId: string, name: string, withImages = true) => {
   const slide = TEMPLATE_FIXTURES[templateId]?.[name];

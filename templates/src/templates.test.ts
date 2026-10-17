@@ -59,7 +59,7 @@ describe("registry", () => {
   });
 
   it("reports a version string and rejects duplicate ids", () => {
-    expect(registry.version({ priority: "P0" })).toBe("A@2.1.0,B@2.1.0,E@2.1.0,F@2.1.0");
+    expect(registry.version({ priority: "P0" })).toBe("A@2.2.0,B@2.2.0,E@2.2.0,F@2.2.0");
     const a = registry.get("A") as TemplateDefinition;
     expect(() => createRegistry([a, a])).toThrow(/Duplicate/);
   });
@@ -232,16 +232,16 @@ describe("renderTemplateCatalog", () => {
   it("lists the P0 templates compactly and deterministically", () => {
     const text = renderTemplateCatalog();
     expect(text).toMatchInlineSnapshot(`
-      "A "Hero ingredient + strong hook" v2.1.0; roles: HOOK
+      "A "Hero ingredient + strong hook" v2.2.0; roles: HOOK
         text: kicker ≤24 chars/1 line (optional); headline ≤70 chars/4 lines; subline ≤90 chars/2 lines (optional)
         images: hero 4:5 full-bleed
-      B "Large number / fact + explanation" v2.1.0; roles: FACT, EXPLANATION, STEP, SUMMARY, PROBLEM
+      B "Large number / fact + explanation" v2.2.0; roles: FACT, EXPLANATION, STEP, SUMMARY, PROBLEM
         text: number ≤8 chars/1 line (optional); label ≤40 chars/1 line (optional); headline ≤60 chars/4 lines (optional); body ≤220 chars/9 lines
         images: side 4:5 (optional)
-      E "Mistake vs correct technique" v2.1.0; roles: MISTAKE, CORRECT
+      E "Mistake vs correct technique" v2.2.0; roles: MISTAKE, CORRECT
         text: mistakeTitle ≤40 chars/2 lines; mistakeText ≤140 chars/5 lines; correctTitle ≤40 chars/3 lines; correctText ≤140 chars/6 lines
         images: image 4:5 (optional)
-      F "CTA / lead magnet / offer" v2.1.0; roles: CTA
+      F "CTA / lead magnet / offer" v2.2.0; roles: CTA
         text: headline ≤60 chars/4 lines; body ≤160 chars/6 lines; keyword ≤16 chars/1 line (optional); offerName ≤40 chars/2 lines (optional)
         images: product 4:5 (optional)"
     `);
