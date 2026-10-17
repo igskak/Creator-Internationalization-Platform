@@ -99,7 +99,7 @@ The reference account's Reels are a different genre (memes about restaurant life
 
 - **R1 · Pictures.** Reels are cut from the carousel's pictures, so CV-01/CV-02 (whole subjects, light vessels, colour from food) improve them directly.
 - **R2 · White stays white.** The image-to-video model may leave a grey cast (the accepted bulgur test Reel shows a light grey page, made by the spike's script); the lift is set per shot from the measured page colour, as the slide placement script does, instead of the fixed 0.9 level, which also brightened every food by about 11 % (done 2026-10-17).
-- **R3 · A designed cover.** The Reel's grid cover is a slide in the carousel's white system with the hook headline (`cover_url` on the REELS container, ⚠ verify), not the first frame, so the grid reads as one series.
+- **R3 · A designed cover.** The Reel's grid cover is the carousel's cover slide (in the white system once D1 is on) in a 9:16 JPEG, sent as `cover_url` (Meta's reference read 2026-10-17), not the first frame, so the grid reads as one series (code done; the first dry run with a cover is open).
 
 ## Requirements: checks before review
 

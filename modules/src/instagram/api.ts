@@ -110,6 +110,11 @@ export async function createReelContainer(
     isAiGenerated?: boolean;
     /** A trial Reel (M8-11): sent as `trial_params`, JSON of `{ graduation_strategy }`. */
     trialGraduation?: "MANUAL" | "SS_PERFORMANCE" | null;
+    /**
+     * The grid and Reels-tab cover (carousel v3, R3): a public JPEG link, 9:16. Meta prefers it to
+     * `thumb_offset`; without it the first frame is the cover.
+     */
+    coverUrl?: string;
   },
 ): Promise<string> {
   const reply = Id.parse(
@@ -122,6 +127,7 @@ export async function createReelContainer(
       ...(input.trialGraduation
         ? { trial_params: JSON.stringify({ graduation_strategy: input.trialGraduation }) }
         : {}),
+      ...(input.coverUrl ? { cover_url: input.coverUrl } : {}),
     }),
   );
   return reply.id;

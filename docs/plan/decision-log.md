@@ -1375,3 +1375,10 @@ Template:
 - Evidence: one high 1024 × 1536 edit of the rice step-2 slide with gpt-image-2.5-sunburst, $0.054 from `usage`. The model's answer re-drew the whole slide: the dish was well placed beside the text, but the text was re-rendered (one body line squeezed onto one line) and the pot reached into the text area. Compositing only the masked pixels kept the text exact but cut the pot's left side and left a faint off-white block.
 - Decision: C is dropped; A (measured placement, CV-01) stays the way slides are made. B (whole slide by the model) stays rejected for text control.
 
+## 2026-10-17 · The Reel's grid cover is the carousel's cover slide [CV-08, R3]
+- Context: Reels went out with their first frame as the grid cover, so the grid showed a bare pot between the carousels' text covers.
+- Verification: Meta's IG User Media reference (read 2026-10-17) has `cover_url` for REELS: "The path to an image to use as the cover image for the Reels tab", fetched by Meta from a public URL; JPEG, at most 8 MB, sRGB; 9:16 recommended, otherwise Meta crops the middle 9:16 rectangle; `cover_url` wins over `thumb_offset`.
+- Decision: at approval the source carousel's rendered first slide is placed in a 1080 × 1920 JPEG with bands in the slide's own top and bottom edge colours (a white cover gets white bands, a dark one dark bands; the grid's 3:4 crop shows the whole slide), stored next to the video and frozen in `snapshot.reel.cover` (key, SHA-256, bytes). The publish machine sends it as `cover_url` from a fresh presigned link when it is still in storage. Anything missing or failing leaves the first frame, as before; the cover never blocks an approval or a publish.
+- Evidence: unit test of the cover image; Reel publishing tests (cover made, stored and sent as `cover_url`; no cover without a carousel render); `pnpm check` green.
+- Open: the first Reel dry run with a cover on @chef.skk (V-26 showed Meta fetches a presigned R2 mp4; the JPEG should behave the same).
+

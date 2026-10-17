@@ -3,6 +3,7 @@ import { eq } from "@rc/db/orm";
 import { seedDatabase } from "@rc/db/seed";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { createFakeVideoProvider } from "@rc/lib/providers/video";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   approveVariant,
@@ -192,6 +193,64 @@ describe("Reel review and publishing", () => {
   });
 
   describe("publishing", () => {
+    it("sends the carousel's cover slide as the Reel's grid cover (carousel v3, R3)", async () => {
+      await setup("dry_run_only");
+      // The source carousel was rendered: its first slide is in storage.
+      const slideKey = "renders/test/cover/0.jpg";
+      await fx.storage.put(
+        slideKey,
+        new Uint8Array(
+          await sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#f4f4f4" } })
+            .jpeg()
+            .toBuffer(),
+        ),
+        { contentType: "image/jpeg" },
+      );
+      const [render] = await t.db
+        .insert(schema.carouselRenders)
+        .values({
+          contentVariantId: fx.carouselId,
+          inputHash: "cover-test",
+          status: "READY",
+          slideCount: 1,
+          templatesVersion: "A@3.0.0",
+        })
+        .returning({ id: schema.carouselRenders.id });
+      await t.db.insert(schema.renderedSlides).values({
+        carouselRenderId: render?.id ?? "",
+        slideIndex: 0,
+        slideId: "c1",
+        templateId: "A",
+        storageKey: slideKey,
+        width: 1080,
+        height: 1350,
+        bytes: 1000,
+        sha256: "x",
+      });
+      await t.db
+        .update(schema.contentVariants)
+        .set({ currentRenderId: render?.id ?? null })
+        .where(eq(schema.contentVariants.id, fx.carouselId));
+
+      const approved = await approve();
+      const [version] = await t.db
+        .select()
+        .from(schema.contentVariantVersions)
+        .where(eq(schema.contentVariantVersions.id, approved.versionId));
+      const cover = version?.snapshot.reel?.cover;
+      expect(cover?.key).toMatch(/^renders\/reels\/.+\/cover-.+\.jpg$/);
+      const stored = await fx.storage.getBytes(cover?.key ?? "");
+      expect(await sharp(stored).metadata()).toMatchObject({ width: 1080, height: 1920 });
+
+      const { publication } = await schedulePublication(fx.ctx, {
+        variantId: reelId,
+        dryRun: true,
+      });
+      await runPublication(jobCtx, { publicationId: publication.id });
+      const post = mock.calls.find((c) => c.method === "POST" && c.path.endsWith("/media"));
+      expect(String(post?.body.cover_url)).toContain("cover-");
+    });
+
     it("a dry run makes the REELS container, waits for FINISHED and publishes nothing", async () => {
       await setup("dry_run_only");
       await approve();
@@ -211,6 +270,8 @@ describe("Reel review and publishing", () => {
       });
       expect(String(posts[0]?.body.video_url)).toContain("reels/");
       expect(posts[0]?.body).not.toHaveProperty("children");
+      // The carousel was never rendered, so there is no cover: Instagram takes the first frame.
+      expect(posts[0]?.body).not.toHaveProperty("cover_url");
       expect(mock.calls.some((c) => c.path.endsWith("/media_publish"))).toBe(false);
       const [row] = await t.db
         .select()
