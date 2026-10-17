@@ -810,6 +810,29 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
   - **Do:** the idea generator spreads ideas over pillars per market (grains, eggs, meat and doneness, roasted vegetables, sauces and the salt-acid-fat balance, kitchen myths) and plans one opinion post a week (the expert's position against a habit, with the reason, from the knowledge base only).
   - **Done when:** a week of ideas covers at least three pillars and one opinion.
 
+## CV · Carousel v3 (pictures and posts)
+
+Why: on 2026-10-17 the owner compared the English carousels with the Russian-language reference account: our pictures are fragments of one dark pot cut by the slide edge, the same object repeats on every slide, the text is thin and generic, and two layout bugs reached Instagram (text under a photo, a headline broken inside a word). Requirements and findings: `docs/design/carousel-v3-requirements.md` (P1–P9, T1–T8, C1–C2, Q1–Q4, owner decisions D1–D4).
+
+- [ ] **CV-01 · Photo placed by its measured box; layout checks** · P0 · M · deps: —
+  - **Do:** measure the subject box of each generated picture on white (stored with the asset); templates B, D, E, F place the picture by that box in the slide's photo zone instead of fixed `translate` offsets and `place-*` classes (P2); render checks Q1 (no text over the photo), Q2 (no word broken inside a display slot; remove `overflow-wrap:break-word` there, fit-text shrinks to the longest word), Q3 (85 % of the subject inside). Template versions bump (render hash), goldens updated.
+  - **Done when:** the wet rice and buckwheat carousels re-rendered from their stored pictures show whole subjects and no overlap or mid-word break; `pnpm check` and visual tests green.
+- [ ] **CV-02 · Pictures with a meaning (visual-director@7)** · P0 · M · deps: CV-01
+  - **Do:** P1, P3–P7: `depicts`, new arrangements (`STAGES_STACK`, `MISE_EN_PLACE`, `PAIR`, `HERO_WITH_DEPTH`, `TOOL_IN_ACTION`), light vessels with colour from food instead of dark vessels, the changed style sentence and negative list; validator for same-state repeats and the dark-vessel limit.
+  - **Done when:** live eval on two ideas (owner's yes) shows no repeated object and state, at most one dark vessel per carousel; decision log.
+- [ ] **CV-03 · Templates 3.0: ladder body, two-weight headline, closer, white cover** · P0 · M · deps: CV-01 · D1
+  - **Do:** T3–T6 in the templates (line-per-row body, `lead` and `closer` slots, body up to 420 characters / 14 lines at 28–30 px in a 500 px column); P9 white cover template next to A.
+  - **Done when:** goldens for every template; the owner picks the cover on rendered slides.
+- [ ] **CV-04 · Arc of 8 and concrete text (market-adapter@4, content-writer next version with G-04)** · P0 · M · deps: CV-03 · D3
+  - **Do:** T1 (roles USUAL_WAY, PORTION, CHECK or their mapping), T2 (a number per STEP, banned filler, one repair), T7 sign-off line from the market's brand settings, T8 hook, C1 caption with the method; merged with G-04 into one writer version so one eval covers both.
+  - **Done when:** live eval (about $2.5, owner's yes) without regression on claims; decision log.
+- [ ] **CV-05 · Spike: hybrid edit (text slide first, food painted into the empty zone)** · P1 · S · deps: CV-01 · ⚠ mask support of `/v1/images/edits` for the current gpt-image model
+  - **Do:** on one carousel render the final text slides, ask the image model to paint the food into the masked photo zone, compare side by side with the CV-01/CV-02 result; cost per slide measured.
+  - **Done when:** the owner chooses D2 on the two contact sheets; decision log.
+- [ ] **CV-06 · Lead magnet and keyword CTA for English** · P1 · S · deps: D4, G-07 or P2-04
+  - **Do:** the offer (a free one-page sheet) in the database for the English market; the writer uses COMMENT_KEYWORD with numbered steps (C2); replies go out by hand from G-07 until a DM automation exists.
+  - **Done when:** the first keyword post is published and its comments are answered.
+
 ## P2 · Post-MVP backlog (not scheduled)
 - **P2-01** Reels Type A (talking video, narrower than M8, see `docs/plan/18-reels.md`): transcription provider, localized subtitles/script, ffmpeg render (Trigger.dev ffmpeg extension), REELS publishing [S§14.1].
 - **P2-02** Reels Type B voice-over: localized voice-over for the M8 video-first Reels [S§14.2].

@@ -1,6 +1,6 @@
 # Carousel visual style
 
-**Status: ACCEPTED by the owner (2026-10-12).** Replaces the default look of plan 08 §8.3 (cream background, terracotta accent, Fraunces + Inter, small rounded photo in a corner), which read as generic AI output on the first live carousel.
+**Status: ACCEPTED by the owner (2026-10-12).** Next version proposed in [carousel-v3-requirements.md](carousel-v3-requirements.md) (2026-10-17): photo placed by its measured box, pictures with a meaning, an 8-slide arc with concrete text. Replaces the default look of plan 08 §8.3 (cream background, terracotta accent, Fraunces + Inter, small rounded photo in a corner), which read as generic AI output on the first live carousel.
 
 The style was chosen on one test carousel (quinoa: rinse, toast, double liquid; English, 7 slides) in two rounds: three directions as static mock-ups, then the chosen direction with real generated photos. The reference was a Russian-language food account with large cut-out macro photography on white; it is an internal reference only and is not named in anything audience-facing.
 
