@@ -33,7 +33,7 @@ export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   MARKET_ADAPTATION: stage("market-adapter", "high", 16_000, {}, 3),
   CONTENT_WRITING: stage("content-writer", "high", 16_000, {}, 5),
   CRITIC: stage("critic", "high", 16_000, {}, 3),
-  VISUAL_DIRECTION: stage("visual-director", "medium", 16_000, {}, 6),
+  VISUAL_DIRECTION: stage("visual-director", "medium", 16_000, {}, 7),
   FIELD_REGENERATION: stage("field-regenerator", "high", 8_000),
   POST_ANNOTATION: stage("post-annotator", "low", 4_000, {}, 2),
   KNOWLEDGE_GLOSS: stage("knowledge-gloss", "low", 4_000, {}, 2),

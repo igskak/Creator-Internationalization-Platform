@@ -181,9 +181,12 @@ export async function generateVisualAssets(
         aspect: entry.aspect as ImageAspect,
         label: `${slideId}/${slot}`,
       });
+      // A cut-out keeps the whole generated frame (padded with white); a full-bleed cover is cropped.
+      const fullBleed = registry.get(slide.templateId)?.imageSlots[slot]?.fullBleed === true;
       const normalized = await normalizeImage(
         generated.bytes,
         slotAspect(slide, slot, entry.aspect as SlotAspect),
+        { fit: fullBleed ? "cover" : "contain" },
       );
       const keys = assetKeys({
         variantId,

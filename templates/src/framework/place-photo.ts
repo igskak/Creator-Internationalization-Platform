@@ -55,19 +55,22 @@ export const PLACE_PHOTO_SCRIPT = `(function () {
       return [lo, hi + 1];
     }
     var xr = range(cols), yr = range(rows), k = img.naturalWidth / cw;
-    // The page colour of the picture: the mean of its outer ring, where the subject rarely is.
-    var ring = 0, ringN = 0;
+    // The page colour of the picture: its outer ring, where the subject rarely is. The darker
+    // tenth of the light ring pixels decides, so a vignette or a grey corner is lifted too.
+    var ring = [];
     for (y = 0; y < ch; y++) {
       for (x = 0; x < cw; x++) {
-        if (x > 3 && x < cw - 4 && y > 3 && y < ch - 4) continue;
+        if (x > 5 && x < cw - 6 && y > 5 && y < ch - 6) continue;
         var j = (y * cw + x) * 4;
         var v = (d[j] + d[j + 1] + d[j + 2]) / 3;
-        if (v > 200) { ring += v; ringN++; }
+        if (v > 200) ring.push(v);
       }
     }
+    ring.sort(function (p, q) { return p - q; });
+    var paper = ring.length > 0 ? ring[Math.floor(ring.length * 0.1)] : 255;
     return {
       x: xr[0] * k, y: yr[0] * k, w: (xr[1] - xr[0]) * k, h: (yr[1] - yr[0]) * k,
-      paper: ringN > 0 ? ring / ringN : 255
+      paper: Math.min(paper, 250)
     };
   }
 
@@ -75,7 +78,6 @@ export const PLACE_PHOTO_SCRIPT = `(function () {
   // highlights so its page becomes pure white, leaving everything below 80 % as it was.
   var lifts = 0;
   function liftToWhite(img, paper) {
-    if (paper >= 252) return;
     var p = Math.max(0.85, paper / 255), knee = 0.8, values = [];
     for (var n = 0; n <= 20; n++) {
       var t = n / 20;

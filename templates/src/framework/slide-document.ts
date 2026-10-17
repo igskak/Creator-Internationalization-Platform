@@ -60,7 +60,7 @@ html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;over
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:${CANVAS.width}px;height:${CANVAS.height}px;z-index:0;mix-blend-mode:multiply}
-.img.cutout[data-place]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(180deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(180deg,transparent,#000 4%,#000 96%,transparent);mask-composite:intersect}
+.img.cutout[data-place]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
 .img.cutout.place-top-right{transform:translate(110px,-30px)}
 .img.cutout.place-right-column{transform:translate(110px,0)}
 .img.cutout.place-bottom-band{transform:translate(40px,170px)}

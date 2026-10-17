@@ -146,6 +146,9 @@ export const VisualBrief = z.object({
       /** Where the picture sits on an inner slide and how its frame is built (visual-director@6 on). */
       placement: z.string().min(1).optional(),
       arrangement: z.string().min(1).optional(),
+      /** The main vessel and the quoted slide words the picture shows (visual-director@7). */
+      vessel: z.string().min(1).optional(),
+      depicts: z.string().optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

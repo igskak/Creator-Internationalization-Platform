@@ -50,6 +50,29 @@ export const PHOTO_STYLE =
 export const PHOTO_NEGATIVE =
   "text, letters, numbers, logo, watermark, label, printed packaging, gray stone surface, rustic wooden table, cutting board, linen, dark background, colored backdrop, clutter, decorative props, hands, people, faces, harsh flash, distorted food, frame, border, vignette";
 
+/**
+ * Whole subjects (visual-director@7, docs/design/carousel-v3-requirements.md P1): the template
+ * measures the subject and places it beside the text (CV-01), so the picture only has to show it
+ * whole, with white around it. Used for briefs that name a "vessel".
+ */
+export const WHOLE_COMPOSITION = {
+  CORNER:
+    "Composition: the whole subject stands in the right two thirds of the frame with clear white space on every side of it, at least a tenth of the frame free above and below; nothing is cut by the frame's edges. The left third of the frame is empty pure white.",
+  TOP_RIGHT:
+    "Composition: a tool comes in from the top edge of the frame holding or lifting the food; everything else is whole, in the right two thirds of the frame, with clear white space around and below it. The left third of the frame is empty pure white.",
+  RIGHT_COLUMN:
+    "Composition: the elements stand one above another in a tall column in the right half of the frame, each one whole and the same size, with white space between and around them and a tenth of the frame free above and below. The left half of the frame is empty pure white.",
+  BOTTOM_BAND:
+    "Composition: the elements stand side by side in a row across the lower half of the frame, each one whole, with white space between and around them. The upper half of the frame is empty pure white.",
+  /** A COMPARISON in the corner: two servings, never one frame split in half. */
+  PAIR: "Composition: two separate servings of the same food side by side, the same size, angle and light, each one whole, with white space between and around them, in the right two thirds of the frame; nothing is cut by the frame's edges. The left third of the frame is empty pure white.",
+} as const;
+
+export const PHOTO_STYLE_WHOLE =
+  "Isolated on a pure white seamless background (#FFFFFF), high-key soft diffused studio light, a soft natural contact shadow, shallow depth of field, realistic appetizing texture, glossy where the food is glossy, saturated natural colors, crisp detail, premium modern cookbook look. No text.";
+
+export const PHOTO_NEGATIVE_WHOLE = `${PHOTO_NEGATIVE}, cropped subject, object cut off by the frame edge, split frame, dark moody lighting`;
+
 export type SlotKind = keyof typeof SLOT_COMPOSITION;
 
 export function slotKind(templateId: string, fullBleed: boolean | undefined): SlotKind {
@@ -66,10 +89,22 @@ export function photoPrompt(
   kind: SlotKind,
   split = false,
   placement?: string,
+  whole = false,
 ): string {
   const text = subject.trim();
-  if (text.endsWith(PHOTO_STYLE)) return text;
+  if (text.endsWith(PHOTO_STYLE) || text.endsWith(PHOTO_STYLE_WHOLE)) return text;
   const sentence = /[.!?]$/.test(text) ? text : `${text}.`;
+  if (whole && kind === "side") {
+    // The placement decides the shape; a comparison in the corner is two servings.
+    const at = isPlacement(placement) ? placement : "CORNER";
+    const composition = at === "CORNER" && split ? WHOLE_COMPOSITION.PAIR : WHOLE_COMPOSITION[at];
+    return `${sentence} ${composition} ${PHOTO_STYLE_WHOLE}`;
+  }
+  if (whole) {
+    const composition =
+      split && kind === "centred" ? SPLIT_COMPOSITION.centred : SLOT_COMPOSITION[kind];
+    return `${sentence} ${composition} ${PHOTO_STYLE_WHOLE}`;
+  }
   // An inner slide's placement decides the composition; a split frame only in the corner.
   const composition =
     kind === "side" && isPlacement(placement) && placement !== "CORNER"
@@ -81,8 +116,8 @@ export function photoPrompt(
 }
 
 /** The fixed list plus what the director added for this picture, without repeats. */
-export function photoNegative(extra: string | undefined): string {
-  const fixed = PHOTO_NEGATIVE.split(", ");
+export function photoNegative(extra: string | undefined, whole = false): string {
+  const fixed = (whole ? PHOTO_NEGATIVE_WHOLE : PHOTO_NEGATIVE).split(", ");
   const known = new Set(fixed.map((t) => t.toLowerCase()));
   const added = (extra ?? "")
     .split(",")
@@ -108,6 +143,8 @@ export function finishPhotoPrompts(
       const slide = slideById.get(entry.slideId);
       if (!slide) return entry;
       const spec = templates.get(slide.templateId)?.imageSlots[entry.slot];
+      // visual-director@7 briefs name a vessel: whole subjects, placed by the template.
+      const whole = entry.vessel !== undefined;
       return {
         ...entry,
         prompt: photoPrompt(
@@ -115,8 +152,9 @@ export function finishPhotoPrompts(
           slotKind(slide.templateId, spec?.fullBleed),
           entry.shotType === "COMPARISON",
           entry.placement,
+          whole,
         ),
-        negativePrompt: photoNegative(entry.negativePrompt),
+        negativePrompt: photoNegative(entry.negativePrompt, whole),
       };
     }),
   };

@@ -24,6 +24,7 @@ import {
   visualDirectorV4,
   visualDirectorV5,
   visualDirectorV6,
+  visualDirectorV7,
 } from "./visual-director";
 import { visualQaV1, visualQaV2 } from "./visual-qa";
 
@@ -116,6 +117,7 @@ export const promptRegistry = createRegistry([
   visualDirectorV4,
   visualDirectorV5,
   visualDirectorV6,
+  visualDirectorV7,
   fieldRegeneratorV1,
   visualQaV1,
   visualQaV2,
