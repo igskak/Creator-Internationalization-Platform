@@ -5,7 +5,15 @@ import { join } from "node:path";
 import { schema } from "@rc/db";
 import type { ReelScene } from "@rc/db/json";
 import { and, desc, eq } from "@rc/db/orm";
-import { InvalidStateError, NotFoundError, PermanentError, TransientError } from "@rc/lib/errors";
+import {
+  CREDITS_EXHAUSTED_CODE,
+  CREDITS_EXHAUSTED_MESSAGE,
+  CreditsExhaustedError,
+  InvalidStateError,
+  NotFoundError,
+  PermanentError,
+  TransientError,
+} from "@rc/lib/errors";
 import { DEFAULT_VIDEO_MODEL, VIDEO_MODELS, type VideoModelId } from "@rc/lib/providers/video";
 import { z } from "zod";
 import { STAGE_CONFIG } from "../../ai";
@@ -52,7 +60,8 @@ export type GenerateReelPayload = z.infer<typeof GenerateReelPayload>;
 
 export type GenerateReelResult = {
   variantId: string;
-  status: "READY" | "FAILED";
+  /** PAUSED: the model account is empty; a new request after the top-up continues (M2-13c). */
+  status: "READY" | "FAILED" | "PAUSED";
   renderId?: string;
   scriptId?: string;
   shots?: { total: number; reused: number; fallbacks: number };
@@ -226,11 +235,15 @@ export async function generateReel(
       data: { runKey, model },
     });
   }
-  const startedAt = state?.startedAt ?? ctx.clock.now().toISOString();
+  // A variant paused for want of credit keeps its old state; a new request starts a new clock.
+  const startedAt = (resuming ? state?.startedAt : undefined) ?? ctx.clock.now().toISOString();
   const completed: Stage[] = resuming ? ((state?.completedStages ?? []) as Stage[]) : [];
   const ids: Record<string, string> = resuming ? { ...(state?.runIds ?? {}) } : {};
-  const progress = (stage: Stage) =>
-    saveState(ctx, variant.id, { runKey, stage, completed, ids, startedAt });
+  let current: Stage = "DIRECTION";
+  const progress = (stage: Stage) => {
+    current = stage;
+    return saveState(ctx, variant.id, { runKey, stage, completed, ids, startedAt });
+  };
 
   const tmp = await mkdtemp(join(tmpdir(), "reel-"));
   let directorCost = 0;
@@ -499,6 +512,42 @@ export async function generateReel(
   } catch (error) {
     // Waiting again can help: keep the state and let the job retry. Anything else ends the run.
     if (error instanceof TransientError) throw error;
+    if (error instanceof CreditsExhaustedError) {
+      // An empty account is a pause, not a failure: the state stays, no failure flag, and the next
+      // request after the top-up finds the finished script, shots and render by their rows.
+      await transitionVariant(ctx, {
+        variantId: variant.id,
+        event: "PIPELINE_FAILURE",
+        set: {
+          pipelineState: {
+            pipelineRunId: runKey,
+            stage: current,
+            startedAt,
+            completedStages: completed,
+            runIds: ids,
+          },
+          lastError: {
+            code: CREDITS_EXHAUSTED_CODE,
+            message: CREDITS_EXHAUSTED_MESSAGE,
+            details: { stage: current, resumable: true },
+          },
+          flags: variant.flags.filter((f) => f !== "GENERATION_FAILED"),
+        },
+        data: { runKey, code: CREDITS_EXHAUSTED_CODE },
+      });
+      await audit(ctx, {
+        action: "reel.paused",
+        entityType: "content_variant",
+        entityId: variant.id,
+        marketId: variant.marketId,
+        data: { code: CREDITS_EXHAUSTED_CODE, stage: current, completedStages: completed },
+      });
+      return {
+        variantId: variant.id,
+        status: "PAUSED",
+        error: { code: CREDITS_EXHAUSTED_CODE, message: CREDITS_EXHAUSTED_MESSAGE },
+      };
+    }
     const message = error instanceof Error ? error.message : String(error);
     const code = (error as { details?: { code?: string } } | null)?.details?.code ?? "REEL_FAILED";
     await transitionVariant(ctx, {

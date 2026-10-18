@@ -12,7 +12,13 @@ import type {
   VisualBrief,
 } from "@rc/db/json";
 import { eq, inArray, sql } from "@rc/db/orm";
-import { InvalidStateError, TransientError } from "@rc/lib/errors";
+import {
+  CREDITS_EXHAUSTED_CODE,
+  CREDITS_EXHAUSTED_MESSAGE,
+  CreditsExhaustedError,
+  InvalidStateError,
+  TransientError,
+} from "@rc/lib/errors";
 import type { contentWriter, critic } from "@rc/prompts";
 import { countChars, registry } from "@rc/templates";
 import { generationVersion, runStage, STAGE_CONFIG, type StageResult } from "../../ai";
@@ -59,7 +65,10 @@ import { validateCriticOutput } from "./validate-critic";
 // one after another (later markets see the earlier plans as "do not copy"), the writers in
 // parallel, validation with one repair, then the critic loop with at most two rewrites. Every
 // stage stores its output and run id in the variant's `pipeline_state`, so a run that crashed
-// resumes with the same `pipelineRunId` and repeats no model call that already finished.
+// resumes with the same `pipelineRunId` and repeats no model call that already finished. A run that
+// stops for want of credit is paused, not failed: the variant goes back to DRAFT with its state and
+// an "out of credit" note, and the next run for it (any run id) continues from the last finished
+// stage (M2-13c).
 
 type Brief = MarketBrief;
 type Draft = contentWriter.ContentWriterOutput;
@@ -96,6 +105,18 @@ export type GenerateVariantsResult = {
 
 const LOCKABLE = ["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"] as const;
 
+/**
+ * Waits for every task, so stages in flight finish and record their paid work, then rethrows the
+ * first error; an empty account wins, because it ends the run as a pause.
+ */
+async function settle(tasks: Promise<unknown>[]): Promise<void> {
+  const failures = (await Promise.allSettled(tasks)).filter(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+  if (failures.length === 0) return;
+  throw (failures.find((f) => f.reason instanceof CreditsExhaustedError) ?? failures[0])?.reason;
+}
+
 /** A stable shuffle: the same run id gives the same order, so a resumed run plans the same way. */
 export function shuffled<T>(items: readonly T[], seed: string): T[] {
   let state = createHash("sha256").update(seed).digest().readUInt32LE(0) || 1;
@@ -121,6 +142,8 @@ type Run = {
   row: PipelineVariant;
   market: PipelineMarket;
   state: PipelineState;
+  /** The stage being called now (cleared when it finishes): where a pause happened. */
+  pending?: string | undefined;
   failed?: { code: string; message: string };
   brief?: Brief;
   drafts: Draft[];
@@ -141,7 +164,7 @@ export async function generateVariants(
 ): Promise<GenerateVariantsResult> {
   const { masterIdeaId, pipelineRunId } = input;
   const c = await loadPipelineContext(ctx, masterIdeaId, input.variantIds);
-  const runs = await lockVariants(ctx, c, pipelineRunId);
+  const runs = await lockVariants(ctx, c, pipelineRunId, !input.instruction?.trim());
 
   let costUsd: number | null = 0;
   const addCost = (cost: number | null) => {
@@ -184,6 +207,34 @@ export async function generateVariants(
     });
   };
 
+  /** Out of credit: the variant waits as DRAFT with its progress kept, and the next run resumes it. */
+  const pause = async (run: Run) => {
+    if (run.failed) return;
+    const details = { stage: run.pending ?? run.state.stage, resumable: true };
+    await transition(ctx, {
+      table: schema.contentVariants,
+      id: run.row.id,
+      from: ["GENERATING"],
+      to: "DRAFT",
+      set: {
+        flags: [],
+        lastError: { code: CREDITS_EXHAUSTED_CODE, message: CREDITS_EXHAUSTED_MESSAGE, details },
+        pipelineState: run.state,
+      },
+      audit: {
+        action: "variant.generation_paused",
+        entityType: "content_variant",
+        marketId: run.row.marketId,
+        data: {
+          code: CREDITS_EXHAUSTED_CODE,
+          pipelineRunId,
+          stage: details.stage,
+          completedStages: run.state.completedStages,
+        },
+      },
+    });
+  };
+
   /** Runs a stage once per run: a finished one is read back, a new one is logged and recorded. */
   const stage = async <T>(
     run: Run,
@@ -195,7 +246,9 @@ export async function generateVariants(
     const done = run.state.runIds[key];
     if (run.state.completedStages.includes(key) && done) return storedOutput<T>(done);
 
+    run.pending = key;
     const result = await call();
+    run.pending = undefined;
     addCost(result.costUsd);
     await ctx.db
       .update(schema.generationRuns)
@@ -232,7 +285,9 @@ export async function generateVariants(
 
   try {
     // --- 1. market plans, one after another ----------------------------------------------------
-    const order = shuffled(runs, pipelineRunId);
+    // A resumed market keeps the order its plan was made in (the seed of the paused run).
+    const seed = runs.flatMap((r) => r.state.orderSeed ?? []).sort()[0] ?? pipelineRunId;
+    const order = shuffled(runs, seed);
     const plans: SiblingPlan[] = c.others.flatMap((o) =>
       o.marketBriefJson && !inRun.has(o.marketId)
         ? [{ marketCode: marketCodeOf(c, o), brief: o.marketBriefJson }]
@@ -302,7 +357,7 @@ export async function generateVariants(
         .where(eq(schema.contentVariants.id, run.row.id));
     };
 
-    await Promise.all(
+    await settle(
       alive().map((run) =>
         writeDraft(
           run,
@@ -320,7 +375,7 @@ export async function generateVariants(
       if (reviewed.length === 0) break;
 
       const pairs = await compare(ctx, c, order, alive());
-      await Promise.all(
+      await settle(
         reviewed.map(async (run) => {
           const draft = run.drafts[iteration] as Draft;
           const brief = run.brief as Brief;
@@ -380,7 +435,7 @@ export async function generateVariants(
 
       const again = alive().filter((r) => r.decision?.verdict === "REQUEST_REWRITE");
       if (again.length === 0 || iteration === MAX_REWRITES) break;
-      await Promise.all(
+      await settle(
         again.map((run) =>
           writeDraft(run, iteration + 1, {
             instructions: (run.decision as PolicyDecision).rewriteInstructions,
@@ -460,8 +515,11 @@ export async function generateVariants(
       costUsd,
     };
   } catch (error) {
-    // A crash of the provider that a retry can fix leaves the run resumable; anything else ends it.
-    if (!(error instanceof TransientError)) {
+    // A crash of the provider that a retry can fix leaves the run resumable, and so does an empty
+    // account once it is topped up (the variants wait as DRAFT); anything else ends the run.
+    if (error instanceof CreditsExhaustedError) {
+      for (const run of alive()) await pause(run);
+    } else if (!(error instanceof TransientError)) {
       for (const run of alive()) {
         await fail(run, "PIPELINE_ERROR", error instanceof Error ? error.message : String(error));
       }
@@ -746,6 +804,8 @@ async function lockVariants(
   ctx: ServiceContext,
   c: PipelineContext,
   pipelineRunId: string,
+  /** False when a person's note changes the writer's input: stored stages are then not reused. */
+  mayResumePaused: boolean,
 ): Promise<Run[]> {
   const busy = c.variants.filter(
     (v) => v.status === "GENERATING" && v.pipelineState?.pipelineRunId !== pipelineRunId,
@@ -771,13 +831,28 @@ async function lockVariants(
       });
       continue;
     }
-    const state: PipelineState = {
-      pipelineRunId,
-      stage: "START",
-      startedAt: ctx.clock.now().toISOString(),
-      completedStages: [],
-      runIds: {},
-    };
+    // A variant paused for want of credit continues from its last finished stage, under this run.
+    const paused =
+      mayResumePaused && row.status === "DRAFT" && row.lastError?.code === CREDITS_EXHAUSTED_CODE
+        ? row.pipelineState
+        : null;
+    // The clock restarts, so the days spent waiting for the top-up do not count as writing time.
+    const now = ctx.clock.now().toISOString();
+    const state: PipelineState = paused
+      ? {
+          ...paused,
+          pipelineRunId,
+          startedAt: now,
+          updatedAt: now,
+          orderSeed: paused.orderSeed ?? paused.pipelineRunId,
+        }
+      : {
+          pipelineRunId,
+          stage: "START",
+          startedAt: now,
+          completedStages: [],
+          runIds: {},
+        };
     const locked = await transition(ctx, {
       table: schema.contentVariants,
       id: row.id,
@@ -785,10 +860,16 @@ async function lockVariants(
       to: "GENERATING",
       set: { pipelineState: state, flags: [], lastError: null },
       audit: {
-        action: "variant.generation_started",
+        action: paused ? "variant.generation_resumed" : "variant.generation_started",
         entityType: "content_variant",
         marketId: row.marketId,
-        data: { pipelineRunId, from: row.status },
+        data: {
+          pipelineRunId,
+          from: row.status,
+          ...(paused
+            ? { pausedRunId: paused.pipelineRunId, completedStages: paused.completedStages }
+            : {}),
+        },
       },
     });
     runs.push({

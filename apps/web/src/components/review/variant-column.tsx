@@ -1,3 +1,4 @@
+import { CREDITS_EXHAUSTED_CODE } from "@rc/lib/errors";
 import type { ArmChoice } from "@rc/modules/analytics";
 import type { VariantView } from "@rc/modules/content";
 import type { ReelView } from "@rc/modules/reels";
@@ -144,7 +145,9 @@ export function VariantColumn({
 
       {variant.lastError ? (
         <div role="alert" className="rounded-md bg-red-50 p-3 text-sm dark:bg-red-950/40">
-          <p className="font-medium">{t.failedTitle}</p>
+          <p className="font-medium">
+            {variant.lastError.code === CREDITS_EXHAUSTED_CODE ? t.pausedTitle : t.failedTitle}
+          </p>
           <p>{format(t.failedBody, { message: variant.lastError.message })}</p>
         </div>
       ) : null}
