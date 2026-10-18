@@ -1,5 +1,6 @@
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
-import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { promptRegistry } from "@rc/prompts";
+import { CHOCOLATE_POST, REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
 import { describe, expect, it } from "vitest";
 import { createFakeEvalModel } from "./fake-model";
 import {
@@ -38,6 +39,23 @@ describe("the Reel eval with the fake model", () => {
     const summary = summarizeReelEval(results);
     expect(summary).toMatchObject({ posts: 3, valid: 3, repaired: 0, notes: 0 });
     expect(formatReelSummary(summary, "scripted")).toContain("posts with a valid script   3/3");
+    expect(formatReelSummary(summary, "scripted")).toContain("hook shot names a motion    3/3");
+  });
+
+  it("runs reel-director@3 on the chocolate trap and reports where the hook starts", async () => {
+    const results = await runReelEval([CHOCOLATE_POST], {
+      llm: createFakeEvalModel(),
+      prompt: promptRegistry.get("reel-director", 3),
+    });
+    expect(results[0]).toMatchObject({
+      key: "chocolate-drop",
+      valid: true,
+      hookShotMoves: true,
+      hookPictureMoves: true,
+      hook: { pictureId: "p6" },
+    });
+    expect(results[0]?.hook?.picture).toContain("ribbon of melted chocolate falling");
+    expect(reelReviewSheet([CHOCOLATE_POST], results)).toContain("picture moves: yes");
   });
 
   it("reports a post whose script stays invalid after the repair", async () => {

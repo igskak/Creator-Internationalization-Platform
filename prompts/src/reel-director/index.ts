@@ -19,3 +19,4 @@ export {
   ReelPostCta,
   reelDirectorV2OutputFor,
 } from "./v2";
+export { default as reelDirectorV3 } from "./v3";

@@ -1,9 +1,9 @@
 import { REEL_EMOTIONS as DB_EMOTIONS, REEL_SCENE_ROLES as DB_ROLES } from "@rc/db/json";
 import { reelDirector } from "@rc/prompts";
-import { REEL_POSTS, type ReelPost } from "@rc/prompts/fixtures/reel-director";
+import { CHOCOLATE_POST, REEL_POSTS, type ReelPost } from "@rc/prompts/fixtures/reel-director";
 import { describe, expect, it } from "vitest";
 import type { NumberLocale } from "../../localization";
-import { reelValidationContext, validateReelScript } from "./validate";
+import { hasStrongMotion, reelValidationContext, validateReelScript } from "./validate";
 
 // Synthetic content only (the three posts of the eval set).
 const post = (key: string): ReelPost => {
@@ -41,6 +41,75 @@ describe("the synthetic posts", () => {
     expect([...reelDirector.REEL_SCENE_ROLES]).toEqual([...DB_ROLES]);
     expect([...reelDirector.REEL_EMOTIONS]).toEqual([...DB_EMOTIONS]);
     expect(reelDirector.REEL_LAYOUTS).toEqual(["RIGHT", "FULL"]);
+  });
+});
+
+describe("the chocolate trap post", () => {
+  it("passes every check", () => {
+    expect(run(CHOCOLATE_POST)).toEqual([]);
+  });
+});
+
+describe("the hook shot (reel-director@3)", () => {
+  const hook = (p: ReelPost, prompt: string) =>
+    run(p, (o) => {
+      at(o.scenes, 0).shotPrompt = prompt;
+    });
+
+  it.each([
+    "Static camera. Ice cubes and water bob beside pieces of chocolate on a white table.",
+    "Static camera. Steam rises slowly from the bowl.",
+    "Static camera. Dark chocolate pieces rest next to a glass of water.",
+    "Static camera. Rice grains sit in a white bowl under soft light.",
+    "Static camera. Oil drops drift and wobble on the surface of the boiling water.",
+    "Static camera. Melted chocolate rests in a glass bowl.",
+  ])("blocks a hook shot without a strong motion: %s", (prompt) => {
+    const issues = hook(rice, prompt);
+    expect(codes(issues)).toEqual(["REEL_HOOK_MOTION"]);
+    expect(issues[0]).toMatchObject({ severity: "BLOCKER", fieldPath: "scenes.0.shotPrompt" });
+  });
+
+  it.each([
+    "Static camera. Melted chocolate falls from a spoon in a thick ribbon into a bowl.",
+    "Static camera. Hot stock pours from a ladle onto the rice.",
+    "Static camera. Butter sizzles in a pan.",
+    "Static camera. A wooden spoon stirs rice in a pan.",
+    "Static camera. Oil drizzles over a salad.",
+    "Static camera. Chocolate melts into a smooth pool in the bowl.",
+    "Static camera. Bubbles rise and burst on boiling water.",
+  ])("accepts a hook shot with a strong motion: %s", (prompt) => {
+    expect(hook(rice, prompt)).toEqual([]);
+  });
+
+  it("judges only the hook scene: a later scene may be gentle", () => {
+    expect(
+      run(rice, (o) => {
+        at(o.scenes, 6).shotPrompt = "Static camera. Steam rises from a creamy risotto.";
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not judge a base script's locked hook shot", () => {
+    const base = structuredClone(bulgur.input);
+    const locked = structuredClone(bulgur.output);
+    at(locked.scenes, 0).shotPrompt = "Static camera. Steam rises from the bowl.";
+    const input = {
+      ...base,
+      baseScript: {
+        chosenHookType: at(locked.hookOptions, 0).hookType,
+        scenes: locked.scenes,
+      },
+    };
+    const issues = validateReelScript(locked, reelValidationContext(input, { locale: "en" }));
+    expect(codes(issues)).not.toContain("REEL_HOOK_MOTION");
+  });
+
+  it("knows the strong motions by word, not by part of a word", () => {
+    expect(hasStrongMotion("a ribbon of chocolate falling from a spoon")).toBe(true);
+    expect(hasStrongMotion("butter sizzling")).toBe(true);
+    expect(hasStrongMotion("ice cubes bobbing in water")).toBe(false);
+    expect(hasStrongMotion("boiling water with melted chocolate")).toBe(false);
+    expect(hasStrongMotion("a waterfall of nothing")).toBe(false);
   });
 });
 

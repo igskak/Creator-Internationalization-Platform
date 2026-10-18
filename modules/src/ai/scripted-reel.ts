@@ -98,9 +98,9 @@ const CARDS = {
 } as const;
 
 const SHOT_PROMPTS = [
-  "Static camera. Steam rises slowly from the bowl.",
-  "Static camera. Grains tumble gently into the pot.",
   "Static camera. A thin stream of broth pours into the pan.",
+  "Static camera. Grains tumble gently into the pot.",
+  "Static camera. Steam rises slowly from the bowl.",
   "Static camera. Bubbles rise and pop on the surface.",
   "Static camera. A spoon lifts a creamy scoop from the pan.",
   "Static camera. The finished dish settles with a soft glow.",

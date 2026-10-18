@@ -7,7 +7,7 @@ import {
 import { createE2eLlm } from "@rc/modules/ai";
 import { type AnyPrompt, reelDirector, renderPrompt } from "@rc/prompts";
 import { FIXTURE_OUTPUT as JUDGE_ANSWER } from "@rc/prompts/fixtures/eval-judge";
-import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { REEL_EVAL_POSTS } from "@rc/prompts/fixtures/reel-director";
 
 // The model of a fake run: the scripted pipeline model of the E2E server (valid plan, draft and
 // review built from the cards of the request) plus a scripted judge. Nothing is paid and nothing
@@ -26,9 +26,10 @@ function reelDirectorAnswer(request: StructuredRequest<unknown>) {
     renderPrompt(prompt, input)
       .map((part) => part.text)
       .join("");
-  // reel-director@2 answers with the post; v1 (an eval of the old version) without it.
-  for (const post of REEL_POSTS) {
+  // reel-director@2 and @3 answer with the post; v1 (an eval of the old version) without it.
+  for (const post of REEL_EVAL_POSTS) {
     if (rendered(reelDirector.reelDirectorV2, post.input) === sent) return post.output;
+    if (rendered(reelDirector.reelDirectorV3, post.input) === sent) return post.output;
     if (rendered(reelDirector.reelDirectorV1, post.input) === sent) {
       const { caption: _c, cta: _t, hashtags: _h, ...script } = post.output;
       return script;

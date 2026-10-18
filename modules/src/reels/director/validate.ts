@@ -232,6 +232,40 @@ function checkShotPrompt(prompt: string, fieldPath: string): ValidationIssue[] {
   return issues;
 }
 
+/**
+ * A strong motion of the food, the liquid or a tool (reel-director@3): what the hook shot has to show.
+ * A pour, a stream, a fall, a sizzle, a stir. Steam rising, floating or bobbing are not on the list,
+ * and neither are adjectives of the scene ("boiling water", "melted chocolate"): they say what
+ * the food is, not what it does.
+ */
+const STRONG_MOTION =
+  /(?<![\p{L}\d])(?:pour\w*|stream\w*|fall\w*|cascad\w*|drizzl\w*|drip\w*|splash\w*|spill\w*|sizzl\w*|sear\w*|fr(?:y|ies|ying)|stir\w*|whisk\w*|swirl\w*|toss\w*|flip\w*|crack\w*|melts|melting|bubbl\w*|crumbl\w*|sprinkl\w*|gush\w*|flow\w*)(?![\p{L}\d])/iu;
+
+/** True when the text (a shot prompt, or a picture description) names a strong motion. */
+export const hasStrongMotion = (text: string) => STRONG_MOTION.test(text);
+
+/**
+ * The HOOK shot is the one a cold viewer sees before deciding to stay: its prompt must name a strong
+ * motion. A base script's scenes are locked (they come from another market's Reel), so they are not
+ * judged again.
+ */
+function checkHookMotion(
+  scene: Scene,
+  index: number,
+  context: ReelValidationContext,
+): ValidationIssue[] {
+  if (index !== 0 || context.baseScript) return [];
+  if (hasStrongMotion(scene.shotPrompt)) return [];
+  return [
+    blocker(
+      "REEL_HOOK_MOTION",
+      "scenes.0.shotPrompt",
+      "The hook shot names no strong motion (a pour, a stream, a fall, a sizzle, a stir); a near-still shot loses the viewer.",
+      'Start from the most dynamic picture and write one strong motion, e.g. "Static camera. Melted chocolate falls from a spoon in a thick ribbon."',
+    ),
+  ];
+}
+
 function checkStructure(output: Output): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const { scenes } = output;
@@ -554,6 +588,7 @@ function checkScenes(output: Output, context: ReelValidationContext): Validation
     issues.push(
       ...checkCard(scene.card, `${at}.card`),
       ...checkShotPrompt(scene.shotPrompt, `${at}.shotPrompt`),
+      ...checkHookMotion(scene, i, context),
     );
     if (!context.pictureIds.has(scene.sourcePictureId)) {
       issues.push(

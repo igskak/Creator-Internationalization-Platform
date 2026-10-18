@@ -5,13 +5,13 @@ import { createLogger } from "@rc/lib/logging";
 import type { LLMProvider } from "@rc/lib/providers/llm";
 import { computeCostUsd, STAGE_CONFIG } from "@rc/modules/ai";
 import { createServiceContext } from "@rc/modules/core";
-import { directReel, type ReelScriptDraft, reelCaption } from "@rc/modules/reels";
-import { REEL_LIMITS } from "@rc/prompts";
+import { directReel, hasStrongMotion, type ReelScriptDraft, reelCaption } from "@rc/modules/reels";
+import { type AnyPrompt, REEL_LIMITS } from "@rc/prompts";
 import type { ReelPost } from "@rc/prompts/fixtures/reel-director";
 
 // Eval of the Reel director (task M8-03, verification V-29): each post (an approved carousel and
 // its pictures) goes through the real `directReel` stage in a throw-away database, and what came
-// out is checked by the same validators the pipeline uses (from reel-director@2 the post too: the
+// out is checked by the same validators the pipeline uses (from reel-director@2 the post too, from reel-director@3 the hook motion: the
 // caption as it will be posted, the ask and the hashtags). Hook quality and claim fidelity are
 // judged by the owner on the review sheet; the numbers here only prove the rules hold. A fake
 // model costs nothing; a live run prints an estimate first (reels-cli.ts).
@@ -27,6 +27,12 @@ export type ReelEvalResult = {
   script: ReelScriptDraft | null;
   hookTypes: string[];
   seconds: number | null;
+  /** The hook scene: its shot prompt, the picture it starts from and that picture's description. */
+  hook: { shotPrompt: string; pictureId: string; picture: string } | null;
+  /** The hook picture's description names a strong motion (a pour, a sizzle, a stir). */
+  hookPictureMoves: boolean;
+  /** The hook shot prompt names a strong motion (the deterministic check of reel-director@3). */
+  hookShotMoves: boolean;
   costUsd: number | null;
   ms: number;
 };
@@ -35,6 +41,10 @@ export type ReelEvalSummary = {
   posts: number;
   valid: number;
   repaired: number;
+  /** Valid scripts whose hook starts from a picture that moves. */
+  hookPicturesMoving: number;
+  /** Valid scripts whose hook shot prompt names a strong motion. */
+  hookShotsMoving: number;
   /** Mean number of notes per valid script. */
   notes: number;
   costUsd: number | null;
@@ -52,7 +62,10 @@ const LOCALES = { "es-ES": "es-ES", en: "en" } as const;
 
 export async function runReelEval(
   posts: readonly ReelPost[],
-  options: { llm: LLMProvider },
+  options: {
+    llm: LLMProvider /** A prompt version other than the active one. */;
+    prompt?: AnyPrompt;
+  },
 ): Promise<ReelEvalResult[]> {
   const results: ReelEvalResult[] = [];
   const t = await createTestDb();
@@ -67,9 +80,12 @@ export async function runReelEval(
       const started = performance.now();
       const directed = await directReel(ctx, post.input, {
         locale: LOCALES[post.input.market.code as keyof typeof LOCALES] ?? "en",
+        ...(options.prompt ? { prompt: options.prompt } : {}),
       });
       const script = directed.script;
       const chosen = script?.hookOptions.find((h) => h.id === script.chosenHookId);
+      const hookScene = script?.scenes[0];
+      const hookPicture = post.input.pictures.find((p) => p.id === hookScene?.sourcePictureId);
       results.push({
         key: post.key,
         status: directed.status,
@@ -81,6 +97,16 @@ export async function runReelEval(
         seconds: script
           ? script.scenes.reduce((sum, s) => sum + s.beats, 0) * REEL_LIMITS.secondsPerBeat
           : null,
+        hook:
+          hookScene && hookPicture
+            ? {
+                shotPrompt: hookScene.shotPrompt,
+                pictureId: hookPicture.id,
+                picture: hookPicture.description,
+              }
+            : null,
+        hookPictureMoves: hookPicture ? hasStrongMotion(hookPicture.description) : false,
+        hookShotMoves: hookScene ? hasStrongMotion(hookScene.shotPrompt) : false,
         costUsd: directed.costUsd,
         ms: performance.now() - started,
       });
@@ -99,6 +125,8 @@ export function summarizeReelEval(results: readonly ReelEvalResult[]): ReelEvalS
     posts: results.length,
     valid: valid.length,
     repaired: results.filter((r) => r.repaired).length,
+    hookPicturesMoving: valid.filter((r) => r.hookPictureMoves).length,
+    hookShotsMoving: valid.filter((r) => r.hookShotMoves).length,
     notes: valid.length === 0 ? 0 : valid.reduce((n, r) => n + r.issues.length, 0) / valid.length,
     costUsd: costs.some((c) => c === null) ? null : (costs as number[]).reduce((a, b) => a + b, 0),
     ms: results.reduce((sum, r) => sum + r.ms, 0),
@@ -111,6 +139,8 @@ export function formatReelSummary(s: ReelEvalSummary, model: string): string {
     "",
     `posts with a valid script   ${s.valid}/${s.posts}`,
     `repaired once               ${s.repaired}`,
+    `hook picture moves          ${s.hookPicturesMoving}/${s.valid}`,
+    `hook shot names a motion    ${s.hookShotsMoving}/${s.valid}`,
     `notes per valid script      ${s.notes.toFixed(1)}`,
     `cost                        ${s.costUsd === null ? "unknown" : `$${s.costUsd.toFixed(2)}`}`,
     `time                        ${(s.ms / 1000).toFixed(1)} s`,
@@ -160,6 +190,8 @@ export function reelReviewSheet(
       ),
       "",
       `${result.script.scenes.length} scenes, ${result.seconds} s, flash opener ${result.script.flashOpener}.`,
+      "",
+      `Hook shot: ${result.hook?.shotPrompt ?? "-"} (picture ${result.hook?.pictureId ?? "-"}: ${result.hook?.picture ?? "-"}; picture moves: ${result.hookPictureMoves ? "yes" : "no"})`,
       "",
       "| # | Role | Emotion | Beats | Card | Shot | Picture |",
       "|---|---|---|---|---|---|---|",

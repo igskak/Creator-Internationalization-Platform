@@ -112,7 +112,7 @@ describe("generateReel", () => {
       chosenHookId: "h1",
       flashOpener: "OFF",
       shotModel: "alibaba/wan-3.0",
-      promptVersion: "reel-director@2",
+      promptVersion: "reel-director@3",
     });
     expect(script?.scenes).toHaveLength(7);
     expect(script?.scenes.every((s) => s.shotId)).toBe(true);
