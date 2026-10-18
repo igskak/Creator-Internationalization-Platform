@@ -590,11 +590,20 @@ export function ReelCard({
         <div className="flex flex-col items-start gap-1">
           <GenerateDialog
             view={view}
-            label={reel ? t.generateAgain : t.generate}
+            label={
+              reel
+                ? reel.status === "PUBLISHED"
+                  ? t.generateNewVersion
+                  : t.generateAgain
+                : t.generate
+            }
             disabled={blocked}
             reason={reason}
           />
           {reason ? <p className="text-xs text-muted-foreground">{reason}</p> : null}
+          {reel?.status === "PUBLISHED" && !reason ? (
+            <p className="text-xs text-muted-foreground">{t.newVersionNote}</p>
+          ) : null}
         </div>
       ) : null}
     </section>

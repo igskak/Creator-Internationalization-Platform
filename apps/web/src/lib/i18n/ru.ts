@@ -849,6 +849,9 @@ export const ru: Messages = {
       },
       generate: "Сделать Reel",
       generateAgain: "Сделать заново",
+      generateNewVersion: "Сделать новую версию",
+      newVersionNote:
+        "Этот Reel уже опубликован и останется в Instagram как есть. Новая версия — отдельный Reel: после генерации его нужно утвердить и опубликовать заново.",
       blocked: {
         reels_disabled: "Генерация Reels выключена в настройках.",
         carousel_not_ready: "Сначала карусель должна быть готова.",

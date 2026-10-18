@@ -49,6 +49,8 @@ async function findReel(ctx: ServiceContext, masterIdeaId: string, marketId: str
         eq(schema.contentVariants.marketId, marketId),
         eq(schema.contentVariants.format, "REEL"),
         ne(schema.contentVariants.status, "REJECTED"),
+        // A published Reel stays as it is; a new version is a new variant.
+        ne(schema.contentVariants.status, "PUBLISHED"),
       ),
     );
   return row;

@@ -181,6 +181,23 @@ describe("the Generate Reel services", () => {
       expect(fx.jobs.calls).toHaveLength(1);
     });
 
+    it("makes a new version of a published Reel and leaves the published one as it is", async () => {
+      await fx.setEnabled(true);
+      const { variantId } = await request();
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "PUBLISHED" })
+        .where(eq(schema.contentVariants.id, variantId));
+      expect(await estimateReelCost(fx.ctx, { carouselVariantId: fx.carouselId })).toMatchObject({
+        blockedBy: null,
+        reelVariantId: null,
+      });
+      const next = await request();
+      expect(next.variantId).not.toBe(variantId);
+      const rows = await reels();
+      expect(rows.map((r) => r.status).sort()).toEqual(["DRAFT", "PUBLISHED"]);
+    });
+
     it("allows a new Reel after the old one was rejected", async () => {
       await fx.setEnabled(true);
       const { variantId } = await request();

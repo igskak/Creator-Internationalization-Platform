@@ -833,6 +833,9 @@ export const en = {
       },
       generate: "Generate Reel",
       generateAgain: "Generate again",
+      generateNewVersion: "Make a new version",
+      newVersionNote:
+        "This Reel is already published and stays on Instagram as it is. The new version is a separate Reel: once made, it has to be approved and published again.",
       blocked: {
         reels_disabled: "Reel generation is switched off in Settings.",
         carousel_not_ready: "The carousel has to be finished first.",

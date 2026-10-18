@@ -286,7 +286,7 @@ export async function getReelView(
   try {
     const source = await loadReelSource(ctx, carouselVariantId);
     names = { marketCode: source.market.code, topic: "" };
-    [reel] = await ctx.db
+    const reels = await ctx.db
       .select()
       .from(schema.contentVariants)
       .where(
@@ -296,7 +296,10 @@ export async function getReelView(
           eq(schema.contentVariants.format, "REEL"),
           ne(schema.contentVariants.status, "REJECTED"),
         ),
-      );
+      )
+      .orderBy(desc(schema.contentVariants.createdAt));
+    // The Reel in the works, else the latest published one (a new version can be made from it).
+    reel = reels.find((r) => r.status !== "PUBLISHED") ?? reels[0];
     const [idea] = await ctx.db
       .select({ topic: schema.masterIdeas.topic })
       .from(schema.masterIdeas)
@@ -318,7 +321,7 @@ export async function getReelView(
       ? "reels_disabled"
       : reel?.status === "GENERATING"
         ? "reel_generating"
-        : reel && !CHANGEABLE.includes(reel.status)
+        : reel && !CHANGEABLE.includes(reel.status) && reel.status !== "PUBLISHED"
           ? "reel_in_use"
           : null;
   }
