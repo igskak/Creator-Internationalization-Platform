@@ -21,7 +21,7 @@ import {
 } from "./market-adapter";
 import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
 import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
-import { reelDirectorV1, reelDirectorV2 } from "./reel-director";
+import { reelDirectorV1, reelDirectorV2, reelDirectorV3 } from "./reel-director";
 import { createRegistry } from "./registry";
 import {
   visualDirectorV1,
@@ -131,4 +131,5 @@ export const promptRegistry = createRegistry([
   visualQaV2,
   reelDirectorV1,
   reelDirectorV2,
+  reelDirectorV3,
 ]);

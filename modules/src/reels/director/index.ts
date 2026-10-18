@@ -9,6 +9,7 @@ export {
 } from "./direct";
 export {
   cardWordList,
+  hasStrongMotion,
   type ReelPostContext,
   type ReelValidationContext,
   reelValidationContext,

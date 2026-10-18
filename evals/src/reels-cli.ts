@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import { EnvValidationError, loadServerEnv } from "@rc/lib/env";
 import { createLlmProvider } from "@rc/lib/providers/llm";
 import { STAGE_CONFIG } from "@rc/modules/ai";
-import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { promptRegistry } from "@rc/prompts";
+import { REEL_EVAL_POSTS } from "@rc/prompts/fixtures/reel-director";
 import { createFakeEvalModel } from "./fake-model";
 import {
   estimateReelEval,
@@ -21,18 +22,20 @@ import {
 const HELP = `pnpm eval:reels [options]
 
   --provider fake|live  fake: scripted answers, no cost (default). live: the model of .env (AI_PROVIDER=live)
-  --posts a,b           only these post keys (${REEL_POSTS.map((p) => p.key).join(", ")})
+  --version <n>         the reel-director version to run (default: the active one, STAGE_CONFIG)
+  --posts a,b           only these post keys (${REEL_EVAL_POSTS.map((p) => p.key).join(", ")})
   --yes                 do not ask for confirmation before a live run
   --out <dir>           where the report and the review sheet go (default: evals/results, not in git)
   --help`;
 
-const args = { provider: "fake", posts: [] as string[], yes: false, out: "" };
+const args = { provider: "fake", posts: [] as string[], yes: false, out: "", version: 0 };
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i++) {
   const arg = argv[i];
   const value = () => argv[++i] ?? "";
   if (arg === "--provider") args.provider = value();
   else if (arg === "--posts") args.posts = value().split(",").filter(Boolean);
+  else if (arg === "--version") args.version = Number(value());
   else if (arg === "--yes") args.yes = true;
   else if (arg === "--out") args.out = value();
   else if (arg === "--help" || arg === "-h") {
@@ -49,14 +52,17 @@ if (args.provider !== "fake" && args.provider !== "live") {
 }
 
 const posts =
-  args.posts.length > 0 ? REEL_POSTS.filter((p) => args.posts.includes(p.key)) : REEL_POSTS;
+  args.posts.length > 0
+    ? REEL_EVAL_POSTS.filter((p) => args.posts.includes(p.key))
+    : REEL_EVAL_POSTS;
 if (posts.length === 0) {
-  console.error(`eval:reels: no post matches (${REEL_POSTS.map((p) => p.key).join(", ")}).`);
+  console.error(`eval:reels: no post matches (${REEL_EVAL_POSTS.map((p) => p.key).join(", ")}).`);
   process.exit(2);
 }
 
 let llm = createFakeEvalModel();
 const model = args.provider === "fake" ? "scripted" : STAGE_CONFIG.REEL_DIRECTION.model;
+const promptKey = args.version > 0 ? `reel-director@${args.version}` : "the active reel-director";
 if (args.provider === "live") {
   try {
     const env = loadServerEnv();
@@ -95,20 +101,25 @@ if (args.provider === "live") {
   }
 }
 
-const results = await runReelEval(posts, { llm });
+const prompt = args.version > 0 ? promptRegistry.get("reel-director", args.version) : undefined;
+const results = await runReelEval(posts, { llm, ...(prompt ? { prompt } : {}) });
 const summary = summarizeReelEval(results);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = args.out ? resolve(args.out) : join(root, "results");
 await mkdir(dir, { recursive: true });
 const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-const base = join(dir, `${stamp}-reels-${args.provider}`);
-await writeFile(`${base}.json`, `${JSON.stringify({ model, summary, results }, null, 2)}\n`);
+const base = join(dir, `${stamp}-reels-${args.provider}${prompt ? `-v${args.version}` : ""}`);
+await writeFile(
+  `${base}.json`,
+  `${JSON.stringify({ model, prompt: promptKey, summary, results }, null, 2)}\n`,
+);
 await writeFile(`${base}-review.md`, reelReviewSheet(posts, results));
-console.log(`${formatReelSummary(summary, model)}\n`);
+console.log(`${formatReelSummary(summary, `${model} · ${promptKey}`)}\n`);
 for (const r of results) {
   console.log(
     `${r.valid ? "ok  " : "FAIL"} ${r.key}  ${r.status}${r.seconds === null ? "" : ` · ${r.seconds} s`} · ${r.hookTypes.join(", ")}`,
   );
+  if (r.hook) console.log(`       hook ${r.hook.pictureId}: ${r.hook.shotPrompt}`);
   for (const i of r.issues) console.log(`       ${i.severity} ${i.code} ${i.fieldPath ?? ""}`);
 }
 console.log(`\nResults: ${base}.json\nReview sheet: ${base}-review.md`);

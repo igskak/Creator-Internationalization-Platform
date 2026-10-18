@@ -10,6 +10,7 @@ Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/p
 
 ## Story (one idea per Reel)
 1. **Hook (0–2.5 s)**: a doubt about a familiar action, with motion in the first frame ("HOT WATER ON BULGUR?"). Hook patterns and banned patterns: `docs/design/hook-library.md`.
+   - **The hook shot is the most dynamic one** (reel-director@3, since 2026-10-18): the hook scene starts from the most dynamic, appetizing picture of the carousel, from any slide (a pour, a ribbon falling from a spoon, a sizzle, a stir), never from a near-still picture of ingredients (a flat lay, ice and pieces side by side). Its shot prompt names a strong motion verb (pour, stream, fall, sizzle, stir, drizzle, whisk, splash, bubble, melt, toss, fry); steam rising, floating or bobbing alone do not count. The director checks the verb (`REEL_HOOK_MOTION`, a blocker with one repair; a base script's locked hook is not judged); the picture is judged on the review sheet. Why: the first Reel's hook shot was ice cubes and water bobbing beside chocolate pieces, and a calm hook on the falling ribbon held the eye far better.
 2. **Rule (next 1.5 s)**: the answer that opens a loop ("ONLY IF IT'S FINE.").
 3. **Body**: one step per scene, a different frame each time.
 4. **Appetite peak**: the most sensory shot (toast, sizzle, pour) with its card ("NUTTY. TOASTY. LIKE BREAD.").

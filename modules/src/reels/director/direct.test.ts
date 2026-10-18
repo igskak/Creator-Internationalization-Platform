@@ -69,7 +69,7 @@ describe("directReel", () => {
     expect(rows[0]).toMatchObject({
       stage: "REEL_DIRECTION",
       promptId: "reel-director",
-      promptVersion: 2,
+      promptVersion: 3,
     });
   });
 

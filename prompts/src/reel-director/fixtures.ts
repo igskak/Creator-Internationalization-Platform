@@ -415,7 +415,7 @@ const PASTA_OUTPUT: ReelDirectorOutput = {
       "DOUBT",
       4,
       "The **worst** pasta advice",
-      "Static camera. Drops of oil spread across the surface of boiling water in a pot.",
+      "Static camera. Bubbles rise and burst as drops of oil spread across boiling water in a pot.",
       "p1",
       [],
     ],
@@ -547,12 +547,202 @@ const PASTA_OUTPUT_V2: ReelDirectorOutputV2 = {
   hashtags: ["#pasta", "#pastatips", "#spaghetti", "#cookingtips"],
 };
 
-/** The three synthetic posts of the eval set. */
+/** The three synthetic posts of the eval set (v1/v2 tests); the chocolate trap is separate. */
 export const REEL_POSTS: readonly ReelPost[] = [
   { key: "risotto-rice", input: RISOTTO_INPUT_V2, output: RISOTTO_OUTPUT_V2 },
   { key: "bulgur-hot-water", input: BULGUR_INPUT_V2, output: BULGUR_OUTPUT_V2 },
   { key: "pasta-oil", input: PASTA_INPUT_V2, output: PASTA_OUTPUT_V2 },
 ];
+
+// 4 · en: melted chocolate and a drop of water (curiosity gap). The trap for reel-director@3: the
+// carousel's first picture is a near-still pile of ingredients (the hook slide's own picture), and
+// the pictures that move are on later slides (a drop falling, a ribbon of chocolate falling from a
+// spoon). The hook shot has to come from the ribbon, not from the first picture.
+const CHOCOLATE_INPUT: ReelDirectorInput = {
+  market: { code: "en", displayName: "United States", language: "en" },
+  carousel: {
+    hook: "One drop of water ruins melted chocolate.",
+    hookType: "CURIOSITY_GAP",
+    slides: [
+      slide("c1", "HOOK", "One drop of water ruins melted chocolate.", false),
+      slide(
+        "c2",
+        "FACT",
+        "A little water makes melted chocolate seize into a grainy paste.",
+        true,
+        ["k1"],
+      ),
+      slide("c3", "FACT", "Keep the bowl and the spoon completely dry.", true, ["k1"]),
+      slide("c4", "STEP", "Melt it over barely simmering water, never boiling.", true, ["k2"]),
+      slide("c5", "STEP", "Stir slowly until the chocolate is smooth and glossy.", true, ["k2"]),
+      slide("c6", "CTA", "Save this before you melt chocolate again.", false),
+    ],
+  },
+  pictures: [
+    {
+      id: "p1",
+      slideId: "c1",
+      description:
+        "Dark chocolate pieces and ice cubes in a glass of water side by side on a white table, nothing moving.",
+    },
+    {
+      id: "p2",
+      slideId: "c2",
+      description: "A single drop of water falling toward a glass bowl of melted chocolate.",
+    },
+    {
+      id: "p3",
+      slideId: "c3",
+      description: "A dry glass bowl and a dry spoon next to dark chocolate pieces.",
+    },
+    {
+      id: "p4",
+      slideId: "c4",
+      description: "A glass bowl of chocolate pieces over a pot of barely simmering water.",
+    },
+    {
+      id: "p5",
+      slideId: "c5",
+      description: "A spatula stirring smooth melted chocolate in a glass bowl.",
+    },
+    {
+      id: "p6",
+      slideId: "c5",
+      description: "A thick ribbon of melted chocolate falling from a spoon into a glass bowl.",
+    },
+    {
+      id: "p7",
+      slideId: "c6",
+      description: "Glossy melted chocolate poured over a strawberry on a white plate.",
+    },
+  ],
+  brief: { tone: "Direct, a little playful.", terminology: [], ctaType: "SAVE" },
+  taxonomy: { hookTypes: HOOK_TYPES },
+  recentHookTypes: ["MYTH_BUST"],
+};
+
+const CHOCOLATE_INPUT_V2 = withPost(
+  CHOCOLATE_INPUT,
+  {
+    caption:
+      "One drop of water ruins melted chocolate.\n\nA little water makes melted chocolate seize into a grainy paste. Keep the bowl and the spoon completely dry.\n\nSave this before you melt chocolate again.",
+    cta: { type: "SAVE", text: "Save this before you melt chocolate again." },
+  },
+  { ctaTypes: ["SAVE", "FOLLOW"], hashtags: ["#cookingtips", "#weeknightdinner"] },
+);
+
+const CHOCOLATE_OUTPUT_V2: ReelDirectorOutputV2 = {
+  hookOptions: [
+    {
+      id: "h1",
+      hookType: "CURIOSITY_GAP",
+      card: "One drop of **water?**",
+      ruleCard: "It makes chocolate **seize.**",
+      claimSlideIds: ["c2"],
+      rationale: "Asks what one drop does, then answers with the rule.",
+    },
+    {
+      id: "h2",
+      hookType: "MISTAKE_CALLOUT",
+      card: "A wet spoon in **chocolate?**",
+      ruleCard: "Keep everything **dry.**",
+      claimSlideIds: ["c3"],
+      rationale: "Doubts a small habit, then gives the fix.",
+    },
+    {
+      id: "h3",
+      hookType: "RELATABLE_PROBLEM",
+      card: "Chocolate gone **grainy?**",
+      ruleCard: "Blame the **water.**",
+      claimSlideIds: ["c2"],
+      rationale: "Names the frustration, then the cause.",
+    },
+  ],
+  chosenHookId: "h1",
+  flashOpener: "OFF",
+  scenes: scenes([
+    [
+      "HOOK",
+      "DOUBT",
+      5,
+      "One drop of **water?**",
+      "Static camera. Melted chocolate falls from a spoon in a thick ribbon into a glass bowl.",
+      "p6",
+      [],
+    ],
+    [
+      "RULE",
+      "INTRIGUE",
+      3,
+      "It makes chocolate **seize.**",
+      "Static camera. A drop of water falls onto melted chocolate in a glass bowl.",
+      "p2",
+      ["c2"],
+    ],
+    [
+      "STEP",
+      "AHA",
+      4,
+      "Dry bowl. **Dry spoon.**",
+      "Static camera. A dry spoon stirs dark chocolate pieces in a dry glass bowl.",
+      "p3",
+      ["c3"],
+    ],
+    [
+      "STEP",
+      "USEFULNESS",
+      4,
+      "Barely simmering. **Never boiling.**",
+      "Static camera. Water simmers gently under a glass bowl of chocolate pieces.",
+      "p4",
+      ["c4"],
+    ],
+    [
+      "PEAK",
+      "APPETITE",
+      5,
+      "Stir until **glossy.**",
+      "Static camera. A spatula stirs smooth melted chocolate in a glass bowl.",
+      "p5",
+      ["c5"],
+    ],
+    [
+      "PAYOFF",
+      "DELIGHT",
+      4,
+      "Smooth, glossy, **no water.**",
+      "Static camera. Glossy melted chocolate pours over a strawberry on a white plate.",
+      "p7",
+      [],
+    ],
+    [
+      "CTA",
+      "SAVE_IT",
+      4,
+      "Save it. **Mind the water.**",
+      "Static camera. Glossy chocolate drips from a spoon into the glass bowl.",
+      "p6",
+      [],
+    ],
+  ]),
+  caption:
+    "A little water makes melted chocolate seize into a grainy paste. Keep the bowl and the spoon completely dry.\n\nMelt it over barely simmering water, never boiling, and stir slowly until it is smooth and glossy.\n\nSend this to whoever melts chocolate at home.",
+  cta: { type: "SHARE", text: "Send this to whoever melts chocolate at home." },
+  hashtags: ["#chocolate", "#meltingchocolate", "#bakingtips", "#cookingtips"],
+};
+
+/**
+ * The trap post of reel-director@3 (a still first picture, moving ones on later slides). It is kept
+ * out of REEL_POSTS, whose three posts the older tests count; the Reel evals run it as well.
+ */
+export const CHOCOLATE_POST: ReelPost = {
+  key: "chocolate-drop",
+  input: CHOCOLATE_INPUT_V2,
+  output: CHOCOLATE_OUTPUT_V2,
+};
+
+/** The posts of a Reel eval: the three of REEL_POSTS and the chocolate trap. */
+export const REEL_EVAL_POSTS: readonly ReelPost[] = [...REEL_POSTS, CHOCOLATE_POST];
 
 /** reel-director@1's fixture (its snapshot). */
 export const FIXTURE_INPUT: ReelDirectorInput = RISOTTO_INPUT;
