@@ -122,6 +122,28 @@ describe("calendar reads", () => {
     expect(late.find((i) => i.variantId === c.variantId)?.warnings).toEqual([]);
   });
 
+  it("marks the Reel and the carousel of one idea that are less than two days apart (G-10)", async () => {
+    const carousel = await approved("en");
+    const other = await approved("en");
+    const own = await fx.variant(carousel.variantId);
+    const reel = await fx.makeVariant({
+      marketCode: "en",
+      ideaId: own.masterIdeaId,
+      format: "REEL",
+      status: "SCHEDULED",
+    });
+    await fx.makePublication(reel.variantId, own.approvedVersionId as string, {
+      scheduledAt: new Date(NOW + DAY),
+    });
+    await schedule(carousel.variantId, NOW + 2 * DAY);
+    await schedule(other.variantId, NOW + 2 * DAY + 4 * 60 * 60_000);
+    const items = await getCalendar(fx.ctx, week);
+    const by = (id: string) => items.find((i) => i.variantId === id)?.warnings ?? [];
+    expect(by(reel.variantId)).toContain("TOPIC_GAP");
+    expect(by(carousel.variantId)).toContain("TOPIC_GAP");
+    expect(by(other.variantId)).not.toContain("TOPIC_GAP");
+  });
+
   it("lists approved drafts without a post, longest waiting first, and drops them once scheduled", async () => {
     const first = await approved("es-ES");
     const second = await approved("en");

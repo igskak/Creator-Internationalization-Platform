@@ -817,6 +817,10 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
 - [ ] **G-08 · Topic pillars and an opinion slot** · P1 · M · deps: M7-05
   - **Do:** the idea generator spreads ideas over pillars per market (grains, eggs, meat and doneness, roasted vegetables, sauces and the salt-acid-fat balance, kitchen myths) and plans one opinion post a week (the expert's position against a habit, with the reason, from the knowledge base only).
   - **Done when:** a week of ideas covers at least three pillars and one opinion.
+- [x] **G-10 · Weekly rhythm and the grid** · P1 · S · deps: M4-08, CV-08
+  - **Do:** owner's rhythm (2026-10-17): 6 Reels and 3 carousels a week, posted R, R, C, so every row of the profile grid reads carousel · Reel · Reel; the carousel of an idea goes out two or three days after its Reel. Scheduling warns (never refuses) when a post of the same idea and market is within `publishing.topic_gap_hours` (default 48, 0 = off); the calendar marks both posts. The Reel's grid cover keeps the whole slide inside the grid's 3:4 crop.
+  - **Done when:** tests; the calendar shows `TOPIC_GAP`.
+  - **Result (2026-10-17):** `TOPIC_GAP` in `scheduleWarnings` (schedule and reschedule) and `getCalendar` (posts inside the range only); setting key `publishing.topic_gap_hours` (not seeded: missing means 48); en/ru texts; cover crop test. Planning the R, R, C order itself stays with the owner.
 
 ## CV · Carousel v3 (pictures and posts)
 

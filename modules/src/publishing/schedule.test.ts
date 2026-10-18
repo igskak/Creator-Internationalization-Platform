@@ -199,6 +199,60 @@ describe("scheduling", () => {
       expect((await schedule(next, at(2 * DAY + 1))).warnings).toEqual([]);
     });
 
+    it("tells when a post of the same idea is less than two days away (G-10)", async () => {
+      const carousel = await approved("en");
+      const own = await fx.variant(carousel.variantId);
+      const version = own.approvedVersionId as string;
+      // The Reel of the same idea went out now; the carousel a day later is too close.
+      const reel = await fx.makeVariant({
+        marketCode: "en",
+        ideaId: own.masterIdeaId,
+        format: "REEL",
+        status: "PUBLISHED",
+      });
+      const reelPost = await fx.makePublication(reel.variantId, version, {
+        status: "PUBLISHED",
+        scheduledAt: new Date(NOW),
+        publishedAt: new Date(NOW),
+      });
+      const { publication, warnings } = await schedule(carousel.variantId, at(DAY));
+      expect(warnings.find((w) => w.code === "TOPIC_GAP")).toMatchObject({
+        otherPublicationId: reelPost,
+        otherAt: NOW,
+        topicGapHours: 48,
+      });
+      // Two days after the Reel is far enough.
+      const moved = await reschedulePublication(fx.ctx, {
+        publicationId: publication.id,
+        scheduledAt: at(2 * DAY),
+      });
+      expect(moved.warnings.map((w) => w.code)).not.toContain("TOPIC_GAP");
+      // A post of the same idea in another market does not count.
+      const es = await fx.makeVariant({
+        marketCode: "es-ES",
+        ideaId: own.masterIdeaId,
+        format: "REEL",
+        status: "PUBLISHED",
+      });
+      await fx.makePublication(es.variantId, version, {
+        status: "PUBLISHED",
+        scheduledAt: new Date(at(2 * DAY)),
+        publishedAt: new Date(at(2 * DAY)),
+      });
+      const again = await reschedulePublication(fx.ctx, {
+        publicationId: publication.id,
+        scheduledAt: at(2 * DAY + 10),
+      });
+      expect(again.warnings.map((w) => w.code)).not.toContain("TOPIC_GAP");
+      // 0 switches the check off.
+      await t.db.insert(schema.appSettings).values({ key: "publishing.topic_gap_hours", value: 0 });
+      const off = await reschedulePublication(fx.ctx, {
+        publicationId: publication.id,
+        scheduledAt: at(DAY),
+      });
+      expect(off.warnings.map((w) => w.code)).not.toContain("TOPIC_GAP");
+    });
+
     async function approvedOfNewIdea(marketCode: string): Promise<string> {
       return (await approved(marketCode)).variantId;
     }

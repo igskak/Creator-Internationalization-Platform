@@ -20,6 +20,10 @@ type Publication = typeof schema.publications.$inferSelect;
 export const MIN_LEAD_MINUTES = 5;
 const MINUTE_MS = 60_000;
 const DEFAULT_MIN_GAP_MINUTES = 180;
+/** A Reel and the carousel of the same idea go out at least this far apart (growth rhythm, G-10). */
+export const DEFAULT_TOPIC_GAP_HOURS = 48;
+const HOUR_MS = 60 * MINUTE_MS;
+const LIVE_STATUSES = ["SCHEDULED", "QUEUED", "IN_PROGRESS", "PUBLISHED"] as const;
 
 export const SchedulePublicationInput = z.object({
   variantId: z.uuid(),
@@ -49,6 +53,14 @@ export type ScheduleWarning =
       otherPublicationId: string;
       otherAt: string;
       minGapMinutes: number;
+    }
+  | {
+      code: "TOPIC_GAP";
+      message: string;
+      /** The other post of the same idea (the Reel or the carousel) that is too close. */
+      otherPublicationId: string;
+      otherAt: string;
+      topicGapHours: number;
     };
 
 export type ScheduleResult = { publication: Publication; warnings: ScheduleWarning[] };
@@ -90,12 +102,14 @@ async function readSetting<T>(ctx: ServiceContext, key: string, fallback: T): Pr
 
 /**
  * What is worth telling the person about a time, without refusing it (05 §5.8): no ACTIVE
- * Instagram account for the market yet, publishing switched off, or another post of the market
- * within `publishing.min_gap_minutes`.
+ * Instagram account for the market yet, publishing switched off, another post of the market
+ * within `publishing.min_gap_minutes`, or (given the variant) a post of the same idea in the same
+ * market within `publishing.topic_gap_hours`: the Reel brings new people, the carousel of its idea
+ * waits two or three days for those who came to the profile (G-10).
  */
 export async function scheduleWarnings(
   ctx: ServiceContext,
-  input: { marketId: string; at: Date; ignorePublicationId?: string },
+  input: { marketId: string; at: Date; ignorePublicationId?: string; variantId?: string },
 ): Promise<ScheduleWarning[]> {
   const warnings: ScheduleWarning[] = [];
   const [account] = await ctx.db
@@ -132,7 +146,7 @@ export async function scheduleWarnings(
         and(
           eq(schema.publications.marketId, input.marketId),
           eq(schema.publications.dryRun, false),
-          inArray(schema.publications.status, ["SCHEDULED", "QUEUED", "IN_PROGRESS", "PUBLISHED"]),
+          inArray(schema.publications.status, [...LIVE_STATUSES]),
           ...(input.ignorePublicationId
             ? [ne(schema.publications.id, input.ignorePublicationId)]
             : []),
@@ -156,7 +170,62 @@ export async function scheduleWarnings(
       });
     }
   }
+
+  if (input.variantId) {
+    const topic = await topicGapWarning(ctx, { ...input, variantId: input.variantId });
+    if (topic) warnings.push(topic);
+  }
   return warnings;
+}
+
+/** The nearest live post of the same idea and market (another variant: the Reel of a carousel or
+ * the other way round) within `publishing.topic_gap_hours`; 0 switches the check off. */
+async function topicGapWarning(
+  ctx: ServiceContext,
+  input: { marketId: string; at: Date; ignorePublicationId?: string; variantId: string },
+): Promise<ScheduleWarning | null> {
+  const hours = await readSetting<number>(
+    ctx,
+    "publishing.topic_gap_hours",
+    DEFAULT_TOPIC_GAP_HOURS,
+  );
+  if (hours <= 0) return null;
+  const [own] = await ctx.db
+    .select({ ideaId: schema.contentVariants.masterIdeaId })
+    .from(schema.contentVariants)
+    .where(eq(schema.contentVariants.id, input.variantId));
+  if (!own) return null;
+  const p = schema.publications;
+  const siblings = await ctx.db
+    .select({ id: p.id, at: sql<Date>`coalesce(${p.publishedAt}, ${p.scheduledAt})` })
+    .from(p)
+    .innerJoin(schema.contentVariants, eq(schema.contentVariants.id, p.contentVariantId))
+    .where(
+      and(
+        eq(schema.contentVariants.masterIdeaId, own.ideaId),
+        ne(schema.contentVariants.id, input.variantId),
+        eq(p.marketId, input.marketId),
+        eq(p.dryRun, false),
+        inArray(p.status, [...LIVE_STATUSES]),
+        ...(input.ignorePublicationId ? [ne(p.id, input.ignorePublicationId)] : []),
+      ),
+    );
+  const near = siblings
+    .map((o) => ({ id: o.id, at: new Date(o.at) }))
+    .filter((o) => Math.abs(o.at.getTime() - input.at.getTime()) < hours * HOUR_MS)
+    .sort(
+      (a, b) =>
+        Math.abs(a.at.getTime() - input.at.getTime()) -
+        Math.abs(b.at.getTime() - input.at.getTime()),
+    )[0];
+  if (!near) return null;
+  return {
+    code: "TOPIC_GAP",
+    message: `A post of the same idea is within ${hours} hours: Reel first, the carousel two or three days later.`,
+    otherPublicationId: near.id,
+    otherAt: near.at.toISOString(),
+    topicGapHours: hours,
+  };
 }
 
 /**
@@ -197,7 +266,11 @@ export async function schedulePublication(
       details: { problems: check.problems },
     });
   }
-  const warnings = await scheduleWarnings(ctx, { marketId: variant.marketId, at });
+  const warnings = await scheduleWarnings(ctx, {
+    marketId: variant.marketId,
+    at,
+    variantId: variant.id,
+  });
 
   const publicationId = randomUUID();
   const publication = await withTransaction(ctx, async (tx) => {
@@ -293,6 +366,7 @@ export async function reschedulePublication(
     marketId: publication.marketId,
     at,
     ignorePublicationId: publication.id,
+    variantId: publication.contentVariantId,
   });
   return { publication, warnings };
 }

@@ -90,8 +90,10 @@ export type MakeVariantOptions = {
   /** Add a product offer for the market and link it to the variant. */
   withOffer?: boolean;
   ctaType?: string;
-  /** Default: a new idea of its own (one live variant per idea and market). */
+  /** Default: a new idea of its own (one live variant per idea, market and format). */
   ideaId?: string;
+  /** Default CAROUSEL; a REEL of the same idea can sit next to its carousel. */
+  format?: "CAROUSEL" | "REEL";
   /** Set at insert (the update trigger overwrites it afterwards). */
   updatedAt?: Date;
   qualityScore?: string;
@@ -198,6 +200,7 @@ export async function reviewFixture(
       .values({
         masterIdeaId: ideaForVariant,
         marketId: market?.id ?? "",
+        ...(opts.format ? { format: opts.format } : {}),
         status: opts.status ?? "READY_FOR_REVIEW",
         hook: "Hola",
         hookType: "QUESTION",
