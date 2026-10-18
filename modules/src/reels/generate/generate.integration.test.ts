@@ -125,8 +125,8 @@ describe.skipIf(!haveFfmpeg || !browser)("generateReel with ffmpeg and Chromium"
         safeZoneOk: true,
         blackFrames: 0,
       });
-      // 7 scenes: 4 + 3 + 4 + 4 + 5 + 4 + 4 beats = 14 s, plus the 0.88 s flash opener.
-      expect(Math.abs((render?.durationMs ?? 0) - 14_880)).toBeLessThan(150);
+      // 7 scenes: 5 (the hook, held) + 3 + 4 + 4 + 5 + 4 + 4 beats = 14.5 s, no flash opener.
+      expect(Math.abs((render?.durationMs ?? 0) - 14_500)).toBeLessThan(150);
       const info = await fx.storage.head(render?.storageKey ?? "");
       expect(info?.contentType).toBe("video/mp4");
       expect(info?.size).toBe(render?.bytes);

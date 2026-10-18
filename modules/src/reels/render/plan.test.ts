@@ -15,7 +15,10 @@ describe("buildAssemblyPlan", () => {
     const plan = buildAssemblyPlan(scenes, shots, { flashOpener: false });
     expect(plan.segments.map((s) => s.sceneId)).toEqual(scenes.map((s) => s.id));
     expect(plan.segments.map((s) => s.seconds)).toEqual([1.75, 1.5, 2, 2, 2.25, 2, 2.5]);
-    expect(plan.segments.every((s) => s.kind === "SCENE" && s.fadeSeconds === 0.12)).toBe(true);
+    expect(plan.segments.every((s) => s.kind === "SCENE")).toBe(true);
+    // The hook card is there from the first frame; later cards fade in.
+    expect(plan.segments[0]?.fadeSeconds).toBeLessThan(0.01);
+    expect(plan.segments.slice(1).every((s) => s.fadeSeconds === 0.12)).toBe(true);
     expect(plan.flashSeconds).toBe(0);
     expect(plan.totalSeconds).toBe(14);
     // Every cut lands on a beat: durations are multiples of half a second's half.
