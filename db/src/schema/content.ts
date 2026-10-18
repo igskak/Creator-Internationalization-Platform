@@ -285,9 +285,10 @@ export const contentVariants = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
-    uniqueIndex("content_variants_active_uq")
-      .on(t.masterIdeaId, t.marketId, t.format)
-      .where(sql`${t.status} <> 'REJECTED'`),
+    uniqueIndex("content_variants_active_uq").on(t.masterIdeaId, t.marketId, t.format).where(
+      // A published Reel steps aside so a new version can be made; carousels keep one active.
+      sql`${t.status} <> 'REJECTED' and not (${t.format} = 'REEL' and ${t.status} = 'PUBLISHED')`,
+    ),
     index("content_variants_market_status_idx").on(t.marketId, t.status),
     index("content_variants_status_updated_idx").on(t.status, t.updatedAt.desc()),
     check(

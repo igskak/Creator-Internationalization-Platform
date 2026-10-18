@@ -178,6 +178,27 @@ describe("getReelView", () => {
       expect(v.reel?.changeable).toBe(false);
     });
 
+    it("offers a new version of a published Reel, and shows the one in the works instead", async () => {
+      await t.db
+        .update(schema.contentVariants)
+        .set({ status: "PUBLISHED" })
+        .where(eq(schema.contentVariants.id, reelId));
+      const published = await view();
+      expect(published.blockedBy).toBeNull();
+      expect(published.reel).toMatchObject({ variantId: reelId, status: "PUBLISHED" });
+      const [old] = await t.db
+        .select()
+        .from(schema.contentVariants)
+        .where(eq(schema.contentVariants.id, reelId));
+      const { id: _id, ...copy } = old as NonNullable<typeof old>;
+      const [fresh] = await t.db
+        .insert(schema.contentVariants)
+        .values({ ...copy, status: "DRAFT" })
+        .returning();
+      const next = await view();
+      expect(next.reel?.variantId).toBe(fresh?.id);
+    });
+
     it("answers for several carousels at once", async () => {
       const views = await getReelViews(fx.ctx, [fx.carouselId]);
       expect(Object.keys(views)).toEqual([fx.carouselId]);

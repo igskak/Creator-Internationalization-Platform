@@ -1,0 +1,2 @@
+DROP INDEX "content_variants_active_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX "content_variants_active_uq" ON "content_variants" USING btree ("master_idea_id","market_id","format") WHERE "content_variants"."status" <> 'REJECTED' and not ("content_variants"."format" = 'REEL' and "content_variants"."status" = 'PUBLISHED');
