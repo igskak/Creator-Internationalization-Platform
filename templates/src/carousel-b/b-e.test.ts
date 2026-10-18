@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { TEMPLATE_FIXTURES } from "../fixtures";
 import { renderSlideHtml } from "../framework/slide-document";
+import type { SlideData } from "../framework/types";
 import { registry } from "../registry";
 import { buildTheme } from "../theme";
 import { validateSlideAgainstTemplate } from "../validate";
@@ -9,8 +10,11 @@ import { validateSlideAgainstTemplate } from "../validate";
 // renderer (M3-11) and the golden images (M3-14).
 
 const PICTURE = "data:image/webp;base64,UklGRg==";
+/** Fonts are megabytes of base64 and the page scripts are snapshotted once in the framework test. */
 const stripFonts = (html: string) =>
-  html.replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, "data:font/woff2;base64,…");
+  html
+    .replace(/data:font\/woff2;base64,[A-Za-z0-9+/=]+/g, "data:font/woff2;base64,…")
+    .replace(/<script>[\s\S]*?<\/script>/g, "<script>…</script>");
 
 const render = (templateId: string, name: string, withImages = true) => {
   const slide = TEMPLATE_FIXTURES[templateId]?.[name];
@@ -98,7 +102,7 @@ describe("template B number", () => {
     expect(render("B", "es-long", false)).toContain('<div class="b-wrap">');
   });
 
-  it("narrows it further for a picture down the right side", () => {
+  it("hands the placement to the placement script instead of narrowing the column", () => {
     const placed = (placement: string) =>
       renderSlideHtml({
         slide: TEMPLATE_FIXTURES.B?.["es-long"] as never,
@@ -106,8 +110,44 @@ describe("template B number", () => {
         assets: { images: { side: PICTURE }, placements: { side: placement } },
         page: { index: 1, count: 6 },
       });
-    expect(placed("RIGHT_COLUMN")).toContain('<div class="b-wrap has-photo narrow">');
-    expect(placed("RIGHT_COLUMN")).toContain('class="img cutout b-photo place-right-column"');
-    expect(placed("BOTTOM_BAND")).toContain('<div class="b-wrap has-photo">');
+    expect(placed("RIGHT_COLUMN")).toContain('<div class="b-wrap has-photo">');
+    expect(placed("RIGHT_COLUMN")).toContain(
+      'class="img cutout b-photo place-right-column" data-image="side" data-place="right-column"',
+    );
+    expect(placed("BOTTOM_BAND")).toContain('data-place="bottom-band"');
+  });
+});
+
+describe("template B, carousel v3 text", () => {
+  const withSlots = (slots: Record<string, string>) =>
+    renderSlideHtml({
+      slide: { ...(TEMPLATE_FIXTURES.B?.["es-long"] as SlideData), slots },
+      theme: buildTheme({}),
+      assets: { images: {} },
+      page: { index: 1, count: 6 },
+    });
+
+  it("draws a ladder: one line per sentence, a half-line gap between groups", () => {
+    const html = withSlots({ body: "Rinse it.\nDrain it.\n\n\nThen cook." });
+    expect(html).toContain('Rinse it.<br>Drain it.<span class="gap"></span>Then cook.');
+  });
+
+  it("draws the lead quieter than the headline and the closer in bold", () => {
+    const html = withSlots({
+      lead: "Boil it uncovered,",
+      headline: "then lid on.",
+      body: "x",
+      closer: "Keep it shut.",
+    });
+    expect(html).toContain('class="slot display lead b-lead"');
+    expect(html).toContain('class="slot display closer b-closer"');
+  });
+
+  it("draws a step label with its digits in ink, any other figure in the accent colour", () => {
+    expect(withSlots({ number: "Step 2", body: "x" })).toContain('class="slot display b-number"');
+    expect(withSlots({ number: "Paso 3", body: "x" })).toContain('class="slot display b-number"');
+    expect(withSlots({ number: "1:2", body: "x" })).toContain(
+      'class="slot display b-number figure"',
+    );
   });
 });

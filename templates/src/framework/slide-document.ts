@@ -10,6 +10,7 @@ import { registry } from "../registry";
 import { cssVariablesText, type Theme } from "../theme";
 import { FIT_TEXT_SCRIPT } from "./fit-text";
 import { CANVAS, escapeHtml, LINE_HEIGHT } from "./html";
+import { PLACE_PHOTO_SCRIPT } from "./place-photo";
 import type { RenderAssets, RenderContext, SlideData, TemplateRenderer } from "./types";
 
 // The slide document (plan 08 §8.2, §8.6, M3-07): one self-contained HTML page of 1080 × 1350 px
@@ -51,14 +52,19 @@ const BASE_CSS = `*{box-sizing:border-box;margin:0;padding:0}
 html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;background:#fff;overflow:hidden}
 .rc-slide{--rc-muted:color-mix(in srgb,var(--rc-text) 60%,var(--rc-bg));position:relative;width:${CANVAS.width}px;height:${CANVAS.height}px;overflow:hidden;background:var(--rc-bg);color:var(--rc-text);font-family:var(--rc-font-body);-webkit-font-smoothing:antialiased;hyphens:none;-webkit-hyphens:none;font-kerning:normal;text-rendering:geometricPrecision}
 .slot{flex:none;overflow:hidden;overflow-wrap:break-word;word-break:normal;position:relative;z-index:1}
-.slot.display{font-family:var(--rc-font-display);line-height:${LINE_HEIGHT.display};padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em}
-.slot.body{font-family:var(--rc-font-body);line-height:${LINE_HEIGHT.body};padding-block:.06em;font-weight:300}
+.slot.display{font-family:var(--rc-font-display);line-height:${LINE_HEIGHT.display};padding-block:.1em;text-wrap:balance;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;overflow-wrap:normal}
+.slot.body{font-family:var(--rc-font-body);line-height:${LINE_HEIGHT.body};padding-block:.06em;font-weight:400}
+.slot.body{text-wrap:pretty}
+.slot .gap{display:block;height:.5em}
+.slot.lead{font-weight:400}
+.slot.closer{font-weight:800}
 .slot em{font-style:normal}
 .slot.body em{font-weight:700}
 .slot.display em{color:var(--rc-accent)}
 .slot.rc-kicker{font-family:var(--rc-font-body);font-weight:600;text-transform:uppercase;letter-spacing:.14em;text-wrap:wrap}
 .img{display:block;object-fit:cover}
 .img.cutout{position:absolute;left:0;top:0;width:${CANVAS.width}px;height:${CANVAS.height}px;z-index:0;mix-blend-mode:multiply}
+.img.cutout[data-place]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
 .img.cutout.place-top-right{transform:translate(110px,-30px)}
 .img.cutout.place-right-column{transform:translate(110px,0)}
 .img.cutout.place-bottom-band{transform:translate(40px,170px)}
@@ -103,7 +109,8 @@ ${renderer.body(context)}
 ${logo}
 <div class="rc-page" data-page>${page.index}/${page.count}</div>${assets.aiBadge ? `<div class="rc-ai-badge" data-ai-badge style="position:absolute;right:var(--rc-safe-margin);top:var(--rc-safe-margin);font-family:var(--rc-font-body);z-index:2;font-size:22px;font-weight:700;line-height:1;letter-spacing:.06em;color:#fff;background:rgba(20,20,20,.72);padding:8px 14px;border-radius:999px">AI</div>` : ""}
 </div>
-<script>${FIT_TEXT_SCRIPT}</script>
+<script>${PLACE_PHOTO_SCRIPT}
+${FIT_TEXT_SCRIPT}</script>
 </body>
 </html>
 `;

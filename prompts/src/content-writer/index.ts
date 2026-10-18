@@ -16,3 +16,4 @@ export {
   default as contentWriterV6,
   WriterLearning,
 } from "./v6";
+export { default as contentWriterV7 } from "./v7";

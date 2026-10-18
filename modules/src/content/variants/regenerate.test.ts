@@ -302,7 +302,7 @@ describe("regenerateVariantField", () => {
 
   it("repairs once and then gives up on a value that breaks the template limit", async () => {
     const variantId = await makeVariant();
-    answer = () => "x".repeat(300);
+    answer = () => "x".repeat(400);
     const outcome = await runFieldRegeneration(
       ctx,
       await payload(variantId, "slides.s2.slots.body"),
@@ -316,7 +316,7 @@ describe("regenerateVariantField", () => {
   it("is repaired when the second answer is good", async () => {
     const variantId = await makeVariant();
     let n = 0;
-    answer = () => (n++ === 0 ? "x".repeat(300) : "Corto y bueno.");
+    answer = () => (n++ === 0 ? "x".repeat(400) : "Corto y bueno.");
     const outcome = await runFieldRegeneration(
       ctx,
       await payload(variantId, "slides.s2.slots.body"),

@@ -18,6 +18,9 @@ export const MIN_CONTRAST = 4.5;
  */
 export const MIN_PICTURE_WHITENESS = 240;
 
+/** The share of a cut-out's subject box that must be inside the slide (carousel-v3 Q3). */
+export const MIN_SUBJECT_VISIBLE = 0.85;
+
 /** Mean 0–255 value of the top-left corner (left 30 %, top 25 %) of a raw RGB(A) picture. */
 export function cornerWhiteness(image: {
   data: Uint8Array;
@@ -92,6 +95,20 @@ export type PageMeasurement = {
   brokenImages: string[];
   /** Image slots drawn as cut-outs on white (`img.cutout`). */
   cutouts?: string[];
+  /**
+   * Cut-outs fitted by the placement script (templates/src/framework/place-photo.ts): the subject
+   * box on the slide, the share of it inside the slide, the scale, and the text slots it touches
+   * (those are already counted as overflow).
+   */
+  pictures?: {
+    slot: string;
+    placement: string;
+    subject: number[];
+    visible: number | null;
+    scale: number | null;
+    overlap: string[];
+    error: string | null;
+  }[];
   /** Text slots with their box and colour, for the contrast check. */
   slots: {
     slot: string;
@@ -135,7 +152,15 @@ export function buildQaReport(args: {
   lowContrast?: NonNullable<QaReport["lowContrast"]>;
   nonWhitePictures?: NonNullable<QaReport["nonWhitePictures"]>;
 }): QaReport {
+  const croppedPictures = args.measurements.flatMap((m) =>
+    (m.pictures ?? []).flatMap((p) =>
+      p.visible !== null && p.visible < MIN_SUBJECT_VISIBLE
+        ? [{ slideId: m.slideId, slot: p.slot, visible: p.visible }]
+        : [],
+    ),
+  );
   return {
+    ...(croppedPictures.length > 0 ? { croppedPictures } : {}),
     ...(args.lowContrast && args.lowContrast.length > 0 ? { lowContrast: args.lowContrast } : {}),
     ...(args.nonWhitePictures && args.nonWhitePictures.length > 0
       ? { nonWhitePictures: args.nonWhitePictures }
@@ -217,6 +242,10 @@ export function judgeQa(
     ...(report.nonWhitePictures ?? []).map(
       (p) =>
         `Picture not on white (corner ${Math.round(p.mean)}/255, needs ${MIN_PICTURE_WHITENESS}): ${p.slideId}/${p.slot}.`,
+    ),
+    ...(report.croppedPictures ?? []).map(
+      (p) =>
+        `Picture's subject cut by the slide edge (${Math.round(p.visible * 100)} % shows, needs ${Math.round(MIN_SUBJECT_VISIBLE * 100)} %): ${p.slideId}/${p.slot}.`,
     ),
   ];
   return { ok: flags.size === 0, flags: [...flags], problems, warnings };

@@ -1,8 +1,11 @@
 // The in-page fit-text script (plan 08 §8.6, "fit-text.client.js"). For each `[data-fit]` element it
 // starts at `data-fit-max` px and lowers the size by 2 px while the text overflows its fixed box
 // and the size is above `data-fit-min`. Text that still overflows at the minimum gets
-// `data-overflow="true"`. It waits for the fonts and sets `data-fit-done` on <html> when it has
-// finished; the renderer waits for that attribute. Deterministic: fonts and viewport are fixed.
+// `data-overflow="true"`. A display slot does not wrap inside a word, so a word wider than the
+// column overflows sideways and shrinks the size too. It waits for the fonts, then lets the photo
+// placement (`window.__rcPlace`, place-photo.ts) fit the pictures around the sized text, and sets
+// `data-fit-done` on <html> when both have finished; the renderer waits for that attribute.
+// Deterministic: fonts and viewport are fixed.
 //
 // Kept as a plain ES5 string so that it runs in any page and can be tested with a stub DOM.
 
@@ -26,6 +29,10 @@ export const FIT_TEXT_SCRIPT = `(function () {
       if (overflows(el)) el.setAttribute("data-overflow", "true");
       el.setAttribute("data-font-px", String(size));
     }
+    var place = window.__rcPlace ? window.__rcPlace() : Promise.resolve();
+    place.then(done, done);
+  }
+  function done() {
     document.documentElement.setAttribute("data-fit-done", "true");
   }
   window.__rcFit = fit;

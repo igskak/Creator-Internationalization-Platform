@@ -391,8 +391,18 @@ class Machine {
     const { url } = await this.ctx.storage.presignGet(reel.videoKey, {
       expiresInSeconds: PRESIGN_TTL.metaFetch,
     });
+    // The approved cover, when it was made and is still in storage (R3); else the first frame.
+    const coverUrl =
+      reel.cover && (await this.ctx.storage.head(reel.cover.key))
+        ? (
+            await this.ctx.storage.presignGet(reel.cover.key, {
+              expiresInSeconds: PRESIGN_TTL.metaFetch,
+            })
+          ).url
+        : undefined;
     return createReelContainer(this.graph(), this.account.instagramAccountId, {
       videoUrl: url,
+      ...(coverUrl ? { coverUrl } : {}),
       caption: this.pc.caption,
       shareToFeed: true,
       // Instagram's own "AI info" label, when the approved snapshot asks for it (V-16, V-25).

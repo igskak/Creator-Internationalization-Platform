@@ -22,6 +22,12 @@ export const VisualSystem = z.object({
   spacing: z.object({ safeMarginPx: z.number().int().nonnegative() }),
   /** e.g. 'warm-mediterranean' → color overrides. */
   themeVariants: z.record(z.string().min(1), VisualSystemColors.partial()).default({}),
+  /**
+   * The carousel cover (docs/design/carousel-v3-requirements.md D1, decided 2026-10-17): "white"
+   * (the default: the inner slides' page, text left, the photo beside it) or "dark" (full-bleed
+   * photo under a dark shade).
+   */
+  cover: z.enum(["dark", "white"]).optional(),
 });
 export type VisualSystem = z.infer<typeof VisualSystem>;
 

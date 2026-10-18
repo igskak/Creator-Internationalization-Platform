@@ -5,6 +5,7 @@ import {
   contentWriterV4,
   contentWriterV5,
   contentWriterV6,
+  contentWriterV7,
 } from "./content-writer";
 import { criticV1, criticV2, criticV3 } from "./critic";
 import { evalJudgeV1, evalJudgeV2 } from "./eval-judge";
@@ -12,7 +13,12 @@ import { fieldRegeneratorV1 } from "./field-regenerator";
 import { ideaGeneratorV1, ideaGeneratorV2, ideaGeneratorV3 } from "./idea-generator";
 import { knowledgeExtractorV1, knowledgeExtractorV2 } from "./knowledge-extractor";
 import { knowledgeGlossV1, knowledgeGlossV2 } from "./knowledge-gloss";
-import { marketAdapterV1, marketAdapterV2, marketAdapterV3 } from "./market-adapter";
+import {
+  marketAdapterV1,
+  marketAdapterV2,
+  marketAdapterV3,
+  marketAdapterV4,
+} from "./market-adapter";
 import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
 import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
 import { reelDirectorV1, reelDirectorV2 } from "./reel-director";
@@ -24,6 +30,7 @@ import {
   visualDirectorV4,
   visualDirectorV5,
   visualDirectorV6,
+  visualDirectorV7,
 } from "./visual-director";
 import { visualQaV1, visualQaV2 } from "./visual-qa";
 
@@ -99,12 +106,14 @@ export const promptRegistry = createRegistry([
   marketAdapterV1,
   marketAdapterV2,
   marketAdapterV3,
+  marketAdapterV4,
   contentWriterV1,
   contentWriterV2,
   contentWriterV3,
   contentWriterV4,
   contentWriterV5,
   contentWriterV6,
+  contentWriterV7,
   criticV1,
   criticV2,
   criticV3,
@@ -116,6 +125,7 @@ export const promptRegistry = createRegistry([
   visualDirectorV4,
   visualDirectorV5,
   visualDirectorV6,
+  visualDirectorV7,
   fieldRegeneratorV1,
   visualQaV1,
   visualQaV2,

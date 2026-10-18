@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { promptRegistry, renderPrompt } from "../index";
+import { renderPrompt } from "../index";
 import { FIXTURE_INPUT } from "./fixtures";
 import v5 from "./v5";
 import v6 from "./v6";
@@ -15,8 +15,7 @@ const learning = {
 };
 
 describe("content-writer@6", () => {
-  it("is the latest writer, with the defaults and output of v5", () => {
-    expect(promptRegistry.latest("content-writer")).toBe(v6);
+  it("keeps the defaults and output of v5", () => {
     expect(v6).toMatchObject({ key: "content-writer@6", stage: "CONTENT_WRITING" });
     expect(v6.defaults).toEqual(v5.defaults);
     expect(v6.output).toBe(v5.output);

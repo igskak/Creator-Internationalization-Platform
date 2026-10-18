@@ -8,6 +8,7 @@ import { type CardMeasure, type RenderedCard, renderCard } from "./cards";
 import { defaultExec, type Exec } from "./exec";
 import { buildFfmpegArgs } from "./ffmpeg";
 import { reelInputHash } from "./hash";
+import { measureClipPageLevel } from "./page-level";
 import { type AssemblyPlan, buildAssemblyPlan, type PlanScene, type PlanShot } from "./plan";
 import { probeReel } from "./qa";
 
@@ -96,10 +97,29 @@ export async function assembleReel(
     if (ownBrowser) await browser?.close();
   }
 
+  // The page colour of every clip, measured once; a clip that cannot be read keeps the fixed lift.
+  const pageLevels: Record<string, number> = {};
+  const clips = [...new Set(plan.segments.map((s) => s.clipPath))];
+  for (const [i, clipPath] of clips.entries()) {
+    const at = plan.segments.find((s) => s.clipPath === clipPath)?.trimStart ?? 0;
+    try {
+      pageLevels[clipPath] = await measureClipPageLevel(
+        clipPath,
+        at + 0.2,
+        tools,
+        input.workDir,
+        `clip-${i}`,
+      );
+    } catch {
+      // Left out: the filter graph falls back to the fixed lift for this clip.
+    }
+  }
+
   await exec(
     tools.ffmpeg,
     buildFfmpegArgs(plan, {
       cardPaths,
+      pageLevels,
       outPath: input.outPath,
       ...(input.audio ? { audio: { path: input.audio.path } } : {}),
       ...(options.crf !== undefined ? { crf: options.crf } : {}),

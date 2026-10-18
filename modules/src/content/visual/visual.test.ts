@@ -17,12 +17,15 @@ import { recipeOf } from "./inputs";
 import {
   finishPhotoPrompts,
   PHOTO_NEGATIVE,
+  PHOTO_NEGATIVE_WHOLE,
   PHOTO_STYLE,
+  PHOTO_STYLE_WHOLE,
   PLACEMENT_COMPOSITION,
   photoNegative,
   photoPrompt,
   SLOT_COMPOSITION,
   SPLIT_COMPOSITION,
+  WHOLE_COMPOSITION,
 } from "./photo-prompt";
 import {
   regenerateVisualBrief,
@@ -684,5 +687,134 @@ describe("placement checks", () => {
 
   it("blocks a bottom band under a long text", () => {
     expect(codesOf([at("s3", "BOTTOM_BAND")])).toEqual(["VISUAL_PLACEMENT_BAND"]);
+  });
+});
+
+describe("whole subjects (visual-director@7)", () => {
+  it("composes a whole subject for its placement, two servings for a comparison in the corner", () => {
+    expect(photoPrompt("A spoon lifts rice", "side", false, "TOP_RIGHT", true)).toBe(
+      `A spoon lifts rice. ${WHOLE_COMPOSITION.TOP_RIGHT} ${PHOTO_STYLE_WHOLE}`,
+    );
+    expect(photoPrompt("Wet and fluffy rice", "side", true, "CORNER", true)).toContain(
+      WHOLE_COMPOSITION.PAIR,
+    );
+    expect(photoPrompt("Three bowls", "side", true, "RIGHT_COLUMN", true)).toContain(
+      WHOLE_COMPOSITION.RIGHT_COLUMN,
+    );
+    // The white cover (the default) is a corner picture like the inner slides.
+    expect(photoPrompt("A served bowl", "cover", false, undefined, true)).toBe(
+      `A served bowl. ${WHOLE_COMPOSITION.CORNER} ${PHOTO_STYLE_WHOLE}`,
+    );
+    expect(photoPrompt("A served bowl", "cover", false)).toContain(SLOT_COMPOSITION.cover);
+    const done = photoPrompt("A bowl", "side", false, "CORNER", true);
+    expect(photoPrompt(done, "side", false, "CORNER", true)).toBe(done);
+    expect(photoNegative("mushy clumps", true)).toBe(`${PHOTO_NEGATIVE_WHOLE}, mushy clumps`);
+  });
+
+  it("finishes a brief that names a vessel with the whole-subject composition", () => {
+    const finished = finishPhotoPrompts(
+      brief({
+        slides: [
+          entry({
+            slideId: "s2",
+            slot: "side",
+            shotType: "COMPARISON",
+            vessel: "WHITE_PORCELAIN",
+            prompt: "Wet rice and fluffy rice on two white plates",
+          }),
+        ],
+      }),
+      slides,
+      p0Registry,
+    );
+    expect(finished.slides[0]?.prompt).toContain(WHOLE_COMPOSITION.PAIR);
+    expect(finished.slides[0]?.prompt).not.toContain(SPLIT_COMPOSITION.side);
+    expect(finished.slides[0]?.negativePrompt).toContain("split frame");
+  });
+});
+
+describe("moment checks (visual-director@7)", () => {
+  const step = (id: string, index: number, body: string): Slide => ({
+    ...slide(id, index, "B", "STEP"),
+    slots: { headline: "Rinse the rice", body },
+  });
+  const steps = [
+    step("m1", 0, "Rinse it **three or four times** in cold water."),
+    step("m2", 1, "Spread the grains on a wide warm skillet."),
+    step("m3", 2, "Leave the lid on for ten minutes off the heat."),
+    step("m4", 3, "Fluff with a fork and serve."),
+    step("m5", 4, "Measure 240 ml of rice and 330 ml of water."),
+    step("m6", 5, "Bring it to a calm simmer, then turn the heat down."),
+  ];
+  const ctx: VisualValidationContext = { ...context, slides: steps };
+  const pic = (
+    slideId: string,
+    over: Partial<VisualBrief["slides"][number]> = {},
+  ): VisualBrief["slides"][number] =>
+    entry({
+      slideId,
+      slot: "side",
+      shotType: "TECHNIQUE_IN_ACTION",
+      vessel: "WHITE_PORCELAIN",
+      arrangement: "HERO",
+      depicts: "three or four times",
+      ...over,
+    });
+  const codesOf = (pics: VisualBrief["slides"]) =>
+    validateVisualBrief(brief({ slides: pics }), ctx)
+      .map((i) => i.code)
+      .filter((c) => !c.startsWith("VISUAL_SHOT") && c !== "VISUAL_COLOUR_MISSING");
+
+  it("accepts pictures that quote their slide, vary and use one dark vessel", () => {
+    expect(
+      codesOf([
+        pic("m1"),
+        pic("m2", { depicts: "wide warm skillet", vessel: "STEEL", arrangement: "TOOL_IN_ACTION" }),
+        pic("m3", {
+          depicts: "Leave the lid on",
+          vessel: "CAST_IRON",
+          arrangement: "HERO_WITH_DEPTH",
+        }),
+      ]),
+    ).toEqual([]);
+  });
+
+  it("blocks a missing or invented depicts", () => {
+    expect(codesOf([pic("m1", { depicts: "" })])).toEqual(["VISUAL_DEPICTS_MISSING"]);
+    expect(codesOf([pic("m2", { depicts: "a deep pot of boiling pasta" })])).toEqual([
+      "VISUAL_DEPICTS_NOT_IN_SLIDE",
+    ]);
+  });
+
+  it("blocks a second dark vessel and the same picture twice", () => {
+    expect(
+      codesOf([
+        pic("m1", { vessel: "CAST_IRON" }),
+        pic("m2", {
+          depicts: "wide warm skillet",
+          vessel: "DARK_CERAMIC",
+          arrangement: "SEQUENCE",
+        }),
+      ]),
+    ).toEqual(["VISUAL_VESSEL_DARK"]);
+    expect(codesOf([pic("m1"), pic("m3", { depicts: "Leave the lid on" })])).toEqual([
+      "VISUAL_PICTURE_REPEATED",
+    ]);
+  });
+
+  it("asks six pictures for four arrangements", () => {
+    const six = steps.map((s, i) =>
+      pic(s.id, {
+        depicts: Object.values(s.slots).join(" ").split(" ").slice(0, 3).join(" "),
+        arrangement: i % 2 ? "HERO" : "SEQUENCE",
+        vessel: (["WHITE_PORCELAIN", "STEEL", "GLASS"] as const)[i % 3],
+        shotType: (["TECHNIQUE_IN_ACTION", "FINISHED_DISH", "INGREDIENT_MACRO"] as const)[i % 3],
+      }),
+    );
+    expect(codesOf(six)).toEqual(["VISUAL_ARRANGEMENT_MONOTONOUS"]);
+  });
+
+  it("does not check briefs without a vessel (older directors)", () => {
+    expect(codesOf([pic("m1", { vessel: undefined, depicts: undefined })])).toEqual([]);
   });
 });

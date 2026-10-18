@@ -44,7 +44,7 @@ export const PLACEMENTS = [
 export type Placement = (typeof PLACEMENTS)[number];
 
 /** How the frame is built (visual-director@6). */
-export const ARRANGEMENTS = [
+export const ARRANGEMENTS_V6 = [
   /** One main subject. */
   "HERO",
   /** One main subject and one or two small related accents near it. */
@@ -56,6 +56,36 @@ export const ARRANGEMENTS = [
   /** The ingredients or tools of the step laid out together. */
   "LINE_UP",
 ] as const;
+
+/**
+ * visual-director@7 adds frames with a meaning (docs/design/carousel-v3-requirements.md P5): the
+ * portion laid out, depth behind a hero, a tool doing the step.
+ */
+export const ARRANGEMENTS = [
+  ...ARRANGEMENTS_V6,
+  /** The portion: the main ingredient and 3–6 small white or glass bowls of measured ingredients. */
+  "MISE_EN_PLACE",
+  /** The hero in front, a related dish or vessel softly out of focus behind it. */
+  "HERO_WITH_DEPTH",
+  /** A spoon, spatula, knife, scissors, tweezers or a wok doing the step, without a hand. */
+  "TOOL_IN_ACTION",
+] as const;
+
+/**
+ * The main vessel of a picture (visual-director@7, P6): light vessels by default, a dark one at
+ * most once per carousel.
+ */
+export const VESSELS = [
+  "NONE",
+  "WHITE_PORCELAIN",
+  "STEEL",
+  "GLASS",
+  "CAST_IRON",
+  "DARK_CERAMIC",
+] as const;
+export type Vessel = (typeof VESSELS)[number];
+/** Vessels that make a picture heavy and dark on the white page. */
+export const DARK_VESSELS: readonly Vessel[] = ["CAST_IRON", "DARK_CERAMIC"];
 
 /** Where a picture's colour accent comes from (visual-director@5). */
 export const COLOR_SOURCES = [
@@ -168,6 +198,10 @@ export const VisualDirectorOutput = z.object({
       /** Where the picture sits on an inner slide, and how the frame is built (visual-director@6 on). */
       placement: z.enum(PLACEMENTS).optional(),
       arrangement: z.enum(ARRANGEMENTS).optional(),
+      /** The main vessel (visual-director@7 on). */
+      vessel: z.enum(VESSELS).optional(),
+      /** The words of the slide the picture shows, quoted (visual-director@7 on). */
+      depicts: z.string().optional(),
     }),
   ),
   differentiationFromSibling: z.string(),

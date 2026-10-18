@@ -83,7 +83,7 @@ describe("market adapter stage", () => {
       expect.objectContaining({
         stage: "MARKET_ADAPTATION",
         promptId: "market-adapter",
-        promptVersion: 3,
+        promptVersion: 4,
       }),
     ]);
   });

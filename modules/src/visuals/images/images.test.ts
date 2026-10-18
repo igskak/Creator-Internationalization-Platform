@@ -154,4 +154,33 @@ describe("assetKeys", () => {
       originalKey: "assets/v1/s1-hero-abc.orig.png",
     });
   });
+  it("pads a cut-out with white instead of cropping it (fit contain)", async () => {
+    // A 2:3 frame with a dark block touching its top edge: a cover crop to 4:5 would cut it.
+    const tall = await sharp({
+      create: { width: 400, height: 600, channels: 3, background: "#ffffff" },
+    })
+      .composite([
+        {
+          input: await sharp({
+            create: { width: 200, height: 80, channels: 3, background: "#202020" },
+          })
+            .png()
+            .toBuffer(),
+          left: 100,
+          top: 0,
+        },
+      ])
+      .png()
+      .toBuffer();
+    const out = await normalizeImage(tall, "4:5", { fit: "contain" });
+    expect([out.width, out.height]).toEqual([1080, 1350]);
+    const { data, info } = await sharp(out.bytes)
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const at = (x: number, y: number) => data[(y * info.width + x) * info.channels] ?? 0;
+    // The block is still at the very top, and the side padding is white.
+    expect(at(540, 2)).toBeLessThan(80);
+    expect(at(10, 675)).toBeGreaterThan(245);
+  });
 });

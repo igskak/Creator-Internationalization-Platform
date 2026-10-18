@@ -1,4 +1,4 @@
-import { BOX, ENCODER, FPS, HEIGHT, WHITE_LIFT, WIDTH } from "./constants";
+import { BOX, ENCODER, FPS, HEIGHT, PAGE_LEVEL, WHITE_LIFT, WIDTH } from "./constants";
 import type { AssemblyPlan, Segment } from "./plan";
 
 // The ffmpeg command of one Reel as a single filter graph: for every segment the clip is cut,
@@ -18,7 +18,24 @@ export function boxFilter(layout: Segment["layout"]): string {
   );
 }
 
+/**
+ * The lift of a clip to a white page. With a measured page level (0–1) only the highlights move:
+ * the level becomes white and everything below the knee keeps its tone, so the food does not
+ * brighten; without one the fixed levels of the first release.
+ */
+export function liftFilter(pageLevel: number | undefined): string {
+  if (pageLevel === undefined) {
+    return `colorlevels=rimax=${WHITE_LIFT}:gimax=${WHITE_LIFT}:bimax=${WHITE_LIFT}`;
+  }
+  const level = Math.min(PAGE_LEVEL.max, Math.max(PAGE_LEVEL.min, pageLevel));
+  if (level >= 0.985) return "null";
+  const knee = Math.min(PAGE_LEVEL.knee, level - 0.1);
+  return `curves=all='0/0 ${num(knee)}/${num(knee)} ${num(level)}/1 1/1'`;
+}
+
 export type FfmpegInputs = {
+  /** The measured page level of each clip (0–1), by clip path; see `liftFilter`. */
+  pageLevels?: Readonly<Record<string, number>>;
   /** Path of the PNG of each scene's card, by scene id. */
   cardPaths: Readonly<Record<string, string>>;
   outPath: string;
@@ -53,7 +70,7 @@ export function buildFfmpegArgs(plan: AssemblyPlan, inputs: FfmpegInputs): strin
     graph.push(
       `[${clipIndex}:v]trim=start=${num(segment.trimStart)}:duration=${dur},setpts=PTS-STARTPTS,` +
         `tpad=stop_mode=clone:stop_duration=${dur},trim=duration=${dur},` +
-        `colorlevels=rimax=${WHITE_LIFT}:gimax=${WHITE_LIFT}:bimax=${WHITE_LIFT},` +
+        `${liftFilter(inputs.pageLevels?.[segment.clipPath])},` +
         `${boxFilter(segment.layout)},fps=${FPS},setsar=1,format=yuv420p[b${i}]`,
       `[${cardIndex}:v]format=rgba,fade=in:st=0:d=${num(segment.fadeSeconds)}:alpha=1[c${i}]`,
       `[b${i}][c${i}]overlay=0:0:format=auto,trim=duration=${dur},setpts=PTS-STARTPTS,format=yuv420p[s${i}]`,
