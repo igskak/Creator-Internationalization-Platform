@@ -684,7 +684,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## H · Hardening and MVP acceptance
 
-- [ ] **H-01 · Health page and dashboard indicators** · P0 · M · deps: M5-04, M6-03
+- [x] **H-01 · Health page and dashboard indicators** · P0 · M · deps: M5-04, M6-03
   - **Do:** `getSystemHealth` + `/settings/health` + dashboard tiles (12 §12.9 table), stuck detectors, kill switch control.
   - **Done when:** each indicator turns amber/red on fixture conditions (tests).
 
