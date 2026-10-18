@@ -28,7 +28,8 @@ describe("the Reel eval with the fake model", () => {
       ["pasta-oil", "SUCCEEDED"],
     ]);
     expect(results.every((r) => r.valid && r.issues.length === 0)).toBe(true);
-    expect(results.map((r) => r.seconds)).toEqual([14, 14, 14]);
+    // The hook is held 2.5 s whatever the script says (the calm hook, 2026-10-18).
+    expect(results.map((r) => r.seconds)).toEqual([14.5, 14.5, 14.5]);
     // Every script offers three different hook types.
     for (const r of results) expect(new Set(r.hookTypes).size).toBe(3);
     // The scripts of the eval set cover several hook types between them.
@@ -57,7 +58,7 @@ describe("the Reel eval with the fake model", () => {
     const sheet = reelReviewSheet(REEL_POSTS, results);
     expect(sheet).toContain("## risotto-rice · es-ES");
     expect(sheet).toContain("| h1 ✓ | MISTAKE_CALLOUT |");
-    expect(sheet).toContain("7 scenes, 14 s, flash opener ON.");
+    expect(sheet).toContain("7 scenes, 14.5 s, flash opener OFF.");
     expect(sheet).toContain("| 7 | CTA | SAVE_IT | 4 |");
     expect(sheet).toContain("claim fidelity");
   });

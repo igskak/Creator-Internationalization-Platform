@@ -684,7 +684,7 @@ Module dependency rules: 02 §2.4. Critical path and parallel work: 14 §14.6.
 
 ## H · Hardening and MVP acceptance
 
-- [ ] **H-01 · Health page and dashboard indicators** · P0 · M · deps: M5-04, M6-03
+- [x] **H-01 · Health page and dashboard indicators** · P0 · M · deps: M5-04, M6-03
   - **Do:** `getSystemHealth` + `/settings/health` + dashboard tiles (12 §12.9 table), stuck detectors, kill switch control.
   - **Done when:** each indicator turns amber/red on fixture conditions (tests).
 
@@ -821,6 +821,10 @@ Why: the first week on the English account (2026-10-12…15, 2 followers) showed
   - **Do:** a Reel that Instagram has published is uploaded to one YouTube channel with `videos.insert` (resumable): title = the Reel's hook line, description = its caption without the Instagram ask, hashtags and `#Shorts`, no brand text; behind `YOUTUBE_PUBLISH_MODE` (off by default) and `youtube.enabled`; dry run; job J25 `sync-youtube-shorts` (hourly, one Short per run); table `youtube_uploads` (0014); a *YouTube Shorts* column on the Published list. Instagram publishing is not touched. Design: `docs/design/youtube-shorts.md`; runbook: `docs/runbooks/youtube-shorts.md`.
   - **Done when:** `pnpm check` green; the owner has done the runbook's setup, a dry run printed sensible text, and the first live upload (private) was checked in Studio. **Open:** V-31 (does an unaudited API project upload non-private).
   - **Result (code, 2026-10-17):** `modules/src/youtube/{client,errors,metadata,upload,sync}.ts`, `youtube-shorts.test.ts` against an in-memory YouTube (lost answers, expired sessions, quota, token, guards), `pnpm rc youtube-shorts [--dry-run|--retry]`. Nothing is uploaded until the owner sets the environment and says yes.
+- [x] **G-10 · Weekly rhythm and the grid** · P1 · S · deps: M4-08, CV-08
+  - **Do:** owner's rhythm (2026-10-17): 6 Reels and 3 carousels a week, posted R, R, C, so every row of the profile grid reads carousel · Reel · Reel; the carousel of an idea goes out two or three days after its Reel. Scheduling warns (never refuses) when a post of the same idea and market is within `publishing.topic_gap_hours` (default 48, 0 = off); the calendar marks both posts. The Reel's grid cover keeps the whole slide inside the grid's 3:4 crop.
+  - **Done when:** tests; the calendar shows `TOPIC_GAP`.
+  - **Result (2026-10-17):** `TOPIC_GAP` in `scheduleWarnings` (schedule and reschedule) and `getCalendar` (posts inside the range only); setting key `publishing.topic_gap_hours` (not seeded: missing means 48); en/ru texts; cover crop test. Planning the R, R, C order itself stays with the owner.
 
 ## CV · Carousel v3 (pictures and posts)
 

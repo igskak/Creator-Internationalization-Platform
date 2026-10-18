@@ -2,6 +2,7 @@ export const MODULE_NAME = "analytics";
 
 export * from "./attribution";
 export {
+  ACCOUNT_INSIGHTS_LOCAL_HOUR,
   type AccountInsightsResult,
   CollectAccountInsightsInput,
   type CollectedSnapshot,

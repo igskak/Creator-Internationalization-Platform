@@ -131,12 +131,23 @@ describe("toReelScriptDraft", () => {
     const draft = toReelScriptDraft(FIXTURE_OUTPUT);
     expect(draft.scenes.at(-1)).toMatchObject({ index: 6, role: "CTA" });
     expect(draft.hookOptions).toHaveLength(3);
-    expect(draft.flashOpener).toBe("ON");
+  });
+
+  it("keeps the flash opener off and holds the hook scene 2.5 s", () => {
+    const output = structuredClone(FIXTURE_OUTPUT);
+    output.flashOpener = "ON";
+    at(output.scenes, 0).beats = 3;
+    const draft = toReelScriptDraft(output);
+    expect(draft.flashOpener).toBe("OFF");
+    expect(draft.scenes[0]?.beats).toBe(5);
+    expect(draft.scenes.slice(1).map((s) => s.beats)).toEqual(
+      output.scenes.slice(1).map((s) => s.beats),
+    );
   });
 
   it("refuses a scene that is not on the beat grid", () => {
     const output = structuredClone(FIXTURE_OUTPUT);
-    at(output.scenes, 0).beats = 3.25;
+    at(output.scenes, 1).beats = 3.25;
     expect(() => toReelScriptDraft(output)).toThrow();
   });
 });

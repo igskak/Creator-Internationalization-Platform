@@ -143,8 +143,8 @@ export const taxonomyTerms = pgTable(
 ).enableRLS();
 
 /**
- * Keys: publishing.enabled (bool), reels.enabled (bool), publishing.min_gap_minutes (int), rights.defaults
- * (RightsDefaults), analytics.min_sample (int), ai.stage_overrides (P1), ai.monthly_budget_usd (P1).
+ * Keys: publishing.enabled (bool), reels.enabled (bool), publishing.min_gap_minutes (int),
+ * publishing.topic_gap_hours (int, G-10), rights.defaults (RightsDefaults), analytics.min_sample (int), ai.stage_overrides (P1), ai.monthly_budget_usd (P1).
  */
 export const appSettings = pgTable("app_settings", {
   key: text().primaryKey(),

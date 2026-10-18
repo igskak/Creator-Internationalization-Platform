@@ -102,7 +102,7 @@ defineAction({
 
 | Action | Input | Output | Rules / side effects | Roles |
 |---|---|---|---|---|
-| `schedulePublication` | `{ variantId, mode: 'IMMEDIATE' \| 'SCHEDULED', scheduledAt?: ISO, dryRun?: boolean }` | `Publication` | Variant APPROVED with `approved_version_id`; `scheduledAt ≥ now + 5 min`; warning (not error) if no ACTIVE account for the market or another post for the market is within `publishing.min_gap_minutes`; IMMEDIATE requires ACTIVE account with VALID token and publishing enabled; idempotency key `pub:{publicationId}:0`; variant → SCHEDULED (or PUBLISHING for IMMEDIATE) | owner, editor |
+| `schedulePublication` | `{ variantId, mode: 'IMMEDIATE' \| 'SCHEDULED', scheduledAt?: ISO, dryRun?: boolean }` | `Publication` | Variant APPROVED with `approved_version_id`; `scheduledAt ≥ now + 5 min`; warning (not error) if no ACTIVE account for the market or another post for the market is within `publishing.min_gap_minutes`, or a post of the same idea and market within `publishing.topic_gap_hours` (G-10); IMMEDIATE requires ACTIVE account with VALID token and publishing enabled; idempotency key `pub:{publicationId}:0`; variant → SCHEDULED (or PUBLISHING for IMMEDIATE) | owner, editor |
 | `reschedulePublication` | `{ publicationId, scheduledAt }` | `Publication` | Only SCHEDULED | owner, editor |
 | `cancelPublication` | `{ publicationId, reason }` | `Publication` | Only SCHEDULED or QUEUED; variant → APPROVED | owner, editor |
 | `retryPublication` | `{ publicationId }` | `Publication` | Only FAILED; all guards re-checked; `retry_no + 1`, new idempotency key; keeps existing container ids when still valid | owner, editor |

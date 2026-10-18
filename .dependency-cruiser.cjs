@@ -11,6 +11,7 @@ const DOMAIN_ALLOWED = {
   publishing: ["content", "instagram"],
   analytics: ["publishing", "instagram", "content"],
   reels: ["content", "localization", "visuals", "ai"],
+  health: ["publishing", "analytics", "instagram", "ai"],
 };
 
 /** @type {import('dependency-cruiser').IConfiguration} */

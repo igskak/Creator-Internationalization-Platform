@@ -57,7 +57,9 @@ describe("buildFfmpegArgs", () => {
     );
     expect(graph).toContain("[2:v]trim=start=0.5:duration=1.5");
     expect(graph).toContain("colorlevels=rimax=0.9:gimax=0.9:bimax=0.9");
-    expect(graph).toContain("[1:v]format=rgba,fade=in:st=0:d=0.12:alpha=1[c0]");
+    // The hook card is there from the first frame; the next card fades in.
+    expect(graph).toContain("[1:v]format=rgba,fade=in:st=0:d=0.001:alpha=1[c0]");
+    expect(graph).toContain("[3:v]format=rgba,fade=in:st=0:d=0.12:alpha=1[c1]");
     expect(graph).toContain("[b0][c0]overlay=0:0:format=auto");
     expect(graph).toContain("[s0][s1]concat=n=2:v=1:a=0[v]");
     expect(graph).not.toContain("xfade");
