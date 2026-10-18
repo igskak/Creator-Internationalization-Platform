@@ -7,3 +7,4 @@ export * from "./reels";
 export * from "./review";
 export * from "./rights";
 export * from "./validation";
+export * from "./youtube";

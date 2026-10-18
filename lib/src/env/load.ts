@@ -12,6 +12,7 @@ import {
   seedSchema,
   storageSchema,
   supabaseSchema,
+  youtubeSchema,
 } from "./schemas";
 
 const concerns = {
@@ -21,6 +22,7 @@ const concerns = {
   ai: aiSchema,
   jobs: jobsSchema,
   instagram: instagramSchema,
+  youtube: youtubeSchema,
   security: securitySchema,
   observability: observabilitySchema,
   e2e: e2eSchema,

@@ -13,6 +13,7 @@ import {
   createServiceContext,
   instagramRuntimeFromEnv,
   runCliCommand,
+  youtubeRuntimeFromEnv,
 } from "@rc/modules/core";
 import { jobHandlers } from "@rc/modules/job-handlers";
 
@@ -54,6 +55,7 @@ const providers = {
   images: createImageProvider(env.ai),
   video: createVideoProvider(env.ai),
   instagram: instagramRuntimeFromEnv(env),
+  youtube: youtubeRuntimeFromEnv(env),
 };
 // Jobs run in-process, one after the other, so a command can wait for ingestion to finish.
 const jobs: ReturnType<typeof createInlineJobRunner> = createInlineJobRunner({

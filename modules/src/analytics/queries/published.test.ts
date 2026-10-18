@@ -101,6 +101,35 @@ describe("published list, CSV and lineage", () => {
       expect(list.rows[1]?.saveRate).toBeCloseTo(0.1, 6);
       expect(list.rows[1]?.shareRate).toBeCloseTo(0.02, 6);
       expect(list.rows[1]?.permalink).toContain("instagram.com/p/");
+      expect(list.rows[1]?.youtubeUrl).toBeNull();
+    });
+
+    it("links the Short of a post once its live YouTube upload is published (G-09)", async () => {
+      const shown = await post({ hook: "Shown" });
+      const dry = await post({ hook: "Dry run only", publishedAt: "2026-10-11T09:00:00Z" });
+      const [market] = await t.db.select().from(schema.markets).limit(1);
+      const upload = (p: typeof shown, over: Partial<typeof schema.youtubeUploads.$inferInsert>) =>
+        t.db.insert(schema.youtubeUploads).values({
+          contentVariantId: p.variantId,
+          contentVariantVersionId: p.versionId,
+          publicationId: p.publicationId,
+          marketId: market?.id ?? "",
+          ...over,
+        });
+      await upload(shown, {
+        status: "PUBLISHED",
+        youtubeVideoId: "vid1",
+        url: "https://www.youtube.com/shorts/vid1",
+      });
+      await upload(dry, { status: "DRY_RUN_PASSED", dryRun: true });
+      const list = await listPublished(fx.ctx);
+      const byHook = Object.fromEntries(list.rows.map((r) => [r.hook, r.youtubeUrl]));
+      expect(byHook).toEqual({
+        Shown: "https://www.youtube.com/shorts/vid1",
+        "Dry run only": null,
+      });
+      const { csv } = await exportPublishedCsv(fx.ctx);
+      expect(csv).toContain("https://www.youtube.com/shorts/vid1");
     });
 
     it("filters by market, format and window, pages, and leaves out dry runs", async () => {
@@ -141,7 +170,7 @@ describe("published list, CSV and lineage", () => {
       expect(truncated).toBe(false);
       const [header, line, rest] = csv.split("\r\n");
       expect(header).toBe(
-        "published_at,market,format,hook,hook_type,permalink,d7_slot,is_exact_d7,reach,save_rate,share_rate,comment_rate,engagement_rate",
+        "published_at,market,format,hook,hook_type,permalink,youtube_url,d7_slot,is_exact_d7,reach,save_rate,share_rate,comment_rate,engagement_rate",
       );
       expect(line).toContain('"Bulgur, hot water"');
       expect(line).toContain(",D7,true,1000,0.1");

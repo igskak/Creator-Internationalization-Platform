@@ -55,6 +55,7 @@ Node 24 (`.nvmrc`), pnpm version from `packageManager`. In cloud sessions the Se
 | `pnpm video:smoke [--live --image f.jpg] [--model m] [--seconds n]` | One video shot through the Higgsfield provider (`docs/plan/18-reels.md`): by default only prints the cost estimate and whether `HIGGSFIELD_API_KEY` is set; `--live` makes one real shot (a few tens of cents) after a confirmation |
 | `pnpm rc g2-check` | What the database says about Gate G2 (dry runs, kill switch, allowlist, token refresh, first posts); the record is `docs/decisions/G2.md` |
 | `pnpm rc g3-check` | What the database says about Gate G3, the first live Reel (Reel dry runs, approved Reels, live Reels); the record is `docs/decisions/G3.md` |
+| `pnpm rc youtube-shorts [--dry-run [--publication <id>]] [--retry <uploadId>]` | YouTube Shorts (G-09, `docs/runbooks/youtube-shorts.md`): shows the switches, the next Reel and the latest uploads; `--dry-run` checks one published Reel without uploading; `--retry` starts a failed live upload again. Off unless `YOUTUBE_PUBLISH_MODE` is set |
 | `pnpm db:seed` | Insert missing reference rows (brand, markets, taxonomy, owners from `SEED_OWNER_EMAILS`, settings); never overwrites |
 
 Added by later tasks (not available yet): none. Update this table when you add one.
