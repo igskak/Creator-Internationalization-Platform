@@ -237,6 +237,11 @@ export const PipelineState = z.object({
   updatedAt: z.string().min(1).optional(),
   completedStages: z.array(z.string()),
   runIds: z.record(z.string(), z.string()),
+  /**
+   * Set when a run resumes a paused one (out of credit): the id the market order was shuffled with
+   * in the first run, so the resumed markets are still planned in the order their plans were made.
+   */
+  orderSeed: z.string().min(1).optional(),
 });
 export type PipelineState = z.infer<typeof PipelineState>;
 

@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { PermanentError, TransientError } from "../../errors";
+import { CreditsExhaustedError, PermanentError, TransientError } from "../../errors";
 import type {
   LLMContent,
   LLMProvider,
@@ -50,7 +50,20 @@ function toBlocks(content: readonly LLMContent[]): Anthropic.Beta.Messages.BetaC
   });
 }
 
-/** Rate limit, overload, 5xx, timeout and network errors are retryable; client errors are not. */
+/** The account has no credit left: a 400 "credit balance is too low" or a 402 billing error. */
+export function isCreditsExhausted(error: InstanceType<typeof Anthropic.APIError>): boolean {
+  if (error.status === 402) return true;
+  if (error.status !== 400) return false;
+  const body = error.error as { error?: { type?: string; message?: string } } | undefined;
+  return (
+    body?.error?.type === "billing_error" || /credit balance is too low/i.test(error.message ?? "")
+  );
+}
+
+/**
+ * Rate limit, overload, 5xx, timeout and network errors are retryable; client errors are not.
+ * An empty balance is its own error, so a pipeline can pause instead of failing.
+ */
 export function mapAnthropicError(error: unknown): unknown {
   if (error instanceof Anthropic.APIUserAbortError) return error;
   if (error instanceof Anthropic.APIConnectionError) {
@@ -58,6 +71,13 @@ export function mapAnthropicError(error: unknown): unknown {
   }
   if (error instanceof Anthropic.APIError) {
     const details = { status: error.status, requestId: error.requestID ?? undefined };
+    if (isCreditsExhausted(error)) {
+      return new CreditsExhaustedError(
+        "anthropic",
+        `Anthropic credit is exhausted (${error.status}): ${error.message}`,
+        { details, cause: error },
+      );
+    }
     if (error.status === 429) {
       const retryAfter = Number(error.headers?.get("retry-after"));
       return new TransientError(`Anthropic rate limit: ${error.message}`, {
