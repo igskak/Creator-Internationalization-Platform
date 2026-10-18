@@ -112,7 +112,7 @@ describe("getReelView", () => {
       expect(reel?.script).toMatchObject({
         version: 1,
         chosenHookId: "h1",
-        flashOpener: "ON",
+        flashOpener: "OFF",
         model: "alibaba/wan-3.0",
       });
       expect(reel?.script?.hookOptions.map((h) => h.id)).toEqual(["h1", "h2", "h3"]);

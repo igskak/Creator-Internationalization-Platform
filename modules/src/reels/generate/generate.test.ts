@@ -110,7 +110,7 @@ describe("generateReel", () => {
     expect(script).toMatchObject({
       version: 1,
       chosenHookId: "h1",
-      flashOpener: "ON",
+      flashOpener: "OFF",
       shotModel: "alibaba/wan-3.0",
       promptVersion: "reel-director@2",
     });
@@ -126,9 +126,10 @@ describe("generateReel", () => {
     const allShots = await shots();
     expect(allShots.every((s) => s.status === "READY" && s.storageKey)).toBe(true);
     // The cards and beats went to the assembly, with the hook card first.
-    expect(stub.calls[0]?.scenes[0]).toMatchObject({ id: "s1", beats: 4, layout: "RIGHT" });
-    expect(stub.calls[0]?.flashOpener).toBe(true);
-    // The placeholder beat goes with it (the file is cut to the 7 scenes and the flash opener).
+    // The hook is held 2.5 s and the flash opener is off (the calm hook, 2026-10-18).
+    expect(stub.calls[0]?.scenes[0]).toMatchObject({ id: "s1", beats: 5, layout: "RIGHT" });
+    expect(stub.calls[0]?.flashOpener).toBe(false);
+    // The placeholder beat goes with it (the file is cut to the 7 scenes).
     expect(stub.calls[0]?.audio).toMatchObject({ kind: "PLACEHOLDER_BEAT" });
     expect(stub.calls[0]?.audio?.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(Object.keys(stub.calls[0]?.shots ?? {})).toHaveLength(7);

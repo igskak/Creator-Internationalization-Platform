@@ -4,7 +4,7 @@ import {
   ReelHookOption,
   ReelScene,
 } from "@rc/db/json";
-import type { AnyPrompt, reelDirector } from "@rc/prompts";
+import { type AnyPrompt, REEL_LIMITS, type reelDirector } from "@rc/prompts";
 import { runStage, type StageConfig, type StageResult } from "../../ai";
 import type { ServiceContext } from "../../core";
 import type { NumberLocale } from "../../localization";
@@ -45,6 +45,14 @@ export type ReelScriptDraft = {
   post?: ReelPostDraft;
 };
 
+/**
+ * The calm hook (owner decision 2026-10-18): the first Reel with the flash opener kept viewers 2 s
+ * against 4.3–5.0 s without it, so the opener is off whatever the prompt answers, and the hook scene
+ * is held the longest a scene may last (2.5 s) for the question to be read before the first cut.
+ */
+const calmHook = (scene: Output["scenes"][number], index: number) =>
+  index === 0 ? { ...scene, beats: REEL_LIMITS.maxBeats } : scene;
+
 /** The answer in the stored shape: scenes get their `index`; every shape is parsed once more. */
 export function toReelScriptDraft(output: Output): ReelScriptDraft {
   const post =
@@ -62,8 +70,8 @@ export function toReelScriptDraft(output: Output): ReelScriptDraft {
   return {
     hookOptions: output.hookOptions.map((h) => ReelHookOption.parse(h)),
     chosenHookId: output.chosenHookId,
-    flashOpener: output.flashOpener,
-    scenes: output.scenes.map((s, index) => ReelScene.parse({ ...s, index })),
+    flashOpener: "OFF",
+    scenes: output.scenes.map((s, index) => ReelScene.parse({ ...calmHook(s, index), index })),
     ...(post ? { post } : {}),
   };
 }

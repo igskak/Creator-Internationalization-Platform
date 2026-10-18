@@ -2,7 +2,7 @@
 // its checks and its input hash read them from here.
 
 /** Part of the input hash: bump it when the filter graph, the card layout or the encoder profile changes. */
-export const RENDERER_VERSION = "1.1.0";
+export const RENDERER_VERSION = "1.2.0";
 
 export const WIDTH = 1080;
 export const HEIGHT = 1920;

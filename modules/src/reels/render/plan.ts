@@ -1,8 +1,9 @@
 import { CARD, FLASH, SECONDS_PER_BEAT } from "./constants";
 
 // The cut list of a Reel (reel-style.md "Format"): one segment per scene on the 120 BPM grid, and
-// with the flash opener four short slices of later shots in front of the first scene. Pure data in,
-// pure data out, so the grid and the opener are tested without ffmpeg.
+// with the flash opener four short slices of later shots in front of the first scene. Without it the
+// hook card is on screen from the first frame (no fade), so the viewer reads the question at once.
+// Pure data in, pure data out, so the grid and the opener are tested without ffmpeg.
 
 export type PlanScene = {
   id: string;
@@ -79,7 +80,7 @@ export function buildAssemblyPlan(
     }
     flashSeconds = FLASH.shots * FLASH.shotSeconds;
   }
-  for (const scene of scenes) {
+  for (const [i, scene] of scenes.entries()) {
     const shot = shotOf(scene.id);
     segments.push({
       sceneId: scene.id,
@@ -89,7 +90,7 @@ export function buildAssemblyPlan(
       trimStart: shot.trimStartSeconds ?? 0,
       seconds: scene.beats * SECONDS_PER_BEAT,
       layout: scene.layout,
-      fadeSeconds: CARD.fadeSeconds,
+      fadeSeconds: i === 0 && !options.flashOpener ? 0.001 : CARD.fadeSeconds,
     });
   }
   const totalSeconds = segments.reduce((sum, s) => sum + s.seconds, 0);

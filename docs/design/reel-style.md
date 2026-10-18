@@ -5,7 +5,7 @@ Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/p
 ## Format
 - 1080×1920, 30 fps, H.264 (High, yuv420p) + AAC, faststart, 12–20 s (never above 30 s).
 - 6–9 scenes on a **120 BPM grid**: a scene is 3 to 5 beats (1.5–2.5 s), so every cut lands on a beat. Hard cuts only, no crossfades.
-- Optional **flash opener** (variant B): four 0.22 s shots in the first 0.9 s under the hook card.
+- **Calm hook** (since 2026-10-18): the hook scene is held 2.5 s (5 beats) and its card is on screen from the first frame, no fade. The **flash opener** (variant B: four 0.22 s shots in the first 0.9 s under the hook card) is off; the renderer still supports it for a manual test.
 - Silent-first: the picture and the text card must work without sound. The first release adds a placeholder synthesized beat (kick and clap enter on scene 2, an impact on the "appetite" scene, a click on every cut).
 
 ## Story (one idea per Reel)
@@ -22,7 +22,7 @@ Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/p
 - Inter Tight 800, uppercase, 92–128 px, line height 1.0, letter spacing −0.02 em; the ink colour of the carousel (`#111`), one accent word or line in the carousel red (`#E1251B`) per card.
 - At most 6 words per card, 2–3 lines, left aligned at x = 70, top at y = 240.
 - Limits the director validates: at most 36 characters per card and 14 per word (a 780 px column at 92–128 px), at most one accent, no emoji. The renderer still fits text down to the safe zone.
-- **Safe zone** on 1080×1920: nothing above y = 230 or below y = 1440; keep the right 230 px clear (Instagram's buttons and caption sit there). A card appears with a 0.12 s fade at the start of its scene.
+- **Safe zone** on 1080×1920: nothing above y = 230 or below y = 1440; keep the right 230 px clear (Instagram's buttons and caption sit there). A card appears with a 0.12 s fade at the start of its scene, except the hook card, which is there from the first frame.
 
 ## Picture
 - Shots come from our own pictures (image-to-video), padded to 9:16 on pure white. Grey casts from the model are lifted to white with `colorlevels` (max 0.9).
