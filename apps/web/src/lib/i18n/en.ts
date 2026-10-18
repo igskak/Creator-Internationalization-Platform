@@ -2057,6 +2057,131 @@ export const en = {
       next: "Next",
     },
   },
+  systemHealth: {
+    title: "Health",
+    subtitle:
+      "Whether the system works: the database and storage, the Instagram accounts, publishing, background work, insights, the AI providers and their cost. Read from the database each time the page opens; the Instagram standing is what the six-hourly check last saw.",
+    checkedAt: "Checked at {time}",
+    overall: "Overall",
+    state: {
+      GREEN: "OK",
+      AMBER: "Needs a look",
+      RED: "Problem",
+      NONE: "Not in use",
+    },
+    indicators: {
+      connectivity: "Database and storage",
+      instagram: "Instagram accounts",
+      publishing: "Publishing",
+      jobs: "Background work",
+      insights: "Insights freshness",
+      aiProviders: "AI providers",
+      aiCost: "AI cost",
+    },
+    rules: {
+      connectivity: "Amber above 2 s, red when it does not answer.",
+      instagram:
+        "Amber when the token ends within 14 days or more than 80 % of the publishing quota is used; red when the account must be connected again.",
+      publishing:
+        "Amber when switched off or a post waits more than 15 minutes to start; red after a failed live post in the last 7 days.",
+      jobs: "Amber for 1 or 2 failures in 24 hours; red for 3 or more, or anything stuck.",
+      insights: "Amber when the oldest due snapshot is 3 hours late; red after 24 hours.",
+      aiProviders:
+        "Amber when more than 5 % of the calls were refused or unusable; red when more than 20 % failed.",
+      aiCost: "Amber from 80 % of the monthly budget, red above it.",
+    },
+    connectivity: {
+      db: "Database",
+      storage: "Storage",
+      ms: "{ms} ms",
+      failing: "not answering",
+      notConfigured: "not configured",
+    },
+    instagram: {
+      reason: {
+        OK: "OK",
+        EXPIRING: "Token ends in {days} days",
+        QUOTA: "Publishing quota: {used} of {total}",
+        NEEDS_REAUTH: "Must be connected again",
+        REVOKED: "Access revoked",
+        NOT_CONNECTED: "No account connected",
+        DISCONNECTED: "Disconnected",
+      },
+      lastCheck: "Last check: {time}",
+      never: "Not checked yet",
+      manage: "Open Settings → Instagram",
+    },
+    publishing: {
+      mode: {
+        off: "Environment: publishing off",
+        dry_run_only: "Environment: dry runs only",
+        live: "Environment: live",
+      },
+      on: "Switch: on",
+      off: "Switch: off",
+      failed: "Failed live posts, last 7 days: {count}",
+      waiting: "Posts waiting more than 15 minutes to start: {count}",
+      lastFailure: "Last failure, {time}",
+      noMessage: "No message stored.",
+      open: "Open the post",
+    },
+    jobs: {
+      failed: "Failures in the last 24 hours",
+      total: "Failures, 24 h: {count}",
+      stuckCount: "Stuck: {count}",
+      domain: {
+        INGESTION: "Sources",
+        GENERATION: "Drafts",
+        PICTURES: "Pictures",
+        RENDERS: "Renders",
+        PUBLISHING: "Publishing",
+      },
+      stuck: "Stuck",
+      noStuck: "Nothing is stuck.",
+      kind: {
+        SOURCE_PROCESSING: "Source processing for more than 2 h",
+        VARIANT_GENERATING: "Draft generating for more than 30 min",
+        CAROUSEL_RENDER: "Carousel render for more than 30 min",
+        REEL_RENDER: "Reel render for more than 30 min",
+        PUBLICATION: "Post being published for more than 45 min",
+      },
+      since: "since {time}",
+      open: "Open",
+    },
+    insights: {
+      none: "No snapshot is due.",
+      due: "Due: {count}, the oldest {hours} h late",
+      kind: {
+        POST: "Post, slot {label}",
+        ACCOUNT: "Account metrics for {label}",
+      },
+      lateBy: "{hours} h late",
+    },
+    aiProviders: {
+      summary:
+        "Last 24 hours: {runs} calls, {failed} failed, {refused} refused, {invalid} unusable.",
+    },
+    aiCost: {
+      spent: "This month: {spent}",
+      of: "of {budget}",
+      noBudget: "No monthly budget set.",
+      manage: "Open Settings → AI",
+    },
+    problems: {
+      title: "Open findings",
+      none: "No open finding.",
+    },
+    activity: {
+      title: "Recent activity",
+      none: "Nothing yet.",
+      actor: {
+        USER: "person",
+        SYSTEM: "system",
+        JOB: "job",
+      },
+    },
+    details: "Details",
+  },
   dashboard: {
     title: "Dashboard",
     subtitle: "What waits for a person.",
@@ -2072,7 +2197,7 @@ export const en = {
     },
     open: "Open",
     nothingWaiting: "Nothing is waiting.",
-    later: "System health and recent activity arrive with task H-01.",
+    health: "System health",
   },
   ideas: {
     title: "Ideas",
