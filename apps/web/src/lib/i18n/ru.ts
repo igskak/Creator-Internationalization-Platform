@@ -772,6 +772,7 @@ export const ru: Messages = {
       seconds: "{n} с",
     },
     failedTitle: "Не удалось написать",
+    pausedTitle: "Ждём пополнения баланса ИИ",
     failedBody: "{message}",
     qualityScore: "Качество {score}",
     flagsTitle: "Флаги",
@@ -888,6 +889,7 @@ export const ru: Messages = {
       },
       failed: {
         title: "Не удалось сделать Reel",
+        pausedTitle: "Ждём пополнения баланса ИИ",
         body: "{message}",
         flag: "Генерация не удалась",
       },
