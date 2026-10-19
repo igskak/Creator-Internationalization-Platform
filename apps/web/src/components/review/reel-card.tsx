@@ -275,10 +275,13 @@ function Ready({ view, reel, canManage }: { view: ReelView; reel: Detail; canMan
       router.refresh();
     },
   });
+  // A video attached from outside the app (`pnpm rc reel-attach`) has no model and no shots: its
+  // hook and shots cannot be changed, only replaced or generated again.
+  const attached = script?.model === "attached";
   const model = (script?.model ?? "alibaba/wan-3.0") as ModelId;
-  const estimate = view.estimates[model];
+  const estimate = view.estimates[model] ?? view.estimates["alibaba/wan-3.0"];
   const shotPrice = Math.round((estimate.shotsUsd / estimate.shots) * 10_000) / 10_000;
-  const canChange = canManage && reel.changeable;
+  const canChange = canManage && reel.changeable && !attached;
   const render = reel.render;
 
   return (
