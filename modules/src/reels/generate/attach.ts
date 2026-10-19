@@ -173,6 +173,7 @@ export async function attachReelVideo(
     event: "START_PIPELINE",
     data: { runKey, attached: true },
   });
+  let renderId: string | undefined;
   try {
     const [latest] = await ctx.db
       .select({ version: schema.reelScripts.version })
@@ -223,6 +224,7 @@ export async function attachReelVideo(
       })
       .returning();
     if (!render) throw new Error("reel_renders: the insert returned no row");
+    renderId = render.id;
     const key = `renders/reels/${variantId}/${render.id}.mp4`;
     await ctx.storage.put(key, bytes, { contentType: "video/mp4" });
     await ctx.db
@@ -287,19 +289,30 @@ export async function attachReelVideo(
       warnings,
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    // The cause (a constraint, a lost connection) is what a person needs, not the failed query.
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause.message : "";
+    if (renderId) {
+      await ctx.db
+        .update(schema.reelRenders)
+        .set({
+          status: "FAILED",
+          error: { code: "REEL_ATTACH_FAILED", message: cause || message },
+          completedAt: ctx.clock.now(),
+        })
+        .where(eq(schema.reelRenders.id, renderId));
+    }
     // Back to a draft: nothing half-attached stays current.
     await transitionVariant(ctx, {
       variantId,
       event: "PIPELINE_FAILURE",
       set: {
         pipelineState: null,
-        lastError: {
-          code: "REEL_ATTACH_FAILED",
-          message: error instanceof Error ? error.message : String(error),
-        },
+        lastError: { code: "REEL_ATTACH_FAILED", message: cause || message },
       },
       data: { runKey, code: "REEL_ATTACH_FAILED" },
     });
+    if (cause) throw new Error(`${cause} (attaching the Reel video)`, { cause: error });
     throw error;
   }
 }
