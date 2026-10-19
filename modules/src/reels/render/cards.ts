@@ -1,12 +1,13 @@
 import { stripEmphasis } from "@rc/templates";
 import { fontFaceCss } from "@rc/templates/render";
 import type { Browser } from "playwright-core";
-import { CARD, HEIGHT, SAFE_ZONE, WIDTH } from "./constants";
+import { CARD, HEIGHT, LINE, SAFE_ZONE, WIDTH } from "./constants";
 
 // Text cards as transparent 1080 × 1920 PNGs (reel-style.md "Text cards"): Inter Tight 800, upper
 // case, line height 1.0, letter spacing −0.02 em, the ink of the carousel with one accent in its
 // red, left aligned at x = 70, top at y = 240, in a 780 px column. Chromium draws them with the
-// bundled font; a white halo keeps them readable over a picture that reaches the card.
+// bundled font; a white halo keeps them readable over a picture that reaches the card. From
+// reel-director@4 a card may carry a line of use under it: smaller, light, the same ink and column.
 
 export type CardMeasure = {
   fontPx: number;
@@ -31,7 +32,7 @@ export function cardInnerHtml(card: string): string {
     .join("");
 }
 
-export function cardPageHtml(card: string): string {
+export function cardPageHtml(card: string, line = ""): string {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
 ${fontFaceCss("inter-tight")}
 html,body{margin:0;background:transparent}
@@ -40,7 +41,11 @@ html,body{margin:0;background:transparent}
 letter-spacing:-.02em;text-transform:uppercase;color:${CARD.ink};text-wrap:balance;overflow-wrap:normal;
 paint-order:stroke fill;-webkit-text-stroke:14px rgba(255,255,255,.92)}
 .t span{color:${CARD.accent}}
-</style></head><body><div class="w"><div class="t" data-card>${cardInnerHtml(card)}</div></div></body></html>`;
+.l{position:absolute;left:${CARD.left}px;width:${CARD.width}px;font-weight:${LINE.weight};line-height:${LINE.lineHeight};
+color:${CARD.ink};text-wrap:pretty;paint-order:stroke fill;-webkit-text-stroke:8px rgba(255,255,255,.92)}
+</style></head><body><div class="w"><div class="t" data-card>${cardInnerHtml(card)}</div>${
+    line.trim() ? `<div class="l" data-line>${escapeHtml(line.trim())}</div>` : ""
+  }</div></body></html>`;
 }
 
 /**
@@ -60,21 +65,32 @@ const FIT_SOURCE = `(cfg) => {
   }
   el.style.fontSize = chosen + "px";
   const r = el.getBoundingClientRect();
-  return { fontPx: chosen, lines: Math.round(r.height / chosen), box: { x: r.x, y: r.y, width: r.width, height: r.height } };
+  const box = { x: r.x, y: r.y, width: r.width, height: r.height };
+  const line = document.querySelector("[data-line]");
+  if (line) {
+    line.style.top = (r.y + r.height + cfg.line.gapPx) + "px";
+    for (let px = cfg.line.fontPx; px >= cfg.line.minFontPx; px -= 2) {
+      line.style.fontSize = px + "px";
+      if (line.getBoundingClientRect().height <= px * cfg.line.lineHeight * cfg.line.maxLines + 1) break;
+    }
+    const l = line.getBoundingClientRect();
+    box.width = Math.max(box.width, l.x + l.width - box.x);
+    box.height = l.y + l.height - box.y;
+  }
+  return { fontPx: chosen, lines: Math.round(r.height / chosen), box };
 }`;
 
-export async function renderCard(browser: Browser, card: string): Promise<RenderedCard> {
+export async function renderCard(browser: Browser, card: string, line = ""): Promise<RenderedCard> {
   const page = await browser.newPage({
     viewport: { width: WIDTH, height: HEIGHT },
     deviceScaleFactor: 1,
   });
   try {
-    await page.setContent(cardPageHtml(card), { waitUntil: "load" });
+    await page.setContent(cardPageHtml(card, line), { waitUntil: "load" });
     await page.evaluate("document.fonts.ready");
-    const fit = (await page.evaluate(`(${FIT_SOURCE})(${JSON.stringify(CARD)})`)) as Omit<
-      CardMeasure,
-      "belowMinimum" | "insideSafeZone"
-    >;
+    const fit = (await page.evaluate(
+      `(${FIT_SOURCE})(${JSON.stringify({ ...CARD, line: LINE })})`,
+    )) as Omit<CardMeasure, "belowMinimum" | "insideSafeZone">;
     const bottom = fit.box.y + fit.box.height;
     const png = await page.screenshot({ type: "png", omitBackground: true });
     return {

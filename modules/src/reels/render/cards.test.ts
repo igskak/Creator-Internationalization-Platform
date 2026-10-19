@@ -1,10 +1,10 @@
-import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { REEL_POSTS, REEL_POSTS_V4 } from "@rc/prompts/fixtures/reel-director";
 import type { Browser } from "playwright-core";
 import sharp from "sharp";
 import { afterAll, describe, expect, it } from "vitest";
 import { launchBrowser } from "../../visuals/render";
 import { cardInnerHtml, cardPageHtml, renderCard } from "./cards";
-import { CARD } from "./constants";
+import { CARD, LINE } from "./constants";
 
 // Cards need a Chromium (the one CI installs, a local Chrome on a Mac); without a browser the
 // browser tests are skipped.
@@ -15,6 +15,12 @@ afterAll(async () => {
 });
 
 describe("card HTML", () => {
+  it("adds the line of use as its own escaped element, and nothing without one", () => {
+    const html = cardPageHtml("Hot water on **bulgur?**", "Fine <b>bulgur</b> soaks.");
+    expect(html).toContain('<div class="l" data-line>Fine &lt;b&gt;bulgur&lt;/b&gt; soaks.</div>');
+    expect(cardPageHtml("Hot water on **bulgur?**")).not.toContain("data-line>");
+  });
+
   it("turns **accent** into a span and escapes the rest", () => {
     expect(cardInnerHtml("Hot water on **bulgur?**")).toBe("Hot water on <span>bulgur?</span>");
     expect(cardInnerHtml("Fish & <chips> **now**")).toBe(
@@ -82,6 +88,32 @@ describe.skipIf(!browser)("renderCard", () => {
       expect(measure.lines, card).toBeLessThanOrEqual(CARD.maxLines);
       expect(measure.belowMinimum, `${card} at ${measure.fontPx}px`).toBe(false);
       expect(measure.insideSafeZone, card).toBe(true);
+    }
+  }, 120_000);
+
+  it("puts the line of use under the card, smaller, in the column and the safe zone", async () => {
+    if (!browser) return;
+    const plain = await renderCard(browser, "Ahí se va lo **meloso.**");
+    const withLine = await renderCard(
+      browser,
+      "Ahí se va lo **meloso.**",
+      "El almidón de la superficie es lo que hace el risotto meloso.",
+    );
+    expect(withLine.measure.fontPx).toBe(plain.measure.fontPx);
+    expect(withLine.measure.box.height).toBeGreaterThan(
+      plain.measure.box.height + LINE.gapPx + LINE.minFontPx,
+    );
+    expect(withLine.measure.insideSafeZone).toBe(true);
+  });
+
+  it("fits every card and line of the v4 posts inside the safe zone", async () => {
+    if (!browser) return;
+    for (const post of REEL_POSTS_V4) {
+      for (const scene of post.output.scenes) {
+        const { measure } = await renderCard(browser, scene.card, scene.line);
+        expect(measure.insideSafeZone, `${scene.card} / ${scene.line}`).toBe(true);
+        expect(measure.belowMinimum, scene.card).toBe(false);
+      }
     }
   }, 120_000);
 

@@ -165,7 +165,14 @@ export function createHiggsfieldVideoProvider(options: HiggsfieldOptions): Video
     validate(request, model);
     const imageUrl = await upload(request.image);
     const response = await call("POST", `/${model}/image-to-video`, {
-      json: shotBody(model, imageUrl, request.prompt.trim(), request.durationSeconds, resolution),
+      json: shotBody(
+        model,
+        imageUrl,
+        request.prompt.trim(),
+        request.durationSeconds,
+        resolution,
+        request.audio === true,
+      ),
       headers: { "idempotency-key": request.idempotencyKey },
     });
     const body = (await response.json()) as { request_id?: string };
@@ -293,6 +300,7 @@ function shotBody(
   prompt: string,
   duration: number,
   resolution: VideoResolution,
+  audio = false,
 ): Record<string, unknown> {
   switch (model) {
     case "alibaba/wan-3.0":
@@ -302,17 +310,17 @@ function shotBody(
         duration,
         resolution,
         aspect_ratio: "adaptive",
-        generate_audio: false,
+        generate_audio: audio,
         enable_thinking: false,
       };
     case "bytedance/seedance-2.0":
-      return { image_url: imageUrl, prompt, duration, resolution, generate_audio: false };
+      return { image_url: imageUrl, prompt, duration, resolution, generate_audio: audio };
     case "kling-video/v3.0/std":
       return {
         image_url: imageUrl,
         prompt,
         duration,
-        sound: "off",
+        sound: audio ? "on" : "off",
         cfg_scale: 0.5,
         multi_shots: false,
       };

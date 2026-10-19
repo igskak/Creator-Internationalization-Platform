@@ -405,7 +405,7 @@ export const reelRenders = pgTable(
     check("reel_renders_ready_check", sql`${t.status} <> 'READY' or ${t.storageKey} is not null`),
     check(
       "reel_renders_audio_kind_check",
-      sql`${t.audioKind} in ('NONE', 'PLACEHOLDER_BEAT', 'OWNER_TRACK')`,
+      sql`${t.audioKind} in ('NONE', 'PLACEHOLDER_BEAT', 'OWNER_TRACK', 'MODEL_AUDIO')`,
     ),
   ],
 ).enableRLS();

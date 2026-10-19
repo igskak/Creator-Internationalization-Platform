@@ -28,6 +28,8 @@ export type ShotRequest = {
   idempotencyKey: string;
   /** A label for fakes and logs, e.g. `scene-3`; never sent to a vendor. */
   label?: string;
+  /** Ask the model for its own sound (Reels v4); default off. */
+  audio?: boolean;
 };
 
 /**

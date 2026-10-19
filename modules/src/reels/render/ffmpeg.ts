@@ -1,9 +1,12 @@
-import { BOX, ENCODER, FPS, HEIGHT, PAGE_LEVEL, WHITE_LIFT, WIDTH } from "./constants";
+import { BOX, ENCODER, FPS, HEIGHT, MODEL_AUDIO, PAGE_LEVEL, WHITE_LIFT, WIDTH } from "./constants";
 import type { AssemblyPlan, Segment } from "./plan";
 
 // The ffmpeg command of one Reel as a single filter graph: for every segment the clip is cut,
 // lifted to white, placed in its box on a white frame and overlaid with the card's PNG; the
-// segments are joined with hard cuts. Strings only (tested without ffmpeg); `assemble.ts` runs it.
+// segments are joined with hard cuts. With the model's own sound (MODEL_AUDIO, reel-director@4) each
+// segment also takes its clip's audio, cut the same way with short edge fades (silence when the clip
+// has none), and the joined track is brought to one loudness. Strings only (tested without ffmpeg);
+// `assemble.ts` runs it.
 
 const num = (n: number) => String(Math.round(n * 10_000) / 10_000);
 
@@ -40,6 +43,11 @@ export type FfmpegInputs = {
   cardPaths: Readonly<Record<string, string>>;
   outPath: string;
   audio?: { path: string };
+  /**
+   * The model's own sound instead of an audio file: by clip path, whether the clip has an audio
+   * stream (`assemble.ts` probes it).
+   */
+  modelAudio?: Readonly<Record<string, boolean>>;
   /** Test hook: a lower CRF makes golden frames nearly exact. */
   crf?: number;
   preset?: string;
@@ -76,11 +84,32 @@ export function buildFfmpegArgs(plan: AssemblyPlan, inputs: FfmpegInputs): strin
       `[b${i}][c${i}]overlay=0:0:format=auto,trim=duration=${dur},setpts=PTS-STARTPTS,format=yuv420p[s${i}]`,
     );
     joined.push(`[s${i}]`);
+    if (inputs.modelAudio) {
+      const format = `aresample=${MODEL_AUDIO.sampleRate},aformat=sample_fmts=fltp:channel_layouts=stereo`;
+      const fadeOut = Math.max(0, segment.seconds - MODEL_AUDIO.fadeOutSeconds);
+      graph.push(
+        inputs.modelAudio[segment.clipPath]
+          ? `[${clipIndex}:a]atrim=start=${num(segment.trimStart)}:duration=${dur},asetpts=PTS-STARTPTS,${format},` +
+              `apad=whole_dur=${dur},atrim=duration=${dur},` +
+              `afade=t=in:st=0:d=${num(MODEL_AUDIO.fadeInSeconds)},afade=t=out:st=${num(fadeOut)}:d=${num(MODEL_AUDIO.fadeOutSeconds)}[a${i}]`
+          : `anullsrc=r=${MODEL_AUDIO.sampleRate}:cl=stereo,atrim=duration=${dur},${format}[a${i}]`,
+      );
+      joined.push(`[a${i}]`);
+    }
   });
-  graph.push(`${joined.join("")}concat=n=${plan.segments.length}:v=1:a=0[v]`);
+  if (inputs.modelAudio) {
+    graph.push(
+      `${joined.join("")}concat=n=${plan.segments.length}:v=1:a=1[v][ajoined]`,
+      `[ajoined]${MODEL_AUDIO.loudnorm},aresample=${MODEL_AUDIO.sampleRate}[a]`,
+    );
+  } else {
+    graph.push(`${joined.join("")}concat=n=${plan.segments.length}:v=1:a=0[v]`);
+  }
 
   const audioIndex = plan.segments.length * 2;
-  if (inputs.audio) args.push("-i", inputs.audio.path);
+  if (inputs.modelAudio) {
+    // The sound is in the graph.
+  } else if (inputs.audio) args.push("-i", inputs.audio.path);
   else args.push("-f", "lavfi", "-t", num(plan.totalSeconds), "-i", "anullsrc=r=44100:cl=stereo");
 
   args.push(
@@ -89,7 +118,7 @@ export function buildFfmpegArgs(plan: AssemblyPlan, inputs: FfmpegInputs): strin
     "-map",
     "[v]",
     "-map",
-    `${audioIndex}:a`,
+    inputs.modelAudio ? "[a]" : `${audioIndex}:a`,
     "-c:v",
     "libx264",
     "-profile:v",

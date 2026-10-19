@@ -134,6 +134,21 @@ describe("Higgsfield video provider", () => {
     }
   });
 
+  it("asks each model for its own sound when the shot wants it (Reels v4)", async () => {
+    for (const [model, expected] of [
+      ["alibaba/wan-3.0", { generate_audio: true }],
+      ["kling-video/v3.0/std", { sound: "on" }],
+      ["bytedance/seedance-2.0", { generate_audio: true }],
+    ] as const) {
+      mock([done]);
+      await provider().generate(request({ model, durationSeconds: 4, audio: true }));
+      const submitted = seen.find((s) => s.url.endsWith("/image-to-video"));
+      expect(submitted?.body).toMatchObject(expected);
+      seen = [];
+      server.resetHandlers();
+    }
+  });
+
   it("fails permanently when the clip is blocked, failed or canceled, and names the request", async () => {
     for (const status of ["nsfw", "failed", "canceled"]) {
       mock([{ status }]);

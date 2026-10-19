@@ -2,7 +2,7 @@
 // its checks and its input hash read them from here.
 
 /** Part of the input hash: bump it when the filter graph, the card layout or the encoder profile changes. */
-export const RENDERER_VERSION = "1.2.0";
+export const RENDERER_VERSION = "1.3.0";
 
 export const WIDTH = 1080;
 export const HEIGHT = 1920;
@@ -38,6 +38,25 @@ export const CARD = {
   fadeSeconds: 0.12,
   ink: "#111111",
   accent: "#E1251B",
+} as const;
+
+/** The line of use under a card (reel-director@4): smaller, lighter, the same ink and column. */
+export const LINE = {
+  /** Gap between the card's last line and the line of use. */
+  gapPx: 30,
+  fontPx: 44,
+  minFontPx: 36,
+  weight: 400,
+  lineHeight: 1.18,
+  maxLines: 3,
+} as const;
+
+/** The model's own sound (MODEL_AUDIO): edge fades of each cut and the loudness of the whole Reel. */
+export const MODEL_AUDIO = {
+  fadeInSeconds: 0.03,
+  fadeOutSeconds: 0.05,
+  sampleRate: 48_000,
+  loudnorm: "loudnorm=I=-14:TP=-1.5:LRA=11",
 } as const;
 
 /** Safe zone on 1080 × 1920: nothing above y = 230 or below y = 1440; the right 230 px stay clear. */

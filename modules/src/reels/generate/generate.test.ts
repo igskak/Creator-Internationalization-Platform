@@ -9,6 +9,7 @@ import {
   PermanentError,
   TransientError,
 } from "@rc/lib/errors";
+import { createFakeImageProvider } from "@rc/lib/providers/image";
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
 import {
   createFakeVideoProvider,
@@ -17,9 +18,11 @@ import {
   type VideoProvider,
 } from "@rc/lib/providers/video";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { toReelScriptDraft } from "../director";
 import { applyChosenHook, generateReel } from "./generate";
 import {
   directorAnswer,
+  directorAnswerV3,
   type ReelFixture,
   reelFixture,
   scriptedLlm,
@@ -82,13 +85,14 @@ describe("generateReel", () => {
   const runsOf = (stage: "REEL_DIRECTION" | "REEL_SHOT") =>
     t.db.select().from(schema.generationRuns).where(eq(schema.generationRuns.stage, stage));
 
-  it("makes the Reel: script, seven shots, a render, and a variant ready for review", async () => {
+  it("makes the Reel: script, six pictures, six shots, a render, and a variant ready for review", async () => {
     const video = createFakeVideoProvider();
-    const { stub, done } = run("r1", { video });
+    const images = createFakeImageProvider();
+    const { stub, done } = run("r1", { video, images });
     const result = await done;
     expect(result.error).toBeUndefined();
     expect(result).toMatchObject({ variantId: reelId, status: "READY" });
-    expect(result.shots).toEqual({ total: 7, reused: 0, fallbacks: 0 });
+    expect(result.shots).toEqual({ total: 6, reused: 0, fallbacks: 0 });
 
     const v = await reel();
     expect(v).toMatchObject({ status: "READY_FOR_REVIEW", pipelineState: null, lastError: null });
@@ -112,9 +116,9 @@ describe("generateReel", () => {
       chosenHookId: "h1",
       flashOpener: "OFF",
       shotModel: "alibaba/wan-3.0",
-      promptVersion: "reel-director@3",
+      promptVersion: "reel-director@4",
     });
-    expect(script?.scenes).toHaveLength(7);
+    expect(script?.scenes).toHaveLength(6);
     expect(script?.scenes.every((s) => s.shotId)).toBe(true);
     expect(script?.hookOptions.map((h) => h.hookType)).toEqual([
       "MISTAKE_CALLOUT",
@@ -122,40 +126,61 @@ describe("generateReel", () => {
       "RELATABLE_PROBLEM",
     ]);
 
-    expect(video.calls).toHaveLength(7);
+    // reel-director@4: a picture made for every shot, in the account's look, as a reel-frame asset.
+    expect(images.calls).toHaveLength(6);
+    expect(images.calls[0]?.prompt).toContain("black enamel bowl");
+    expect(images.calls[0]?.prompt).toContain("pure white seamless background");
+    expect(images.calls[0]?.aspect).toBe("3:4");
+    const frames = await t.db
+      .select()
+      .from(schema.visualAssets)
+      .where(eq(schema.visualAssets.slot, "reel-frame"));
+    expect(frames).toHaveLength(6);
+    expect(frames.every((f) => f.status === "READY" && f.contentVariantId === reelId)).toBe(true);
+
+    // Four-second shots with the model's own sound, each from its own picture.
+    expect(video.calls).toHaveLength(6);
+    expect(video.calls.every((c) => c.durationSeconds === 4 && c.audio === true)).toBe(true);
     const allShots = await shots();
     expect(allShots.every((s) => s.status === "READY" && s.storageKey)).toBe(true);
-    // The cards and beats went to the assembly, with the hook card first.
-    // The hook is held 2.5 s and the flash opener is off (the calm hook, 2026-10-18).
-    expect(stub.calls[0]?.scenes[0]).toMatchObject({ id: "s1", beats: 5, layout: "RIGHT" });
+    expect(new Set(allShots.map((s) => s.sourceVisualAssetId))).toEqual(
+      new Set(frames.map((f) => f.id)),
+    );
+    // The cards, lines and beats went to the assembly, with the hook card first, held 3.5 s.
+    expect(stub.calls[0]?.scenes[0]).toMatchObject({ id: "s1", beats: 7, layout: "FULL" });
+    expect(stub.calls[0]?.scenes[0]?.line).toBeUndefined();
+    expect(stub.calls[0]?.scenes[1]?.line).toBe(
+      "El almidón de la superficie es lo que hace el risotto meloso.",
+    );
     expect(stub.calls[0]?.flashOpener).toBe(false);
-    // The placeholder beat goes with it (the file is cut to the 7 scenes).
-    expect(stub.calls[0]?.audio).toMatchObject({ kind: "PLACEHOLDER_BEAT" });
-    expect(stub.calls[0]?.audio?.sha256).toMatch(/^[0-9a-f]{64}$/);
-    expect(Object.keys(stub.calls[0]?.shots ?? {})).toHaveLength(7);
+    // The sound of the shots, not the placeholder beat; each scene starts 0.2 s into its clip.
+    expect(stub.calls[0]?.audio).toEqual({ kind: "MODEL_AUDIO" });
+    expect(Object.keys(stub.calls[0]?.shots ?? {})).toHaveLength(6);
+    expect(stub.calls[0]?.shots.s1?.trimStartSeconds).toBe(0.2);
 
     const [render] = await renders();
     expect(render).toMatchObject({
       status: "READY",
       reelScriptId: script?.id,
-      audioKind: "PLACEHOLDER_BEAT",
+      audioKind: "MODEL_AUDIO",
       width: 1080,
       height: 1920,
       durationMs: 14_880,
     });
     expect(await fx.storage.head(render?.storageKey ?? "")).not.toBeNull();
     expect(render?.qaReport?.warnings).toEqual([]);
-    expect(Number(render?.costUsd)).toBeCloseTo(2.1, 3);
+    // Six shots of 4 s at Wan's 720p list rate; the fake pictures cost nothing.
+    expect(Number(render?.costUsd)).toBeCloseTo(2.4, 3);
 
     expect(await runsOf("REEL_DIRECTION")).toHaveLength(1);
-    expect(await runsOf("REEL_SHOT")).toHaveLength(7);
+    expect(await runsOf("REEL_SHOT")).toHaveLength(6);
     const events = await t.db
       .select()
       .from(schema.auditEvents)
       .where(eq(schema.auditEvents.action, "reel.generated"));
     expect(events).toHaveLength(1);
     expect(events[0]?.data).toMatchObject({
-      shots: 7,
+      shots: 6,
       reused: 0,
       fallbacks: 0,
       scriptId: script?.id,
@@ -201,8 +226,8 @@ describe("generateReel", () => {
       { assemble: stub.assemble },
     );
     expect(second.status).toBe("READY");
-    expect(second.shots).toEqual({ total: 7, reused: 7, fallbacks: 0 });
-    expect(video.calls).toHaveLength(7);
+    expect(second.shots).toEqual({ total: 6, reused: 6, fallbacks: 0 });
+    expect(video.calls).toHaveLength(6);
     expect(stub.calls).toHaveLength(0);
     expect(second.renderId).toBe(first.renderId);
     expect((await scripts()).map((s) => s.version)).toEqual([1, 2]);
@@ -261,7 +286,6 @@ describe("generateReel", () => {
       "READY",
       "READY",
       "READY",
-      "READY",
       "RUNNING",
     ]);
     expect(first.stub.calls).toHaveLength(0);
@@ -269,8 +293,8 @@ describe("generateReel", () => {
     stall = false;
     const second = await run("r1", { video: flaky }).done;
     expect(second.status).toBe("READY");
-    // Seven submissions in all, one director run, and the same script row.
-    expect(inner.calls).toHaveLength(7);
+    // Six submissions in all, one director run, and the same script row.
+    expect(inner.calls).toHaveLength(6);
     expect(await runsOf("REEL_DIRECTION")).toHaveLength(1);
     expect(await scripts()).toHaveLength(1);
     expect((await reel()).status).toBe("READY_FOR_REVIEW");
@@ -287,13 +311,13 @@ describe("generateReel", () => {
         return handle;
       },
       waitFor: async (handle) => {
-        if ((prompts.get(handle.requestId) ?? "").includes("sizzling")) throw nsfw();
+        if ((prompts.get(handle.requestId) ?? "").includes("sizzle")) throw nsfw();
         return inner.waitFor(handle);
       },
     };
     const result = await run("r1", { video }).done;
     expect(result.status).toBe("READY");
-    expect(result.shots).toMatchObject({ total: 7, fallbacks: 1 });
+    expect(result.shots).toMatchObject({ total: 6, fallbacks: 1 });
     expect((await shots()).filter((s) => s.status === "BLOCKED")).toHaveLength(1);
     const event = (
       await t.db
@@ -416,6 +440,62 @@ describe("generateReel", () => {
     );
     const text = JSON.stringify(llm.calls[0]?.messages);
     expect(text).toContain('<type code=\\"MISTAKE_CALLOUT\\" n=\\"1\\">');
+  });
+
+  it("starts a shot from the carousel picture when its own picture cannot be made", async () => {
+    const images = createFakeImageProvider({
+      fail: (request) =>
+        request.label === "reel-frame/s3"
+          ? new PermanentError("The image model refused the picture.")
+          : undefined,
+    });
+    const video = createFakeVideoProvider();
+    const result = await run("r1", { images, video }).done;
+    expect(result.status).toBe("READY");
+    const [script] = await scripts();
+    const s3 = script?.scenes.find((sc) => sc.id === "s3");
+    const shot = (await shots()).find((sh) => sh.id === s3?.shotId);
+    // The carousel picture the director named for the scene, with the scene's 4 s and its sound.
+    expect(shot?.sourceVisualAssetId).toBe(s3?.sourcePictureId);
+    expect(shot?.durationSeconds).toBe(4);
+    const failed = await t.db
+      .select()
+      .from(schema.visualAssets)
+      .where(eq(schema.visualAssets.status, "FAILED"));
+    expect(failed.map((f) => f.slideId)).toEqual(["s3"]);
+  });
+
+  it("makes an older script (reel-director@3) the old way: carousel pictures and the beat", async () => {
+    const draft = toReelScriptDraft(directorAnswerV3(fx.assetIds));
+    const [row] = await t.db
+      .insert(schema.reelScripts)
+      .values({
+        contentVariantId: reelId,
+        version: 1,
+        hookOptions: draft.hookOptions,
+        chosenHookId: draft.chosenHookId,
+        flashOpener: draft.flashOpener,
+        scenes: draft.scenes,
+        shotModel: "alibaba/wan-3.0",
+        costEstimateUsd: "2.2000",
+        promptVersion: "reel-director@3",
+      })
+      .returning();
+    const images = createFakeImageProvider();
+    const video = createFakeVideoProvider();
+    const stub = stubAssemble();
+    const result = await generateReel(
+      fx.jobCtx({ images, video }),
+      { variantId: reelId, requestId: "r1", scriptId: row?.id ?? "" },
+      { assemble: stub.assemble },
+    );
+    expect(result.status).toBe("READY");
+    expect(images.calls).toHaveLength(0);
+    expect(video.calls).toHaveLength(7);
+    expect(video.calls.every((c) => c.durationSeconds === 3 && c.audio !== true)).toBe(true);
+    expect(stub.calls[0]?.audio).toMatchObject({ kind: "PLACEHOLDER_BEAT" });
+    expect(stub.calls[0]?.scenes[0]).toMatchObject({ beats: 5, layout: "RIGHT" });
+    expect(stub.calls[0]?.shots.s1?.trimStartSeconds).toBeUndefined();
   });
 });
 

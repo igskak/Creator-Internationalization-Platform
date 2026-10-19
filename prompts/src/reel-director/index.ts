@@ -20,3 +20,10 @@ export {
   reelDirectorV2OutputFor,
 } from "./v2";
 export { default as reelDirectorV3 } from "./v3";
+export {
+  default as reelDirectorV4,
+  REEL_LIMITS_V4,
+  ReelDirectorOutputV4,
+  ReelDirectorSceneV4,
+  reelDirectorV4OutputFor,
+} from "./v4";

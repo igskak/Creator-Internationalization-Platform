@@ -61,7 +61,7 @@ const silent = createLogger({
 const LOCALES = { "es-ES": "es-ES", en: "en" } as const;
 
 export async function runReelEval(
-  posts: readonly ReelPost[],
+  posts: readonly Pick<ReelPost, "key" | "input">[],
   options: {
     llm: LLMProvider /** A prompt version other than the active one. */;
     prompt?: AnyPrompt;
@@ -161,7 +161,7 @@ export function estimateReelEval(posts: number): {
 
 /** The sheet the owner reads (V-29): hook options and the scenes of every script, in Markdown. */
 export function reelReviewSheet(
-  posts: readonly ReelPost[],
+  posts: readonly Pick<ReelPost, "key" | "input">[],
   results: readonly ReelEvalResult[],
 ): string {
   const out: string[] = [
@@ -193,11 +193,11 @@ export function reelReviewSheet(
       "",
       `Hook shot: ${result.hook?.shotPrompt ?? "-"} (picture ${result.hook?.pictureId ?? "-"}: ${result.hook?.picture ?? "-"}; picture moves: ${result.hookPictureMoves ? "yes" : "no"})`,
       "",
-      "| # | Role | Emotion | Beats | Card | Shot | Picture |",
-      "|---|---|---|---|---|---|---|",
+      "| # | Role | Emotion | Beats | Card | Line | Shot | Picture |",
+      "|---|---|---|---|---|---|---|---|",
       ...result.script.scenes.map(
         (s) =>
-          `| ${s.index + 1} | ${s.role} | ${s.emotion} | ${s.beats} | ${s.card} | ${s.shotPrompt} | ${s.sourcePictureId} |`,
+          `| ${s.index + 1} | ${s.role} | ${s.emotion} | ${s.beats} | ${s.card} | ${s.line ?? ""} | ${s.shotPrompt} | ${s.framePrompt ? `made: ${s.framePrompt}` : s.sourcePictureId} |`,
       ),
       "",
     );

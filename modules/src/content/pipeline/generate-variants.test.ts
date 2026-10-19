@@ -155,7 +155,7 @@ describe("generateVariants", () => {
       hookType: "MISTAKE_CALLOUT",
       ctaType: "SAVE",
       criticVerdict: "PASS",
-      generationVersion: "p1.10.0",
+      generationVersion: "p1.11.0",
       lockVersion: 1,
       flags: [],
       lastError: null,
@@ -176,7 +176,7 @@ describe("generateVariants", () => {
       thresholdsVersion: "d1-placeholder",
     });
     expect(es.generationConfig).toMatchObject({
-      pipelineVersion: "1.10.0",
+      pipelineVersion: "1.11.0",
       embeddingModel: "fake-embedding",
       stages: {
         MARKET_ADAPTATION: { promptId: "market-adapter", promptVersion: 4 },

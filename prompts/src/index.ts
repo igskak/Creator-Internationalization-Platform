@@ -21,7 +21,7 @@ import {
 } from "./market-adapter";
 import { pageTranscriberV1, pageTranscriberV2 } from "./page-transcriber";
 import { postAnnotatorV1, postAnnotatorV2 } from "./post-annotator";
-import { reelDirectorV1, reelDirectorV2, reelDirectorV3 } from "./reel-director";
+import { reelDirectorV1, reelDirectorV2, reelDirectorV3, reelDirectorV4 } from "./reel-director";
 import { createRegistry } from "./registry";
 import {
   visualDirectorV1,
@@ -62,7 +62,7 @@ export * as marketAdapter from "./market-adapter";
 export * as pageTranscriber from "./page-transcriber";
 export * as postAnnotator from "./post-annotator";
 export * as reelDirector from "./reel-director";
-export { REEL_LIMITS, REEL_POST_LIMITS } from "./reel-director";
+export { REEL_LIMITS, REEL_LIMITS_V4, REEL_POST_LIMITS } from "./reel-director";
 export { createRegistry, type PromptRegistry } from "./registry";
 export {
   BANNED_HOOK_PATTERNS,
@@ -132,4 +132,5 @@ export const promptRegistry = createRegistry([
   reelDirectorV1,
   reelDirectorV2,
   reelDirectorV3,
+  reelDirectorV4,
 ]);

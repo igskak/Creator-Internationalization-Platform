@@ -1,35 +1,41 @@
-# Reel style (accepted 2026-10-13)
+# Reel style (v4, accepted 2026-10-19)
 
-Reference: the English bulgur test Reel, hook variant B. Plan and tasks: `docs/plan/18-reels.md`. This file is the spec the Reel director prompt and the renderer follow.
+Reference: the rice Reel "Giving every pot a stir?", variant A (white page, dark text), made by hand on 2026-10-19 (`spikes/higgsfield-test/stir-v4`, git-ignored). Plan and tasks: `docs/plan/18-reels.md`; why it changed: decision log, 2026-10-19 "Reels v4". This file is the spec the Reel director prompt (reel-director@4) and the renderer (1.3.0) follow. A script of reel-director@3 or older is still made the old way; see "Before v4" at the end.
 
 ## Format
-- 1080×1920, 30 fps, H.264 (High, yuv420p) + AAC, faststart, 12–20 s (never above 30 s).
-- 6–9 scenes on a **120 BPM grid**: a scene is 3 to 5 beats (1.5–2.5 s), so every cut lands on a beat. Hard cuts only, no crossfades.
-- **Calm hook** (since 2026-10-18): the hook scene is held 2.5 s (5 beats) and its card is on screen from the first frame, no fade. The **flash opener** (variant B: four 0.22 s shots in the first 0.9 s under the hook card) is off; the renderer still supports it for a manual test.
-- Silent-first: the picture and the text card must work without sound. The first release adds a placeholder synthesized beat (kick and clap enter on scene 2, an impact on the "appetite" scene, a click on every cut).
+- 1080×1920, 30 fps, H.264 (High, yuv420p) + AAC, faststart, 16–24 s (never above 30 s).
+- 5–7 scenes on a **120 BPM grid**: a scene is 6 to 7 beats (3–3.5 s), long enough to read the card and its line. Hard cuts only, no crossfades. Fewer, calmer shots: the v3 Reels changed the picture every 1.5–2.5 s and lost viewers in about 2 s.
+- **Calm hook**: the hook scene is held 3.5 s (7 beats) and its card is on screen from the first frame, no fade. No flash opener.
+- **Sound**: the video model's own sound of each shot (`MODEL_AUDIO`): shot prompts name it ("Sound of the spoon scraping and water swishing."). Each cut gets short fades (30 / 50 ms), a clip without sound becomes silence, the whole track is brought to −14 LUFS. The picture and the text must still work without sound.
 
-## Story (one idea per Reel)
-1. **Hook (0–2.5 s)**: a doubt about a familiar action, with motion in the first frame ("HOT WATER ON BULGUR?"). Hook patterns and banned patterns: `docs/design/hook-library.md`.
-   - **The hook shot is the most dynamic one** (reel-director@3, since 2026-10-18): the hook scene starts from the most dynamic, appetizing picture of the carousel, from any slide (a pour, a ribbon falling from a spoon, a sizzle, a stir), never from a near-still picture of ingredients (a flat lay, ice and pieces side by side). Its shot prompt names a strong motion verb (pour, stream, fall, sizzle, stir, drizzle, whisk, splash, bubble, melt, toss, fry); steam rising, floating or bobbing alone do not count. The director checks the verb (`REEL_HOOK_MOTION`, a blocker with one repair; a base script's locked hook is not judged); the picture is judged on the review sheet. Why: the first Reel's hook shot was ice cubes and water bobbing beside chocolate pieces, and a calm hook on the falling ribbon held the eye far better.
-2. **Rule (next 1.5 s)**: the answer that opens a loop ("ONLY IF IT'S FINE.").
-3. **Body**: one step per scene, a different frame each time.
-4. **Appetite peak**: the most sensory shot (toast, sizzle, pour) with its card ("NUTTY. TOASTY. LIKE BREAD.").
-5. **Payoff and ask**: the finished dish and one ask ("CHECK THE GRIND FIRST. SAVE IT."). The last card echoes a word from the hook.
-- One emotion per scene: doubt, intrigue, "aha", appetite, usefulness, save.
-- Scene roles in order: `HOOK`, `RULE`, `STEP` scenes, exactly one `PEAK`, `PAYOFF`, and the ending (`CTA`, or `PAYOFF` carrying the ask). Scene 1's card is the chosen hook's card and scene 2's its rule card, word for word, so "change hook" swaps two cards.
-- Every claim comes from the post's slides. No new facts, numbers or results.
+## Story (one idea per Reel, with a logic)
+1. **Hook**: a problem the viewer recognises from their own kitchen, named concretely ("RICE NOT FLUFFY? **STOP STIRRING.**"), or a doubt about something they do, and the picture shows it (the cloudy, stirred pot). Never a vague "something wrong with your rice?". No line under the hook card: the question stands alone. Hook patterns and banned patterns: `docs/design/hook-library.md`. The hook shot names a strong motion (`REEL_HOOK_MOTION`, from reel-director@3).
+2. **Rule (why)**: the cause or the rule; its line says why ("EVERY STIR RUBS OFF **STARCH.**" / "And starch is what changes the texture.").
+3. **Steps**: one action per scene, in the order the viewer does them.
+4. **Peak or flip side**: the most sensory moment, or the other side of the rule ("CREAMY? **NOW STIR.**").
+5. **Summary**: the last card closes the loop with a word of the hook card; its line states the whole rule in one sentence and ends with the one ask ("Fluffy: hands off. Creamy: stir. Save this for your next pot."). A viewer who stops on the last frame has the full rule.
+- One emotion per scene: doubt, intrigue, "aha", appetite or surprise, usefulness, save.
+- Scene roles in order: `HOOK`, `RULE`, `STEP` scenes, exactly one `PEAK`, then the ending (`PAYOFF` with the ask, or `CTA`). Scene 1's card is the chosen hook's card and scene 2's its rule card, word for word, so "change hook" swaps two cards (the lines stay).
+- Every claim, in a card or a line, comes from the post's slides. No new facts, numbers or results.
 
-## Text cards
-- Inter Tight 800, uppercase, 92–128 px, line height 1.0, letter spacing −0.02 em; the ink colour of the carousel (`#111`), one accent word or line in the carousel red (`#E1251B`) per card.
-- At most 6 words per card, 2–3 lines, left aligned at x = 70, top at y = 240.
-- Limits the director validates: at most 36 characters per card and 14 per word (a 780 px column at 92–128 px), at most one accent, no emoji. The renderer still fits text down to the safe zone.
-- **Safe zone** on 1080×1920: nothing above y = 230 or below y = 1440; keep the right 230 px clear (Instagram's buttons and caption sit there). A card appears with a 0.12 s fade at the start of its scene, except the hook card, which is there from the first frame.
+## Text
+- **Card**: Inter Tight 800, uppercase, 92–128 px, line height 1.0, letter spacing −0.02 em; the carousel's ink (`#111`), one accent word or line in the carousel red (`#E1251B`). At most 6 words, 36 characters, 14 per word; left aligned at x = 70, top at y = 240, in a 780 px column; a white halo.
+- **Line of use** under the card: one short sentence (at most 14 words, 80 characters), Inter Tight 400, 44 px (down to 36 px for a long one), line height 1.18, the same ink, column and halo, 30 px under the card; no accent, no emoji. It adds the reason, the condition or the exact action the card leaves out.
+- **Safe zone** on 1080×1920: nothing above y = 230 or below y = 1440; keep the right 230 px clear (Instagram's buttons and caption). The card and its line appear with a 0.12 s fade, except on the hook.
 
 ## Picture
-- Shots come from our own pictures (image-to-video), padded to 9:16 on pure white. Grey casts from the model are lifted to white with `colorlevels` (max 0.9).
-- Layout per shot: a 907×1613 box placed flush right (the picture bleeds off the right edge, as in the carousel style), or full-bleed when the picture bleeds on both sides. The top 300–550 px stay white for the text card.
-- Prompt rule for shots: "static camera" plus one concrete motion (pouring, stirring, tossing, a lid closing); no camera push-ins (the model morphs the scene), no text, no people.
-- Same photographic rules as `docs/design/carousel-style.md` (high-key light, macro, no rustic surfaces).
+- **Every shot starts from a picture made for it.** The director writes `framePrompt` (English: the food, its cookware, its state, at the moment before the shot's motion); the system adds the account's look and the image model (gpt-image, 1024×1536) draws it; the frame is cut to 9:16 to fill (`cover`). The look: a pure white seamless page, soft high-key light, macro detail, the subject in the lower 60 % and the top 40 % white for the text, no people, hands, text or props (`REEL_FRAME_STYLE` in `modules/src/reels/generate/frames.ts`).
+- **Pale or white food goes into dark cookware** (owner's rule, 2026-10-19): rice, pasta, risotto, cream, milk, potatoes, cauliflower, raw or boiled chicken, white fish, tofu, dough, oats… sit in black cast iron, dark enamel, charcoal ceramic or dark stoneware, so they stand out on the white page. Colourful or browned food may sit in white cookware. The director is told so, the look repeats it, and `REEL_PALE_ON_WHITE` refuses a frame prompt that puts pale food in white cookware.
+- The hook shows the problem, a step its action, the summary the result (side by side when the rule has two sides). The same pot may come back, so the Reel feels like one kitchen.
+- Layout `FULL`: the picture fills the frame. Grey casts from the video model are lifted to white from the measured page level.
+- Shot prompts: "Static camera." plus one concrete motion of the food, a tool or the liquid, plus its sound; no camera movement (the model morphs the scene), no text, no people or hands.
+- A picture the image model refuses: the shot starts from the carousel picture the director named (`sourcePictureId`), padded on white.
 
 ## Cost and reuse
-- A shot is 3 s at 720p. The estimate shown before a run = shots × seconds × the provider's rate. Shots are reused by prompt hash; the Spanish Reel reuses the English shots and only renders its own text cards.
+- A shot is 4 s at 720p with sound; the first 0.2 s (still the start frame) are cut. The estimate shown before a run = shots × 4 s × the model's rate + one picture per shot ($0.05) + the director: about $2.80 on Wan, $2.97 on Kling, list prices.
+- Pictures are `visual_assets` rows (slot `reel-frame`) found again by the brand and the hash of their prompt; shots are found by the hash of model, length, prompt, start frame and sound. A rerun, a changed hook or a redone shot pays only for what is new. The Spanish Reel that reuses the English pictures and shots (M8-06a) is not built yet; reel-director@4 asks for empty frame prompts on a base script.
+
+## Before v4 (reel-director@1–3, renderer up to 1.2.0)
+- 6–9 scenes of 3 to 5 beats (1.5–2.5 s), 12–20 s; the hook held 2.5 s; a placeholder synthesized beat as the audio.
+- Shots from the carousel's own pictures padded to 9:16 on white; layout `RIGHT` (a 907×1613 box flush right, the top 300–550 px white for the card) or `FULL`; 3 s shots without sound.
+- One card per scene, no line. Such scripts are still rendered this way (a change of hook or a redone shot of an older Reel).

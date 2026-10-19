@@ -24,12 +24,12 @@ describe("the Generate Reel services", () => {
   const reels = () =>
     t.db.select().from(schema.contentVariants).where(eq(schema.contentVariants.format, "REEL"));
   const request = (over: Record<string, unknown> = {}) =>
-    requestReel(fx.ctx, { carouselVariantId: fx.carouselId, confirmEstimateUsd: 2.5, ...over });
+    requestReel(fx.ctx, { carouselVariantId: fx.carouselId, confirmEstimateUsd: 2.8, ...over });
 
   describe("estimateReelCost", () => {
     it("gives the estimate and says the button is off while the switch is off", async () => {
       const view = await estimateReelCost(fx.ctx, { carouselVariantId: fx.carouselId });
-      expect(view.estimate.totalUsd).toBeCloseTo(2.2, 3);
+      expect(view.estimate.totalUsd).toBeCloseTo(2.8, 3);
       expect(view).toMatchObject({
         enabled: false,
         blockedBy: "reels_disabled",
@@ -112,13 +112,17 @@ describe("the Generate Reel services", () => {
 
     it("accepts an estimate a cent or two under the current one", async () => {
       await fx.setEnabled(true);
-      const result = await request({ confirmEstimateUsd: 2.19 });
-      expect(result.estimate.totalUsd).toBeCloseTo(2.2, 3);
+      const result = await request({ confirmEstimateUsd: 2.79 });
+      expect(result.estimate.totalUsd).toBeCloseTo(2.8, 3);
     });
 
     it("creates the Reel variant of the post and queues the job with an idempotency key", async () => {
       await fx.setEnabled(true);
-      const result = await request({ hookId: "h2", model: "kling-video/v3.0/std" });
+      const result = await request({
+        hookId: "h2",
+        model: "kling-video/v3.0/std",
+        confirmEstimateUsd: 2.97,
+      });
       const [reel] = await reels();
       const [carousel] = await t.db
         .select()
@@ -151,7 +155,7 @@ describe("the Generate Reel services", () => {
       expect(events[0]?.data).toMatchObject({
         sourceVariantId: fx.carouselId,
         model: "kling-video/v3.0/std",
-        confirmedUsd: 2.5,
+        confirmedUsd: 2.97,
       });
     });
 

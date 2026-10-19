@@ -23,7 +23,10 @@ export type AssembleInput = {
   /** By scene id. */
   shots: Readonly<Record<string, AssembleShot>>;
   flashOpener: boolean;
-  audio?: { path: string; kind: Exclude<ReelAudioKind, "NONE">; sha256: string };
+  /** A sound file, or MODEL_AUDIO: the sound of the clips themselves (reel-director@4). */
+  audio?:
+    | { path: string; kind: Exclude<ReelAudioKind, "NONE" | "MODEL_AUDIO">; sha256: string }
+    | { kind: "MODEL_AUDIO" };
   /** Folder for the card PNGs; created when missing. */
   workDir: string;
   outPath: string;
@@ -38,7 +41,7 @@ export type AssembleOptions = {
   /** Test hooks: a lower CRF and a faster preset, and cards that are not drawn by Chromium. */
   crf?: number;
   preset?: string;
-  cardRenderer?: (card: string) => Promise<RenderedCard>;
+  cardRenderer?: (card: string, line?: string) => Promise<RenderedCard>;
 };
 
 export type AssembledReel = {
@@ -54,6 +57,29 @@ export type AssembledReel = {
   qa: ReelQaReport;
   cards: Record<string, CardMeasure>;
 };
+
+/** True when ffprobe finds an audio stream in the clip; false when it finds none or cannot read it. */
+async function hasAudioStream(
+  clipPath: string,
+  tools: { exec: Exec; ffprobe: string },
+): Promise<boolean> {
+  try {
+    const { stdout } = await tools.exec(tools.ffprobe, [
+      "-v",
+      "error",
+      "-select_streams",
+      "a",
+      "-show_entries",
+      "stream=index",
+      "-of",
+      "csv=p=0",
+      clipPath,
+    ]);
+    return stdout.trim() !== "";
+  } catch {
+    return false;
+  }
+}
 
 /** The hash of an input without rendering anything, to find a render that already exists. */
 export function assemblyInputHash(input: AssembleInput): string {
@@ -81,14 +107,16 @@ export async function assembleReel(
   let browser: Browser | undefined;
   const ownBrowser = !options.cardRenderer && !options.browser;
   if (!options.cardRenderer) browser = options.browser ?? (await launchBrowser());
-  const draw = options.cardRenderer ?? ((card: string) => renderCard(browser as Browser, card));
+  const draw =
+    options.cardRenderer ??
+    ((card: string, line?: string) => renderCard(browser as Browser, card, line ?? ""));
   const cardsDir = join(input.workDir, "cards");
   await mkdir(cardsDir, { recursive: true });
   const cardPaths: Record<string, string> = {};
   const measures: Record<string, CardMeasure> = {};
   try {
     for (const scene of input.scenes) {
-      const rendered = await draw(scene.card);
+      const rendered = scene.line ? await draw(scene.card, scene.line) : await draw(scene.card);
       cardPaths[scene.id] = join(cardsDir, `${scene.id}.png`);
       await writeFile(cardPaths[scene.id] as string, rendered.png);
       measures[scene.id] = rendered.measure;
@@ -115,13 +143,21 @@ export async function assembleReel(
     }
   }
 
+  // The model's own sound: which clips carry an audio stream (a refused or fallback shot may not).
+  let modelAudio: Record<string, boolean> | undefined;
+  if (input.audio?.kind === "MODEL_AUDIO") {
+    modelAudio = {};
+    for (const clipPath of clips) modelAudio[clipPath] = await hasAudioStream(clipPath, tools);
+  }
+
   await exec(
     tools.ffmpeg,
     buildFfmpegArgs(plan, {
       cardPaths,
       pageLevels,
       outPath: input.outPath,
-      ...(input.audio ? { audio: { path: input.audio.path } } : {}),
+      ...(modelAudio ? { modelAudio } : {}),
+      ...(input.audio && "path" in input.audio ? { audio: { path: input.audio.path } } : {}),
       ...(options.crf !== undefined ? { crf: options.crf } : {}),
       ...(options.preset ? { preset: options.preset } : {}),
     }),

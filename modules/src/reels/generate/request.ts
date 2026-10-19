@@ -10,7 +10,7 @@ import {
 } from "@rc/lib/providers/video";
 import { z } from "zod";
 import { audit, type ServiceContext, triggerJob } from "../../core";
-import { swapHookLine } from "../director";
+import { type ReelScriptFormat, swapHookLine } from "../director";
 import { assertReelsEnabled, reelsEnabled } from "./enabled";
 import { estimateReel, type ReelEstimate } from "./estimate";
 import { applyChosenHook } from "./generate";
@@ -301,9 +301,9 @@ export const RegenerateReelShotInput = ChangeInput.extend({
   confirmEstimateUsd: z.number().nonnegative(),
 });
 
-/** What redoing one shot costs on the Reel's model. */
-export function estimateShotRedo(model: VideoModelId): number {
-  const e = estimateReel({ model, shots: 1 });
+/** What redoing one shot costs on the Reel's model; the picture of a v4 scene is reused. */
+export function estimateShotRedo(model: VideoModelId, format?: ReelScriptFormat): number {
+  const e = estimateReel({ model, shots: 1, frames: 0, ...(format ? { format } : {}) });
   return Math.round(estimateShotCostUsd(model, e.secondsPerShot, e.resolution) * 10_000) / 10_000;
 }
 
@@ -321,7 +321,10 @@ export async function regenerateReelShot(
       details: { sceneId: input.sceneId },
     });
   }
-  const estimateUsd = estimateShotRedo(script.shotModel as VideoModelId);
+  const estimateUsd = estimateShotRedo(
+    script.shotModel as VideoModelId,
+    script.scenes.some((s) => (s.framePrompt ?? "").trim() !== "") ? "v4" : "v3",
+  );
   if (input.confirmEstimateUsd + CONFIRM_SLACK_USD < estimateUsd) {
     throw new ValidationError(
       `One shot now costs about $${estimateUsd.toFixed(2)}, not $${input.confirmEstimateUsd.toFixed(2)}. Confirm the new amount.`,
