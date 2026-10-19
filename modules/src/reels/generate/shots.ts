@@ -19,6 +19,13 @@ import type { ServiceContext } from "../../core";
 // to storage as soon as it arrives.
 
 export const SHOT_SECONDS = 3;
+/**
+ * reel-director@4: a scene lasts up to 3.5 s and the first 0.2 s of a clip (still the start frame)
+ * are cut, so a shot is 4 s long.
+ */
+export const SHOT_SECONDS_V4 = 4;
+/** Where a v4 scene starts in its clip: the model's first frames barely move. */
+export const SHOT_TRIM_V4 = 0.2;
 export const SHOT_RESOLUTION: VideoResolution = "720p";
 /** Shots in flight at once; the vendor's rate limits are not published (V-24). */
 export const SHOT_CONCURRENCY = 4;
@@ -34,15 +41,19 @@ export const shotSecondsFor = (model: VideoModelId): number =>
 
 export type StartFrame = { bytes: Uint8Array; mimeType: "image/jpeg"; sha256: string };
 
-/** The picture as a 9:16 frame on pure white (reel-style.md "Picture"), the size the model returns. */
+/**
+ * The picture as a 9:16 frame on pure white (reel-style.md "Picture"), the size the model returns.
+ * A carousel picture is padded (`contain`); a frame made for the Reel is cut to fill (`cover`).
+ */
 export async function prepareStartFrame(
   picture: Uint8Array,
   resolution: VideoResolution = SHOT_RESOLUTION,
+  fit: "contain" | "cover" = "contain",
 ): Promise<StartFrame> {
   const { width, height } = PORTRAIT_SIZES[resolution];
   const jpeg = await sharp(picture)
     .flatten({ background: "#ffffff" })
-    .resize(width, height, { fit: "contain", background: "#ffffff" })
+    .resize(width, height, { fit, background: "#ffffff" })
     .jpeg({ quality: 92, chromaSubsampling: "4:4:4" })
     .toBuffer();
   return {
@@ -61,6 +72,8 @@ export const shotPromptHash = (parts: {
   frameSha256: string;
   /** How often the shot was redone; the first make is 0 and leaves the hash as it was. */
   attempt?: number;
+  /** The model's own sound (v4); off leaves the hash as it was. */
+  audio?: boolean;
 }): string =>
   createHash("sha256")
     .update(
@@ -71,6 +84,7 @@ export const shotPromptHash = (parts: {
         parts.prompt,
         parts.frameSha256,
         ...(parts.attempt ? [parts.attempt] : []),
+        ...(parts.audio ? ["audio"] : []),
       ]),
     )
     .digest("hex");
@@ -83,6 +97,10 @@ export type ShotSpec = {
   frame: StartFrame;
   /** "Regenerate shot": the number of the redo; 0 or missing for the first make. */
   attempt?: number;
+  /** Whole seconds of the clip; default `shotSecondsFor(model)`. */
+  seconds?: number;
+  /** Ask the model for its own sound (v4). */
+  audio?: boolean;
 };
 
 export type ShotResult = {
@@ -174,6 +192,7 @@ async function claimShot(
     prompt,
     frameSha256: spec.frame.sha256,
     ...(spec.attempt ? { attempt: spec.attempt } : {}),
+    ...(spec.audio ? { audio: true } : {}),
   });
   const live = () =>
     ctx.db
@@ -234,6 +253,7 @@ async function produce(
       model: row.model as VideoModelId,
       idempotencyKey: `reel-shot:${row.promptHash}`,
       label: spec.sceneId,
+      ...(spec.audio ? { audio: true } : {}),
     });
     await ctx.db
       .update(schema.reelShots)
@@ -323,7 +343,7 @@ export async function ensureShot(
   shotCtx: ShotContext,
   spec: ShotSpec,
 ): Promise<ShotResult> {
-  const seconds = shotSecondsFor(shotCtx.model);
+  const seconds = Math.max(spec.seconds ?? 0, shotSecondsFor(shotCtx.model));
   let row = await claimShot(ctx, shotCtx, spec, spec.prompt, seconds);
   if (row.status === "READY") return toResult(spec, row, true, false);
   const started = ctx.clock.now().getTime();

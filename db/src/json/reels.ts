@@ -56,13 +56,23 @@ export const ReelScene = z.object({
   index: z.number().int().nonnegative(),
   role: ReelSceneRole,
   emotion: ReelEmotion,
-  /** Length on the 120 BPM grid in beats of 0.5 s: 3 to 5, halves allowed (1.5 to 2.5 s). */
-  beats: z.number().min(3).max(5).multipleOf(0.5),
+  /**
+   * Length on the 120 BPM grid in beats of 0.5 s, halves allowed: 3 to 5 (1.5 to 2.5 s) up to
+   * reel-director@3, 6 to 7 (3 to 3.5 s) from reel-director@4.
+   */
+  beats: z.number().min(3).max(7).multipleOf(0.5),
   /** Card text; `**…**` marks the accent. At most 6 words. */
   card: Card,
+  /** reel-director@4: one short line of use under the card, in smaller type; absent or "" = none. */
+  line: z.string().max(200).optional(),
+  /**
+   * reel-director@4: the start picture made for this shot (English, without the look, which the
+   * system adds). Absent or "": the shot starts from `sourcePictureId`, as before.
+   */
+  framePrompt: z.string().max(1000).optional(),
   /** For the video model: "static camera" plus one concrete motion; no text, no people. */
   shotPrompt: z.string().min(1),
-  /** The picture the shot starts from (`visual_assets.id`). */
+  /** The carousel picture the shot starts from (`visual_assets.id`); with a frame prompt, the fallback. */
   sourcePictureId: z.string().min(1),
   /** RIGHT: a box flush right with the top free for the card; FULL: full bleed. */
   layout: z.enum(["RIGHT", "FULL"]),
@@ -75,7 +85,8 @@ export const ReelScene = z.object({
 });
 export type ReelScene = z.infer<typeof ReelScene>;
 
-export const REEL_AUDIO_KINDS = ["NONE", "PLACEHOLDER_BEAT", "OWNER_TRACK"] as const;
+/** MODEL_AUDIO (reel-director@4): the sound the video model made with each shot, cut with the shots. */
+export const REEL_AUDIO_KINDS = ["NONE", "PLACEHOLDER_BEAT", "OWNER_TRACK", "MODEL_AUDIO"] as const;
 export const ReelAudioKind = z.enum(REEL_AUDIO_KINDS);
 export type ReelAudioKind = z.infer<typeof ReelAudioKind>;
 

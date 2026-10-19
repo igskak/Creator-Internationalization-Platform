@@ -7,6 +7,7 @@ import { type AllowedAction, allowedActions, reelReviewFacts } from "../../conte
 import type { ServiceContext } from "../../core";
 import { reelsEnabled } from "./enabled";
 import { estimateReel, type ReelEstimate } from "./estimate";
+import { REEL_FRAME_SLOT } from "./frames";
 import { loadReelSource } from "./source";
 
 // What the Reel card of a market shows (plan 18 §18.2, M8-07): whether a Reel can be requested and
@@ -48,6 +49,8 @@ export type ReelSceneView = {
   emotion: string;
   beats: number;
   card: string;
+  /** reel-director@4: the line of use under the card; "" when none. */
+  line: string;
   shotPrompt: string;
   shotAttempt: number;
   /** State of the scene's shot; null before the shot exists. */
@@ -201,6 +204,19 @@ async function detailOf(
     render = { ...render, state: "FAILED", error: latest.error?.message ?? null };
   }
 
+  // The pictures made for the shots (reel-director@4) are assets, not generation runs.
+  const [frameCost] = await ctx.db
+    .select({
+      total: sql<string | null>`sum((${schema.visualAssets.params}->>'costUsd')::numeric)`,
+    })
+    .from(schema.visualAssets)
+    .where(
+      and(
+        eq(schema.visualAssets.contentVariantId, reel.id),
+        eq(schema.visualAssets.slot, REEL_FRAME_SLOT),
+        eq(schema.visualAssets.status, "READY"),
+      ),
+    );
   const [cost] = await ctx.db
     .select({ total: sql<string | null>`sum(${schema.generationRuns.costUsd})` })
     .from(schema.generationRuns)
@@ -259,6 +275,7 @@ async function detailOf(
               emotion: s.emotion,
               beats: s.beats,
               card: s.card,
+              line: s.line ?? "",
               shotPrompt: s.shotPrompt,
               shotAttempt: s.shotAttempt ?? 0,
               shot: shot?.status ?? null,
@@ -268,7 +285,10 @@ async function detailOf(
         }
       : null,
     render,
-    costUsd: cost?.total == null ? null : Math.round(Number(cost.total) * 10_000) / 10_000,
+    costUsd:
+      cost?.total == null && frameCost?.total == null
+        ? null
+        : Math.round((Number(cost?.total ?? 0) + Number(frameCost?.total ?? 0)) * 10_000) / 10_000,
     changeable: CHANGEABLE.includes(reel.status),
   };
 }

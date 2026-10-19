@@ -33,7 +33,7 @@ describe("getReelView", () => {
       "bytedance/seedance-2.0",
       "kling-video/v3.0/std",
     ]);
-    expect(v.estimates["alibaba/wan-3.0"].totalUsd).toBeCloseTo(2.2, 3);
+    expect(v.estimates["alibaba/wan-3.0"].totalUsd).toBeCloseTo(2.8, 3);
   });
 
   it("is open once the switch is on and the carousel is finished", async () => {
@@ -57,7 +57,7 @@ describe("getReelView", () => {
     await fx.setEnabled(true);
     const { variantId } = await requestReel(fx.ctx, {
       carouselVariantId: fx.carouselId,
-      confirmEstimateUsd: 2.5,
+      confirmEstimateUsd: 2.8,
     });
     await t.db
       .update(schema.contentVariants)
@@ -89,7 +89,7 @@ describe("getReelView", () => {
       await fx.setEnabled(true);
       ({ variantId: reelId } = await requestReel(fx.ctx, {
         carouselVariantId: fx.carouselId,
-        confirmEstimateUsd: 2.5,
+        confirmEstimateUsd: 2.8,
       }));
       await generateReel(
         fx.jobCtx({ video: createFakeVideoProvider() }),
@@ -116,7 +116,10 @@ describe("getReelView", () => {
         model: "alibaba/wan-3.0",
       });
       expect(reel?.script?.hookOptions.map((h) => h.id)).toEqual(["h1", "h2", "h3"]);
-      expect(reel?.script?.scenes).toHaveLength(7);
+      expect(reel?.script?.scenes).toHaveLength(6);
+      expect(reel?.script?.scenes[1]?.line).toBe(
+        "El almidón de la superficie es lo que hace el risotto meloso.",
+      );
       expect(reel?.script?.scenes[0]).toMatchObject({
         id: "s1",
         role: "HOOK",
@@ -137,7 +140,7 @@ describe("getReelView", () => {
       expect(reel?.render.downloadUrl).toBeTruthy();
       // Seven shots of $0.30 and the fake director's run.
       expect(reel?.costUsd).toBeGreaterThan(2.1);
-      expect(reel?.costUsd).toBeLessThan(2.2);
+      expect(reel?.costUsd).toBeLessThan(2.8);
     });
 
     it("calls the video stale when a newer script exists than the one it was made from", async () => {

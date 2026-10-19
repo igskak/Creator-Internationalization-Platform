@@ -119,3 +119,29 @@ describe("buildFfmpegArgs", () => {
     expect(graphOf(withFlash)).toContain("concat=n=10:v=1:a=0[v]");
   });
 });
+
+describe("buildFfmpegArgs with the model's own sound", () => {
+  const args = buildFfmpegArgs(plan, {
+    cardPaths,
+    outPath: "/out/reel.mp4",
+    modelAudio: { "/shots/1.mp4": true, "/shots/2.mp4": false },
+  });
+  const graph = graphOf(args);
+
+  it("cuts each clip's sound with its picture and fills a silent clip with silence", () => {
+    // Two clips and two cards; no audio file and no silent input.
+    expect(args.filter((a) => a === "-i")).toHaveLength(4);
+    expect(args.join(" ")).not.toContain("-f lavfi");
+    expect(graph).toContain("[0:a]atrim=start=0:duration=2,asetpts=PTS-STARTPTS");
+    expect(graph).toContain("apad=whole_dur=2,atrim=duration=2");
+    expect(graph).toContain("afade=t=in:st=0:d=0.03,afade=t=out:st=1.95:d=0.05[a0]");
+    expect(graph).toContain("anullsrc=r=48000:cl=stereo,atrim=duration=1.5");
+  });
+
+  it("joins picture and sound together and brings the track to one loudness", () => {
+    expect(graph).toContain("[s0][a0][s1][a1]concat=n=2:v=1:a=1[v][ajoined]");
+    expect(graph).toContain("[ajoined]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]");
+    const maps = args.flatMap((a, i) => (a === "-map" ? [args[i + 1]] : []));
+    expect(maps).toEqual(["[v]", "[a]"]);
+  });
+});

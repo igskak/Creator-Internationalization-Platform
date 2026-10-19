@@ -191,6 +191,13 @@ describe("0009_reels", () => {
       .where(eq(reelRenders.id, first?.id ?? ""))
       .returning();
     expect(ready).toMatchObject({ status: "READY", qaReport: qa });
+    // 0016: the model's own sound (reel-director@4).
+    const [withModelAudio] = await t.db
+      .update(reelRenders)
+      .set({ audioKind: "MODEL_AUDIO" })
+      .where(eq(reelRenders.id, first?.id ?? ""))
+      .returning();
+    expect(withModelAudio?.audioKind).toBe("MODEL_AUDIO");
     await expect(
       t.db
         .update(reelRenders)
@@ -298,7 +305,11 @@ describe("Reel JSON shapes", () => {
     ).toBe(false);
     expect(ReelScene.safeParse({ ...scene, beats: 3.25 }).success).toBe(false);
     expect(ReelScene.safeParse({ ...scene, beats: 2.5 }).success).toBe(false);
-    expect(ReelScene.safeParse({ ...scene, beats: 5.5 }).success).toBe(false);
+    // reel-director@4 scenes last up to 3.5 s (7 beats), with a line and a frame prompt.
+    expect(
+      ReelScene.safeParse({ ...scene, beats: 7, line: "Why.", framePrompt: "A pot." }).success,
+    ).toBe(true);
+    expect(ReelScene.safeParse({ ...scene, beats: 7.5 }).success).toBe(false);
     expect(ReelScene.safeParse({ ...scene, emotion: "ANGER" }).success).toBe(false);
   });
 

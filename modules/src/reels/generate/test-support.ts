@@ -3,10 +3,11 @@ import { writeFile } from "node:fs/promises";
 import { schema } from "@rc/db";
 import type { Slide } from "@rc/db/json";
 import { eq } from "@rc/db/orm";
+import { createFakeImageProvider, type ImageProvider } from "@rc/lib/providers/image";
 import { createFakeLLMProvider, type LLMProvider } from "@rc/lib/providers/llm";
 import type { VideoProvider } from "@rc/lib/providers/video";
 import { createFakeVideoProvider } from "@rc/lib/providers/video";
-import { REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { REEL_POSTS, REEL_POSTS_V4 } from "@rc/prompts/fixtures/reel-director";
 import sharp from "sharp";
 import {
   type ReviewFixture,
@@ -24,11 +25,13 @@ import type { AssembledReel, AssembleInput } from "../render";
 import { assemblyInputHash } from "../render";
 
 // Fixtures for the tests of the Reel generation (M8-06): a finished carousel with six pictures in
-// storage, the scripted director of the synthetic risotto post, the fake video provider, and an
-// assembly that writes a small file instead of running ffmpeg. Synthetic content only.
+// storage, the scripted director of the synthetic risotto post (reel-director@4's answer, the
+// active version; `directorAnswerV3` for an older script), the fake image and video providers, and
+// an assembly that writes a small file instead of running ffmpeg. Synthetic content only.
 
 type Db = ServiceContext["db"];
 const POST = REEL_POSTS[0];
+const POST_V4 = REEL_POSTS_V4[0];
 
 export type ReelFixture = ReviewFixture & {
   carouselId: string;
@@ -39,13 +42,23 @@ export type ReelFixture = ReviewFixture & {
   jobCtx: (parts?: {
     llm?: LLMProvider;
     video?: VideoProvider;
+    images?: ImageProvider;
     jobs?: JobRunner;
   }) => ServiceContext;
   setEnabled: (on: boolean) => Promise<void>;
 };
 
-/** The synthetic director answer with the real asset ids in place of p1 … p6. */
+/** The synthetic director answer (reel-director@4) with the real asset ids in place of p1 … p6. */
 export function directorAnswer(assetIds: readonly string[]) {
+  if (!POST_V4) throw new Error("missing synthetic post");
+  const swap = (id: string) => assetIds[Number(id.slice(1)) - 1] ?? id;
+  const output = structuredClone(POST_V4.output);
+  for (const scene of output.scenes) scene.sourcePictureId = swap(scene.sourcePictureId);
+  return output;
+}
+
+/** The same post answered by reel-director@3: seven short shots from the carousel's pictures. */
+export function directorAnswerV3(assetIds: readonly string[]) {
   if (!POST) throw new Error("missing synthetic post");
   const swap = (id: string) => assetIds[Number(id.slice(1)) - 1] ?? id;
   const output = structuredClone(POST.output);
@@ -140,6 +153,7 @@ export async function reelFixture(
       storage: fx.storage,
       llm: parts.llm ?? scriptedLlm(directorAnswer(assetIds)),
       video: parts.video ?? createFakeVideoProvider(),
+      images: parts.images ?? createFakeImageProvider(),
       jobs: parts.jobs ?? jobs.runner,
       actor: { type: "JOB", jobRunId: "run-test" },
     });

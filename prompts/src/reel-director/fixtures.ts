@@ -1,5 +1,6 @@
 import type { ReelDirectorInput, ReelDirectorOutput, ReelDirectorScene } from "./schema";
 import type { ReelDirectorInputV2, ReelDirectorOutputV2, ReelPostCta } from "./v2";
+import type { ReelDirectorOutputV4, ReelDirectorSceneV4 } from "./v4";
 
 // Synthetic posts for the Reel director: the inputs of its tests and evals (three carousels in two
 // languages) and a valid answer for each, which the scripted fake model returns and the validators
@@ -750,3 +751,336 @@ export const FIXTURE_OUTPUT: ReelDirectorOutput = RISOTTO_OUTPUT;
 /** reel-director@2's fixture. */
 export const FIXTURE_INPUT_V2: ReelDirectorInputV2 = RISOTTO_INPUT_V2;
 export const FIXTURE_OUTPUT_V2: ReelDirectorOutputV2 = RISOTTO_OUTPUT_V2;
+
+// --- reel-director@4 --------------------------------------------------------------------------
+// The same four posts answered in the v4 format: six scenes of 3 to 3.5 s, a line of use under each
+// card (none on the hook), a frame prompt per scene (pale food in dark cookware), a summary at the
+// end. The hook options, the chosen hook and the post are v2's.
+
+type SceneRowV4 = [
+  role: ReelDirectorSceneV4["role"],
+  emotion: ReelDirectorSceneV4["emotion"],
+  beats: number,
+  card: string,
+  line: string,
+  frame: string,
+  motion: string,
+  picture: string,
+  claims: string[],
+];
+
+const scenesV4 = (rows: SceneRowV4[]): ReelDirectorSceneV4[] =>
+  rows.map(
+    (
+      [role, emotion, beats, card, line, framePrompt, shotPrompt, sourcePictureId, claimSlideIds],
+      i,
+    ) => ({
+      id: `s${i + 1}`,
+      role,
+      emotion,
+      beats,
+      card,
+      line,
+      framePrompt,
+      shotPrompt,
+      sourcePictureId,
+      layout: "FULL",
+      claimSlideIds,
+    }),
+  );
+
+const v4Of = (output: ReelDirectorOutputV2, rows: SceneRowV4[]): ReelDirectorOutputV4 => ({
+  ...output,
+  flashOpener: "OFF",
+  scenes: scenesV4(rows),
+});
+
+const RISOTTO_OUTPUT_V4 = v4Of(RISOTTO_OUTPUT_V2, [
+  [
+    "HOOK",
+    "DOUBT",
+    7,
+    "¿Aún lavas el arroz **del risotto?**",
+    "",
+    "A dark metal sieve of arborio rice over a black enamel bowl, water running through the grains.",
+    "Static camera. Water streams through the sieve of rice and drains away cloudy with starch. Sound of running water.",
+    "p2",
+    [],
+  ],
+  [
+    "RULE",
+    "INTRIGUE",
+    6,
+    "Ahí se va lo **meloso.**",
+    "El almidón de la superficie es lo que hace el risotto meloso.",
+    "Arborio rice grains in cloudy, starchy water in a charcoal ceramic bowl.",
+    "Static camera. Cloudy rinse water swirls around the rice grains in the bowl. Soft swishing sound.",
+    "p1",
+    ["c2", "c3"],
+  ],
+  [
+    "STEP",
+    "AHA",
+    6,
+    "No lo laves. **Tuéstalo.**",
+    "Tuesta el arroz en seco 2 min antes del caldo.",
+    "Dry arborio rice grains in a black cast-iron pan, a wooden spoon resting in them.",
+    "Static camera. A wooden spoon turns the rice grains in the dry pan. Soft rattle of grains.",
+    "p3",
+    ["c4"],
+  ],
+  [
+    "STEP",
+    "USEFULNESS",
+    6,
+    "Caldo caliente, **cucharón a cucharón.**",
+    "Un cucharón cada vez, sin dejar de remover.",
+    "Toasted arborio rice in a black cast-iron pan, a steel ladle of hot stock just above it.",
+    "Static camera. Hot stock pours from the ladle onto the rice and bubbles up. Sound of pouring and a soft sizzle.",
+    "p4",
+    ["c5"],
+  ],
+  [
+    "PEAK",
+    "APPETITE",
+    6,
+    "Así sale **meloso.**",
+    "El almidón se queda en la cazuela y hace el risotto meloso.",
+    "Creamy, glossy risotto in a black cast-iron pan, a wooden spoon in it.",
+    "Static camera. A wooden spoon stirs the creamy risotto; it folds and flows. Soft creamy stirring sound.",
+    "p6",
+    ["c2"],
+  ],
+  [
+    "PAYOFF",
+    "SAVE_IT",
+    7,
+    "No laves el arroz **del risotto.**",
+    "Sin lavar, tostado, caldo a cucharones. Mándaselo a quien lo hace en casa.",
+    "A creamy risotto on a dark charcoal stoneware plate.",
+    "Static camera. Steam rises and curls over the creamy risotto on the plate. Soft simmer sound.",
+    "p5",
+    ["c3", "c5"],
+  ],
+]);
+
+const BULGUR_OUTPUT_V4 = v4Of(BULGUR_OUTPUT_V2, [
+  [
+    "HOOK",
+    "DOUBT",
+    7,
+    "Hot water on **bulgur?**",
+    "",
+    "Fine bulgur in a black stoneware bowl, the spout of a steel kettle just above it.",
+    "Static camera. Steaming water pours from the kettle into the bowl of fine bulgur and the grains swirl. Sound of pouring water.",
+    "p1",
+    [],
+  ],
+  [
+    "RULE",
+    "INTRIGUE",
+    6,
+    "Only if it's **fine.**",
+    "Fine bulgur is already cooked: hot water is enough.",
+    "Fine bulgur soaking in hot water in a black stoneware bowl, steam rising.",
+    "Static camera. The fine grains swell slowly as they drink the hot water. Soft hiss.",
+    "p5",
+    ["c2"],
+  ],
+  [
+    "STEP",
+    "AHA",
+    6,
+    "Coarse? **Simmer it.**",
+    "Coarse bulgur needs simmering with a lid on.",
+    "Coarse bulgur simmering in a dark enamel pot, its lid beside it.",
+    "Static camera. Bubbles rise and burst around the coarse bulgur in the pot. Sound of a gentle simmer.",
+    "p2",
+    ["c3"],
+  ],
+  [
+    "STEP",
+    "USEFULNESS",
+    6,
+    "Toast the **dry grains.**",
+    "Toast them first for a nutty taste.",
+    "Dry bulgur grains in a black cast-iron pan, a wooden spoon in them.",
+    "Static camera. A wooden spoon tosses the dry grains in the pan. Soft rattle of grains.",
+    "p3",
+    ["c4"],
+  ],
+  [
+    "PEAK",
+    "APPETITE",
+    6,
+    "Nutty. **Toasty.**",
+    "Toasted dry grains taste nutty.",
+    "Golden toasted bulgur grains in a black cast-iron pan.",
+    "Static camera. The golden grains sizzle and jump in the hot pan. Crisp sizzling sound.",
+    "p6",
+    ["c4"],
+  ],
+  [
+    "PAYOFF",
+    "SAVE_IT",
+    7,
+    "Fine or coarse? **Check the bulgur.**",
+    "Fine: hot water. Coarse: simmer with a lid. Follow for more grain rules.",
+    "Fluffy cooked bulgur in a black stoneware bowl, a fork resting in it.",
+    "Static camera. Light steam drifts up from the fluffy bulgur in the bowl. Quiet kitchen ambience.",
+    "p4",
+    ["c2", "c3"],
+  ],
+]);
+
+const PASTA_OUTPUT_V4 = v4Of(PASTA_OUTPUT_V2, [
+  [
+    "HOOK",
+    "DOUBT",
+    7,
+    "The **worst** pasta advice",
+    "",
+    "A dark enamel pot of boiling water with drops of oil floating on top.",
+    "Static camera. Oil drops swirl and float on the boiling water as bubbles burst. Sound of a rolling boil.",
+    "p1",
+    [],
+  ],
+  [
+    "RULE",
+    "SURPRISE",
+    6,
+    "Oil floats. **It does nothing.**",
+    "It stays on top and does not stop pasta from sticking.",
+    "Close-up of oil drops floating on boiling water in a dark enamel pot.",
+    "Static camera. The oil drops drift and spin on the bubbling surface. Sound of boiling water.",
+    "p6",
+    ["c2"],
+  ],
+  [
+    "STEP",
+    "AHA",
+    6,
+    "**Stir** in minute one.",
+    "Stir in the first minute so it does not stick.",
+    "Spaghetti in a dark enamel pot of boiling water, a wooden spoon in it.",
+    "Static camera. A wooden spoon stirs the spaghetti round in the boiling water. Sound of stirring and bubbling.",
+    "p2",
+    ["c3"],
+  ],
+  [
+    "STEP",
+    "USEFULNESS",
+    6,
+    "Salt it **well.**",
+    "Salt seasons the pasta from the inside.",
+    "A small dark bowl of coarse salt tilted over a dark enamel pot of boiling water.",
+    "Static camera. Coarse salt pours from the small bowl into the boiling water. Sound of salt hitting water.",
+    "p3",
+    ["c4"],
+  ],
+  [
+    "PEAK",
+    "USEFULNESS",
+    6,
+    "Save the **starchy water.**",
+    "A cup of it goes into the sauce.",
+    "A glass cup above a dark enamel pot of cloudy pasta water.",
+    "Static camera. The glass cup dips into the pot and lifts out cloudy pasta water. Sound of water sloshing.",
+    "p4",
+    ["c5"],
+  ],
+  [
+    "PAYOFF",
+    "SAVE_IT",
+    7,
+    "No oil. **Stir the pasta.**",
+    "Stir early, salt well. Send this to whoever still pours oil in the pot.",
+    "Glossy spaghetti with sauce on a charcoal stoneware plate.",
+    "Static camera. Light steam drifts up from the glossy spaghetti on the plate. Quiet kitchen ambience.",
+    "p5",
+    ["c2", "c3"],
+  ],
+]);
+
+const CHOCOLATE_OUTPUT_V4 = v4Of(CHOCOLATE_OUTPUT_V2, [
+  [
+    "HOOK",
+    "DOUBT",
+    7,
+    "One drop of **water?**",
+    "",
+    "A spoon above a white bowl of melted dark chocolate, a thick ribbon of chocolate falling from it.",
+    "Static camera. A thick ribbon of melted chocolate falls from the spoon into the bowl. Soft pouring sound.",
+    "p6",
+    [],
+  ],
+  [
+    "RULE",
+    "INTRIGUE",
+    6,
+    "It makes chocolate **seize.**",
+    "A little water turns it into a grainy paste.",
+    "A white bowl of glossy melted dark chocolate, a drop of water just above it.",
+    "Static camera. A single drop of water falls into the melted chocolate. Soft drip sound.",
+    "p2",
+    ["c2"],
+  ],
+  [
+    "STEP",
+    "AHA",
+    6,
+    "Dry bowl. **Dry spoon.**",
+    "Keep the bowl and the spoon completely dry.",
+    "A dry white bowl with a dry spoon and dark chocolate pieces in it.",
+    "Static camera. Dark chocolate pieces tumble into the dry bowl. Sound of pieces clinking.",
+    "p3",
+    ["c3"],
+  ],
+  [
+    "STEP",
+    "USEFULNESS",
+    6,
+    "Barely simmering. **Never boiling.**",
+    "Melt it over barely simmering water.",
+    "A white bowl of dark chocolate pieces over a pot of barely simmering water.",
+    "Static camera. Small bubbles rise in the pot under the bowl of chocolate. Soft simmer sound.",
+    "p4",
+    ["c4"],
+  ],
+  [
+    "PEAK",
+    "APPETITE",
+    6,
+    "Stir until **glossy.**",
+    "Slowly, until it is smooth and glossy.",
+    "A white bowl of half-melted dark chocolate, a spatula in it.",
+    "Static camera. A spatula stirs the melted chocolate slowly; it turns smooth and glossy. Soft stirring sound.",
+    "p5",
+    ["c5"],
+  ],
+  [
+    "PAYOFF",
+    "SAVE_IT",
+    7,
+    "Keep the **water** out.",
+    "Dry tools, gentle heat, slow stirring. Send this to whoever melts chocolate.",
+    "Glossy melted chocolate over a strawberry on a white plate.",
+    "Static camera. Glossy chocolate slowly drips down the strawberry onto the plate. Soft drip sound.",
+    "p7",
+    ["c3", "c4", "c5"],
+  ],
+]);
+
+/** A post of reel-director@4's eval: v2's input and a v4 answer. */
+export type ReelPostV4 = { key: string; input: ReelDirectorInputV2; output: ReelDirectorOutputV4 };
+
+/** The four posts answered in the v4 format (same keys and inputs as REEL_EVAL_POSTS). */
+export const REEL_POSTS_V4: readonly ReelPostV4[] = [
+  { key: "risotto-rice", input: RISOTTO_INPUT_V2, output: RISOTTO_OUTPUT_V4 },
+  { key: "bulgur-hot-water", input: BULGUR_INPUT_V2, output: BULGUR_OUTPUT_V4 },
+  { key: "pasta-oil", input: PASTA_INPUT_V2, output: PASTA_OUTPUT_V4 },
+  { key: "chocolate-drop", input: CHOCOLATE_INPUT_V2, output: CHOCOLATE_OUTPUT_V4 },
+];
+
+/** reel-director@4's fixture. */
+export const FIXTURE_OUTPUT_V4: ReelDirectorOutputV4 = RISOTTO_OUTPUT_V4;

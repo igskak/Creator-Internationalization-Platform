@@ -64,7 +64,7 @@ describe("Reel review and publishing", () => {
     await fx.setEnabled(true);
     ({ variantId: reelId } = await requestReel(fx.ctx, {
       carouselVariantId: fx.carouselId,
-      confirmEstimateUsd: 2.5,
+      confirmEstimateUsd: 2.8,
     }));
     await generateReel(
       fx.jobCtx({ video: createFakeVideoProvider() }),
@@ -130,7 +130,7 @@ describe("Reel review and publishing", () => {
           chosenHookId: "h1",
         },
       });
-      expect(version?.snapshot.reel?.cards).toHaveLength(7);
+      expect(version?.snapshot.reel?.cards).toHaveLength(6);
       expect(version?.snapshot.hook).not.toContain("**");
       expect(await verifyApprovedVersion(fx.ctx, result.versionId)).toEqual({
         ok: true,

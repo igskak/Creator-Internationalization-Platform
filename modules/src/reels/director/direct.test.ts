@@ -3,9 +3,11 @@ import { asc } from "@rc/db/orm";
 import { createTestDb, type TestDb } from "@rc/db/test-db";
 import { createLogger } from "@rc/lib/logging";
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
+import { reelDirector } from "@rc/prompts";
 import {
   FIXTURE_INPUT_V2 as FIXTURE_INPUT,
-  FIXTURE_OUTPUT_V2 as FIXTURE_OUTPUT,
+  FIXTURE_OUTPUT_V4 as FIXTURE_OUTPUT,
+  FIXTURE_OUTPUT_V2 as FIXTURE_OUTPUT_V3,
 } from "@rc/prompts/fixtures/reel-director";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServiceContext } from "../../core";
@@ -35,12 +37,13 @@ describe("directReel", () => {
 
   const scripted = (...answers: unknown[]) =>
     createFakeLLMProvider({ handler: (_req, i) => answers[Math.min(i, answers.length - 1)] });
-  const direct = (llm: ReturnType<typeof scripted>) =>
+  const direct = (llm: ReturnType<typeof scripted>, options: { v3?: boolean } = {}) =>
     directReel(
       createServiceContext({ db: t.db, logger, actor: { type: "SYSTEM" }, llm }),
       FIXTURE_INPUT,
       {
         locale: "es-ES",
+        ...(options.v3 ? { prompt: reelDirector.reelDirectorV3 } : {}),
       },
     );
   const withCard = (card: string) => {
@@ -55,7 +58,12 @@ describe("directReel", () => {
     expect(result.status).toBe("SUCCEEDED");
     expect(result.issues).toEqual([]);
     expect(result.script?.chosenHookId).toBe("h1");
-    expect(result.script?.scenes.map((s) => s.index)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(result.script?.scenes.map((s) => s.index)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(result.script?.scenes[1]).toMatchObject({
+      line: "El almidón de la superficie es lo que hace el risotto meloso.",
+      layout: "FULL",
+    });
+    expect(result.script?.scenes[0]?.framePrompt).toContain("black enamel bowl");
     expect(result.script?.hookOptions[0]).toMatchObject({
       hookType: "MISTAKE_CALLOUT",
       claimSlideIds: ["c2", "c3"],
@@ -69,8 +77,20 @@ describe("directReel", () => {
     expect(rows[0]).toMatchObject({
       stage: "REEL_DIRECTION",
       promptId: "reel-director",
-      promptVersion: 3,
+      promptVersion: 4,
     });
+  });
+
+  it("still checks an older prompt's script by its own rules (reel-director@3)", async () => {
+    const result = await direct(scripted(FIXTURE_OUTPUT_V3), { v3: true });
+    expect(result.status).toBe("SUCCEEDED");
+    expect(result.script?.scenes).toHaveLength(7);
+    expect(result.script?.scenes[0]?.beats).toBe(5);
+  });
+
+  it("refuses a v3 script from the active director: the scenes are too short", async () => {
+    const result = await direct(scripted(FIXTURE_OUTPUT_V3));
+    expect(result.status).toBe("INVALID_OUTPUT");
   });
 
   it("sends the carousel, the pictures and the hook patterns of the market's language", async () => {
@@ -127,14 +147,24 @@ describe("directReel", () => {
 });
 
 describe("toReelScriptDraft", () => {
+  it("holds a v4 hook 3.5 s and fills the frame with every picture", () => {
+    const output = structuredClone(FIXTURE_OUTPUT);
+    at(output.scenes, 0).beats = 6;
+    at(output.scenes, 2).layout = "RIGHT";
+    const draft = toReelScriptDraft(output, "v4");
+    expect(draft.scenes[0]?.beats).toBe(7);
+    expect(draft.scenes.every((s) => s.layout === "FULL")).toBe(true);
+    expect(draft.scenes[5]?.line).toContain("Mándaselo");
+  });
+
   it("numbers the scenes and keeps the hook options", () => {
-    const draft = toReelScriptDraft(FIXTURE_OUTPUT);
+    const draft = toReelScriptDraft(FIXTURE_OUTPUT_V3);
     expect(draft.scenes.at(-1)).toMatchObject({ index: 6, role: "CTA" });
     expect(draft.hookOptions).toHaveLength(3);
   });
 
   it("keeps the flash opener off and holds the hook scene 2.5 s", () => {
-    const output = structuredClone(FIXTURE_OUTPUT);
+    const output = structuredClone(FIXTURE_OUTPUT_V3);
     output.flashOpener = "ON";
     at(output.scenes, 0).beats = 3;
     const draft = toReelScriptDraft(output);
@@ -146,7 +176,7 @@ describe("toReelScriptDraft", () => {
   });
 
   it("refuses a scene that is not on the beat grid", () => {
-    const output = structuredClone(FIXTURE_OUTPUT);
+    const output = structuredClone(FIXTURE_OUTPUT_V3);
     at(output.scenes, 1).beats = 3.25;
     expect(() => toReelScriptDraft(output)).toThrow();
   });

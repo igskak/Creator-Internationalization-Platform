@@ -133,6 +133,7 @@ function GenerateDialog({
             {format(t.dialog.estimateParts, {
               shots: estimate.shots,
               shotsCost: money.format(estimate.shotsUsd),
+              framesCost: money.format(estimate.framesUsd),
               scriptCost: money.format(estimate.directorUsd),
             })}
           </p>
@@ -411,6 +412,7 @@ function Ready({ view, reel, canManage }: { view: ReelView; reel: Detail; canMan
                   · {format(t.scenes.beats, { beats: scene.beats })}
                 </p>
                 <p className="font-medium">{plain(scene.card)}</p>
+                {scene.line ? <p className="text-muted-foreground">{scene.line}</p> : null}
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{t.scenes.shot[scene.shot ?? "NONE"]}</Badge>
                   {canChange && scene.shot === "READY" ? (

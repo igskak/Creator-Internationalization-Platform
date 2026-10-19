@@ -7,10 +7,10 @@ import { RENDERER_VERSION } from "./constants";
 
 export type HashInput = {
   flashOpener: boolean;
-  scenes: readonly { id: string; beats: number; card: string; layout: string }[];
+  scenes: readonly { id: string; beats: number; card: string; line?: string; layout: string }[];
   /** By scene id: the shot's content hash and where the scene starts in it. */
   shots: Readonly<Record<string, { sha256: string; trimStartSeconds?: number }>>;
-  audio?: { kind: string; sha256: string } | undefined;
+  audio?: { kind: string; sha256?: string } | undefined;
 };
 
 export function reelInputHash(input: HashInput): string {
@@ -24,8 +24,10 @@ export function reelInputHash(input: HashInput): string {
       s.layout,
       input.shots[s.id]?.sha256 ?? null,
       input.shots[s.id]?.trimStartSeconds ?? 0,
+      // Only a line that exists is hashed, so a v3 script keeps its hash shape.
+      ...(s.line ? [s.line] : []),
     ]),
-    input.audio ? [input.audio.kind, input.audio.sha256] : null,
+    input.audio ? [input.audio.kind, input.audio.sha256 ?? null] : null,
   ]);
   return createHash("sha256").update(canonical).digest("hex");
 }

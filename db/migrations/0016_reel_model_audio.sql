@@ -1,0 +1,2 @@
+ALTER TABLE "reel_renders" DROP CONSTRAINT "reel_renders_audio_kind_check";--> statement-breakpoint
+ALTER TABLE "reel_renders" ADD CONSTRAINT "reel_renders_audio_kind_check" CHECK ("reel_renders"."audio_kind" in ('NONE', 'PLACEHOLDER_BEAT', 'OWNER_TRACK', 'MODEL_AUDIO'));

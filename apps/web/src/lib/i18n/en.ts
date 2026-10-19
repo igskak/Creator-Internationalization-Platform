@@ -856,7 +856,7 @@ export const en = {
         },
         estimate: "Estimated cost",
         estimateParts:
-          "{shots} shots about {shotsCost} + the script about {scriptCost}. List prices: the real cost is shown afterwards.",
+          "{shots} shots about {shotsCost} + their pictures about {framesCost} + the script about {scriptCost}. List prices: the real cost is shown afterwards.",
         wait: "It takes about ten minutes. You can leave the page; the Reel appears here.",
         language: "The text cards are written in the language of this market.",
         submit: "Generate (about {cost})",

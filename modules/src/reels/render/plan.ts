@@ -9,6 +9,8 @@ export type PlanScene = {
   id: string;
   beats: number;
   card: string;
+  /** reel-director@4: the line of use under the card; absent or "" = none. */
+  line?: string;
   layout: "RIGHT" | "FULL";
 };
 

@@ -74,7 +74,7 @@ describe("YouTube Shorts", () => {
     await fx.setEnabled(true);
     ({ variantId: reelId } = await requestReel(fx.ctx, {
       carouselVariantId: fx.carouselId,
-      confirmEstimateUsd: 2.5,
+      confirmEstimateUsd: 2.8,
     }));
     await generateReel(
       fx.jobCtx({ video: createFakeVideoProvider() }),

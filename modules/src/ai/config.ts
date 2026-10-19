@@ -40,5 +40,5 @@ export const STAGE_CONFIG: Record<PromptStage, StageConfig> = {
   VISUAL_QA: stage("visual-qa", "medium", 8_000, {}, 2),
   EVAL_JUDGE: stage("eval-judge", "high", 8_000, {}, 2),
   PAGE_TRANSCRIPTION: stage("page-transcriber", "low", 16_000, {}, 2),
-  REEL_DIRECTION: stage("reel-director", "high", 12_000, {}, 3),
+  REEL_DIRECTION: stage("reel-director", "high", 12_000, {}, 4),
 };

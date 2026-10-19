@@ -33,13 +33,24 @@ import {
 } from "../render";
 import { assertReelsEnabled } from "./enabled";
 import { estimateReel } from "./estimate";
-import { ensureShots, prepareStartFrame, type ShotResult, type StartFrame } from "./shots";
+import { clearPendingReelFrames, ensureReelFrame, type ReelFrame } from "./frames";
+import {
+  ensureShots,
+  prepareStartFrame,
+  SHOT_RESOLUTION,
+  SHOT_SECONDS_V4,
+  SHOT_TRIM_V4,
+  type ShotResult,
+  type StartFrame,
+} from "./shots";
 import { loadReelSource, type ReelSource } from "./source";
 
 // The `generate-reel` job (plan 06 J23, plan 18 §18.4, M8-06): director → shots → assembly → checks,
-// for one Reel variant. Every stage persists before the next, so a crash resumes where it stopped:
-// the script is a row, each shot is a row found by its hash, the render is a row found by its input
-// hash. A permanent failure ends the variant as DRAFT with a flag and the job returns; a transient
+// for one Reel variant. A reel-director@4 script (its scenes carry frame prompts) first gets a
+// picture made for each shot, its shots are 4 s with the model's own sound, and that sound is the
+// Reel's audio instead of the placeholder beat. Every stage persists before the next, so a crash
+// resumes where it stopped: the script is a row, each picture and each shot is a row found by its
+// hash, the render is a row found by its input hash. A permanent failure ends the variant as DRAFT with a flag and the job returns; a transient
 // one is rethrown, the variant stays GENERATING and the retry continues.
 
 export const GenerateReelPayload = z.object({
@@ -65,7 +76,7 @@ export type GenerateReelResult = {
   renderId?: string;
   scriptId?: string;
   shots?: { total: number; reused: number; fallbacks: number };
-  /** Director + shots, list-price estimates in USD. */
+  /** Director, frames (v4) and shots, list-price estimates in USD. */
   costUsd?: number;
   qaWarnings?: string[];
   error?: { code: string; message: string };
@@ -78,6 +89,8 @@ export type GenerateReelDeps = {
 };
 
 const STAGES = ["DIRECTION", "SHOTS", "ASSEMBLY"] as const;
+/** Reel frames drawn at once (reel-director@4). */
+const FRAME_CONCURRENCY = 3;
 type Stage = (typeof STAGES)[number];
 const STARTABLE: readonly string[] = ["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"];
 
@@ -153,7 +166,12 @@ async function insertScript(
     .where(eq(schema.reelScripts.contentVariantId, variant.id))
     .orderBy(desc(schema.reelScripts.version))
     .limit(1);
-  const estimate = estimateReel({ model, shots: script.scenes.length });
+  const v4 = script.scenes.some((s) => (s.framePrompt ?? "").trim() !== "");
+  const estimate = estimateReel({
+    model,
+    shots: script.scenes.length,
+    format: v4 ? "v4" : "v3",
+  });
   const [row] = await ctx.db
     .insert(schema.reelScripts)
     .values({
@@ -307,9 +325,64 @@ export async function generateReel(
 
     // 2. Shots ---------------------------------------------------------------------------------
     await progress("SHOTS");
+    const v4 = scriptRow.scenes.some((s) => (s.framePrompt ?? "").trim() !== "");
+    // reel-director@4: the pictures made for the shots, one per distinct frame prompt, a few at a time.
+    const made = new Map<string, ReelFrame | null>();
+    if (v4) {
+      await clearPendingReelFrames(
+        ctx,
+        variant.id,
+        scriptRow.scenes.map((s) => s.id),
+      );
+      const wanted = [
+        ...new Map(
+          scriptRow.scenes
+            .filter((s) => (s.framePrompt ?? "").trim() !== "")
+            .map((s) => [(s.framePrompt ?? "").trim(), s.id] as const),
+        ),
+      ];
+      let next = 0;
+      const worker = async () => {
+        while (next < wanted.length) {
+          const item = wanted[next++];
+          if (!item) return;
+          const [framePrompt, sceneId] = item;
+          made.set(
+            framePrompt,
+            await ensureReelFrame(
+              ctx,
+              { brandId: source.idea.brandId, variantId: variant.id },
+              { id: sceneId, framePrompt },
+            ),
+          );
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(FRAME_CONCURRENCY, wanted.length) }, worker));
+    }
+    // A frame made in an earlier attempt of this run is reused at no cost: keep what it cost then.
+    const framesCost = [...made.values()].reduce((sum, f) => sum + (f?.costUsd ?? 0), 0);
+    if (framesCost > 0) ids.FRAMES_USD = String(framesCost);
     const frames = new Map<string, StartFrame>();
     const specs = [];
     for (const scene of scriptRow.scenes) {
+      const reelFrame = made.get((scene.framePrompt ?? "").trim());
+      if (reelFrame) {
+        let frame = frames.get(reelFrame.assetId);
+        if (!frame) {
+          frame = await prepareStartFrame(reelFrame.bytes, SHOT_RESOLUTION, "cover");
+          frames.set(reelFrame.assetId, frame);
+        }
+        specs.push({
+          sceneId: scene.id,
+          prompt: scene.shotPrompt,
+          pictureId: reelFrame.assetId,
+          frame,
+          seconds: SHOT_SECONDS_V4,
+          audio: true,
+          ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
+        });
+        continue;
+      }
       const picture = source.pictures.find((p) => p.assetId === scene.sourcePictureId);
       if (!picture) {
         throw new PermanentError(`Scene ${scene.id} uses a picture that is not in the carousel.`, {
@@ -326,6 +399,8 @@ export async function generateReel(
         prompt: scene.shotPrompt,
         pictureId: picture.assetId,
         frame,
+        // A v4 scene whose picture could not be made starts from the carousel picture, same length.
+        ...(v4 ? { seconds: SHOT_SECONDS_V4, audio: true } : {}),
         ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
       });
     }
@@ -370,31 +445,49 @@ export async function generateReel(
       if (!shot) throw new Error(`No shot for scene ${scene.id}`);
       const path = join(shotsDir, `${scene.id}.mp4`);
       await writeFile(path, await ctx.storage.getBytes(shot.storageKey));
-      assembleShots[scene.id] = { path, sha256: shot.sha256 };
+      assembleShots[scene.id] = {
+        path,
+        sha256: shot.sha256,
+        ...(v4 ? { trimStartSeconds: SHOT_TRIM_V4 } : {}),
+      };
     }
-    // The placeholder beat, cut to this script: the same script always gets the same file.
     const flashOpener = scriptRow.flashOpener === "ON";
-    const peakIndex = scenes.findIndex((s) => s.role === "PEAK");
-    const beat = synthesizeBeat({
-      sceneBeats: scenes.map((s) => s.beats),
-      flashSeconds: flashOpener ? FLASH.shots * FLASH.shotSeconds : 0,
-      peakSceneIndex: peakIndex >= 0 ? peakIndex : undefined,
-    });
-    const audioPath = join(tmp, "beat.wav");
-    await writeFile(audioPath, beat.wav);
-    const input: AssembleInput = {
-      scenes: scenes.map((s) => ({ id: s.id, beats: s.beats, card: s.card, layout: s.layout })),
-      shots: assembleShots,
-      flashOpener,
-      audio: {
+    let audio: AssembleInput["audio"];
+    if (v4) {
+      // reel-director@4: the sound the model made with each shot.
+      audio = { kind: "MODEL_AUDIO" };
+    } else {
+      // The placeholder beat, cut to this script: the same script always gets the same file.
+      const peakIndex = scenes.findIndex((s) => s.role === "PEAK");
+      const beat = synthesizeBeat({
+        sceneBeats: scenes.map((s) => s.beats),
+        flashSeconds: flashOpener ? FLASH.shots * FLASH.shotSeconds : 0,
+        peakSceneIndex: peakIndex >= 0 ? peakIndex : undefined,
+      });
+      const audioPath = join(tmp, "beat.wav");
+      await writeFile(audioPath, beat.wav);
+      audio = {
         path: audioPath,
         kind: "PLACEHOLDER_BEAT",
         sha256: createHash("sha256").update(beat.wav).digest("hex"),
-      },
+      };
+    }
+    const input: AssembleInput = {
+      scenes: scenes.map((s) => ({
+        id: s.id,
+        beats: s.beats,
+        card: s.card,
+        ...(s.line?.trim() ? { line: s.line.trim() } : {}),
+        layout: s.layout,
+      })),
+      shots: assembleShots,
+      flashOpener,
+      audio,
       workDir: join(tmp, "work"),
       outPath: join(tmp, "reel.mp4"),
     };
     const inputHash = assemblyInputHash(input);
+    const framesUsd = Number(ids.FRAMES_USD ?? 0);
     const shotsCost = shots.results.reduce((sum, r) => sum + (r.costUsd ?? 0), 0);
 
     let renderId: string;
@@ -416,7 +509,7 @@ export async function generateReel(
         reelScriptId: scriptRow.id,
         status: "RENDERING" as const,
         rendererVersion: RENDERER_VERSION,
-        costUsd: shotsCost.toFixed(4),
+        costUsd: (shotsCost + framesUsd).toFixed(4),
         error: null,
         completedAt: null,
         triggerRunId: ctx.actor.type === "JOB" ? ctx.actor.jobRunId : null,
@@ -470,7 +563,7 @@ export async function generateReel(
     completed.push("ASSEMBLY");
 
     // 4. Done ------------------------------------------------------------------------------------
-    const totalCost = Math.round((shotsCost + directorCost) * 10_000) / 10_000;
+    const totalCost = Math.round((shotsCost + framesUsd + directorCost) * 10_000) / 10_000;
     await transitionVariant(ctx, {
       variantId: variant.id,
       event: "PIPELINE_SUCCESS",
@@ -497,6 +590,7 @@ export async function generateReel(
         fallbacks,
         directorUsd: directorCost,
         shotsUsd: shotsCost,
+        ...(framesUsd > 0 ? { framesUsd } : {}),
         qaWarnings,
       },
     });

@@ -1,6 +1,6 @@
 import { createFakeLLMProvider } from "@rc/lib/providers/llm";
 import { promptRegistry } from "@rc/prompts";
-import { CHOCOLATE_POST, REEL_POSTS } from "@rc/prompts/fixtures/reel-director";
+import { CHOCOLATE_POST, REEL_POSTS, REEL_POSTS_V4 } from "@rc/prompts/fixtures/reel-director";
 import { describe, expect, it } from "vitest";
 import { createFakeEvalModel } from "./fake-model";
 import {
@@ -21,8 +21,26 @@ const at = <T>(items: readonly T[], i: number): T => {
 };
 
 describe("the Reel eval with the fake model", () => {
-  it("runs the three synthetic posts to valid scripts", async () => {
-    const results = await runReelEval(REEL_POSTS, { llm: createFakeEvalModel() });
+  it("runs the four synthetic posts to valid v4 scripts with the active director", async () => {
+    const results = await runReelEval(REEL_POSTS_V4, { llm: createFakeEvalModel() });
+    expect(results.map((r) => [r.key, r.status])).toEqual([
+      ["risotto-rice", "SUCCEEDED"],
+      ["bulgur-hot-water", "SUCCEEDED"],
+      ["pasta-oil", "SUCCEEDED"],
+      ["chocolate-drop", "SUCCEEDED"],
+    ]);
+    expect(results.every((r) => r.valid && r.issues.length === 0)).toBe(true);
+    // Six scenes of 3–3.5 s, the hook held 3.5 s: 19 s.
+    expect(results.map((r) => r.seconds)).toEqual([19, 19, 19, 19]);
+    expect(results.every((r) => r.script?.scenes.every((s) => s.layout === "FULL"))).toBe(true);
+    expect(summarizeReelEval(results)).toMatchObject({ posts: 4, valid: 4, hookShotsMoving: 4 });
+  });
+
+  it("runs the three synthetic posts to valid scripts with reel-director@3", async () => {
+    const results = await runReelEval(REEL_POSTS, {
+      llm: createFakeEvalModel(),
+      prompt: promptRegistry.get("reel-director", 3),
+    });
     expect(results.map((r) => [r.key, r.status])).toEqual([
       ["risotto-rice", "SUCCEEDED"],
       ["bulgur-hot-water", "SUCCEEDED"],
@@ -64,7 +82,10 @@ describe("the Reel eval with the fake model", () => {
     const broken = structuredClone(post.output);
     at(broken.scenes, 3).card = "uno dos tres cuatro cinco seis siete";
     const llm = createFakeLLMProvider({ handler: () => broken });
-    const results = await runReelEval([post], { llm });
+    const results = await runReelEval([post], {
+      llm,
+      prompt: promptRegistry.get("reel-director", 3),
+    });
     expect(results[0]).toMatchObject({ valid: false, script: null, status: "INVALID_OUTPUT" });
     expect(results[0]?.issues.map((i) => i.code)).toContain("REEL_CARD_WORDS");
     expect(summarizeReelEval(results)).toMatchObject({ valid: 0 });
@@ -72,12 +93,13 @@ describe("the Reel eval with the fake model", () => {
   });
 
   it("writes a review sheet with the hook options and the scenes", async () => {
-    const results = await runReelEval(REEL_POSTS.slice(0, 1), { llm: createFakeEvalModel() });
-    const sheet = reelReviewSheet(REEL_POSTS, results);
+    const results = await runReelEval(REEL_POSTS_V4.slice(0, 1), { llm: createFakeEvalModel() });
+    const sheet = reelReviewSheet(REEL_POSTS_V4, results);
     expect(sheet).toContain("## risotto-rice · es-ES");
     expect(sheet).toContain("| h1 ✓ | MISTAKE_CALLOUT |");
-    expect(sheet).toContain("7 scenes, 14.5 s, flash opener OFF.");
-    expect(sheet).toContain("| 7 | CTA | SAVE_IT | 4 |");
+    expect(sheet).toContain("6 scenes, 19 s, flash opener OFF.");
+    expect(sheet).toContain("| 6 | PAYOFF | SAVE_IT | 7 | No laves el arroz **del risotto.** |");
+    expect(sheet).toContain("made: A creamy risotto on a dark charcoal stoneware plate.");
     expect(sheet).toContain("claim fidelity");
   });
 

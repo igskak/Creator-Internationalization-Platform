@@ -1,9 +1,20 @@
 import { REEL_EMOTIONS as DB_EMOTIONS, REEL_SCENE_ROLES as DB_ROLES } from "@rc/db/json";
 import { reelDirector } from "@rc/prompts";
-import { CHOCOLATE_POST, REEL_POSTS, type ReelPost } from "@rc/prompts/fixtures/reel-director";
+import {
+  CHOCOLATE_POST,
+  REEL_POSTS,
+  REEL_POSTS_V4,
+  type ReelPost,
+  type ReelPostV4,
+} from "@rc/prompts/fixtures/reel-director";
 import { describe, expect, it } from "vitest";
 import type { NumberLocale } from "../../localization";
-import { hasStrongMotion, reelValidationContext, validateReelScript } from "./validate";
+import {
+  hasStrongMotion,
+  paleFoodOnWhite,
+  reelValidationContext,
+  validateReelScript,
+} from "./validate";
 
 // Synthetic content only (the three posts of the eval set).
 const post = (key: string): ReelPost => {
@@ -620,5 +631,124 @@ describe("the post (reel-director@2)", () => {
     );
     const reused = run(bulgur, (o) => (o.hashtags = ["#cookingtips", "#mealprep", "#grainbowl"]));
     expect(reused.map((i) => [i.code, i.severity])).toEqual([["REEL_HASHTAGS_RECENT", "MAJOR"]]);
+  });
+});
+
+// --- reel-director@4 ----------------------------------------------------------------------------
+
+const runV4 = (p: ReelPostV4, mutate?: (o: ReelPostV4["output"]) => void) => {
+  const output = structuredClone(p.output);
+  mutate?.(output);
+  return validateReelScript(
+    output,
+    reelValidationContext(p.input, {
+      locale: LOCALE[p.input.market.code] ?? "en",
+      format: "v4",
+    }),
+  );
+};
+const riceV4 = REEL_POSTS_V4[0] as ReelPostV4;
+
+describe("a reel-director@4 script", () => {
+  it.each(REEL_POSTS_V4.map((p) => [p.key, p] as const))("%s passes every check", (_key, p) => {
+    expect(runV4(p)).toEqual([]);
+  });
+
+  it("needs 3 to 3.5 s scenes and 5 to 7 of them; a v3 script is too short", () => {
+    const short = runV4(riceV4, (o) => {
+      at(o.scenes, 2).beats = 4;
+    });
+    expect(codes(short)).toEqual(["REEL_BEATS"]);
+    const few = runV4(riceV4, (o) => {
+      o.scenes.splice(3, 2);
+    });
+    expect(codes(few)).toContain("REEL_SCENE_COUNT");
+    expect(run(rice)).toEqual([]);
+    const v3AsV4 = validateReelScript(
+      rice.output,
+      reelValidationContext(rice.input, { locale: "es-ES", format: "v4" }),
+    );
+    expect(codes(v3AsV4)).toEqual(
+      expect.arrayContaining(["REEL_BEATS", "REEL_LINE_MISSING", "REEL_FRAME_MISSING"]),
+    );
+  });
+
+  it("wants a line under every card but the hook, and a summary on the last one", () => {
+    const missing = runV4(riceV4, (o) => {
+      at(o.scenes, 5).line = "";
+    });
+    expect(missing.map((i) => [i.code, i.fieldPath])).toEqual([
+      ["REEL_LINE_MISSING", "scenes.5.line"],
+    ]);
+    expect(missing[0]?.message).toContain("the whole rule and the ask");
+    const onHook = runV4(riceV4, (o) => {
+      at(o.scenes, 0).line = "Una pregunta.";
+    });
+    expect(onHook.map((i) => [i.code, i.severity])).toEqual([["REEL_HOOK_LINE", "MAJOR"]]);
+  });
+
+  it("keeps a line short, plain and true to the slides", () => {
+    expect(
+      codes(
+        runV4(riceV4, (o) => {
+          at(o.scenes, 1).line =
+            "El almidón de la superficie es lo que hace el risotto meloso y cremoso siempre en casa.";
+        }),
+      ),
+    ).toEqual(["REEL_LINE_LENGTH"]);
+    expect(
+      codes(
+        runV4(riceV4, (o) => {
+          at(o.scenes, 1).line = "El almidón lo hace **meloso.**";
+        }),
+      ),
+    ).toEqual(["REEL_LINE_FORMAT"]);
+    // A number in a line comes from a cited slide, like a number in a card.
+    expect(
+      codes(
+        runV4(riceV4, (o) => {
+          at(o.scenes, 2).line = "Tuesta el arroz en seco 5 min antes del caldo.";
+        }),
+      ),
+    ).toContain("NUMERIC_MISMATCH");
+  });
+
+  it("needs a frame prompt for every scene, without people or text", () => {
+    expect(
+      runV4(riceV4, (o) => {
+        at(o.scenes, 3).framePrompt = "";
+      }).map((i) => [i.code, i.fieldPath]),
+    ).toEqual([["REEL_FRAME_MISSING", "scenes.3.framePrompt"]]);
+    expect(
+      codes(
+        runV4(riceV4, (o) => {
+          at(o.scenes, 3).framePrompt =
+            "A chef's hands hold a black cast-iron pan of toasted arborio rice over the stove.";
+        }),
+      ),
+    ).toEqual(["REEL_FRAME_PROMPT"]);
+  });
+
+  it("puts pale food in dark cookware (the owner's rule)", () => {
+    const pale = runV4(riceV4, (o) => {
+      at(o.scenes, 2).framePrompt =
+        "Dry arborio rice grains in a white ceramic pan, a wooden spoon resting in them.";
+    });
+    expect(pale.map((i) => [i.code, i.severity])).toEqual([["REEL_PALE_ON_WHITE", "BLOCKER"]]);
+    expect(pale[0]?.fixHint).toContain("dark cookware");
+  });
+});
+
+describe("paleFoodOnWhite", () => {
+  it.each([
+    ["Long-grain rice in cloudy water in a white saucepan.", true],
+    ["Boiled chicken thighs in a white enamel pot.", true],
+    ["Spaghetti on an ivory plate with sauce.", true],
+    ["Long-grain rice in cloudy water in a black cast-iron pot.", false],
+    ["Melted dark chocolate in a white bowl.", false],
+    ["Golden seared chicken thighs in a white pan.", false],
+    ["Egg white whisked in a dark steel bowl.", false],
+  ])("%s → %s", (prompt, expected) => {
+    expect(paleFoodOnWhite(prompt)).toBe(expected);
   });
 });

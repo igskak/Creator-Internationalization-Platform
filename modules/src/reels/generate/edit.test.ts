@@ -24,7 +24,7 @@ describe("changing a Reel", () => {
     await fx.setEnabled(true);
     ({ variantId: reelId } = await requestReel(fx.ctx, {
       carouselVariantId: fx.carouselId,
-      confirmEstimateUsd: 2.5,
+      confirmEstimateUsd: 2.8,
     }));
     await generateReel(
       fx.jobCtx({ video }),
@@ -160,7 +160,7 @@ describe("changing a Reel", () => {
     it("costs nothing: the job reuses every shot, asks no director, and makes a new video", async () => {
       await changeReelHook(fx.ctx, { variantId: reelId, hookId: "h3" });
       const { result, stub } = await runQueued();
-      expect(result).toMatchObject({ status: "READY", shots: { total: 7, reused: 7 } });
+      expect(result).toMatchObject({ status: "READY", shots: { total: 6, reused: 6 } });
       expect(video.calls).toHaveLength(0);
       expect(stub.calls).toHaveLength(1);
       expect(stub.calls[0]?.scenes[0]?.card).toBe(
@@ -214,7 +214,7 @@ describe("changing a Reel", () => {
     const confirm = () => estimateShotRedo("alibaba/wan-3.0");
 
     it("prices one shot of the Reel's model", () => {
-      expect(estimateShotRedo("alibaba/wan-3.0")).toBeCloseTo(0.3, 4);
+      expect(estimateShotRedo("alibaba/wan-3.0")).toBeCloseTo(0.4, 4);
       expect(estimateShotRedo("bytedance/seedance-2.0")).toBeGreaterThan(
         estimateShotRedo("kling-video/v3.0/std"),
       );
@@ -226,12 +226,12 @@ describe("changing a Reel", () => {
         sceneId: "s3",
         confirmEstimateUsd: confirm(),
       });
-      expect(out.estimateUsd).toBeCloseTo(0.3, 4);
+      expect(out.estimateUsd).toBeCloseTo(0.4, 4);
       const [next] = await scripts();
       const scene = next?.scenes.find((s) => s.id === "s3");
       expect(scene).toMatchObject({ shotAttempt: 1 });
       expect(scene?.shotId).toBeUndefined();
-      expect(next?.scenes.filter((s) => s.shotId)).toHaveLength(6);
+      expect(next?.scenes.filter((s) => s.shotId)).toHaveLength(5);
       expect(fx.jobs.calls[0]?.payload).toMatchObject({ scriptId: next?.id });
     });
 
@@ -242,7 +242,7 @@ describe("changing a Reel", () => {
         confirmEstimateUsd: confirm(),
       });
       const first = await runQueued();
-      expect(first.result).toMatchObject({ status: "READY", shots: { total: 7, reused: 6 } });
+      expect(first.result).toMatchObject({ status: "READY", shots: { total: 6, reused: 5 } });
       expect(video.calls).toHaveLength(1);
       expect(first.stub.calls).toHaveLength(1);
       const view = await getReelView(fx.ctx, fx.carouselId);
@@ -258,11 +258,11 @@ describe("changing a Reel", () => {
         confirmEstimateUsd: confirm(),
       });
       const second = await runQueued();
-      expect(second.result.shots).toMatchObject({ total: 7, reused: 6 });
+      expect(second.result.shots).toMatchObject({ total: 6, reused: 5 });
       expect(video.calls).toHaveLength(2);
       expect(
         (await t.db.select().from(schema.reelShots)).filter((s) => s.status === "READY"),
-      ).toHaveLength(9);
+      ).toHaveLength(8);
     });
 
     it("refuses a price that is too low, an unknown scene and a Reel that cannot change", async () => {

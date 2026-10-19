@@ -62,6 +62,7 @@ const estimateOf = (model: string, total: number, shotsUsd = total - 0.1) => ({
   shots: 7,
   secondsPerShot: 3,
   shotsUsd,
+  framesUsd: 0,
   directorUsd: 0.1,
   totalUsd: total,
 });
@@ -78,6 +79,7 @@ const scene = (index: number, over: Record<string, unknown> = {}) => ({
   emotion: "AHA",
   beats: 4,
   card: index === 0 ? "Hot water on **bulgur?**" : `Card ${index + 1}`,
+  line: index === 1 ? "Fine bulgur only needs hot water." : "",
   shotPrompt: "Static camera. Steam rises.",
   shotAttempt: 0,
   shot: "READY",
@@ -212,7 +214,11 @@ describe("a market without a Reel", () => {
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText(/7 shots of 3 seconds/)).toBeInTheDocument();
     expect(within(dialog).getByText(`${t.dialog.estimate}: $2.20`)).toBeInTheDocument();
-    expect(within(dialog).getByText(/\$2\.10 \+ the script about \$0\.10/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        /\$2\.10 \+ their pictures about \$0\.00 \+ the script about \$0\.10/,
+      ),
+    ).toBeInTheDocument();
     expect(within(dialog).getByRole("radio", { name: /Wan 3\.0/ })).toBeChecked();
     expect(mocks.generate).not.toHaveBeenCalled();
   });
@@ -426,6 +432,9 @@ describe("a finished Reel", () => {
     expect(within(first).getByText("1. HOOK · AHA · 4 beats")).toBeInTheDocument();
     expect(within(first).getByText("Hot water on bulgur?")).toBeInTheDocument();
     expect(within(first).getByText(t.scenes.shot.READY)).toBeInTheDocument();
+    // A scene's line of use (reel-director@4) shows under its card.
+    const second = document.querySelector('[data-scene="s2"]') as HTMLElement;
+    expect(within(second).getByText("Fine bulgur only needs hot water.")).toBeInTheDocument();
     // A shot that is still running has no redo.
     const running = document.querySelector('[data-scene="s4"]') as HTMLElement;
     expect(within(running).getByText(t.scenes.shot.RUNNING)).toBeInTheDocument();

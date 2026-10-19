@@ -3,6 +3,7 @@ import {
   findBannedHookPatterns,
   hookLanguage,
   REEL_LIMITS,
+  REEL_LIMITS_V4,
   REEL_POST_LIMITS,
   type reelDirector,
 } from "@rc/prompts";
@@ -21,12 +22,18 @@ import { checkNumericFidelity, type NumberLocale } from "../../localization";
 
 type Output = reelDirector.ReelDirectorOutput;
 type OutputV2 = reelDirector.ReelDirectorOutputV2;
-type Scene = reelDirector.ReelDirectorScene;
+/** A scene of any version; reel-director@4 adds the line and the frame prompt. */
+type Scene = reelDirector.ReelDirectorScene & { line?: string; framePrompt?: string };
 type Input = reelDirector.ReelDirectorInput;
 type InputV2 = reelDirector.ReelDirectorInputV2;
 
 const L = REEL_LIMITS;
 const P = REEL_POST_LIMITS;
+
+/** The script format: v3 and older (short shots from the carousel's pictures) or v4. */
+export type ReelScriptFormat = "v3" | "v4";
+const limitsOf = (context: ReelValidationContext) =>
+  context.format === "v4" ? REEL_LIMITS_V4 : REEL_LIMITS;
 
 /** What the Reel's own post is checked against (reel-director@2 and later). */
 export type ReelPostContext = {
@@ -52,13 +59,19 @@ export type ReelValidationContext = {
   forbiddenPatterns: readonly ForbiddenPattern[];
   /** Set when the director also writes the post (reel-director@2). */
   post?: ReelPostContext;
+  /** reel-director@4 and later: longer scenes, a line under each card, a frame prompt per scene. */
+  format?: ReelScriptFormat;
 };
 
 const isInputV2 = (input: Input | InputV2): input is InputV2 => "ctaTypes" in input;
 
 export function reelValidationContext(
   input: Input | InputV2,
-  options: { locale: NumberLocale; forbiddenPatterns?: readonly ForbiddenPattern[] },
+  options: {
+    locale: NumberLocale;
+    forbiddenPatterns?: readonly ForbiddenPattern[];
+    format?: ReelScriptFormat;
+  },
 ): ReelValidationContext {
   const post: ReelPostContext | undefined = isInputV2(input)
     ? {
@@ -83,6 +96,7 @@ export function reelValidationContext(
     hookTypes: new Set(input.taxonomy.hookTypes.map((t) => t.code)),
     ...(input.baseScript ? { baseScript: input.baseScript } : {}),
     forbiddenPatterns: options.forbiddenPatterns ?? [],
+    ...(options.format ? { format: options.format } : {}),
   };
 }
 
@@ -266,9 +280,10 @@ function checkHookMotion(
   ];
 }
 
-function checkStructure(output: Output): ValidationIssue[] {
+function checkStructure(output: Output, context: ReelValidationContext): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const { scenes } = output;
+  const L = limitsOf(context);
   if (scenes.length < L.minScenes || scenes.length > L.maxScenes) {
     issues.push(
       blocker(
@@ -465,6 +480,126 @@ function checkHooks(output: Output, context: ReelValidationContext): ValidationI
   return issues;
 }
 
+// --- lines and frames (reel-director@4) ------------------------------------------------------
+
+/** Food that disappears on a white page: it goes into dark cookware (owner's rule, 2026-10-19). */
+const PALE_FOOD =
+  /(?<![\p{L}\d])(?:rice|risotto|pasta|spaghetti|noodles?|cream|milk|yogh?urt|potato(?:es)?|cauliflower|chicken|fish|cod|tofu|egg whites?|dough|flour|oats|oatmeal|porridge|couscous|quinoa|bulgur|semolina|polenta|mash(?:ed)?)(?![\p{L}\d])/iu;
+/** Food that has taken colour no longer needs the dark pot. */
+const COLOURED =
+  /(?<![\p{L}\d])(?:brown(?:ed)?|golden|seared|toasted|caramel\w*|charred|crisp\w*|roasted)(?![\p{L}\d])/iu;
+const WHITE_VESSEL =
+  /(?<![\p{L}\d])(?:white|cream-colou?red|ivory)\s+(?:[\p{L}-]+\s+)?(?:bowls?|plates?|pots?|pans?|saucepans?|skillets?|dish(?:es)?|casseroles?|ceramic|enamel|cookware|cups?|mugs?)(?![\p{L}\d])/iu;
+
+/** True when a frame prompt puts pale food in white cookware (it would vanish on the white page). */
+export const paleFoodOnWhite = (framePrompt: string) =>
+  PALE_FOOD.test(framePrompt) && WHITE_VESSEL.test(framePrompt) && !COLOURED.test(framePrompt);
+
+const wordCount = (text: string) => text.trim().split(/\s+/u).filter(Boolean).length;
+
+function checkLinesAndFrames(output: Output, context: ReelValidationContext): ValidationIssue[] {
+  if (context.format !== "v4") return [];
+  const issues: ValidationIssue[] = [];
+  const L = REEL_LIMITS_V4;
+  const last = output.scenes.length - 1;
+  for (const [i, raw] of output.scenes.entries()) {
+    const scene = raw as Scene;
+    const at = `scenes.${i}`;
+    const line = (scene.line ?? "").trim();
+    if (i === 0 && line) {
+      issues.push(
+        major(
+          "REEL_HOOK_LINE",
+          `${at}.line`,
+          "The hook scene has a line; the question should stand alone.",
+          'Leave the hook scene\'s line empty ("").',
+        ),
+      );
+    }
+    if (i > 0 && !line) {
+      issues.push(
+        blocker(
+          "REEL_LINE_MISSING",
+          `${at}.line`,
+          i === last
+            ? "The last scene has no line: it must state the whole rule and the ask."
+            : "The scene has no line of use under its card.",
+          i === last
+            ? 'Write the summary of the rule and the ask, e.g. "Fluffy: hands off. Creamy: stir. Save this."'
+            : "Add one short sentence: the reason, the condition or the exact action.",
+        ),
+      );
+    }
+    if (line) {
+      if (wordCount(line) > L.maxLineWords || countChars(line) > L.maxLineChars) {
+        issues.push(
+          blocker(
+            "REEL_LINE_LENGTH",
+            `${at}.line`,
+            `The line has ${wordCount(line)} words and ${countChars(line)} characters; the limits are ${L.maxLineWords} and ${L.maxLineChars}.`,
+            "Shorten the line to one short sentence.",
+          ),
+        );
+      }
+      if (line.includes("**")) {
+        issues.push(
+          blocker(
+            "REEL_LINE_FORMAT",
+            `${at}.line`,
+            "The line has accent marks; only the card has an accent.",
+            "Remove the double asterisks from the line.",
+          ),
+        );
+      }
+    }
+    // A base script's frames are locked (the other market's pictures are reused).
+    if (context.baseScript) continue;
+    const frame = (scene.framePrompt ?? "").trim();
+    const hint =
+      "Describe the start picture in English: the food, its cookware and its state; no people, hands, text or background.";
+    if (wordCount(frame) < L.minFramePromptWords) {
+      issues.push(
+        blocker(
+          "REEL_FRAME_MISSING",
+          `${at}.framePrompt`,
+          frame
+            ? "The frame prompt is too short to make a picture."
+            : "The scene has no frame prompt.",
+          hint,
+        ),
+      );
+      continue;
+    }
+    for (const [pattern, what] of [
+      [PEOPLE, "a person or a hand"],
+      [TEXT_IN_SHOT, "text or a logo"],
+    ] as const) {
+      const match = pattern.exec(frame);
+      if (match) {
+        issues.push(
+          blocker(
+            "REEL_FRAME_PROMPT",
+            `${at}.framePrompt`,
+            `The frame prompt contains ${what}: "${match[0]}".`,
+            hint,
+          ),
+        );
+      }
+    }
+    if (paleFoodOnWhite(frame)) {
+      issues.push(
+        blocker(
+          "REEL_PALE_ON_WHITE",
+          `${at}.framePrompt`,
+          "Pale food in white cookware disappears on the white page.",
+          "Put pale or white food in dark cookware: black cast iron, dark enamel, charcoal ceramic or dark stoneware.",
+        ),
+      );
+    }
+  }
+  return issues;
+}
+
 function checkClaimsAndNumbers(output: Output, context: ReelValidationContext): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const steps = output.scenes.filter((s) => s.role === "STEP").length;
@@ -518,6 +653,8 @@ function checkClaimsAndNumbers(output: Output, context: ReelValidationContext): 
       );
     }
     checkNumbers(scene.card, scene.claimSlideIds, `${at}.card`);
+    const line = (scene as Scene).line ?? "";
+    if (line.trim()) checkNumbers(line, scene.claimSlideIds, `${at}.line`);
   }
   for (const [i, hook] of output.hookOptions.entries()) {
     const bad = unknown(hook.claimSlideIds);
@@ -550,6 +687,9 @@ function checkWording(output: Output, context: ReelValidationContext): Validatio
       fieldPath: `scenes.${i}.card`,
       text: stripEmphasis(s.card),
     })),
+    ...output.scenes
+      .map((s, i) => ({ fieldPath: `scenes.${i}.line`, text: (s as Scene).line ?? "" }))
+      .filter((l) => l.text.trim() !== ""),
   ];
   for (const { fieldPath, text } of cards) {
     if (language) {
@@ -633,15 +773,22 @@ function checkBase(output: Output, context: ReelValidationContext): ValidationIs
   for (const [i, baseScene] of base.scenes.entries()) {
     const scene = output.scenes[i];
     if (!scene) continue;
-    const { card: _baseCard, ...locked } = baseScene;
-    const { card: _card, ...current } = scene;
+    // The card and the line are this market's; the frame prompt is not in the base script's input
+    // (the caller keeps the other market's pictures), so neither side is compared on it.
+    const {
+      card: _baseCard,
+      line: _baseLine,
+      framePrompt: _baseFrame,
+      ...locked
+    } = baseScene as Scene;
+    const { card: _card, line: _line, framePrompt: _frame, ...current } = scene as Scene;
     if (!same(locked, current)) {
       issues.push(
         blocker(
           "REEL_BASE_CHANGED",
           `scenes.${i}`,
           `Scene ${i + 1} differs from the base script in more than its card.`,
-          "Copy id, role, emotion, beats, shot prompt, picture, layout and claim slides unchanged; change only the card.",
+          "Copy id, role, emotion, beats, shot prompt, frame prompt, picture, layout and claim slides unchanged; change only the card and the line.",
         ),
       );
     }
@@ -885,7 +1032,8 @@ export function validateReelScript(
             ),
           ];
   return [
-    ...checkStructure(output),
+    ...checkStructure(output, context),
+    ...checkLinesAndFrames(output, context),
     ...checkHooks(output, context),
     ...checkScenes(output, context),
     ...checkClaimsAndNumbers(output, context),

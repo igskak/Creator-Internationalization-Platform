@@ -95,6 +95,7 @@ describe("@rc/prompts", () => {
       "reel-director@1",
       "reel-director@2",
       "reel-director@3",
+      "reel-director@4",
     ]);
   });
 });
