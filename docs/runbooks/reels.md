@@ -60,3 +60,10 @@ A Reel can go out as a trial: Instagram shows it to people who do not follow the
 
 The publisher sends `trial_params={"graduation_strategy": …}` on the REELS container; the dry run sends it too. After publishing the setting is fixed.
 
+
+## Attach a video made outside the app
+A Reel video made by hand (a test through the Higgsfield API, an edit in a video editor) can go through the normal review and publishing:
+
+1. Write its script as JSON: `hookOptions` (1–3, each `id`, `hookType`, `card`, `ruleCard`, `claimSlideIds`, `rationale`), `chosenHookId`, `scenes` in the order of the video (`role`, `emotion`, `beats` of 0.5 s, `card`, optional `line` and `framePrompt`, `shotPrompt`, `claimSlideIds` = slide ids of the carousel), and optionally `post` (`body` = the caption without its first line, `cta` `{type, text}`, `hashtags`). The first scene's card is the chosen hook's card.
+2. `pnpm rc reel-attach <carouselVariantId> <video.mp4> <script.json> [--cost 1.6]`. The video must be 1080×1920 H.264, 3–90 s; a script whose scenes do not add up to the video's length is a warning.
+3. The Reel draft of that carousel (a new one if there is none; an approved Reel is refused) gets the script as its next version and the file as a READY render, and goes to READY_FOR_REVIEW. Review, approve and publish it in the app as usual. "Change hook" and "Redo shot" do not apply to an attached video (no shots exist): attach a new file instead.

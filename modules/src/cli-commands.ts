@@ -18,6 +18,7 @@ import {
   formatG2Readiness,
   formatG3Readiness,
 } from "./publishing";
+import { attachReelVideo } from "./reels/generate";
 import { listAppSettings, setAppSetting } from "./settings";
 import {
   dryRunYouTubeUpload,
@@ -90,6 +91,45 @@ export const cliCommands: CliCommands = {
       }
       const saved = await setAppSetting(ctx, { key: key as never, value: parsed });
       console.log(`rc setting: ${saved.key} = ${JSON.stringify(saved.value)}`);
+    },
+  },
+  "reel-attach": {
+    description:
+      "Attach a Reel video made outside the app (mp4 + its script as JSON) to the Reel draft of a carousel, ready for review",
+    usage:
+      "reel-attach <carouselVariantId> <video.mp4> <script.json> [--cost usd] [--audio MODEL_AUDIO|PLACEHOLDER_BEAT|OWNER_TRACK]",
+    run: async (ctx, args) => {
+      const { positional, options } = parseOptions(args, []);
+      const [carouselVariantId, videoPath, scriptPath] = positional;
+      if (!carouselVariantId || !videoPath || !scriptPath) {
+        throw new ValidationError(
+          "Usage: reel-attach <carouselVariantId> <video.mp4> <script.json> [--cost usd] [--audio kind]",
+        );
+      }
+      let script: unknown;
+      try {
+        script = JSON.parse(await readFile(scriptPath, "utf8"));
+      } catch (error) {
+        throw new ValidationError(
+          `Cannot read the script ${scriptPath}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      const cost = options.get("cost");
+      const audio = options.get("audio");
+      const result = await attachReelVideo(ctx, {
+        carouselVariantId,
+        videoPath,
+        script: script as never,
+        ...(typeof cost === "string" ? { costUsd: Number(cost) } : {}),
+        ...(typeof audio === "string" ? { audioKind: audio as never } : {}),
+      });
+      console.log(
+        [
+          `rc reel-attach: Reel ${result.variantId} (${result.created ? "new draft" : "existing draft"}) is ready for review`,
+          `  script v${result.scriptVersion} ${result.scriptId}, render ${result.renderId}, ${result.durationMs / 1000} s`,
+          ...result.warnings.map((w) => `  warning: ${w}`),
+        ].join("\n"),
+      );
     },
   },
   "g2-check": {

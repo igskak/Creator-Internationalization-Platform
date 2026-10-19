@@ -22,7 +22,7 @@ import { loadReelSource } from "./source";
 
 /** A confirmed estimate may be a cent or two below the current one (rounding, a rate change). */
 const CONFIRM_SLACK_USD = 0.02;
-const REUSABLE: readonly string[] = ["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"];
+export const REUSABLE: readonly string[] = ["DRAFT", "READY_FOR_REVIEW", "CHANGES_REQUESTED"];
 
 export const EstimateReelInput = z.object({
   carouselVariantId: z.uuid(),
@@ -39,7 +39,8 @@ export type ReelEstimateView = {
   reelVariantId: string | null;
 };
 
-async function findReel(ctx: ServiceContext, masterIdeaId: string, marketId: string) {
+/** The live Reel variant of an idea and market (not rejected, not published), if one exists. */
+export async function findReel(ctx: ServiceContext, masterIdeaId: string, marketId: string) {
   const [row] = await ctx.db
     .select()
     .from(schema.contentVariants)
