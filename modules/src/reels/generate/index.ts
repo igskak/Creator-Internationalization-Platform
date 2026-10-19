@@ -1,3 +1,9 @@
+export {
+  type AttachedReel,
+  AttachedReelScript,
+  AttachReelVideoInput,
+  attachReelVideo,
+} from "./attach";
 export { createE2eVideo } from "./e2e-video";
 export { assertReelsEnabled, reelsEnabled } from "./enabled";
 export {

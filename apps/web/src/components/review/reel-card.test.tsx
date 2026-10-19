@@ -467,6 +467,16 @@ describe("a finished Reel", () => {
     expect(screen.queryByRole("button", { name: t.scenes.redo })).not.toBeInTheDocument();
   });
 
+  it("shows an attached video (pnpm rc reel-attach) with its cards, but no hook change or redo", () => {
+    const base = reelOf();
+    const script = base.script ? { ...base.script, model: "attached" } : null;
+    show(viewOf({ reel: reelOf({ script }) }));
+    expect(screen.getByLabelText(t.video.label)).toBeInTheDocument();
+    expect(screen.getByText("Fine bulgur only needs hot water.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t.hook.use })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: t.scenes.redo })).not.toBeInTheDocument();
+  });
+
   describe("review (M8-09)", () => {
     it("approves the Reel with its lock version and the checklist", async () => {
       const user = userEvent.setup();
