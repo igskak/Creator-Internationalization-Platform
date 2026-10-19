@@ -10,6 +10,7 @@ import { InvalidStateError, ValidationError } from "@rc/lib/errors";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { reelReviewFacts } from "../../content";
 import { type AttachedReelScript, attachReelVideo } from "./attach";
+import { changeReelHook, regenerateReelShot } from "./request";
 import { type ReelFixture, reelFixture } from "./test-support";
 
 // Attaching a Reel video made outside the app (`pnpm rc reel-attach`), with real ffprobe on small
@@ -212,6 +213,21 @@ describe.skipIf(!haveFfmpeg)("attachReelVideo", () => {
       status: "READY_FOR_REVIEW",
       currentReelRenderId: second.renderId,
     });
+  });
+
+  it("refuses to change the hook or redo a shot of an attached video", async () => {
+    await fx.setEnabled(true);
+    const { variantId } = await attachReelVideo(fx.ctx, {
+      carouselVariantId: fx.carouselId,
+      videoPath: clip("attached.mp4"),
+      script: SCRIPT,
+    });
+    await expect(changeReelHook(fx.ctx, { variantId, hookId: "h2" })).rejects.toMatchObject({
+      details: { code: "reel_attached" },
+    });
+    await expect(
+      regenerateReelShot(fx.ctx, { variantId, sceneId: "s2", confirmEstimateUsd: 1 }),
+    ).rejects.toMatchObject({ details: { code: "reel_attached" } });
   });
 
   it("refuses a file that is not a Reel, a script that does not fit, and an approved Reel", async () => {

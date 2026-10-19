@@ -203,6 +203,13 @@ async function changeableReel(ctx: ServiceContext, variantId: string) {
     .limit(1);
   if (!script)
     throw new InvalidStateError("The Reel has no script yet.", { details: { variantId } });
+  // A video attached from outside the app has no shots to reuse or redo.
+  if (script.shotModel === "attached") {
+    throw new InvalidStateError(
+      "This Reel's video was attached from outside the app: attach a new file instead.",
+      { details: { code: "reel_attached", variantId } },
+    );
+  }
   return { reel, script };
 }
 
