@@ -321,9 +321,10 @@ export const lineageFixture = (): Lineage => ({
     ],
   },
   metrics: {
-    d7: {
+    shown: {
       ...snap("D7", 168, 2400, 168, "2026-10-17T09:30:00Z"),
       isExactD7: true,
+      early: false,
       engagementRate: 0.118,
       commentRate: 0.004,
     },

@@ -3,6 +3,7 @@ import { listMarkets } from "@rc/modules/localization";
 import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { compact, percent } from "@/components/analytics/chart-math";
+import { MeasuredCell, WatchCell } from "@/components/analytics/published-cells";
 import { EmptyState } from "@/components/knowledge/cards-states";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -22,7 +23,8 @@ import { requireUser } from "@/server/auth/session";
 import { requestContext } from "@/server/context";
 
 // /content/published (plan 10 §10.2, M6-09): the posts that went out, newest first, with their
-// numbers at day 7, a link to each post's lineage, and the list as a CSV file.
+// numbers at day 7 (before that, the newest snapshot, marked early), a Reel's watch metrics, a link
+// to each post's lineage, and the list as a CSV file.
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 25;
@@ -132,6 +134,7 @@ export default async function PublishedPage({
                   <TableHead className="text-right">{t.table.saves}</TableHead>
                   <TableHead className="text-right">{t.table.shares}</TableHead>
                   <TableHead className="text-right">{t.table.comments}</TableHead>
+                  <TableHead>{t.table.watch}</TableHead>
                   <TableHead>{t.table.measured}</TableHead>
                   <TableHead>{t.table.link}</TableHead>
                   <TableHead>{t.table.youtube}</TableHead>
@@ -162,13 +165,14 @@ export default async function PublishedPage({
                     <TableCell className="text-right tabular-nums">{rate(r.shareRate)}</TableCell>
                     <TableCell className="text-right tabular-nums">{rate(r.commentRate)}</TableCell>
                     <TableCell>
-                      {r.slot === null ? (
-                        <span className="text-muted-foreground">{t.noNumbers}</span>
-                      ) : r.isExactD7 ? (
-                        t.measuredAt
+                      {r.format === "REEL" ? (
+                        <WatchCell row={r} t={t} locale={locale} />
                       ) : (
-                        <Badge variant="outline">{format(t.fallback, { slot: r.slot })}</Badge>
+                        <span className="text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <MeasuredCell row={r} t={t} />
                     </TableCell>
                     <TableCell>
                       {r.permalink ? (

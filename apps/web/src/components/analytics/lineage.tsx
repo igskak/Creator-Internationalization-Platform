@@ -67,7 +67,7 @@ export function LineageView({
   const count = (v: number | null) => (v === null ? NONE : compact(v, locale));
   const n = t.numbers;
   const c = t.chain;
-  const d7 = metrics.d7;
+  const shown = metrics.shown;
   const dayLabel = (hours: number) => Math.round(hours / 24);
 
   return (
@@ -106,34 +106,36 @@ export function LineageView({
       </header>
 
       <Section title={n.title} testId="numbers">
-        {d7 ? (
+        {shown ? (
           <>
-            <p className="text-sm text-muted-foreground">
-              {d7.isExactD7
+            <p className="text-sm text-muted-foreground" data-testid="shown-slot">
+              {shown.isExactD7
                 ? n.d7
-                : format(n.fallback, { slot: d7.slot, days: dayLabel(d7.ageHours) })}
+                : shown.early
+                  ? format(n.early, { slot: shown.slot, hours: Math.round(shown.ageHours) })
+                  : format(n.fallback, { slot: shown.slot, days: dayLabel(shown.ageHours) })}
             </p>
             <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
               <li>
-                <StatTile testId="reach" label={n.reach} value={count(d7.reach)} />
+                <StatTile testId="reach" label={n.reach} value={count(shown.reach)} />
               </li>
               <li>
-                <StatTile testId="saves" label={n.saves} value={count(d7.saves)} />
+                <StatTile testId="saves" label={n.saves} value={count(shown.saves)} />
               </li>
               <li>
-                <StatTile testId="shares" label={n.shares} value={count(d7.shares)} />
+                <StatTile testId="shares" label={n.shares} value={count(shown.shares)} />
               </li>
               <li>
-                <StatTile testId="saveRate" label={n.saveRate} value={rate(d7.saveRate)} />
+                <StatTile testId="saveRate" label={n.saveRate} value={rate(shown.saveRate)} />
               </li>
               <li>
-                <StatTile testId="shareRate" label={n.shareRate} value={rate(d7.shareRate)} />
+                <StatTile testId="shareRate" label={n.shareRate} value={rate(shown.shareRate)} />
               </li>
               <li>
                 <StatTile
                   testId="engagementRate"
                   label={n.engagementRate}
-                  value={rate(d7.engagementRate)}
+                  value={rate(shown.engagementRate)}
                 />
               </li>
             </ul>
@@ -143,7 +145,7 @@ export function LineageView({
             {n.none}
           </p>
         )}
-        {metrics.watch && d7 ? (
+        {metrics.watch && shown ? (
           <ul
             className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
             aria-label={n.watch}

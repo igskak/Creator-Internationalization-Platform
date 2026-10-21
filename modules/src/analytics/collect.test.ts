@@ -192,8 +192,10 @@ describe("collecting insights", () => {
       },
       videoMetricsJson: null,
     });
+    // Already at H2: the watch metrics are asked for at every slot, not only from D3 on.
     const [r] = await snapshotsOf(reel.publicationId);
     expect(r).toMatchObject({
+      snapshotSlot: "H2",
       reach: 700,
       profileActionsJson: null,
       videoMetricsJson: { ig_reels_avg_watch_time: 5400 },

@@ -118,6 +118,56 @@ export function pickD7(snapshots: readonly Snapshot[]): Snapshot | null {
   return best;
 }
 
+/**
+ * The snapshot a post's numbers are shown from on the Published list and its lineage: the D7 one
+ * (`pickD7`), and before the post is 72 h old the newest snapshot it has (H2, D1 or a manual one),
+ * so that the first days are not empty. The comparisons and summaries keep to `pickD7`.
+ */
+export function pickShown(snapshots: readonly Snapshot[]): Snapshot | null {
+  const d7 = pickD7(snapshots);
+  if (d7) return d7;
+  let best: Snapshot | null = null;
+  for (const s of snapshots) {
+    if (!best) {
+      best = s;
+      continue;
+    }
+    const age = num(s.mediaAgeHours) ?? 0;
+    const bestAge = num(best.mediaAgeHours) ?? 0;
+    if (age > bestAge || (age === bestAge && s.measuredAt.getTime() > best.measuredAt.getTime()))
+      best = s;
+  }
+  return best;
+}
+
+/** A snapshot younger than the 72 h from which the D7 numbers are read. */
+export const isEarlySnapshot = (s: Pick<Snapshot, "mediaAgeHours">): boolean =>
+  (num(s.mediaAgeHours) ?? 0) < MIN_AGE_HOURS;
+
+export type SnapshotRates = {
+  saveRate: number | null;
+  shareRate: number | null;
+  commentRate: number | null;
+  engagementRate: number | null;
+};
+
+/** The rates of one snapshot, worked out as `v_publication_metrics_d7` does. */
+export function snapshotRates(
+  s: Pick<Snapshot, "reach" | "likes" | "comments" | "saves" | "shares" | "totalInteractions">,
+): SnapshotRates {
+  const interactions =
+    s.totalInteractions ??
+    (s.likes === null || s.comments === null || s.saves === null || s.shares === null
+      ? null
+      : s.likes + s.comments + s.saves + s.shares);
+  return {
+    saveRate: rate(s.saves, s.reach),
+    shareRate: rate(s.shares, s.reach),
+    commentRate: rate(s.comments, s.reach),
+    engagementRate: rate(interactions, s.reach),
+  };
+}
+
 export async function getReelInsights(
   ctx: ServiceContext,
   raw: DateRangeInput,

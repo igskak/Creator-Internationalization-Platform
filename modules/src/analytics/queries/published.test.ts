@@ -39,6 +39,15 @@ describe("published list, CSV and lineage", () => {
       format?: "CAROUSEL" | "REEL";
       sourceVariantId?: string;
       d7?: { reach: number; saves: number; shares?: number };
+      /** Snapshots younger than D7 (H2, D1), with a Reel's watch metrics. */
+      early?: {
+        slot: "H2" | "D1" | "MANUAL";
+        age: number;
+        reach: number;
+        saves?: number;
+        shares?: number;
+        video?: Record<string, number>;
+      }[];
       dryRun?: boolean;
     } = {},
   ) {
@@ -77,8 +86,31 @@ describe("published list, CSV and lineage", () => {
         apiVersion: "v25.0",
       });
     }
+    for (const e of opts.early ?? []) {
+      await t.db.insert(schema.metricSnapshots).values({
+        publicationId,
+        snapshotSlot: e.slot,
+        measuredAt: new Date(
+          at(opts.publishedAt ?? "2026-10-10T09:00:00Z").getTime() + e.age * 3_600_000,
+        ),
+        mediaAgeHours: String(e.age),
+        reach: e.reach,
+        saves: e.saves ?? 0,
+        shares: e.shares ?? 0,
+        videoMetricsJson: e.video ?? null,
+        rawMetricsJson: {},
+        apiVersion: "v25.0",
+      });
+    }
     return { publicationId, variantId, versionId };
   }
+
+  // A Reel's watch metrics as Instagram gives them: milliseconds, and the skip rate in percent.
+  const WATCH = {
+    ig_reels_avg_watch_time: 4200,
+    ig_reels_video_view_total_time: 1_260_000,
+    reels_skip_rate: 35,
+  };
 
   describe("listPublished", () => {
     it("lists posts newest first with their D7 rates, and posts without numbers too", async () => {
@@ -102,6 +134,49 @@ describe("published list, CSV and lineage", () => {
       expect(list.rows[1]?.shareRate).toBeCloseTo(0.02, 6);
       expect(list.rows[1]?.permalink).toContain("instagram.com/p/");
       expect(list.rows[1]?.youtubeUrl).toBeNull();
+    });
+
+    it("shows the newest early snapshot of a post with no D7 numbers yet: H2 only, D1 only", async () => {
+      await post({
+        publishedAt: "2026-10-20T09:00:00Z",
+        hook: "H2 only",
+        early: [{ slot: "H2", age: 2.1, reach: 120, saves: 6, shares: 3 }],
+      });
+      await post({
+        publishedAt: "2026-10-19T09:00:00Z",
+        hook: "D1 Reel",
+        format: "REEL",
+        early: [
+          { slot: "H2", age: 2, reach: 90, video: { ig_reels_avg_watch_time: 3000 } },
+          { slot: "D1", age: 24.5, reach: 400, saves: 20, shares: 8, video: WATCH },
+        ],
+      });
+      await post({
+        publishedAt: "2026-10-18T09:00:00Z",
+        hook: "Old Reel",
+        format: "REEL",
+        d7: { reach: 1000, saves: 10 },
+      });
+      const byHook = Object.fromEntries((await listPublished(fx.ctx)).rows.map((r) => [r.hook, r]));
+      expect(byHook["H2 only"]).toMatchObject({
+        slot: "H2",
+        isExactD7: false,
+        early: true,
+        reach: 120,
+        watch: null,
+      });
+      expect(byHook["H2 only"]?.saveRate).toBeCloseTo(0.05, 6);
+      expect(byHook["H2 only"]?.shareRate).toBeCloseTo(0.025, 6);
+      expect(byHook["D1 Reel"]).toMatchObject({ slot: "D1", early: true, reach: 400 });
+      expect(byHook["D1 Reel"]?.saveRate).toBeCloseTo(0.05, 6);
+      expect(byHook["D1 Reel"]?.watch).toMatchObject({ avgWatchSeconds: 4.2, completion: null });
+      expect(byHook["D1 Reel"]?.watch?.hookRate).toBeCloseTo(0.65, 6);
+      expect(byHook["D1 Reel"]?.watch?.totalWatchHours).toBeCloseTo(0.35, 6);
+      // From D3 on the D7 numbers win; a Reel without watch metrics shows them as unknown.
+      expect(byHook["Old Reel"]).toMatchObject({ slot: "D7", isExactD7: true, early: false });
+      expect(byHook["Old Reel"]?.watch).toMatchObject({ avgWatchSeconds: null, hookRate: null });
+      const { csv } = await exportPublishedCsv(fx.ctx);
+      expect(csv).toContain(",H2,false,120,0.05");
     });
 
     it("links the Short of a post once its live YouTube upload is published (G-09)", async () => {
@@ -373,32 +448,53 @@ describe("published list, CSV and lineage", () => {
         ["D1", 24],
         ["D7", 168],
       ]);
-      expect(lineage.metrics.d7).toMatchObject({
+      expect(lineage.metrics.shown).toMatchObject({
         slot: "D7",
         reach: 2000,
         saves: 150,
         isExactD7: true,
+        early: false,
       });
-      expect(lineage.metrics.d7?.saveRate).toBeCloseTo(0.075, 6);
+      expect(lineage.metrics.shown?.saveRate).toBeCloseTo(0.075, 6);
     });
 
-    it("has no D7 yet for a young post, but its timeline", async () => {
-      const f = await post();
-      await t.db.insert(schema.metricSnapshots).values({
-        publicationId: f.publicationId,
-        snapshotSlot: "H2",
-        measuredAt: at("2026-10-10T11:00:00Z"),
-        mediaAgeHours: "2",
-        reach: 50,
-        rawMetricsJson: {},
-        apiVersion: "v25.0",
-      });
+    it("shows the H2 snapshot of a post that only has H2", async () => {
+      const f = await post({ early: [{ slot: "H2", age: 2, reach: 50, saves: 5 }] });
       const lineage = await getLineage(fx.ctx, { publicationId: f.publicationId });
-      expect(lineage.metrics.d7).toBeNull();
+      expect(lineage.metrics.shown).toMatchObject({
+        slot: "H2",
+        ageHours: 2,
+        reach: 50,
+        isExactD7: false,
+        early: true,
+      });
+      expect(lineage.metrics.shown?.saveRate).toBeCloseTo(0.1, 6);
+      expect(lineage.metrics.watch).toBeNull();
       expect(lineage.metrics.timeline).toHaveLength(1);
       expect(lineage.cards).toEqual([]);
       expect(lineage.brief).toBeNull();
       expect(lineage.generation).toMatchObject({ runs: 0, costUsd: null });
+    });
+
+    it("shows the D1 snapshot of a Reel with its watch metrics before day 3", async () => {
+      const f = await post({
+        format: "REEL",
+        early: [
+          { slot: "H2", age: 2, reach: 100, video: { ig_reels_avg_watch_time: 3000 } },
+          { slot: "D1", age: 25, reach: 300, video: WATCH },
+        ],
+      });
+      const lineage = await getLineage(fx.ctx, { publicationId: f.publicationId });
+      expect(lineage.metrics.shown).toMatchObject({ slot: "D1", reach: 300, early: true });
+      expect(lineage.metrics.watch).toMatchObject({ avgWatchSeconds: 4.2 });
+      expect(lineage.metrics.watch?.hookRate).toBeCloseTo(0.65, 6);
+    });
+
+    it("has no numbers before the first snapshot", async () => {
+      const f = await post();
+      const lineage = await getLineage(fx.ctx, { publicationId: f.publicationId });
+      expect(lineage.metrics.shown).toBeNull();
+      expect(lineage.metrics.timeline).toEqual([]);
     });
 
     it("links a carousel to the Reel made from it, and a Reel to its carousel", async () => {
