@@ -35,7 +35,9 @@ export {
 export { DateRangeInput, DEFAULT_MIN_SAMPLE, getMinSample } from "./range";
 export {
   getReelInsights,
+  isEarlySnapshot,
   pickD7,
+  pickShown,
   type ReelInsight,
   type ReelInsights,
   type ReelWatch,

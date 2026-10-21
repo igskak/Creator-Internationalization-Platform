@@ -1550,7 +1550,7 @@ export const en = {
   published: {
     title: "Published",
     subtitle:
-      "Every post that went out, with its numbers at day 7. Open one to see where it came from.",
+      "Every post that went out, with its numbers at day 7 (before that, the newest snapshot). Open one to see where it came from.",
     filters: { allMarkets: "All markets", allFormats: "All formats" },
     table: {
       post: "Post",
@@ -1560,12 +1560,20 @@ export const en = {
       saves: "Save rate",
       shares: "Share rate",
       comments: "Comment rate",
+      watch: "Reel watching",
       measured: "Measured",
       link: "Instagram",
       youtube: "YouTube Shorts",
     },
     measuredAt: "day 7",
     fallback: "Not day 7 yet: {slot}",
+    early: "Early: {slot}",
+    earlyHint: "The newest snapshot so far; the numbers grow until day 7.",
+    watch: {
+      avg: "{n} s on average",
+      stayed: "{p} stayed past the first seconds",
+      watched: "{p} of the Reel watched",
+    },
     noNumbers: "No numbers yet",
     openOnInstagram: "Open",
     openOnYouTube: "Open",
@@ -1597,6 +1605,8 @@ export const en = {
       title: "Numbers",
       d7: "At day 7",
       fallback: "Day 7 has not come: this is the {slot} snapshot, {days} days old.",
+      early:
+        "Early numbers: the {slot} snapshot, {hours} h after publishing. They grow until day 7.",
       none: "No snapshot yet. The first one is taken two hours after publishing.",
       reach: "Reach",
       views: "Views",

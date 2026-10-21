@@ -6,7 +6,14 @@ import { PRESIGN_TTL } from "@rc/lib/providers/storage";
 import { z } from "zod";
 import type { ServiceContext } from "../../core";
 import { num } from "./range";
-import { pickD7, type ReelWatch, reelWatch } from "./reels";
+import {
+  isEarlySnapshot,
+  pickShown,
+  type ReelWatch,
+  reelWatch,
+  type SnapshotRates,
+  snapshotRates,
+} from "./reels";
 
 // The lineage of one post (plan 04 §4.6, 05 §5.10 `getLineage`, M6-09): from the source and the
 // cards through the idea, the market adaptation and the approved version to the publication and
@@ -110,16 +117,20 @@ export type Lineage = {
     byStage: { stage: string; runs: number; costUsd: number | null }[];
   };
   metrics: {
-    /** The snapshot the comparisons use (D7, else the closest at least 72 h old); null before it exists. */
-    d7:
-      | (LineageSnapshot & {
-          isExactD7: boolean;
-          engagementRate: number | null;
-          commentRate: number | null;
-        })
+    /**
+     * The snapshot the numbers are shown from (`pickShown`): D7, else the closest at least 72 h old,
+     * else, while the post is younger, the newest one (`early`); null before the first snapshot.
+     */
+    shown:
+      | (LineageSnapshot &
+          SnapshotRates & {
+            isExactD7: boolean;
+            /** Younger than 72 h: H2, D1 or a manual snapshot, not yet the D7 numbers. */
+            early: boolean;
+          })
       | null;
     timeline: LineageSnapshot[];
-    /** A Reel: what its watch metrics say at the D7 snapshot (M8-10); null for a carousel. */
+    /** A Reel: what its watch metrics say at the shown snapshot (M8-10); null for a carousel. */
     watch: ReelWatch | null;
   };
 };
@@ -197,10 +208,7 @@ export async function getLineage(
     saveRate: rate(s.saves, s.reach),
     shareRate: rate(s.shares, s.reach),
   }));
-  const [d7Row] = await ctx.db
-    .select()
-    .from(schema.vPublicationMetricsD7)
-    .where(eq(schema.vPublicationMetricsD7.publicationId, publicationId));
+  const shown = pickShown(snapshots);
   const [reelRender] = version.reelRenderId
     ? await ctx.db
         .select({ durationMs: schema.reelRenders.durationMs })
@@ -356,32 +364,25 @@ export async function getLineage(
         .sort((a, b) => a.stage.localeCompare(b.stage)),
     },
     metrics: {
-      d7: d7Row
+      shown: shown
         ? {
-            slot: d7Row.snapshotSlot,
-            measuredAt:
-              snapshots.find((s) => s.snapshotSlot === d7Row.snapshotSlot)?.measuredAt ??
-              new Date(0),
-            ageHours: num(d7Row.mediaAgeHours) ?? 0,
-            reach: d7Row.reach,
-            views: d7Row.views,
-            likes: d7Row.likes,
-            comments: d7Row.comments,
-            saves: d7Row.saves,
-            shares: d7Row.shares,
-            totalInteractions: d7Row.totalInteractions,
-            saveRate: num(d7Row.saveRate),
-            shareRate: num(d7Row.shareRate),
-            commentRate: num(d7Row.commentRate),
-            engagementRate: num(d7Row.engagementRate),
-            isExactD7: d7Row.isExactD7,
+            slot: shown.snapshotSlot,
+            measuredAt: shown.measuredAt,
+            ageHours: num(shown.mediaAgeHours) ?? 0,
+            reach: shown.reach,
+            views: shown.views,
+            likes: shown.likes,
+            comments: shown.comments,
+            saves: shown.saves,
+            shares: shown.shares,
+            totalInteractions: shown.totalInteractions,
+            ...snapshotRates(shown),
+            isExactD7: shown.snapshotSlot === "D7",
+            early: isEarlySnapshot(shown),
           }
         : null,
       timeline,
-      watch:
-        variant.format === "REEL"
-          ? reelWatch(pickD7(snapshots)?.videoMetricsJson, reelDurationMs)
-          : null,
+      watch: variant.format === "REEL" ? reelWatch(shown?.videoMetricsJson, reelDurationMs) : null,
     },
   };
 }

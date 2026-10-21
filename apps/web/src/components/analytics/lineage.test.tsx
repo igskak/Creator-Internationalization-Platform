@@ -76,8 +76,13 @@ describe("LineageView", () => {
 
   it("says so when the day-7 numbers are from an earlier snapshot", () => {
     const lineage = lineageFixture();
-    if (lineage.metrics.d7) {
-      lineage.metrics.d7 = { ...lineage.metrics.d7, isExactD7: false, slot: "D3", ageHours: 72.3 };
+    if (lineage.metrics.shown) {
+      lineage.metrics.shown = {
+        ...lineage.metrics.shown,
+        isExactD7: false,
+        slot: "D3",
+        ageHours: 72.3,
+      };
     }
     show(lineage);
     expect(within(section(en.lineage.numbers.title)).getByText(/D3.*3/)).toBeTruthy();
@@ -86,8 +91,8 @@ describe("LineageView", () => {
 
   it("shows a dash for a metric Instagram did not return, never a zero", () => {
     const lineage = lineageFixture();
-    if (lineage.metrics.d7)
-      lineage.metrics.d7 = { ...lineage.metrics.d7, shares: null, shareRate: null };
+    if (lineage.metrics.shown)
+      lineage.metrics.shown = { ...lineage.metrics.shown, shares: null, shareRate: null };
     show(lineage);
     const numbers = section(en.lineage.numbers.title);
     expect(
@@ -114,9 +119,64 @@ describe("LineageView", () => {
     expect(watch).toHaveTextContent("Total watch time11.8 h");
   });
 
+  // Before day 3 the block shows the newest snapshot there is, labelled, not the empty state.
+  const early = (slot: "H2" | "D1", ageHours: number, reach: number) => {
+    const lineage = lineageFixture();
+    const s = lineage.metrics.timeline.find((x) => x.slot === slot);
+    if (!s) throw new Error(`no ${slot} in the fixture`);
+    lineage.metrics = {
+      timeline: lineage.metrics.timeline.filter((x) => x.ageHours <= ageHours),
+      shown: {
+        ...s,
+        ageHours,
+        reach,
+        isExactD7: false,
+        early: true,
+        commentRate: null,
+        engagementRate: 0.05,
+      },
+      watch: null,
+    };
+    return lineage;
+  };
+
+  it("shows the H2 snapshot of a post that only has H2, labelled as early", () => {
+    show(early("H2", 2.1, 160));
+    const numbers = section(en.lineage.numbers.title);
+    expect(screen.getByTestId("shown-slot").textContent).toBe(
+      "Early numbers: the H2 snapshot, 2 h after publishing. They grow until day 7.",
+    );
+    expect(
+      within(numbers).getByRole("group", { name: en.lineage.numbers.reach }).textContent,
+    ).toContain("160");
+    expect(screen.queryByText(en.lineage.numbers.none)).toBeNull();
+    expect(screen.queryByText(en.lineage.numbers.d7)).toBeNull();
+  });
+
+  it("shows the D1 snapshot of a Reel with its watch numbers", () => {
+    const lineage = early("D1", 24.4, 1100);
+    lineage.variant = { ...lineage.variant, format: "REEL" };
+    lineage.metrics.watch = {
+      avgWatchSeconds: 4.2,
+      totalWatchHours: 1.3,
+      skipRate: 0.35,
+      hookRate: 0.65,
+      completion: 0.21,
+    };
+    show(lineage);
+    expect(screen.getByTestId("shown-slot").textContent).toContain("the D1 snapshot, 24 h");
+    const watch = screen.getByTestId("watch");
+    expect(watch).toHaveTextContent("Average watch time4.2 s");
+    expect(watch).toHaveTextContent("Stayed past the first seconds65.0%");
+    expect(watch).toHaveTextContent("Of the Reel watched21.0%");
+    cleanup();
+    show(lineage, "ru");
+    expect(screen.getByTestId("shown-slot").textContent).toContain("замер D1, через 24 ч");
+  });
+
   it("has a no-numbers state for a post that was never measured", () => {
     const lineage = lineageFixture();
-    lineage.metrics = { d7: null, timeline: [], watch: null };
+    lineage.metrics = { shown: null, timeline: [], watch: null };
     show(lineage);
     expect(screen.getByText(en.lineage.numbers.none)).toBeTruthy();
     expect(document.querySelector('tr[data-slot="D7"]')).toBeNull();
