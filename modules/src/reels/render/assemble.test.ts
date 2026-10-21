@@ -6,8 +6,15 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { comparePng } from "../../visuals/render/golden";
-import { type AssembleInput, assembleReel, assemblyInputHash } from "./assemble";
+import {
+  type AssembleInput,
+  assembleReel,
+  assemblyInputHash,
+  isUsableAudio,
+  probeClipAudio,
+} from "./assemble";
 import type { RenderedCard } from "./cards";
+import { defaultExec, type Exec } from "./exec";
 
 // Real ffmpeg on synthetic clips. The cards are flat rectangles drawn by sharp, so the golden
 // frames do not depend on the platform's fonts; the cards of Chromium are tested in cards.test.ts.
@@ -219,4 +226,186 @@ describe.skipIf(!haveFfmpeg)("assembleReel with ffmpeg", () => {
     const i = (y * info.width + x) * info.channels;
     expect([data[i], data[i + 1], data[i + 2]].every((v) => (v ?? 0) >= 250)).toBe(true);
   }, 120_000);
+});
+
+// The model's own sound (reel-director@4) on clips like the ones the video model returns: the
+// first Reels with it failed on ffmpeg 5.1 whatever the clips had, and a clip with an odd layout
+// must not stop a Reel either.
+type AudioKind = "mono" | "stereo" | "surround" | "manyUnknown" | "silent" | "video-only";
+
+/** A 4 s clip whose sound has the given shape; `silent` is a stream of zeros, `video-only` has none. */
+function makeAudioClip(kind: AudioKind): string {
+  const ext = kind === "manyUnknown" ? "mov" : "mp4";
+  const out = join(tmp, `audio-${kind}.${ext}`);
+  const video = ["-f", "lavfi", "-i", "color=c=0xe6e6e6:s=720x1280:r=30:d=4"];
+  const tone = ["-f", "lavfi", "-i", "sine=f=300:d=4:r=44100"];
+  const nine = `pan=9 channels|${Array.from({ length: 9 }, (_, i) => `c${i}=c0`).join("|")}`;
+  const sound: Record<AudioKind, string[]> = {
+    mono: [...tone, "-ac", "1", "-c:a", "aac"],
+    stereo: [...tone, "-ac", "2", "-c:a", "aac"],
+    surround: [...tone, "-af", "aformat=channel_layouts=5.1", "-c:a", "aac"],
+    // Nine channels and no layout: ffmpeg cannot fold it to stereo.
+    manyUnknown: [...tone, "-af", nine, "-c:a", "pcm_s16le"],
+    silent: ["-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", "-c:a", "aac"],
+    "video-only": ["-an"],
+  };
+  execFileSync("ffmpeg", [
+    "-y",
+    "-loglevel",
+    "error",
+    ...video,
+    ...sound[kind],
+    "-c:v",
+    "libx264",
+    "-t",
+    "4",
+    out,
+  ]);
+  return out;
+}
+
+const audioInput = (name: string, kinds: AudioKind[]): AssembleInput => ({
+  scenes: kinds.map((_, i) => ({
+    id: `s${i + 1}`,
+    beats: 5,
+    card: ["A", "B", "C"][i % 3] as string,
+    layout: "RIGHT" as const,
+  })),
+  shots: Object.fromEntries(
+    kinds.map((kind, i) => [
+      `s${i + 1}`,
+      { path: makeAudioClip(kind), sha256: `audio-${kind}`, trimStartSeconds: 0.2 },
+    ]),
+  ),
+  flashOpener: false,
+  audio: { kind: "MODEL_AUDIO" },
+  workDir: join(tmp, name),
+  outPath: join(tmp, `${name}.mp4`),
+});
+
+const audioStreamOf = (video: string) =>
+  JSON.parse(
+    execFileSync("ffprobe", [
+      "-v",
+      "error",
+      "-select_streams",
+      "a",
+      "-show_entries",
+      "stream=codec_name,channels,sample_rate",
+      "-of",
+      "json",
+      video,
+    ]).toString(),
+  ).streams as { codec_name: string; channels: number; sample_rate: string }[];
+
+describe("isUsableAudio", () => {
+  const audio = (channels: number, layout = "") => ({
+    codec: "aac",
+    channels,
+    layout,
+    sampleRate: 48_000,
+  });
+  it("takes mono and stereo, and nothing else", () => {
+    expect(isUsableAudio(audio(1, "mono"))).toBe(true);
+    expect(isUsableAudio(audio(2, "stereo"))).toBe(true);
+    expect(isUsableAudio(audio(2, "unknown"))).toBe(true);
+    expect(isUsableAudio(audio(6, "5.1"))).toBe(false);
+    expect(isUsableAudio(audio(0))).toBe(false);
+    expect(isUsableAudio(audio(9, "unknown"))).toBe(false);
+    expect(isUsableAudio({ ...audio(2, "stereo"), sampleRate: 0 })).toBe(false);
+    expect(isUsableAudio(null)).toBe(false);
+  });
+});
+
+describe.skipIf(!haveFfmpeg)("assembleReel with the model's own sound", () => {
+  it("reads channels, layout and rate of a clip's audio, and nothing from a video-only clip", async () => {
+    const tools = { exec: defaultExec, ffprobe: "ffprobe" };
+    expect(await probeClipAudio(makeAudioClip("surround"), tools)).toEqual({
+      codec: "aac",
+      channels: 6,
+      layout: "5.1",
+      sampleRate: 44_100,
+    });
+    expect(await probeClipAudio(makeAudioClip("manyUnknown"), tools)).toMatchObject({
+      channels: 9,
+      layout: "",
+    });
+    expect(await probeClipAudio(makeAudioClip("video-only"), tools)).toBeNull();
+    expect(await probeClipAudio(join(tmp, "missing.mp4"), tools)).toBeNull();
+  }, 60_000);
+
+  it("builds a Reel with a stereo 48 kHz AAC track from clips of any sound, unusable ones silent", async () => {
+    const reel = await assembleReel(
+      audioInput("model-audio", [
+        "stereo",
+        "mono",
+        "surround",
+        "manyUnknown",
+        "silent",
+        "video-only",
+      ]),
+      options,
+    );
+    expect(reel.audioKind).toBe("MODEL_AUDIO");
+    // The flat test clips are a static opening; the sound raises no warning.
+    expect(reel.qa.warnings.filter((w) => /sound|audio/i.test(w))).toEqual([]);
+    expect(audioStreamOf(reel.path)).toEqual([
+      { codec_name: "aac", channels: 2, sample_rate: "48000" },
+    ]);
+  }, 180_000);
+
+  it("builds the Reel once more without the model's sound when ffmpeg cannot set it up", async () => {
+    const calls: string[][] = [];
+    const exec: Exec = async (file, args) => {
+      if (file === "ffmpeg" && args.includes("-filter_complex")) {
+        calls.push([...args]);
+        if (calls.length === 1) {
+          throw new Error(
+            "ffmpeg failed: Command failed\n[Parsed_aresample_26 @ 0x1] Cannot select channel layout for the link between filters Parsed_aresample_26 and format_out_0_1.\nError reinitializing filters!",
+          );
+        }
+      }
+      return defaultExec(file, args);
+    };
+    const reel = await assembleReel(audioInput("fallback", ["stereo", "mono"]), {
+      ...options,
+      exec,
+    });
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.join(" ")).toContain("loudnorm");
+    expect(calls[1]?.join(" ")).not.toContain("loudnorm");
+    expect(reel.audioKind).toBe("NONE");
+    expect(reel.qa.warnings.join(" ")).toContain("model's sound was dropped");
+    expect(audioStreamOf(reel.path)).toHaveLength(1);
+  }, 120_000);
+
+  it("does not retry an error that is not about the sound", async () => {
+    const exec: Exec = async (file, args) => {
+      if (file === "ffmpeg" && args.includes("-filter_complex")) throw new Error("disk full");
+      return defaultExec(file, args);
+    };
+    await expect(
+      assembleReel(audioInput("no-retry", ["stereo"]), { ...options, exec }),
+    ).rejects.toThrow("disk full");
+  }, 60_000);
+
+  it("names each clip's audio in the message of a failure", async () => {
+    const exec: Exec = async (file, args) => {
+      if (file === "ffmpeg" && args.includes("-filter_complex")) {
+        throw new Error("Cannot select channel layout for the link");
+      }
+      return defaultExec(file, args);
+    };
+    const failure = await assembleReel(
+      audioInput("diagnosed", ["stereo", "surround", "video-only"]),
+      { ...options, exec },
+    ).catch((e: Error) => e);
+    expect(failure).toBeInstanceOf(Error);
+    const message = (failure as Error).message;
+    expect(message).toContain("The retry without the model's sound failed too");
+    expect(message).toContain("ffmpeg: ffmpeg version");
+    expect(message).toContain("s1: aac 2 ch, layout stereo, 44100 Hz");
+    expect(message).toContain("s2: aac 6 ch, layout 5.1, 44100 Hz (replaced by silence)");
+    expect(message).toContain("s3: no audio stream");
+  }, 60_000);
 });

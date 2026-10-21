@@ -85,7 +85,7 @@ export function buildFfmpegArgs(plan: AssemblyPlan, inputs: FfmpegInputs): strin
     );
     joined.push(`[s${i}]`);
     if (inputs.modelAudio) {
-      const format = `aresample=${MODEL_AUDIO.sampleRate},aformat=sample_fmts=fltp:channel_layouts=stereo`;
+      const format = `aresample=${MODEL_AUDIO.sampleRate},${MODEL_AUDIO.outputFormat}`;
       const fadeOut = Math.max(0, segment.seconds - MODEL_AUDIO.fadeOutSeconds);
       graph.push(
         inputs.modelAudio[segment.clipPath]
@@ -100,7 +100,9 @@ export function buildFfmpegArgs(plan: AssemblyPlan, inputs: FfmpegInputs): strin
   if (inputs.modelAudio) {
     graph.push(
       `${joined.join("")}concat=n=${plan.segments.length}:v=1:a=1[v][ajoined]`,
-      `[ajoined]${MODEL_AUDIO.loudnorm},aresample=${MODEL_AUDIO.sampleRate}[a]`,
+      // loudnorm upsamples and leaves its output layout open; on ffmpeg 5.1 (the apt build of the Trigger
+      // image) a bare aresample behind it cannot negotiate a layout with the encoder. Pin the format.
+      `[ajoined]${MODEL_AUDIO.loudnorm},aresample=${MODEL_AUDIO.sampleRate},${MODEL_AUDIO.outputFormat}[a]`,
     );
   } else {
     graph.push(`${joined.join("")}concat=n=${plan.segments.length}:v=1:a=0[v]`);

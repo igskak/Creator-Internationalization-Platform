@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   generate: vi.fn(),
   changeHook: vi.fn(),
   redoShot: vi.fn(),
+  reassemble: vi.fn(),
   setTrial: vi.fn(),
   approve: vi.fn(),
   reject: vi.fn(),
@@ -49,6 +50,7 @@ vi.mock("@/server/actions/reels", () => ({
   generateReel: mocks.generate,
   changeReelHook: mocks.changeHook,
   regenerateReelShot: mocks.redoShot,
+  reassembleReel: mocks.reassemble,
   setReelTrial: mocks.setTrial,
 }));
 
@@ -198,6 +200,12 @@ beforeEach(() => {
   mocks.redoShot.mockResolvedValue({
     ok: true,
     data: { variantId: REEL, runId: "j", scriptId: "sc2", estimateUsd: 0.3 },
+  });
+});
+beforeEach(() => {
+  mocks.reassemble.mockResolvedValue({
+    ok: true,
+    data: { variantId: REEL, runId: "j", scriptId: "sc1" },
   });
 });
 afterEach(() => {
@@ -353,6 +361,44 @@ describe("a Reel that failed", () => {
       within(alert).getByText("The Reel director could not write a valid script."),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: new RegExp(t.generateAgain) })).toBeEnabled();
+  });
+});
+
+describe("a Reel whose video could not be put together", () => {
+  const failedAssembly = (over: Record<string, unknown> = {}) =>
+    viewOf({
+      reel: reelOf({
+        status: "DRAFT",
+        render: null,
+        lastError: { code: "REEL_FAILED", message: "Cannot select channel layout" },
+        script: {
+          ...reelOf().script,
+          scenes: [scene(0), scene(1), scene(2)],
+        },
+        ...over,
+      }),
+    });
+
+  it("rebuilds the video from the saved shots, which is free", async () => {
+    const user = userEvent.setup();
+    show(failedAssembly());
+    const alert = screen.getByRole("alert");
+    expect(within(alert).getByText(t.failed.rebuildHint)).toBeInTheDocument();
+    await user.click(within(alert).getByRole("button", { name: t.failed.rebuild }));
+    expect(mocks.reassemble).toHaveBeenCalledWith({ variantId: REEL });
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(t.failed.rebuildQueued));
+  });
+
+  it("offers no rebuild when a shot is not finished, or to someone who may not", () => {
+    const { unmount } = show(
+      failedAssembly({
+        script: { ...reelOf().script, scenes: [scene(0), scene(1, { shot: "FAILED" })] },
+      }),
+    );
+    expect(screen.queryByRole("button", { name: t.failed.rebuild })).not.toBeInTheDocument();
+    unmount();
+    show(failedAssembly(), false);
+    expect(screen.queryByRole("button", { name: t.failed.rebuild })).not.toBeInTheDocument();
   });
 });
 

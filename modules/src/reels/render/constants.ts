@@ -57,6 +57,8 @@ export const MODEL_AUDIO = {
   fadeOutSeconds: 0.05,
   sampleRate: 48_000,
   loudnorm: "loudnorm=I=-14:TP=-1.5:LRA=11",
+  /** What the encoder takes: the format every per-clip chain ends in and the joined track is pinned to. */
+  outputFormat: "aformat=sample_fmts=fltp:channel_layouts=stereo",
 } as const;
 
 /** Safe zone on 1080 × 1920: nothing above y = 230 or below y = 1440; the right 230 px stay clear. */

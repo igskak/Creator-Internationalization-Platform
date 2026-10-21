@@ -58,11 +58,23 @@ export type AssembledReel = {
   cards: Record<string, CardMeasure>;
 };
 
-/** True when ffprobe finds an audio stream in the clip; false when it finds none or cannot read it. */
-async function hasAudioStream(
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+/** What ffprobe says about the first audio stream of a clip. */
+export type ClipAudio = {
+  codec: string;
+  channels: number;
+  /** ffprobe's layout name ("stereo", "5.1", "unknown"); empty when it has none. */
+  layout: string;
+  sampleRate: number;
+};
+
+/** The first audio stream of the clip; null when there is none or ffprobe cannot read the clip. */
+export async function probeClipAudio(
   clipPath: string,
   tools: { exec: Exec; ffprobe: string },
-): Promise<boolean> {
+): Promise<ClipAudio | null> {
   try {
     const { stdout } = await tools.exec(tools.ffprobe, [
       "-v",
@@ -70,16 +82,43 @@ async function hasAudioStream(
       "-select_streams",
       "a",
       "-show_entries",
-      "stream=index",
+      "stream=codec_name,channels,channel_layout,sample_rate",
       "-of",
-      "csv=p=0",
+      "json",
       clipPath,
     ]);
-    return stdout.trim() !== "";
+    const stream = (JSON.parse(stdout) as { streams?: Record<string, unknown>[] }).streams?.[0];
+    if (!stream) return null;
+    return {
+      codec: String(stream.codec_name ?? "unknown"),
+      channels: Number(stream.channels ?? 0),
+      layout: String(stream.channel_layout ?? ""),
+      sampleRate: Number(stream.sample_rate ?? 0),
+    };
   } catch {
-    return false;
+    return null;
   }
 }
+
+/**
+ * The sound of a clip goes into the Reel only when it is mono or stereo: anything else (5.1, a
+ * stream with no channels, an unknown layout of many channels) is replaced by silence, because the
+ * graph cannot always fold it down.
+ */
+export const isUsableAudio = (audio: ClipAudio | null): boolean =>
+  audio !== null && (audio.channels === 1 || audio.channels === 2) && audio.sampleRate > 0;
+
+const describeAudio = (audio: ClipAudio | null): string =>
+  audio
+    ? `${audio.codec} ${audio.channels} ch, layout ${audio.layout || "none"}, ${audio.sampleRate} Hz` +
+      (isUsableAudio(audio) ? "" : " (replaced by silence)")
+    : "no audio stream";
+
+/** ffmpeg could not set up the sound: the picture may still build without the clips' sound. */
+const isAudioGraphError = (error: unknown): boolean =>
+  /channel layout|Error reinitializing filters|Failed to inject frame|Rematrix is needed/i.test(
+    error instanceof Error ? error.message : String(error),
+  );
 
 /** The hash of an input without rendering anything, to find a render that already exists. */
 export function assemblyInputHash(input: AssembleInput): string {
@@ -143,25 +182,71 @@ export async function assembleReel(
     }
   }
 
-  // The model's own sound: which clips carry an audio stream (a refused or fallback shot may not).
+  // The model's own sound: which clips carry sound the graph can use (a refused or fallback shot may
+  // have none), and what each clip's audio is, kept for the failure message.
   let modelAudio: Record<string, boolean> | undefined;
+  const clipAudio: Record<string, ClipAudio | null> = {};
   if (input.audio?.kind === "MODEL_AUDIO") {
     modelAudio = {};
-    for (const clipPath of clips) modelAudio[clipPath] = await hasAudioStream(clipPath, tools);
+    for (const clipPath of clips) {
+      clipAudio[clipPath] = await probeClipAudio(clipPath, tools);
+      modelAudio[clipPath] = isUsableAudio(clipAudio[clipPath] ?? null);
+    }
   }
 
-  await exec(
-    tools.ffmpeg,
+  const ffmpegArgs = (withModelAudio: boolean) =>
     buildFfmpegArgs(plan, {
       cardPaths,
       pageLevels,
       outPath: input.outPath,
-      ...(modelAudio ? { modelAudio } : {}),
+      ...(withModelAudio && modelAudio ? { modelAudio } : {}),
       ...(input.audio && "path" in input.audio ? { audio: { path: input.audio.path } } : {}),
       ...(options.crf !== undefined ? { crf: options.crf } : {}),
       ...(options.preset ? { preset: options.preset } : {}),
-    }),
-  );
+    });
+
+  // What a failure message says about the clips, so the next failure can be diagnosed.
+  const diagnostics = async (): Promise<string> => {
+    const scenesOf = (clipPath: string) =>
+      Object.entries(input.shots)
+        .filter(([, shot]) => shot.path === clipPath)
+        .map(([id]) => id)
+        .join("+");
+    const lines = clips.map(
+      (clipPath) =>
+        `  ${scenesOf(clipPath) || clipPath}: ${describeAudio(clipAudio[clipPath] ?? null)}`,
+    );
+    let version = "unknown";
+    try {
+      version = (await exec(tools.ffmpeg, ["-version"])).stdout.split("\n")[0] ?? version;
+    } catch {
+      // Left as unknown.
+    }
+    return `\nffmpeg: ${version}\nClip audio:\n${lines.join("\n")}`;
+  };
+
+  const warnings: string[] = [];
+  let audioKind: ReelAudioKind = input.audio?.kind ?? "NONE";
+  try {
+    await exec(tools.ffmpeg, ffmpegArgs(true));
+  } catch (error) {
+    // The model's sound is a bonus: when ffmpeg cannot set it up, build the Reel once more silent.
+    if (!modelAudio || !isAudioGraphError(error)) {
+      throw new Error(`${errorMessage(error)}${await diagnostics()}`, { cause: error });
+    }
+    try {
+      await exec(tools.ffmpeg, ffmpegArgs(false));
+    } catch (retryError) {
+      throw new Error(
+        `${errorMessage(error)}\nThe retry without the model's sound failed too: ${errorMessage(retryError)}${await diagnostics()}`,
+        { cause: retryError },
+      );
+    }
+    audioKind = "NONE";
+    warnings.push(
+      `The model's sound was dropped, the Reel is silent: ffmpeg could not use it (${errorMessage(error).split("\n").slice(-3).join(" ").slice(0, 300)}).`,
+    );
+  }
 
   const { probe, qa } = await probeReel(input.outPath, tools, Object.values(measures));
   const sha256 = createHash("sha256")
@@ -171,13 +256,13 @@ export async function assembleReel(
     path: input.outPath,
     inputHash: assemblyInputHash(input),
     plan,
-    audioKind: input.audio?.kind ?? "NONE",
+    audioKind,
     durationMs: probe.durationMs,
     width: probe.width,
     height: probe.height,
     bytes: probe.bytes,
     sha256,
-    qa,
+    qa: warnings.length > 0 ? { ...qa, warnings: [...qa.warnings, ...warnings] } : qa,
     cards: measures,
   };
 }

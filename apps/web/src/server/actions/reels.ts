@@ -5,8 +5,10 @@ import {
   changeReelHook as changeReelHookService,
   EstimateReelInput,
   estimateReelCost,
+  ReassembleReelInput,
   RegenerateReelShotInput,
   RequestReelInput,
+  reassembleReel as reassembleReelService,
   regenerateReelShot as regenerateReelShotService,
   requestReel,
   SetReelTrialInput,
@@ -47,6 +49,14 @@ export const regenerateReelShot = defineAction({
   input: RegenerateReelShotInput,
   roles: ["owner", "editor"],
   handler: (ctx, input) => regenerateReelShotService(ctx, input),
+});
+
+/** Put the video together again from the saved script and shots: free, nothing is generated. */
+export const reassembleReel = defineAction({
+  name: "reassembleReel",
+  input: ReassembleReelInput,
+  roles: ["owner", "editor"],
+  handler: (ctx, input) => reassembleReelService(ctx, input),
 });
 
 /** Trial Reel on or off (M8-11): shown to non-followers first; off by default. */

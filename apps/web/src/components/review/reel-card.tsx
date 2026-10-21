@@ -28,6 +28,7 @@ import {
   changeReelHook,
   estimateReel,
   generateReel,
+  reassembleReel,
   regenerateReelShot,
   setReelTrial,
 } from "@/server/actions/reels";
@@ -533,6 +534,35 @@ function ReelReview({ reel, review }: { reel: Detail; review: ReelReviewProps })
   );
 }
 
+/**
+ * A Reel whose video failed to assemble keeps its script and paid shots: this builds the video again
+ * from them, where "Generate again" would write a new script and pay for new shots.
+ */
+function RebuildButton({ variantId }: { variantId: string }) {
+  const t = useI18n().messages.review.reel.failed;
+  const router = useRouter();
+  const { run, pending } = useAction(reassembleReel, {
+    onSuccess: () => {
+      toast(t.rebuildQueued);
+      router.refresh();
+    },
+  });
+  return (
+    <div className="mt-2 flex flex-col items-start gap-1">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={pending}
+        onClick={() => void run({ variantId })}
+      >
+        {t.rebuild}
+      </Button>
+      <p className="text-xs text-muted-foreground">{t.rebuildHint}</p>
+    </div>
+  );
+}
+
 export function ReelCard({
   view,
   canManage,
@@ -580,6 +610,13 @@ export function ReelCard({
               : t.failed.title}
           </p>
           <p>{format(t.failed.body, { message: reel.lastError?.message ?? "" })}</p>
+          {canManage &&
+          reel.lastError?.code !== CREDITS_EXHAUSTED_CODE &&
+          reel.script &&
+          reel.script.model !== "attached" &&
+          reel.script.scenes.every((s) => s.shot === "READY") ? (
+            <RebuildButton variantId={reel.variantId} />
+          ) : null}
         </div>
       ) : null}
 

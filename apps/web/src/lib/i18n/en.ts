@@ -879,6 +879,10 @@ export const en = {
         pausedTitle: "Waiting for AI credit",
         body: "{message}",
         flag: "Generation failed",
+        rebuild: "Rebuild the video",
+        rebuildHint:
+          "Free: puts the video together again from the saved script and shots. Nothing is generated.",
+        rebuildQueued: "Rebuilding the video from the saved shots. It is free.",
       },
       video: {
         label: "Reel preview",

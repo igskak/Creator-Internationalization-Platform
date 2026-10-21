@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { schema } from "@rc/db";
 import type { ReelScene } from "@rc/db/json";
-import { and, desc, eq } from "@rc/db/orm";
+import { and, desc, eq, inArray } from "@rc/db/orm";
 import {
   CREDITS_EXHAUSTED_CODE,
   CREDITS_EXHAUSTED_MESSAGE,
@@ -53,20 +53,31 @@ import { loadReelSource, type ReelSource } from "./source";
 // hash, the render is a row found by its input hash. A permanent failure ends the variant as DRAFT with a flag and the job returns; a transient
 // one is rethrown, the variant stays GENERATING and the retry continues.
 
-export const GenerateReelPayload = z.object({
-  /** The Reel variant (format REEL). */
-  variantId: z.uuid(),
-  /** Idempotency of one request: `reel:{variantId}:{requestId}`. */
-  requestId: z.string().min(1),
-  /** The hook option to use instead of the director's recommendation. */
-  hookId: z.string().min(1).optional(),
-  model: z.enum(VIDEO_MODELS).optional(),
-  /**
-   * Use this script of the variant instead of asking the director: "change hook" and "regenerate
-   * shot" write a new script version and run the pipeline from the shots on.
-   */
-  scriptId: z.uuid().optional(),
-});
+export const GenerateReelPayload = z
+  .object({
+    /** The Reel variant (format REEL). */
+    variantId: z.uuid(),
+    /** Idempotency of one request: `reel:{variantId}:{requestId}`. */
+    requestId: z.string().min(1),
+    /** The hook option to use instead of the director's recommendation. */
+    hookId: z.string().min(1).optional(),
+    model: z.enum(VIDEO_MODELS).optional(),
+    /**
+     * Use this script of the variant instead of asking the director: "change hook" and "regenerate
+     * shot" write a new script version and run the pipeline from the shots on.
+     */
+    scriptId: z.uuid().optional(),
+    /**
+     * Only put the video together again from the script's stored shots (a failed assembly): no
+     * director, no pictures, no shot is ever made or paid; a shot that is missing ends the run.
+     * Needs `scriptId`.
+     */
+    assembleOnly: z.boolean().optional(),
+  })
+  .refine((p) => !p.assembleOnly || p.scriptId, {
+    message: "assembleOnly needs a scriptId",
+    path: ["assembleOnly"],
+  });
 export type GenerateReelPayload = z.infer<typeof GenerateReelPayload>;
 
 export type GenerateReelResult = {
@@ -113,6 +124,46 @@ export function applyChosenHook(script: ReelScriptDraft, hookId: string): ReelSc
       i === 0 ? { ...s, card: hook.card } : i === 1 ? { ...s, card: hook.ruleCard } : s,
     ),
   };
+}
+
+/**
+ * The shots a script already holds, by the `shotId` of its scenes. Nothing is made: a scene
+ * without a READY shot (never made, failed, its file gone) stops the re-assembly instead of
+ * paying for one.
+ */
+export async function loadStoredShots(
+  ctx: ServiceContext,
+  script: ScriptRow,
+): Promise<ShotResult[]> {
+  const ids = script.scenes.flatMap((s) => (s.shotId ? [s.shotId] : []));
+  const rows = ids.length
+    ? await ctx.db.select().from(schema.reelShots).where(inArray(schema.reelShots.id, ids))
+    : [];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const missing = script.scenes
+    .filter((s) => {
+      const row = s.shotId ? byId.get(s.shotId) : undefined;
+      return row?.status !== "READY" || !row.storageKey;
+    })
+    .map((s) => s.id);
+  if (missing.length > 0) {
+    throw new PermanentError(
+      `The video cannot be rebuilt: no finished shot for scene ${missing.join(", ")}. Generate the Reel again.`,
+      { details: { code: "shots_missing", sceneIds: missing } },
+    );
+  }
+  return script.scenes.map((s) => {
+    const row = byId.get(s.shotId as string) as (typeof rows)[number];
+    return {
+      sceneId: s.id,
+      shotId: row.id,
+      storageKey: row.storageKey as string,
+      sha256: row.sha256 ?? "",
+      costUsd: row.costUsd == null ? null : Number(row.costUsd),
+      reused: true,
+      usedFallback: false,
+    };
+  });
 }
 
 async function loadReelVariant(ctx: ServiceContext, variantId: string): Promise<Variant> {
@@ -326,103 +377,115 @@ export async function generateReel(
     // 2. Shots ---------------------------------------------------------------------------------
     await progress("SHOTS");
     const v4 = scriptRow.scenes.some((s) => (s.framePrompt ?? "").trim() !== "");
-    // reel-director@4: the pictures made for the shots, one per distinct frame prompt, a few at a time.
-    const made = new Map<string, ReelFrame | null>();
-    if (v4) {
-      await clearPendingReelFrames(
-        ctx,
-        variant.id,
-        scriptRow.scenes.map((s) => s.id),
-      );
-      const wanted = [
-        ...new Map(
-          scriptRow.scenes
-            .filter((s) => (s.framePrompt ?? "").trim() !== "")
-            .map((s) => [(s.framePrompt ?? "").trim(), s.id] as const),
-        ),
-      ];
-      let next = 0;
-      const worker = async () => {
-        while (next < wanted.length) {
-          const item = wanted[next++];
-          if (!item) return;
-          const [framePrompt, sceneId] = item;
-          made.set(
-            framePrompt,
-            await ensureReelFrame(
-              ctx,
-              { brandId: source.idea.brandId, variantId: variant.id },
-              { id: sceneId, framePrompt },
-            ),
+    let shots: { results: ShotResult[] };
+    if (payload.assembleOnly) {
+      // A re-assembly: the script's own shots, nothing is made and nothing is paid.
+      shots = { results: await loadStoredShots(ctx, scriptRow) };
+    } else {
+      // reel-director@4: the pictures made for the shots, one per distinct frame prompt, a few at a time.
+      const made = new Map<string, ReelFrame | null>();
+      if (v4) {
+        await clearPendingReelFrames(
+          ctx,
+          variant.id,
+          scriptRow.scenes.map((s) => s.id),
+        );
+        const wanted = [
+          ...new Map(
+            scriptRow.scenes
+              .filter((s) => (s.framePrompt ?? "").trim() !== "")
+              .map((s) => [(s.framePrompt ?? "").trim(), s.id] as const),
+          ),
+        ];
+        let next = 0;
+        const worker = async () => {
+          while (next < wanted.length) {
+            const item = wanted[next++];
+            if (!item) return;
+            const [framePrompt, sceneId] = item;
+            made.set(
+              framePrompt,
+              await ensureReelFrame(
+                ctx,
+                { brandId: source.idea.brandId, variantId: variant.id },
+                { id: sceneId, framePrompt },
+              ),
+            );
+          }
+        };
+        await Promise.all(
+          Array.from({ length: Math.min(FRAME_CONCURRENCY, wanted.length) }, worker),
+        );
+      }
+      // A frame made in an earlier attempt of this run is reused at no cost: keep what it cost then.
+      const framesCost = [...made.values()].reduce((sum, f) => sum + (f?.costUsd ?? 0), 0);
+      if (framesCost > 0) ids.FRAMES_USD = String(framesCost);
+      const frames = new Map<string, StartFrame>();
+      const specs = [];
+      for (const scene of scriptRow.scenes) {
+        const reelFrame = made.get((scene.framePrompt ?? "").trim());
+        if (reelFrame) {
+          let frame = frames.get(reelFrame.assetId);
+          if (!frame) {
+            frame = await prepareStartFrame(reelFrame.bytes, SHOT_RESOLUTION, "cover");
+            frames.set(reelFrame.assetId, frame);
+          }
+          specs.push({
+            sceneId: scene.id,
+            prompt: scene.shotPrompt,
+            pictureId: reelFrame.assetId,
+            frame,
+            seconds: SHOT_SECONDS_V4,
+            audio: true,
+            ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
+          });
+          continue;
+        }
+        const picture = source.pictures.find((p) => p.assetId === scene.sourcePictureId);
+        if (!picture) {
+          throw new PermanentError(
+            `Scene ${scene.id} uses a picture that is not in the carousel.`,
+            {
+              details: { code: "picture_missing", sceneId: scene.id },
+            },
           );
         }
-      };
-      await Promise.all(Array.from({ length: Math.min(FRAME_CONCURRENCY, wanted.length) }, worker));
-    }
-    // A frame made in an earlier attempt of this run is reused at no cost: keep what it cost then.
-    const framesCost = [...made.values()].reduce((sum, f) => sum + (f?.costUsd ?? 0), 0);
-    if (framesCost > 0) ids.FRAMES_USD = String(framesCost);
-    const frames = new Map<string, StartFrame>();
-    const specs = [];
-    for (const scene of scriptRow.scenes) {
-      const reelFrame = made.get((scene.framePrompt ?? "").trim());
-      if (reelFrame) {
-        let frame = frames.get(reelFrame.assetId);
+        let frame = frames.get(picture.assetId);
         if (!frame) {
-          frame = await prepareStartFrame(reelFrame.bytes, SHOT_RESOLUTION, "cover");
-          frames.set(reelFrame.assetId, frame);
+          frame = await prepareStartFrame(await ctx.storage.getBytes(picture.storageKey));
+          frames.set(picture.assetId, frame);
         }
         specs.push({
           sceneId: scene.id,
           prompt: scene.shotPrompt,
-          pictureId: reelFrame.assetId,
+          pictureId: picture.assetId,
           frame,
-          seconds: SHOT_SECONDS_V4,
-          audio: true,
+          // A v4 scene whose picture could not be made starts from the carousel picture, same length.
+          ...(v4 ? { seconds: SHOT_SECONDS_V4, audio: true } : {}),
           ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
         });
-        continue;
       }
-      const picture = source.pictures.find((p) => p.assetId === scene.sourcePictureId);
-      if (!picture) {
-        throw new PermanentError(`Scene ${scene.id} uses a picture that is not in the carousel.`, {
-          details: { code: "picture_missing", sceneId: scene.id },
-        });
+      const ensured = await ensureShots(
+        ctx,
+        {
+          brandId: source.idea.brandId,
+          variantId: variant.id,
+          masterIdeaId: source.idea.id,
+          model: scriptRow.shotModel as VideoModelId,
+          resolution: "720p",
+        },
+        specs,
+        async (done) => {
+          ids.SHOTS_READY = String(done);
+          await progress("SHOTS");
+        },
+      );
+      if (ensured.failures.length > 0) {
+        // A transient problem anywhere is retried as a whole (finished shots are reused); otherwise the first refusal ends the run.
+        const transient = ensured.failures.find((f) => f.error instanceof TransientError);
+        throw (transient ?? ensured.failures[0])?.error;
       }
-      let frame = frames.get(picture.assetId);
-      if (!frame) {
-        frame = await prepareStartFrame(await ctx.storage.getBytes(picture.storageKey));
-        frames.set(picture.assetId, frame);
-      }
-      specs.push({
-        sceneId: scene.id,
-        prompt: scene.shotPrompt,
-        pictureId: picture.assetId,
-        frame,
-        // A v4 scene whose picture could not be made starts from the carousel picture, same length.
-        ...(v4 ? { seconds: SHOT_SECONDS_V4, audio: true } : {}),
-        ...(scene.shotAttempt ? { attempt: scene.shotAttempt } : {}),
-      });
-    }
-    const shots = await ensureShots(
-      ctx,
-      {
-        brandId: source.idea.brandId,
-        variantId: variant.id,
-        masterIdeaId: source.idea.id,
-        model: scriptRow.shotModel as VideoModelId,
-        resolution: "720p",
-      },
-      specs,
-      async (done) => {
-        ids.SHOTS_READY = String(done);
-        await progress("SHOTS");
-      },
-    );
-    if (shots.failures.length > 0) {
-      // A transient problem anywhere is retried as a whole (finished shots are reused); otherwise the first refusal ends the run.
-      const transient = shots.failures.find((f) => f.error instanceof TransientError);
-      throw (transient ?? shots.failures[0])?.error;
+      shots = ensured;
     }
     const shotByScene = new Map<string, ShotResult>(shots.results.map((r) => [r.sceneId, r]));
     const scenes: ReelScene[] = scriptRow.scenes.map((s) => ({
@@ -487,7 +550,6 @@ export async function generateReel(
       outPath: join(tmp, "reel.mp4"),
     };
     const inputHash = assemblyInputHash(input);
-    const framesUsd = Number(ids.FRAMES_USD ?? 0);
     const shotsCost = shots.results.reduce((sum, r) => sum + (r.costUsd ?? 0), 0);
 
     let renderId: string;
@@ -501,6 +563,10 @@ export async function generateReel(
           eq(schema.reelRenders.inputHash, inputHash),
         ),
       );
+    // A re-assembly made no pictures: what they cost stays in the render row of the first try.
+    const framesUsd = payload.assembleOnly
+      ? Math.max(0, Number(existing?.costUsd ?? 0) - shotsCost)
+      : Number(ids.FRAMES_USD ?? 0);
     if (existing?.status === "READY") {
       renderId = existing.id;
       qaWarnings = existing.qaReport?.warnings ?? [];
@@ -590,6 +656,7 @@ export async function generateReel(
         fallbacks,
         directorUsd: directorCost,
         shotsUsd: shotsCost,
+        ...(payload.assembleOnly ? { assembleOnly: true } : {}),
         ...(framesUsd > 0 ? { framesUsd } : {}),
         qaWarnings,
       },
