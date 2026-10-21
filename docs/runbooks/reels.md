@@ -53,6 +53,12 @@ pnpm rc g3-check
 
 `media_type=REELS`, `video_url` on a public HTTPS server (Meta fetches it with cURL; US-ASCII only), MOV or MP4 with the moov atom first, H.264 or HEVC, 4:2:0, closed GOP, AAC up to 48 kHz, 23–60 fps, at most 1920 px wide, 3 s to 15 min, at most 300 MB, VBR up to 25 Mbps; 9:16 recommended. `share_to_feed` true shows it on the grid too. A container lives 24 h. Our renderer makes 1080 × 1920, 30 fps, H.264 High yuv420p, AAC, faststart, 12–30 s. Reels count toward the 24-hour publishing limit (read `content_publishing_limit`).
 
+## A Reel whose video failed to assemble
+
+The shots are paid for when they are made and stay `READY`; a failed assembly (`content_variants.last_error`, message with the ffmpeg command, the ffmpeg version and each clip's audio) loses nothing. **Do not press "Generate again"**: it asks the director for a new script, new prompts hash to new shots, and they are paid for again. On the failed Reel's card press **Rebuild the video** (free): it queues `generate-reel` with the latest script and `assembleOnly`, which takes the scenes' stored shots, makes no picture or shot and runs only the assembly; it is refused when a scene has no finished shot.
+
+The model's own sound is optional for the assembly: a clip whose audio is not mono or stereo is replaced by silence, and if ffmpeg still cannot set up the sound the Reel is built once more silent (`audio_kind` NONE, a QA warning "The model's sound was dropped"). Background (2026-10-21): the first v4 Reels all failed with "Cannot select channel layout for the link between filters Parsed_aresample_N and format_out_0_1" on ffmpeg 5.1, the apt build of the Trigger image, whatever the clips had; the cause was the `aresample` right behind `loudnorm`, and the format is now pinned there.
+
 ## Trial Reels (M8-11)
 A Reel can go out as a trial: Instagram shows it to people who do not follow the account first and reports how it did after 24 hours. Set it on the Reel card ("Trial Reel"), off by default, before the Reel is published:
 - **On, I share it with followers myself** (`MANUAL`): graduate it in the Instagram app; there is no API call for it.

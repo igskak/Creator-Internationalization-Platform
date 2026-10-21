@@ -18,6 +18,7 @@ export {
   GenerateReelPayload,
   type GenerateReelResult,
   generateReel,
+  loadStoredShots,
 } from "./generate";
 export {
   ChangeReelHookInput,
@@ -25,10 +26,12 @@ export {
   EstimateReelInput,
   estimateReelCost,
   estimateShotRedo,
+  ReassembleReelInput,
   type ReelEstimateView,
   RegenerateReelShotInput,
   type RequestedReel,
   RequestReelInput,
+  reassembleReel,
   regenerateReelShot,
   requestReel,
 } from "./request";

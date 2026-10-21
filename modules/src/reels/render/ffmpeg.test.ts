@@ -140,7 +140,10 @@ describe("buildFfmpegArgs with the model's own sound", () => {
 
   it("joins picture and sound together and brings the track to one loudness", () => {
     expect(graph).toContain("[s0][a0][s1][a1]concat=n=2:v=1:a=1[v][ajoined]");
-    expect(graph).toContain("[ajoined]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]");
+    // The format is pinned behind loudnorm: ffmpeg 5.1 cannot negotiate a layout for a bare aresample there.
+    expect(graph).toContain(
+      "[ajoined]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a]",
+    );
     const maps = args.flatMap((a, i) => (a === "-map" ? [args[i + 1]] : []));
     expect(maps).toEqual(["[v]", "[a]"]);
   });

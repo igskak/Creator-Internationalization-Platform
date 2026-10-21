@@ -13,7 +13,7 @@ import { audit, type ServiceContext, triggerJob } from "../../core";
 import { type ReelScriptFormat, swapHookLine } from "../director";
 import { assertReelsEnabled, reelsEnabled } from "./enabled";
 import { estimateReel, type ReelEstimate } from "./estimate";
-import { applyChosenHook } from "./generate";
+import { applyChosenHook, loadStoredShots } from "./generate";
 import { loadReelSource } from "./source";
 
 // The two services behind the Generate Reel button (plan 18 §18.6, decisions RL-2 and RL-4):
@@ -365,4 +365,43 @@ export async function regenerateReelShot(
     },
   });
   return { variantId: reel.id, runId, scriptId: next.id, estimateUsd };
+}
+
+export const ReassembleReelInput = ChangeInput;
+
+/**
+ * Puts the video of a Reel together again from its latest script and the shots already stored: for
+ * a Reel whose assembly failed (or whose renderer was fixed). Free by construction: no director
+ * call, no pictures, no shot (a new script would hash to new shots and pay for them again, which
+ * "Generate again" does), and a scene without a finished shot is refused here and in the job.
+ */
+export async function reassembleReel(
+  ctx: ServiceContext,
+  raw: z.input<typeof ReassembleReelInput>,
+): Promise<{ variantId: string; runId: string; scriptId: string }> {
+  const input = ReassembleReelInput.parse(raw);
+  await assertReelsEnabled(ctx);
+  const { reel, script } = await changeableReel(ctx, input.variantId);
+  await loadStoredShots(ctx, script);
+  const requestId = ctx.requestId ?? randomUUID();
+  const { runId } = await triggerJob(
+    ctx,
+    "generate-reel",
+    {
+      variantId: reel.id,
+      requestId,
+      scriptId: script.id,
+      assembleOnly: true,
+      model: script.shotModel as VideoModelId,
+    },
+    { idempotencyKey: `reel:${reel.id}:${requestId}`, tags: [`variant:${reel.id}`] },
+  );
+  await audit(ctx, {
+    action: "reel.reassembled",
+    entityType: "content_variant",
+    entityId: reel.id,
+    marketId: reel.marketId,
+    data: { scriptId: script.id, runId },
+  });
+  return { variantId: reel.id, runId, scriptId: script.id };
 }
